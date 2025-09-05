@@ -41,7 +41,7 @@ import { FaPlay, FaPause } from "react-icons/fa";
 import { MdOutlineRefresh } from "react-icons/md";
 import { Textarea } from "./ui/textarea";
 import { MarkdownRenderer } from "./markdown/renderer";
-import { env } from "../env";
+import { env, getDefaultInstace } from "../env";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { normalizeInstance } from "../lib/utils";
 import { ToolbarButtons } from "./toolbar/toolbar-buttons";
@@ -164,7 +164,7 @@ function SignupForm({
   instance?: string;
   addAccount: boolean;
 }) {
-  instance ??= env.REACT_APP_DEFAULT_INSTANCE;
+  instance ??= getDefaultInstace();
 
   const captcha = useCaptcha({
     instance,
@@ -351,8 +351,8 @@ function SignupForm({
 }
 
 const DEFAULT_INSTACE = {
-  url: env.REACT_APP_DEFAULT_INSTANCE,
-  baseurl: new URL(env.REACT_APP_DEFAULT_INSTANCE).host,
+  url: getDefaultInstace(),
+  baseurl: new URL(getDefaultInstace()).host,
 };
 
 function AuthModal({

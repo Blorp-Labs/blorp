@@ -3,7 +3,7 @@ import { useAuth } from "./auth";
 import _ from "lodash";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
-import { env } from "../env";
+import { env, getDefaultInstace } from "../env";
 
 afterEach(() => {
   const { result } = renderHook(() => useAuth());
@@ -35,7 +35,7 @@ describe("useAuthStore", () => {
 
   test("default instance", () => {
     expect(result.current.getSelectedAccount().instance).toBe(
-      env.REACT_APP_DEFAULT_INSTANCE,
+      getDefaultInstace(),
     );
   });
 
@@ -143,7 +143,7 @@ describe("useAuthStore", () => {
     });
     expect(result.current.accounts).toHaveLength(1);
     expect(result.current.getSelectedAccount()).toEqual({
-      instance: env.REACT_APP_DEFAULT_INSTANCE,
+      instance: getDefaultInstace(),
     });
   });
 

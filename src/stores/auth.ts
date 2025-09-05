@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
-import { env } from "../env";
+import { env, getDefaultInstace } from "../env";
 import z from "zod";
 import { siteSchema } from "../lib/api/adapters/api-blueprint";
 import { v4 as uuid } from "uuid";
@@ -86,7 +86,7 @@ export function parseAccountInfo(account: Account) {
 function getNewAccount(): Account {
   return {
     uuid: uuid(),
-    instance: env.REACT_APP_DEFAULT_INSTANCE,
+    instance: getDefaultInstace(),
   };
 }
 
@@ -125,7 +125,7 @@ export const useAuth = create<AuthStore>()(
       },
       accountIndex: 0,
       addAccount: (patch) => {
-        const instance = patch?.instance ?? env.REACT_APP_DEFAULT_INSTANCE;
+        const instance = patch?.instance ?? getDefaultInstace();
         const accounts = [
           ...get().accounts,
           {
@@ -152,7 +152,7 @@ export const useAuth = create<AuthStore>()(
             set({
               accounts: [
                 {
-                  instance: env.REACT_APP_DEFAULT_INSTANCE,
+                  instance: getDefaultInstace(),
                 },
               ],
               accountIndex: 0,
@@ -172,7 +172,7 @@ export const useAuth = create<AuthStore>()(
           set({
             accounts: [
               {
-                instance: env.REACT_APP_DEFAULT_INSTANCE,
+                instance: getDefaultInstace(),
               },
             ],
             accountIndex: 0,
