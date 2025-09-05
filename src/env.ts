@@ -64,10 +64,11 @@ export const env = createEnv({
       WINDOW_REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
         import.meta.env["REACT_APP_LOCK_TO_DEFAULT_INSTANCE"],
     ),
-    REACT_APP_INSTANCE_SELECTION_MODE:
+    REACT_APP_INSTANCE_SELECTION_MODE: (
       WINDOW_REACT_APP_INSTANCE_SELECTION_MODE ||
       import.meta.env["REACT_APP_INSTANCE_SELECTION_MODE"] ||
-      "default_first",
+      "default_first"
+    ).toLowerCase(),
   },
   onValidationError: (issues) => {
     console.error("❌ Invalid environment variables:", issues);
