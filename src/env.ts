@@ -33,7 +33,7 @@ function parseBoolean(bool?: string) {
   return false;
 }
 
-export const env = createEnv({
+const { REACT_APP_DEFAULT_INSTANCE, ...env } = createEnv({
   //server: {},
   clientPrefix: "REACT_APP_",
   client: {
@@ -76,9 +76,9 @@ export const env = createEnv({
   },
 });
 
-export const getDefaultInstace = _.memoize(() => {
+export const defaultInstance = (() => {
   const instances =
-    env.REACT_APP_DEFAULT_INSTANCE.split(",").map(normalizeInstance);
+    REACT_APP_DEFAULT_INSTANCE.split(",").map(normalizeInstance);
 
   switch (env.REACT_APP_INSTANCE_SELECTION_MODE) {
     case "default_first":
@@ -86,4 +86,6 @@ export const getDefaultInstace = _.memoize(() => {
     case "default_random":
       return _.sample(instances) || FALLBACK_INSTANCE;
   }
-});
+})();
+
+export { env };

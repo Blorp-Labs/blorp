@@ -43,7 +43,7 @@ import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { INSTANCES } from "./adapters/instances-data";
-import { env, getDefaultInstace } from "@/src/env";
+import { env, defaultInstance } from "@/src/env";
 import { isErrorLike, isNotNil } from "../utils";
 import { compressImage } from "../image";
 
@@ -91,9 +91,9 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
         : null;
 
     const getDefaultInstance = () => ({
-      api: apiClient({ instance: getDefaultInstace() }),
+      api: apiClient({ instance: defaultInstance }),
       queryKeyPrefix: [
-        `instance-${getDefaultInstace()}`,
+        `instance-${defaultInstance}`,
         "auth-f",
         "uuid-null",
       ] as unknown[],

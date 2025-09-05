@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
-import { env, getDefaultInstace } from "../env";
+import { env, defaultInstance } from "../env";
 import z from "zod";
 import { siteSchema } from "../lib/api/adapters/api-blueprint";
 import { v4 as uuid } from "uuid";
@@ -86,7 +86,7 @@ export function parseAccountInfo(account: Account) {
 function getNewAccount(): Account {
   return {
     uuid: uuid(),
-    instance: getDefaultInstace(),
+    instance: defaultInstance,
   };
 }
 
@@ -125,7 +125,7 @@ export const useAuth = create<AuthStore>()(
       },
       accountIndex: 0,
       addAccount: (patch) => {
-        const instance = patch?.instance ?? getDefaultInstace();
+        const instance = patch?.instance ?? defaultInstance;
         const accounts = [
           ...get().accounts,
           {
@@ -152,7 +152,7 @@ export const useAuth = create<AuthStore>()(
             set({
               accounts: [
                 {
-                  instance: getDefaultInstace(),
+                  instance: defaultInstance,
                 },
               ],
               accountIndex: 0,
@@ -172,7 +172,7 @@ export const useAuth = create<AuthStore>()(
           set({
             accounts: [
               {
-                instance: getDefaultInstace(),
+                instance: defaultInstance,
               },
             ],
             accountIndex: 0,
