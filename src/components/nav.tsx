@@ -172,7 +172,7 @@ export function UserDropdown() {
               onClick={() => requireAuth()}
               data-testid="user-dropdown-login"
             >
-              Login
+              Login / Signup
               {env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
                 ? ""
                 : " / Change instance"}
@@ -320,7 +320,7 @@ export function UserSidebar() {
               className="flex flex-row items-center gap-2 w-full text-lg"
               data-testid="user-sidebar-login"
             >
-              Login
+              Login / Signup
               {env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
                 ? ""
                 : " / Change instance"}

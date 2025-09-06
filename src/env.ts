@@ -33,7 +33,7 @@ function parseBoolean(bool?: string) {
   return false;
 }
 
-const { REACT_APP_DEFAULT_INSTANCE, ...env } = createEnv({
+const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
   //server: {},
   clientPrefix: "REACT_APP_",
   client: {
@@ -76,16 +76,22 @@ const { REACT_APP_DEFAULT_INSTANCE, ...env } = createEnv({
   },
 });
 
-export const defaultInstance = (() => {
+export const defaultInstances = (() => {
   const instances =
     REACT_APP_DEFAULT_INSTANCE.split(",").map(normalizeInstance);
 
-  switch (env.REACT_APP_INSTANCE_SELECTION_MODE) {
-    case "default_first":
-      return instances[0] || FALLBACK_INSTANCE;
+  switch (config.REACT_APP_INSTANCE_SELECTION_MODE) {
     case "default_random":
-      return _.sample(instances) || FALLBACK_INSTANCE;
+      return _.shuffle(instances);
+    default:
+      return instances;
   }
 })();
 
-export { env };
+const defaultInstance = defaultInstances[0] || FALLBACK_INSTANCE;
+
+export const env = {
+  ...config,
+  defaultInstances,
+  defaultInstance,
+};

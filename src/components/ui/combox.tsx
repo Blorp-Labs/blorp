@@ -42,7 +42,9 @@ export function Combobox<V extends string>({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{trigger({ isOpen: open })}</PopoverTrigger>
+      <PopoverTrigger asChild type="button">
+        {trigger({ isOpen: open })}
+      </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align={align}>
         <Command>
           <CommandInput

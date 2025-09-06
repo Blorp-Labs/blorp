@@ -16,6 +16,8 @@ const PIE_FED_INSTANCES = [
   baseUrl: new URL(url).host,
   score: -1,
   software: "piefed",
+  desc: undefined,
+  icon: undefined,
 }));
 
 const LEMMY_INSTANCES = ["https://lemmy.world"].map((url) => ({
@@ -23,6 +25,8 @@ const LEMMY_INSTANCES = ["https://lemmy.world"].map((url) => ({
   baseUrl: new URL(url).host,
   score: -1,
   software: "lemmy",
+  desc: undefined,
+  icon: undefined,
 }));
 
 export const INSTANCES = [...PIE_FED_INSTANCES, ...LEMMY_INSTANCES];

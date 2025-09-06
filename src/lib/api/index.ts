@@ -43,7 +43,7 @@ import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { INSTANCES } from "./adapters/instances-data";
-import { env, defaultInstance } from "@/src/env";
+import { env } from "@/src/env";
 import { isErrorLike, isNotNil } from "../utils";
 import { compressImage } from "../image";
 
@@ -91,9 +91,9 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
         : null;
 
     const getDefaultInstance = () => ({
-      api: apiClient({ instance: defaultInstance }),
+      api: apiClient({ instance: env.defaultInstance }),
       queryKeyPrefix: [
-        `instance-${defaultInstance}`,
+        `instance-${env.defaultInstance}`,
         "auth-f",
         "uuid-null",
       ] as unknown[],
@@ -1666,6 +1666,8 @@ export function useInstances() {
             z.object({
               name: z.string(),
               baseurl: z.string(),
+              desc: z.string().optional(),
+              icon: z.string().optional(),
               url: z.string(),
               score: z.number(),
               open: z.boolean().optional(),
@@ -1689,6 +1691,8 @@ export function useInstances() {
                 url: item.url,
                 score: item.score,
                 software: "lemmy",
+                desc: item.desc,
+                icon: item.icon,
               })),
             ...INSTANCES,
           ],
