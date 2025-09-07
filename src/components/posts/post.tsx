@@ -197,7 +197,8 @@ export function FeedPostCard(props: PostProps) {
             ? true
             : props.detailView
         }
-        isMod={myApId ? props.modApIds?.includes(myApId) : false}
+        canMod={myApId ? props.modApIds?.includes(myApId) : false}
+        isMod={props.modApIds?.includes(post.creatorApId)}
       />
 
       {props.detailView && post.crossPosts && post.crossPosts.length > 0 && (

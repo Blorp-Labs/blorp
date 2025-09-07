@@ -37,11 +37,11 @@ import { Badge } from "../ui/badge";
 
 function usePostActions({
   post,
-  isMod,
+  canMod,
   tag,
 }: {
   post: Schemas.Post;
-  isMod?: boolean;
+  canMod?: boolean;
   tag?: string;
 }): ActionMenuProps["actions"] {
   const [alrt] = useIonAlert();
@@ -65,7 +65,7 @@ function usePostActions({
   const saved = post.optimisticSaved ?? post.saved;
 
   return [
-    ...(isMod
+    ...(canMod
       ? [
           {
             text: "Moderation",
@@ -191,6 +191,7 @@ export function PostByline({
   showCreator,
   onNavigate,
   isMod = false,
+  canMod = false,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -198,6 +199,7 @@ export function PostByline({
   showCreator?: boolean;
   onNavigate?: () => void;
   isMod?: boolean;
+  canMod?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -220,7 +222,7 @@ export function PostByline({
 
   const saved = post.optimisticSaved ?? post.saved;
 
-  const actions = usePostActions({ post, isMod, tag });
+  const actions = usePostActions({ post, canMod, tag });
 
   const [communityName, communityHost] = post.communitySlug.split("@");
   const [creatorName, creatorHost] = post.creatorSlug.split("@");
