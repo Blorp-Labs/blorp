@@ -78,7 +78,10 @@ function InstanceSelect({
   instance: SelectedInstance;
   setInstance: (val: string) => void;
 }) {
-  if (!env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE) {
+  if (
+    !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
+    env.defaultInstances.length <= 1
+  ) {
     return null;
   }
 
@@ -555,7 +558,7 @@ function SignupForm({
   return (
     <div className="h-full overflow-y-auto ion-content-scroll-host p-4">
       {site.data?.registrationMode === "Closed" && (
-        <div className="bg-destructive/20 p-1 rounded-md text-center mb-4">
+        <div className="bg-destructive p-1 rounded-md text-center mb-4 sticky top-0">
           This instance is not currently accepting registrations
         </div>
       )}
