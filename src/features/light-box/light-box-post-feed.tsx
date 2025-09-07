@@ -395,8 +395,12 @@ export default function LightBoxPostFeed() {
   useHideTabBarOnMount();
 
   const linkCtx = useLinkContext();
-  const { communityName } = useParams(
-    `${linkCtx.root}c/:communityName/lightbox`,
+  const { communityName: communityNameEncoded } = useParams(
+    `${linkCtx.root}c/:communityName`,
+  );
+  const communityName = useMemo(
+    () => decodeURIComponent(communityNameEncoded),
+    [communityNameEncoded],
   );
 
   const [encodedApId, setEncodedApId] = useUrlSearchState(

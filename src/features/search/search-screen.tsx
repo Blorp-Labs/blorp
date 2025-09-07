@@ -148,7 +148,13 @@ export default function SearchFeed({
   const media = useMedia();
 
   const linkCtx = useLinkContext();
-  const { communityName } = useParams(`${linkCtx.root}c/:communityName/s`);
+  const { communityName: communityNameEncoded } = useParams(
+    `${linkCtx.root}c/:communityName`,
+  );
+  const communityName = useMemo(
+    () => decodeURIComponent(communityNameEncoded),
+    [communityNameEncoded],
+  );
 
   const [searchInput, setSearchInput] = useUrlSearchState("q", "", z.string());
   const [search, setSearch] = useState(searchInput);

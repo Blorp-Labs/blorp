@@ -64,7 +64,13 @@ export default function CommunityFeed() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const { communityName } = useParams(`${linkCtx.root}c/:communityName`);
+  const { communityName: communityNameEncoded } = useParams(
+    `${linkCtx.root}c/:communityName`,
+  );
+  const communityName = useMemo(
+    () => decodeURIComponent(communityNameEncoded),
+    [communityNameEncoded],
+  );
 
   const postSort = useFiltersStore((s) => s.postSort);
   const posts = usePosts({

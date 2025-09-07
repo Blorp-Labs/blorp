@@ -1,5 +1,5 @@
 import { SmallScreenSidebar } from "@/src/components/communities/community-sidebar";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useCommunity } from "../lib/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
@@ -20,8 +20,12 @@ export default function CommunityFeed() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
-  const { communityName } = useParams(
-    `${linkCtx.root}c/:communityName/sidebar`,
+  const { communityName: communityNameEncoded } = useParams(
+    `${linkCtx.root}c/:communityName`,
+  );
+  const communityName = useMemo(
+    () => decodeURIComponent(communityNameEncoded),
+    [communityNameEncoded],
   );
 
   const community = useCommunity({
