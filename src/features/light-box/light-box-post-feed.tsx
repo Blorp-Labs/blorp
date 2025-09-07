@@ -396,10 +396,13 @@ export default function LightBoxPostFeed() {
 
   const linkCtx = useLinkContext();
   const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName`,
+    `${linkCtx.root}c/:communityName/lightbox`,
   );
   const communityName = useMemo(
-    () => decodeURIComponent(communityNameEncoded),
+    () =>
+      communityNameEncoded
+        ? decodeURIComponent(communityNameEncoded)
+        : undefined,
     [communityNameEncoded],
   );
 

@@ -149,10 +149,13 @@ export default function SearchFeed({
 
   const linkCtx = useLinkContext();
   const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName`,
+    `${linkCtx.root}c/:communityName/s`,
   );
   const communityName = useMemo(
-    () => decodeURIComponent(communityNameEncoded),
+    () =>
+      communityNameEncoded
+        ? decodeURIComponent(communityNameEncoded)
+        : undefined,
     [communityNameEncoded],
   );
 

@@ -21,7 +21,7 @@ export default function CommunityFeed() {
 
   const linkCtx = useLinkContext();
   const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName`,
+    `${linkCtx.root}c/:communityName/sidebar`,
   );
   const communityName = useMemo(
     () => decodeURIComponent(communityNameEncoded),
