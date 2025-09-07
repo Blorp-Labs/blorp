@@ -54,8 +54,8 @@ export const pieFedCommunitySchema = z.object({
   //banned: z.boolean(),
   //deleted: z.boolean(),
   //hidden: z.boolean(),
-  icon: z.string().optional(),
-  banner: z.string().optional(),
+  icon: z.string().nullable().optional(),
+  banner: z.string().nullable().optional(),
   id: z.number(),
   //instance_id: z.number(),
   //local: z.boolean(),
@@ -65,7 +65,7 @@ export const pieFedCommunitySchema = z.object({
   //removed: z.boolean(),
   //restricted_to_mods: z.boolean(),
   //title: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   //updated: z.string().optional(),
 });
 
@@ -80,7 +80,7 @@ export const pieFedPostCountsSchema = z.object({
 });
 
 export const pieFedPersonSchema = z.object({
-  about: z.string().optional(),
+  about: z.string().nullable().optional(),
   actor_id: z.string(),
   avatar: z.string().nullable().optional(),
   //banner: z.string().nullable().optional(),
@@ -106,7 +106,7 @@ const pieFedPersonViewSchema = z.object({
 
 export const pieFedPostSchema = z.object({
   ap_id: z.string(),
-  body: z.string().optional(),
+  body: z.string().nullable().optional(),
   //community_id: z.number(),
   deleted: z.boolean(),
   //edited_at: z.string().optional(),
@@ -119,9 +119,9 @@ export const pieFedPostSchema = z.object({
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
   //sticky: z.boolean(),
-  thumbnail_url: z.string().optional(),
+  thumbnail_url: z.string().nullable().optional(),
   title: z.string(),
-  url: z.string().optional(),
+  url: z.string().nullable().optional(),
   //user_id: z.number(),
 });
 
@@ -188,10 +188,10 @@ export const pieFedSiteDetailsSchema = z.object({
   //all_languages: z.array(pieFedLanguageSchema),
   description: z.string().nullable().optional(),
   enable_downvotes: z.boolean(),
-  icon: z.string().optional(),
+  icon: z.string().nullable().optional(),
   name: z.string(),
   registration_mode: z.enum(["Closed", "RequireApplication", "Open"]),
-  sidebar: z.string().optional(),
+  sidebar: z.string().nullable().optional(),
   user_count: z.number(),
 });
 
@@ -302,7 +302,7 @@ const pieFedCommentViewSchema = z.object({
   post: pieFedPostSchema,
   //saved: z.boolean(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
-  replies: z.array(pieFedCommentChildSchema).optional(),
+  replies: z.array(pieFedCommentChildSchema).nullable().optional(),
 });
 
 export const pieFedCommentReplySchema = z.object({
@@ -749,15 +749,18 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
               .object({
                 comment: z.object({ id: z.number() }),
               })
+              .nullable()
               .optional(),
             post: z.object({ post: z.object({ id: z.number() }) }).optional(),
             community: z
               .object({
                 community: z.object({ id: z.number() }),
               })
+              .nullable()
               .optional(),
             person: z
               .object({ person: z.object({ id: z.number() }) })
+              .nullable()
               .optional(),
           })
           .parse(json);
@@ -1377,8 +1380,8 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
     try {
       const { posts, comments, next_page } = z
         .object({
-          posts: z.array(pieFedPostViewSchema).optional(),
-          comments: z.array(pieFedCommentViewSchema).optional(),
+          posts: z.array(pieFedPostViewSchema).nullable().optional(),
+          comments: z.array(pieFedCommentViewSchema).nullable().optional(),
           next_page: z.string().nullable().optional(),
         })
         .parse(json);
@@ -1698,9 +1701,9 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
     try {
       const { post, community, person } = z
         .object({
-          post: pieFedPostViewSchema.optional(),
-          community: pieFedCommentViewSchema.optional(),
-          person: pieFedPersonViewSchema.optional(),
+          post: pieFedPostViewSchema.nullable().optional(),
+          community: pieFedCommentViewSchema.nullable().optional(),
+          person: pieFedPersonViewSchema.nullable().optional(),
         })
         .parse(json);
 
