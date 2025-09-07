@@ -42,9 +42,8 @@ import {
 import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
-import { INSTANCES } from "./adapters/instances-data";
 import { env } from "@/src/env";
-import { isErrorLike, isNotNil } from "../utils";
+import { isErrorLike, isNotNil, normalizeInstance } from "../utils";
 import { compressImage } from "../image";
 
 enum Errors2 {
@@ -1655,7 +1654,7 @@ export function useInstances() {
     queryKey: ["getInstances"],
     queryFn: async ({ signal }) => {
       const res = await fetch(
-        "https://data.lemmyverse.net/data/instance.full.json",
+        "https://crawler.blorpblorp.xyz/v1/instances.json",
         { signal },
       );
       const json = await res.json();
@@ -1664,39 +1663,26 @@ export function useInstances() {
         const lemmy = z
           .array(
             z.object({
-              name: z.string(),
-              baseurl: z.string(),
-              desc: z.string().optional(),
-              icon: z.string().optional(),
               url: z.string(),
-              score: z.number(),
-              open: z.boolean().optional(),
-              private: z.boolean().optional(),
-              counts: z.object({
-                users_active_month: z.number(),
-                posts: z.number(),
-              }),
-              tags: z.array(z.string()),
-              nsfw: z.boolean().optional(),
+              description: z.string().optional(),
+              icon: z.string().optional(),
+              software: z.enum(["lemmy", "piefed"]),
+              registrationMode: z.string(),
             }),
           )
           .parse(json);
 
-        return _.uniqBy(
-          [
-            ...lemmy
-              .filter((item) => item.private !== true)
-              .map((item) => ({
-                baseUrl: item.baseurl,
-                url: item.url,
-                score: item.score,
-                software: "lemmy",
-                desc: item.desc,
-                icon: item.icon,
-              })),
-            ...INSTANCES,
-          ],
-          ({ url }) => url,
+        return _.shuffle(
+          _.uniqBy(
+            lemmy.map((item) => ({
+              host: new URL(item.url).host,
+              url: normalizeInstance(item.url),
+              software: item.software as typeof item.software | undefined,
+              description: item.description,
+              icon: item.icon,
+            })),
+            ({ url }) => url,
+          ),
         );
       } catch {
         return undefined;

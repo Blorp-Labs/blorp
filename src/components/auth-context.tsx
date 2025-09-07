@@ -246,28 +246,38 @@ function InstanceSelectionPage({
     if (site.data) {
       try {
         const url = normalizeInstance(site.data.instance);
-        const baseUrl = new URL(url).host;
+        const host = new URL(url).host;
         output.push({
-          baseUrl,
+          host,
           url,
-          score: Infinity,
-          software: "",
-          desc: undefined,
+          software: undefined,
+          description: undefined,
           icon: undefined,
         });
       } catch {}
     }
-    return _.uniqBy(output, ({ baseUrl }) => baseUrl).filter(
+    return _.uniqBy(output, ({ host }) => host).filter(
       (item) => !item.software || item.software === software,
     );
   }, [instances.data, site.data, software]);
+
+  const counts = useMemo(() => {
+    const lemmy = instances.data?.reduce(
+      (acc, crnt) => acc + (crnt.software === "lemmy" ? 1 : 0),
+      0,
+    );
+    const piefed = instances.data?.reduce(
+      (acc, crnt) => acc + (crnt.software === "piefed" ? 1 : 0),
+      0,
+    );
+    return { lemmy, piefed };
+  }, [instances.data]);
 
   const sortedInstances =
     search && data
       ? fuzzysort
           .go(search, data, {
             keys: ["url", "name"],
-            scoreFn: (r) => r.score * _.clamp(r.obj.score, 1, 10),
           })
           .map((r) => r.obj)
       : data;
@@ -301,8 +311,12 @@ function InstanceSelectionPage({
                 val && setSoftware(val as "lemmy" | "piefed")
               }
             >
-              <ToggleGroupItem value="lemmy">Lemmy</ToggleGroupItem>
-              <ToggleGroupItem value="piefed">PieFed</ToggleGroupItem>
+              <ToggleGroupItem value="lemmy">
+                Lemmy ({counts.lemmy})
+              </ToggleGroupItem>
+              <ToggleGroupItem value="piefed">
+                PieFed ({counts.piefed})
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>,
         ]}
@@ -312,15 +326,17 @@ function InstanceSelectionPage({
             onClick={() => {
               setInstance(i.url);
             }}
-            className="py-2.5 text-lg border-b-[.5px] w-full text-start flex gap-3"
+            className="py-2.5 border-b-[.5px] w-full text-start flex gap-3"
           >
             <Avatar>
               <AvatarImage src={i.icon} />
-              <AvatarFallback></AvatarFallback>
+              <AvatarFallback>{i.host[0]}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <span>{i.baseUrl}</span>
-              <span className="text-sm text-muted-foreground">{i.desc}</span>
+              <span>{i.host}</span>
+              <span className="text-sm text-muted-foreground">
+                {i.description}
+              </span>
             </div>
           </button>
         )}
