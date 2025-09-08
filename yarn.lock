@@ -6407,6 +6407,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/markdown-it-footnote@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@types/markdown-it-footnote@npm:3.0.4"
+  dependencies:
+    "@types/markdown-it": "npm:*"
+  checksum: 10c0/7e7d0f339cc868c4d94299efc4c60a432ac216b92270298a1e61cd0c77e80221df60ab461dce3b44f3fead01891a4ab1cd4bc61f37d7cb59044205631ee35de1
+  languageName: node
+  linkType: hard
+
 "@types/markdown-it@npm:*, @types/markdown-it@npm:14.1.2, @types/markdown-it@npm:^14.0.0":
   version: 14.1.2
   resolution: "@types/markdown-it@npm:14.1.2"
@@ -11158,6 +11167,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.13"
     "@types/markdown-it": "npm:14.1.2"
     "@types/markdown-it-container": "npm:^2.0.10"
+    "@types/markdown-it-footnote": "npm:^3.0.4"
     "@types/node": "npm:^22.13.0"
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"
@@ -11197,6 +11207,7 @@ __metadata:
     lucide-react: "npm:^0.484.0"
     markdown-it: "npm:^14.1.0"
     markdown-it-container: "npm:^4.0.0"
+    markdown-it-footnote: "npm:^4.0.0"
     oxlint: "npm:^1.11.1"
     p-retry: "npm:^6.2.1"
     p-timeout: "npm:^6.1.4"
@@ -11868,6 +11879,13 @@ __metadata:
   version: 4.0.0
   resolution: "markdown-it-container@npm:4.0.0"
   checksum: 10c0/768390a6e2c182996b4d0be8dd1a7279d266ca2f29936dd8265ef0954a97606bc3514802cc3576db59e119e241e61924a4a1e601a91480be1c12bef5e28797ae
+  languageName: node
+  linkType: hard
+
+"markdown-it-footnote@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "markdown-it-footnote@npm:4.0.0"
+  checksum: 10c0/47aa807b143af211d7eca376c724b05e939e8b5960f6e287c63eca7f121be7ac697ff5601d5b7c89cbde7a32713a66b2a6f375251fad1fe989bd05d07f80e4cd
   languageName: node
   linkType: hard
 

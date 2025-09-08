@@ -18,6 +18,7 @@ import { cn } from "@/src/lib/utils";
 import DOMPurify from "dompurify";
 import { createContext } from "react";
 import { RoutePath } from "@/src/routing/routes";
+import footnotePlugin from "markdown-it-footnote";
 
 const COMMUNITY_BANG =
   /^!([A-Za-z0-9_-]+)@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})$/;
@@ -134,6 +135,12 @@ const options: (
             {domToReact(domNode.children as DOMNode[], options(root))}
           </SafeRouterLink>
         );
+      } else if (href.startsWith("#")) {
+        return (
+          <SafeAnchor href={href}>
+            {domToReact(domNode.children as DOMNode[], options(root))}
+          </SafeAnchor>
+        );
       } else {
         return (
           <SafeAnchor href={href} target="_blank" rel="noreferrer noopener">
@@ -169,6 +176,8 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
     linkify: true,
     html: true,
   });
+
+  md.use(footnotePlugin);
 
   // Extend linkify for lemmy links starting with "!"
   md.linkify.add("!", {
