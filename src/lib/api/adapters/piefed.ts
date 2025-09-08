@@ -300,7 +300,7 @@ const pieFedCommentViewSchema = z.object({
   //creator_is_moderator: z.boolean(),
   my_vote: z.number(),
   post: pieFedPostSchema,
-  //saved: z.boolean(),
+  saved: z.boolean().nullable().optional(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
   replies: z.array(pieFedCommentChildSchema).nullable().optional(),
 });
@@ -528,6 +528,7 @@ function convertComment(
     postTitle: post.title,
     myVote: commentView.my_vote ?? null,
     childCount: counts.child_count,
+    saved: commentView.saved ?? false,
   };
 }
 
@@ -1044,10 +1045,7 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
     }
   }
 
-  async savePost(form: {
-    postId: number;
-    save: boolean;
-  }): Promise<Schemas.Post> {
+  async savePost(form: Forms.SavePost): Promise<Schemas.Post> {
     const json = await this.put("/post/save", {
       post_id: form.postId,
       save: form.save,
@@ -1076,9 +1074,15 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
     try {
       const { data: sort } = commentSortSchema.safeParse(form.sort);
 
-      const post_id = form.postApId
-        ? (await this.resolveObjectId(form.postApId)).post_id
-        : undefined;
+      let post_id: number | undefined = undefined;
+
+      if (form.postApId) {
+        post_id = (await this.resolveObjectId(form.postApId)).post_id;
+
+        if (_.isNil(post_id)) {
+          throw new Error("could not find post");
+        }
+      }
 
       if (form.savedOnly) {
         const json = await this.get(
@@ -1166,6 +1170,22 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
         .object({ comment_view: pieFedCommentViewSchema })
         .parse(json);
 
+      return convertComment(data.comment_view);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async saveComment(form: Forms.SaveComment): Promise<Schemas.Comment> {
+    const json = await this.put("/comment/save", {
+      comment_id: form.commentId,
+      save: form.save,
+    });
+    try {
+      const data = z
+        .object({ comment_view: pieFedCommentViewSchema })
+        .parse(json);
       return convertComment(data.comment_view);
     } catch (err) {
       console.log(err);

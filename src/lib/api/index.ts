@@ -997,6 +997,54 @@ export function useLikeComment() {
   });
 }
 
+export function useSaveComment(path?: string) {
+  const queryClient = useQueryClient();
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  const commentsQueryKey = useCommentsKey()({
+    savedOnly: true,
+    maxDepth: undefined,
+    sort: "New",
+  });
+
+  return useMutation({
+    mutationFn: async (form: Forms.SaveComment) =>
+      (await api).saveComment(form),
+    onMutate: ({ save }) => {
+      if (path) {
+        patchComment(path, getCachePrefixer(), () => ({
+          optimisticSaved: save,
+        }));
+      }
+    },
+    onSuccess: (post) => {
+      if (path) {
+        patchComment(path, getCachePrefixer(), () => ({
+          ...post,
+          optimisticSaved: undefined,
+        }));
+      }
+      queryClient.invalidateQueries({
+        queryKey: commentsQueryKey,
+      });
+    },
+    onError: (err, { save }) => {
+      if (path) {
+        patchComment(path, getCachePrefixer(), () => ({
+          optimisticSaved: undefined,
+        }));
+      }
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${save ? "save" : "unsave"} comment`);
+      }
+    },
+  });
+}
+
 interface CreateComment extends Forms.CreateComment {
   parentPath?: string;
   queryKeyParentId?: number;
@@ -1052,6 +1100,7 @@ export function useCreateComment() {
         postTitle: "",
         myVote: 1,
         childCount: 0,
+        saved: false,
       };
 
       cacheComments(getCachePrefixer(), [newComment]);

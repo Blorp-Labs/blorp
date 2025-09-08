@@ -234,6 +234,7 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     postTitle: post.name,
     myVote: commentView.my_vote ?? null,
     childCount: counts.child_count,
+    saved: commentView.saved,
   };
 }
 function convertPrivateMessage(
@@ -657,14 +658,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp, "lemmy"> {
   }
 
   async getComments(form: Forms.GetComments, options: RequestOptions) {
-    if (!form.postApId) {
-      throw new Error("postApId required");
-    }
+    let post_id: number | undefined = undefined;
 
-    const { post_id } = await this.resolveObjectId(form.postApId);
+    if (form.postApId) {
+      post_id = (await this.resolveObjectId(form.postApId)).post_id;
 
-    if (_.isNil(post_id)) {
-      throw new Error("could not find post");
+      if (_.isNil(post_id)) {
+        throw new Error("could not find post");
+      }
     }
 
     const { data: sort } = commentSortSchema.safeParse(form.sort);
@@ -745,6 +746,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp, "lemmy"> {
     const { comment_view } = await this.client.likeComment({
       comment_id: id,
       score,
+    });
+    return convertComment(comment_view);
+  }
+
+  async saveComment(form: Forms.SaveComment) {
+    const { comment_view } = await this.client.saveComment({
+      comment_id: form.commentId,
+      save: form.save,
     });
     return convertComment(comment_view);
   }

@@ -12,7 +12,11 @@ import {
 } from "../comments/comment-reply-modal";
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
-import { useBlockPerson, useDeleteComment } from "@/src/lib/api/index";
+import {
+  useBlockPerson,
+  useDeleteComment,
+  useSaveComment,
+} from "@/src/lib/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "./post-report";
 import { useRequireAuth } from "../auth-context";
@@ -49,6 +53,7 @@ import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
+import { FaBookmark } from "react-icons/fa6";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -219,6 +224,8 @@ export function PostComment({
       : undefined,
   );
 
+  const saveComment = useSaveComment(commentView?.path);
+
   const isMyComment = commentView?.creatorId === myUserId;
 
   const sorted = _.entries(_.omit(rest, ["sort", "imediateChildren"])).sort(
@@ -299,6 +306,8 @@ export function PostComment({
         },
       )
     : null;
+
+  const saved = commentView?.optimisticSaved ?? commentView?.saved;
 
   const content = (
     <div
@@ -424,6 +433,15 @@ export function PostComment({
                 leftHandedMode && "flex-row-reverse",
               )}
             >
+              {saved && (
+                <FaBookmark
+                  className={cn(
+                    "text-lg text-brand",
+                    leftHandedMode ? "ml-2" : "mr-2",
+                  )}
+                />
+              )}
+
               <ActionMenu
                 actions={[
                   ...(!isMyComment
@@ -515,6 +533,16 @@ export function PostComment({
                         },
                       ]
                     : []),
+                  {
+                    text: saved ? "Unsave comment" : "Save comment",
+                    onClick: () =>
+                      requireAuth().then(() => {
+                        saveComment.mutateAsync({
+                          commentId: commentView.id,
+                          save: !saved,
+                        });
+                      }),
+                  },
                   ...(isMyComment
                     ? [
                         {

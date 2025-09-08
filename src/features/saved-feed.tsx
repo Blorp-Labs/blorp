@@ -87,6 +87,7 @@ export default function SavedFeed() {
   const comments = useComments({
     savedOnly: true,
     maxDepth: undefined,
+    sort: "New",
   });
 
   const postSort = useFiltersStore((s) => s.postSort);

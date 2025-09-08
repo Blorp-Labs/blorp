@@ -142,6 +142,8 @@ export const commentSchema = z.object({
   optimisticDeleted: z.boolean().optional(),
   postTitle: z.string(),
   childCount: z.number(),
+  saved: z.boolean(),
+  optimisticSaved: z.boolean().optional(),
 });
 export const privateMessageSchema = z.object({
   createdAt: z.string(),
@@ -335,6 +337,11 @@ export namespace Forms {
     parentId?: number;
   };
 
+  export type SaveComment = {
+    commentId: number;
+    save: boolean;
+  };
+
   export type LikeComment = {
     id: number;
     postId: number;
@@ -483,10 +490,7 @@ export abstract class ApiBlueprint<C, S extends string> {
     }
   >;
 
-  abstract savePost(form: {
-    postId: number;
-    save: boolean;
-  }): Promise<Schemas.Post>;
+  abstract savePost(form: Forms.SavePost): Promise<Schemas.Post>;
 
   abstract likePost(form: Forms.LikePost): Promise<Schemas.Post>;
 
@@ -557,6 +561,8 @@ export abstract class ApiBlueprint<C, S extends string> {
   abstract createComment(form: Forms.CreateComment): Promise<Schemas.Comment>;
 
   abstract likeComment(form: Forms.LikeComment): Promise<Schemas.Comment>;
+
+  abstract saveComment(form: Forms.SaveComment): Promise<Schemas.Comment>;
 
   abstract deleteComment(form: Forms.DeleteComment): Promise<Schemas.Comment>;
 
