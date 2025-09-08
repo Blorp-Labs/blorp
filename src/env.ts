@@ -10,6 +10,52 @@ function getDockerInjectedEnv<K extends string>(key: K) {
   return _.isString(value) ? value : null;
 }
 
+/**
+ * deploy.blorpblorp.xyz is a special tool that
+ * let's you generate deployment configs. This
+ * let's you preview the injected config, but
+ * we want to be careful that this can't get abused.
+ */
+const runtimeInjectedEnv = (() => {
+  const search = new URLSearchParams(location.search);
+  const REACT_APP_NAME = search.get("REACT_APP_NAME");
+  const REACT_APP_DEFAULT_INSTANCE = search.get("REACT_APP_DEFAULT_INSTANCE");
+  const REACT_APP_LOCK_TO_DEFAULT_INSTANCE = search.get(
+    "REACT_APP_LOCK_TO_DEFAULT_INSTANCE",
+  );
+  const REACT_APP_INSTANCE_SELECTION_MODE = search.get(
+    "REACT_APP_INSTANCE_SELECTION_MODE",
+  );
+  if (
+    location.origin.includes("https://blorpblorp.xyz") &&
+    (REACT_APP_NAME ||
+      REACT_APP_DEFAULT_INSTANCE ||
+      REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
+      REACT_APP_INSTANCE_SELECTION_MODE)
+  ) {
+    const confirmed = confirm(
+      [
+        "Preview the following:",
+        `REACT_APP_NAME=${REACT_APP_NAME}`,
+        `REACT_APP_DEFAULT_INSTANCE=${REACT_APP_DEFAULT_INSTANCE}`,
+        `REACT_APP_LOCK_TO_DEFAULT_INSTANCE=${REACT_APP_LOCK_TO_DEFAULT_INSTANCE}`,
+        `REACT_APP_INSTANCE_SELECTION_MODE=${REACT_APP_INSTANCE_SELECTION_MODE}`,
+        "",
+        "IF YOU DON'T RECOGNIZE THIS, YOU SHOULD CLICK CANCEL",
+      ].join("\n"),
+    );
+    if (confirmed) {
+      return {
+        REACT_APP_NAME,
+        REACT_APP_DEFAULT_INSTANCE,
+        REACT_APP_LOCK_TO_DEFAULT_INSTANCE,
+        REACT_APP_INSTANCE_SELECTION_MODE,
+      };
+    }
+  }
+  return {};
+})();
+
 const WINDOW_REACT_APP_DEFAULT_INSTANCE = getDockerInjectedEnv(
   "REACT_APP_DEFAULT_INSTANCE",
 );
@@ -55,16 +101,22 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
   },
   runtimeEnv: {
     REACT_APP_NAME:
-      WINDOW_REACT_APP_NAME || import.meta.env["REACT_APP_NAME"] || "Blorp",
+      runtimeInjectedEnv.REACT_APP_NAME ||
+      WINDOW_REACT_APP_NAME ||
+      import.meta.env["REACT_APP_NAME"] ||
+      "Blorp",
     REACT_APP_DEFAULT_INSTANCE:
+      runtimeInjectedEnv.REACT_APP_DEFAULT_INSTANCE ||
       WINDOW_REACT_APP_DEFAULT_INSTANCE ||
       import.meta.env["REACT_APP_DEFAULT_INSTANCE"] ||
       FALLBACK_INSTANCE,
     REACT_APP_LOCK_TO_DEFAULT_INSTANCE: parseBoolean(
-      WINDOW_REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
+      runtimeInjectedEnv.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
+        WINDOW_REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
         import.meta.env["REACT_APP_LOCK_TO_DEFAULT_INSTANCE"],
     ),
     REACT_APP_INSTANCE_SELECTION_MODE: (
+      runtimeInjectedEnv.REACT_APP_INSTANCE_SELECTION_MODE ||
       WINDOW_REACT_APP_INSTANCE_SELECTION_MODE ||
       import.meta.env["REACT_APP_INSTANCE_SELECTION_MODE"] ||
       "default_first"
