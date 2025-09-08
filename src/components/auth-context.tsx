@@ -43,7 +43,7 @@ import { Textarea } from "./ui/textarea";
 import { MarkdownRenderer } from "./markdown/renderer";
 import { env } from "../env";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { normalizeInstance } from "../lib/utils";
+import { cn, normalizeInstance } from "../lib/utils";
 import { ToolbarButtons } from "./toolbar/toolbar-buttons";
 import {
   Select,
@@ -53,6 +53,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Software } from "../lib/api/adapters/api-blueprint";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
@@ -242,7 +243,9 @@ function InstanceSelectionPage({
     instance: searchUrl ?? instance.baseurl,
   });
 
-  const [software, setSoftware] = useState<"lemmy" | "piefed">("lemmy");
+  const [software, setSoftware] = useState<Software>(
+    _.sample([Software.LEMMY, Software.PIEFED]),
+  );
 
   const data = useMemo(() => {
     const output = [...(instances.data ?? [])];
@@ -286,64 +289,58 @@ function InstanceSelectionPage({
       : data;
 
   return (
-    <div className="flex flex-col h-full">
-      <VirtualList
-        className="px-4"
-        estimatedItemSize={50}
-        stickyHeaderIndices={[0]}
-        data={sortedInstances}
-        header={[
-          <div
-            className="bg-background py-3 border-b-[.5px]"
-            key="search-instance"
-          >
-            <Input
-              placeholder="Search for your instance OR enter one thats not in the list"
-              defaultValue={search}
-              onChange={(e) => setSearch(e.target.value)}
-              autoCapitalize="none"
-              autoCorrect="off"
-              className="mb-3"
-            />
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              value={software}
-              onValueChange={(val) =>
-                val && setSoftware(val as "lemmy" | "piefed")
-              }
-            >
-              <ToggleGroupItem value="lemmy">
-                Lemmy ({counts.lemmy})
-              </ToggleGroupItem>
-              <ToggleGroupItem value="piefed">
-                PieFed ({counts.piefed})
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>,
-        ]}
-        renderItem={({ item: i }) => (
-          <button
-            key={i.url}
-            onClick={() => {
-              setInstance(i.url);
-            }}
-            className="py-2.5 border-b-[.5px] w-full text-start flex gap-3"
-          >
-            <Avatar>
-              <AvatarImage src={i.icon} />
-              <AvatarFallback>{i.host[0]}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span>{i.host}</span>
-              <span className="text-sm text-muted-foreground">
-                {i.description}
-              </span>
-            </div>
-          </button>
-        )}
-      />
+    <div
+      className="px-4 pb-4 overflow-y-auto ion-content-scroll-host h-full"
+      key={software}
+    >
+      <div className="bg-background py-3 border-b-[.5px] sticky top-0 z-10">
+        <Input
+          placeholder="Search for your instance OR enter one thats not in the list"
+          defaultValue={search}
+          onChange={(e) => setSearch(e.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
+          className="mb-3"
+        />
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          value={software}
+          onValueChange={(val) => val && setSoftware(val as Software)}
+        >
+          <ToggleGroupItem value="lemmy">
+            Lemmy ({counts.lemmy})
+          </ToggleGroupItem>
+          <ToggleGroupItem value="piefed">
+            PieFed ({counts.piefed})
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {sortedInstances.map((i, index) => (
+        <button
+          key={i.url}
+          onClick={() => {
+            setInstance(i.url);
+          }}
+          className={cn(
+            "py-2.5 w-full text-start flex gap-3 border-b-[.5px]",
+            index === sortedInstances.length - 1 && "border-b-0 pb-0",
+          )}
+        >
+          <Avatar>
+            <AvatarImage src={i.icon} />
+            <AvatarFallback>{i.host[0]}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span>{i.host}</span>
+            <span className="text-sm text-muted-foreground">
+              {i.description}
+            </span>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
@@ -379,24 +376,34 @@ function LoginForm({
     instance,
   });
 
-  const submitLogin = (e?: FormEvent) => {
-    e?.preventDefault();
+  const resetForm = () => {
+    setUsername("");
+    setPassword("");
+    setMfaToken("");
+  };
+
+  const mutateLogin = (newMfaToken = mfaToken) => {
     login
       .mutateAsync({
         username: userName,
         password: password,
-        mfaCode: mfaToken,
+        mfaCode: newMfaToken,
       })
       .then(() => {
         onSuccess();
-        // resetForm();
+        resetForm();
       });
+  };
+
+  const submitLogin = (e?: FormEvent) => {
+    e?.preventDefault();
+    mutateLogin();
   };
 
   return (
     <form
       onSubmit={submitLogin}
-      className="gap-4 flex flex-col p-4"
+      className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full"
       data-testid="login-form"
     >
       <div className="flex flex-col gap-1">
@@ -438,7 +445,12 @@ function LoginForm({
           data-testid="otp-input"
           maxLength={6}
           defaultValue={mfaToken}
-          onChange={(newVal) => setMfaToken(newVal)}
+          onChange={(newMfa) => {
+            setMfaToken(newMfa);
+            if (newMfa.length === 6) {
+              mutateLogin(newMfa);
+            }
+          }}
           autoComplete="one-time-code"
           autoCapitalize="none"
           autoCorrect="off"
@@ -556,7 +568,14 @@ function SignupForm({
   const applicationQuestion = site.data?.applicationQuestion;
 
   return (
-    <div className="h-full overflow-y-auto ion-content-scroll-host p-4">
+    <div className="p-4 overflow-y-auto ion-content-scroll-host h-full">
+      {site.data?.software === "piefed" && (
+        <div className="bg-destructive p-1 rounded-md text-center mb-4 sticky top-0">
+          PieFed doesn't yet support registrations through 3rd party clients
+          like Blorp
+        </div>
+      )}
+
       {site.data?.registrationMode === "Closed" && (
         <div className="bg-destructive p-1 rounded-md text-center mb-4 sticky top-0">
           This instance is not currently accepting registrations
@@ -719,6 +738,10 @@ function useInstanceState() {
   return [_instance, setInstanceLocal] as const;
 }
 
+const INIT_STEP = env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
+  ? "login"
+  : "instance-selection";
+
 function AuthModal({
   open,
   onClose,
@@ -731,53 +754,15 @@ function AuthModal({
   addAccount: boolean;
 }) {
   const [step, setStep] = useState<"instance-selection" | "login" | "signup">(
-    env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ? "login" : "instance-selection",
+    INIT_STEP,
   );
 
-  const [userName, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [mfaToken, setMfaToken] = useState<string>();
-
   const [instance, setInstance] = useInstanceState();
-
-  const login = useLogin({
-    addAccount,
-    instance: instance.url,
-  });
-
-  // const site = useSite({
-  //   instance: instance.baseurl ?? search,
-  // });
+  const modal = useRef<HTMLIonModalElement>(null);
 
   const resetForm = () => {
-    setUsername("");
-    setPassword("");
-    setMfaToken(undefined);
-    // setInstanceLocal();
-    // setSearch("");
+    setStep(INIT_STEP);
   };
-
-  const submitLogin = (e?: FormEvent) => {
-    e?.preventDefault();
-    login
-      .mutateAsync({
-        username: userName,
-        password: password,
-        mfaCode: mfaToken,
-      })
-      .then(() => {
-        onSuccess();
-        resetForm();
-      });
-  };
-
-  useEffect(() => {
-    if (mfaToken && mfaToken.length === 6) {
-      submitLogin();
-    }
-  }, [mfaToken]);
-
-  const modal = useRef<HTMLIonModalElement>(null);
 
   return (
     <IonModal
@@ -854,7 +839,10 @@ function AuthModal({
             instance={instance}
             setInstance={setInstance}
             addAccount={addAccount}
-            onSuccess={onSuccess}
+            onSuccess={() => {
+              onSuccess();
+              resetForm();
+            }}
             handleSignup={() => setStep("signup")}
             onClose={onClose}
           />

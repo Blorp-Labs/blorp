@@ -8,6 +8,11 @@ export const Errors = {
   NOT_IMPLEMENTED: new Error("NOT_IMPLEMENTED"),
 };
 
+export enum Software {
+  LEMMY = "lemmy",
+  PIEFED = "piefed",
+}
+
 const communitySlug = z.string();
 
 const personSchema = z.object({
@@ -118,6 +123,7 @@ export const siteSchema = z.object({
   blurNsfw: z.boolean(),
   enablePostDownvotes: z.boolean(),
   enableCommentDownvotes: z.boolean(),
+  software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
   createdAt: z.string(),
@@ -461,11 +467,11 @@ export type RequestOptions = {
   signal?: AbortSignal;
 };
 
-export abstract class ApiBlueprint<C, S extends string> {
+export abstract class ApiBlueprint<C> {
   abstract client: C;
   abstract limit: number;
 
-  abstract software: S;
+  abstract software: Software;
 
   abstract getSite(options?: RequestOptions): Promise<Schemas.Site>;
 

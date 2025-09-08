@@ -12,7 +12,7 @@ import {
   parseAccountInfo,
   useAuth,
 } from "../../stores/auth";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostsStore } from "../../stores/posts";
 import { useSettingsStore } from "../../stores/settings";
@@ -103,6 +103,19 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
       ...(getInstanceOverride() ?? apis[accountIndex] ?? getDefaultInstance()),
     };
   }, [accounts, accountIndex, config?.instance, config?.jwt]);
+}
+
+export function useSoftware() {
+  const [software, setSoftware] = useState<"lemmy" | "piefed">();
+  const { api } = useApiClients();
+
+  useEffect(() => {
+    api.then((ready) => {
+      setSoftware(ready.software);
+    });
+  }, [api]);
+
+  return software;
 }
 
 export function usePersonDetails({
