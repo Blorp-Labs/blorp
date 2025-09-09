@@ -362,7 +362,7 @@ export function PostBottomBar({
   return (
     <div
       className={cn(
-        "md:hidden flex flex-row gap-3 bg-background border-b max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
+        "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
         postView.thumbnailUrl && "max-md:pr-0",
       )}
     >

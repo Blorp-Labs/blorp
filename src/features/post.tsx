@@ -315,7 +315,7 @@ export default function Post() {
               )}
               <VirtualList
                 keepMountedIndices={[0]}
-                className="h-full ion-content-scroll-host max-md:bg-border/40"
+                className="h-full ion-content-scroll-host"
                 data={data}
                 header={[
                   post ? (
