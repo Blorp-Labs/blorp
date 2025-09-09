@@ -6,7 +6,7 @@ export type ProgressiveImageProps = {
   /** High-res URL to upgrade to. */
   highSrc?: string | null;
   /** Accessible alt text for the image. */
-  alt?: string;
+  alt?: string | null;
   /** Optional intrinsic size to prevent layout shift. */
   width?: number;
   height?: number;
@@ -68,7 +68,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
       {/* Low-res base: paints immediately */}
       <img
         src={lowSrc}
-        alt={alt}
+        alt={alt ?? undefined}
         width={width}
         height={height}
         decoding="async"

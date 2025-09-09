@@ -48,7 +48,7 @@ export const postSchema = z.object({
   downvotes: z.number(),
   upvotes: z.number(),
   commentsCount: z.number(),
-  altText: z.string().optional(),
+  altText: z.string().nullable(),
   url: z.string().nullable(),
   urlContentType: z.string().nullable(),
   removed: z.boolean(),

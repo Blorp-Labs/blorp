@@ -76,6 +76,7 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
     url: draft.url ?? null,
     body: draft.body ?? null,
     nsfw: draft.nsfw ?? null,
+    altText: draft.altText ?? null,
   };
 
   switch (draft.type) {
@@ -115,6 +116,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
     url: draft.url ?? null,
     nsfw: draft.nsfw ?? null,
     thumbnailUrl: draft.thumbnailUrl ?? null,
+    altText: draft.altText ?? null,
   };
 
   switch (draft.type) {

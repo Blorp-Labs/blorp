@@ -207,6 +207,7 @@ function convertPost(
     read: postView.read,
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
+    altText: post.alt_text ?? null,
   };
 }
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
@@ -645,7 +646,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       url: form.url ?? undefined,
       body: form.body ?? undefined,
       name: form.title,
-      alt_text: form.altText,
+      alt_text: form.altText ?? undefined,
       custom_thumbnail: form.thumbnailUrl ?? undefined,
     });
 
@@ -925,7 +926,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     });
 
     const { post_view } = await this.client.createPost({
-      alt_text: form.altText,
+      alt_text: form.altText ?? undefined,
       body: form.body ?? undefined,
       community_id: community.community.id,
       custom_thumbnail: form.thumbnailUrl ?? undefined,

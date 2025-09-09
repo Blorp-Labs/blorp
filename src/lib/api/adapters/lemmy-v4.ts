@@ -159,6 +159,7 @@ function convertPost({
     read: !!post_actions?.read_at,
     saved: !!post_actions?.saved_at,
     nsfw: post.nsfw || community.nsfw,
+    altText: post.alt_text ?? null,
   };
 }
 function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
@@ -479,7 +480,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       url: form.url ?? undefined,
       body: form.body ?? undefined,
       name: form.title,
-      alt_text: form.altText,
+      alt_text: form.altText ?? undefined,
       custom_thumbnail: form.thumbnailUrl ?? undefined,
     });
 
@@ -664,7 +665,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     });
 
     const { post_view } = await this.client.createPost({
-      alt_text: form.altText,
+      alt_text: form.altText ?? undefined,
       body: form.body ?? undefined,
       community_id: community.community.id,
       custom_thumbnail: form.thumbnailUrl ?? undefined,

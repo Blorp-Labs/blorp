@@ -327,6 +327,7 @@ const Post = memo(
         className="border-x border-background -mx-px"
         disabled={disabled}
         blurNsfw={blurImg}
+        altText={postView?.altText}
       />
     ) : (
       <NoImage className="absolute top-1/2 left-1/2 h-40 w-40 -translate-1/2 text-white" />

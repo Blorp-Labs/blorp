@@ -100,6 +100,7 @@ export function getPost(config?: {
     featuredCommunity: false,
     featuredLocal: false,
     read: false,
+    altText: null,
     ...config?.post,
   };
 
