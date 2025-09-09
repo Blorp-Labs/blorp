@@ -110,9 +110,15 @@ export function useSoftware() {
   const { api } = useApiClients();
 
   useEffect(() => {
+    let canceled = false;
     api.then((ready) => {
-      setSoftware(ready.software);
+      if (!canceled) {
+        setSoftware(ready.software);
+      }
     });
+    return () => {
+      canceled = true;
+    };
   }, [api]);
 
   return software;

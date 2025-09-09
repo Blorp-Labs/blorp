@@ -27,7 +27,6 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { VirtualList } from "./virtual-list";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {
@@ -224,9 +223,13 @@ function useAuthSite({
 function InstanceSelectionPage({
   instance,
   setInstance,
+  software,
+  setSoftware,
 }: {
   instance: SelectedInstance;
   setInstance: (newInstance: string) => void;
+  software: Software;
+  setSoftware: (software: Software) => void;
 }) {
   const [search, setSearch] = useState("");
   const searchUrl = useMemo(() => {
@@ -242,10 +245,6 @@ function InstanceSelectionPage({
   const site = useSite({
     instance: searchUrl ?? instance.baseurl,
   });
-
-  const [software, setSoftware] = useState<Software>(
-    _.sample([Software.LEMMY, Software.PIEFED]),
-  );
 
   const data = useMemo(() => {
     const output = [...(instances.data ?? [])];
@@ -570,14 +569,14 @@ function SignupForm({
   return (
     <div className="p-4 overflow-y-auto ion-content-scroll-host h-full">
       {site.data?.software === "piefed" && (
-        <div className="bg-destructive p-1 rounded-md text-center mb-4 sticky top-0">
+        <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           PieFed doesn't yet support registrations through 3rd party clients
           like Blorp
         </div>
       )}
 
       {site.data?.registrationMode === "Closed" && (
-        <div className="bg-destructive p-1 rounded-md text-center mb-4 sticky top-0">
+        <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           This instance is not currently accepting registrations
         </div>
       )}
@@ -760,6 +759,10 @@ function AuthModal({
   const [instance, setInstance] = useInstanceState();
   const modal = useRef<HTMLIonModalElement>(null);
 
+  const [software, setSoftware] = useState<Software>(
+    _.sample([Software.LEMMY, Software.PIEFED]),
+  );
+
   const resetForm = () => {
     setStep(INIT_STEP);
   };
@@ -819,6 +822,8 @@ function AuthModal({
               setInstance(val);
               setStep("login");
             }}
+            software={software}
+            setSoftware={setSoftware}
           />
         )}
 
