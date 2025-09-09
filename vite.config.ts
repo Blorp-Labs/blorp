@@ -14,7 +14,10 @@ const fast = VITE_FAST === "1" || VITE_FAST === "true";
 
 const REACT_APP_HOST = process.env["REACT_APP_HOST"];
 const hostname = (() => {
-  let hostname = REACT_APP_HOST?.trim() || "https://blorpblorp.xyz";
+  let hostname = REACT_APP_HOST?.trim();
+  if (!hostname) {
+    return null;
+  }
   if (!hostname.startsWith("http")) {
     hostname = `https://${hostname}`;
   }
@@ -90,6 +93,10 @@ export default defineConfig({
           legacy({
             targets: ["defaults", "not IE 11"],
           }),
+        ]
+      : []),
+    ...(hostname
+      ? [
           Sitemap({
             hostname,
             dynamicRoutes: [
