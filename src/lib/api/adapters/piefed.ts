@@ -106,6 +106,7 @@ const pieFedPersonViewSchema = z.object({
 });
 
 export const pieFedPostSchema = z.object({
+  alt_text: z.string().nullable().optional(),
   ap_id: z.string(),
   body: z.string().nullable().optional(),
   //community_id: z.number(),
@@ -416,6 +417,7 @@ function convertPost(
     read: postView.read,
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
+    altText: post.alt_text ?? null,
   };
 }
 

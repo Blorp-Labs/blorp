@@ -275,6 +275,7 @@ export function FeedPostCard(props: PostProps) {
               }
             }}
             aspectRatio={post.thumbnailAspectRatio ?? undefined}
+            alt={post.altText}
           />
           {blurImg && !removeBlur && (
             <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">

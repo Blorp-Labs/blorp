@@ -82,6 +82,7 @@ export function ResponsiveImage({
   className,
   disabled,
   blurNsfw,
+  altText,
 }: {
   paddingT?: number;
   paddingB?: number;
@@ -90,6 +91,7 @@ export function ResponsiveImage({
   className?: string;
   disabled?: boolean;
   blurNsfw?: boolean | null;
+  altText?: string | null;
 }) {
   const [removeBlur, setRemoveBlur] = useState(false);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
@@ -189,6 +191,7 @@ export function ResponsiveImage({
               height: imageNaturalHeight,
               maxHeight: imageNaturalHeight,
             }}
+            alt={altText ?? undefined}
           />
         </TransformComponent>
         {blurNsfw && !removeBlur && (
