@@ -25,7 +25,7 @@ export const apiClient = _.memoize(
   }: {
     instance: string;
     jwt?: string;
-  }): Promise<ApiBlueprint<any, "lemmy" | "piefed">> => {
+  }): Promise<ApiBlueprint<any>> => {
     instance = instance.replace(/\/$/, "").trim();
 
     if (!instance.startsWith("https://") && !instance.startsWith("http://")) {

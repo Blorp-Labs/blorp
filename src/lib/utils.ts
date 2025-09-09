@@ -17,6 +17,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function normalizeInstance(instance: string) {
+  const parts = instance.split(".");
+
+  if (parts.length < 2 || !parts[1]?.length) {
+    throw new Error(`Invalid URL: "${instance}"`);
+  }
+
   // Trim whitespace
   let url = instance.trim();
 

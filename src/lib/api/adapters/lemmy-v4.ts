@@ -7,6 +7,7 @@ import {
   INIT_PAGE_TOKEN,
   RequestOptions,
   Schemas,
+  Software,
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
@@ -187,8 +188,8 @@ function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
   };
 }
 
-export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp, "lemmy"> {
-  software = "lemmy" as const;
+export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
+  software = Software.LEMMY;
 
   client: lemmyV4.LemmyHttp;
   instance: string;
@@ -268,6 +269,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp, "lemmy"> {
       blurNsfw: true,
       enablePostDownvotes: enableDownvotes,
       enableCommentDownvotes: enableDownvotes,
+      software: this.software,
     };
   }
 

@@ -86,7 +86,7 @@ export function parseAccountInfo(account: Account) {
 function getNewAccount(): Account {
   return {
     uuid: uuid(),
-    instance: env.REACT_APP_DEFAULT_INSTANCE,
+    instance: env.defaultInstance,
   };
 }
 
@@ -125,7 +125,7 @@ export const useAuth = create<AuthStore>()(
       },
       accountIndex: 0,
       addAccount: (patch) => {
-        const instance = patch?.instance ?? env.REACT_APP_DEFAULT_INSTANCE;
+        const instance = patch?.instance ?? env.defaultInstance;
         const accounts = [
           ...get().accounts,
           {
@@ -152,7 +152,7 @@ export const useAuth = create<AuthStore>()(
             set({
               accounts: [
                 {
-                  instance: env.REACT_APP_DEFAULT_INSTANCE,
+                  instance: env.defaultInstance,
                 },
               ],
               accountIndex: 0,
@@ -172,7 +172,7 @@ export const useAuth = create<AuthStore>()(
           set({
             accounts: [
               {
-                instance: env.REACT_APP_DEFAULT_INSTANCE,
+                instance: env.defaultInstance,
               },
             ],
             accountIndex: 0,

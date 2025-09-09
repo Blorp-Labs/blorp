@@ -6,6 +6,7 @@ import {
   INIT_PAGE_TOKEN,
   RequestOptions,
   Schemas,
+  Software,
 } from "./api-blueprint";
 import z from "zod";
 import { createSlug } from "../utils";
@@ -637,8 +638,8 @@ export function flattenCommentViews(
   return result;
 }
 
-export class PieFedApi implements ApiBlueprint<null, "piefed"> {
-  software = "piefed" as const;
+export class PieFedApi implements ApiBlueprint<null> {
+  software = Software.PIEFED;
 
   client = null;
   instance: string;
@@ -831,6 +832,7 @@ export class PieFedApi implements ApiBlueprint<null, "piefed"> {
         blurNsfw: true,
         enablePostDownvotes: site.site.enable_downvotes,
         enableCommentDownvotes: site.site.enable_downvotes,
+        software: this.software,
       };
     } catch (err) {
       console.log(err);

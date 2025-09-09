@@ -35,7 +35,7 @@ describe("useAuthStore", () => {
 
   test("default instance", () => {
     expect(result.current.getSelectedAccount().instance).toBe(
-      env.REACT_APP_DEFAULT_INSTANCE,
+      env.defaultInstance,
     );
   });
 
@@ -143,7 +143,7 @@ describe("useAuthStore", () => {
     });
     expect(result.current.accounts).toHaveLength(1);
     expect(result.current.getSelectedAccount()).toEqual({
-      instance: env.REACT_APP_DEFAULT_INSTANCE,
+      instance: env.defaultInstance,
     });
   });
 

@@ -7,6 +7,7 @@ import {
   Forms,
   INIT_PAGE_TOKEN,
   Errors,
+  Software,
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
@@ -306,8 +307,8 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
   };
 }
 
-export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp, "lemmy"> {
-  software = "lemmy" as const;
+export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
+  software = Software.LEMMY;
 
   client: lemmyV3.LemmyHttp;
   instance: string;
@@ -398,6 +399,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp, "lemmy"> {
       hideDownvotes: site.site_view.local_site.enable_downvotes === false,
       enablePostDownvotes: enableDownvotes,
       enableCommentDownvotes: enableDownvotes,
+      software: this.software,
     };
   }
 
