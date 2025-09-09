@@ -28,6 +28,7 @@ import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID, TABS } from "./config";
 import InstanceSidebar from "../features/instance-sidebar";
 import { getAccountSite, useAuth } from "../stores/auth";
 import { usePathname } from "./hooks";
+import { Canonical } from "../components/canonical";
 
 const CSAE = lazy(() => import("@/src/features/csae"));
 const NotFound = lazy(() => import("@/src/features/not-found"));
@@ -478,6 +479,7 @@ function Tabs() {
 export default function Router() {
   return (
     <IonReactRouter>
+      <Canonical />
       <Tabs />
       <AppUrlListener />
     </IonReactRouter>
