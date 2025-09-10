@@ -719,7 +719,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   private async put(endpoint: string, body: Record<string, any>) {
     body = { ...body };
     for (const key in body) {
-      if (_.isNil(body[key])) {
+      if (_.isUndefined(body[key])) {
         delete body[key];
       }
     }
@@ -1689,9 +1689,32 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async saveUserSettings(form: Forms.SaveUserSettings) {
+    let avatar: undefined | string;
+    try {
+      if (form.avatar) {
+        const formData = new FormData();
+        formData.append("file", form.avatar);
+        const res = await fetch(
+          `${this.instance}/api/alpha/upload/user_image`,
+          {
+            method: "POST",
+            headers: {
+              ..._.omit(DEFAULT_HEADERS, "Content-Type"),
+              ...(this.jwt ? { authorization: `Bearer ${this.jwt}` } : {}),
+            },
+            body: formData,
+            cache: "no-store",
+          },
+        );
+        const json = await res.json();
+        avatar = z.object({ url: z.string() }).parse(json).url;
+      }
+    } catch (e) {
+      console.log(e);
+    }
     await this.put("/user/save_user_settings", {
-      avatar: form.avatar,
-      banner: form.banner,
+      avatar: avatar,
+      // banner: form.banner,
       bio: form.bio,
       display_name: form.displayName,
       email: form.email,
@@ -1699,8 +1722,9 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async removeUserAvatar() {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    await this.put("/user/save_user_settings", {
+      avatar: null,
+    });
   }
 
   async getCaptcha() {
