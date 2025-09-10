@@ -18,6 +18,7 @@
 
 @font-face {
   font-family: Jersey10;
+  font-display: swap;
   src: url(/fonts/Jersey10-Regular.ttf);
 }
 

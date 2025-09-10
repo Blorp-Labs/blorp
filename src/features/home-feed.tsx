@@ -4,7 +4,15 @@ import {
   PostProps,
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFiltersStore } from "../stores/filters";
 import { useMostRecentPost, usePosts } from "../lib/api";
 import _ from "lodash";
@@ -40,6 +48,9 @@ const EMPTY_ARR: never[] = [];
 const NO_ITEMS = "NO_ITEMS";
 type Item = string;
 
+type HTMLIonHeaderElement = HTMLElement;
+type HTMLIonToolbarElement = HTMLElement;
+
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
     <FeedPostCard {...props} featuredContext="home" />
@@ -47,10 +58,23 @@ const Post = memo((props: PostProps) => (
   </ContentGutters>
 ));
 
+/**
+ * Optimized version that avoids forced reflow in scroll paths.
+ * - Caches measurements (safe-area-top, header height, tab bar height)
+ * - Uses rAF to batch DOM writes and limit to 1/frame
+ * - Reads only scrollTop in the scroll handler
+ * - Uses lodash for clamping
+ */
 function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
   const prevOffsetRef = useRef<number | null>(null);
   const headerAnimateRef = useRef(0);
   const tabBarAnimateRef = useRef(0);
+  const tickingRef = useRef(false);
+
+  // Cached measurements
+  const headerHeightRef = useRef(0);
+  const tabBarHeightRef = useRef(0);
+  const safeAreaTopRef = useRef(0);
 
   const { tabBar, header, toolbar, newPostButton } = useMemo(() => {
     const tabBar = document.querySelector("ion-tab-bar");
@@ -73,56 +97,101 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
     };
   }, [active]);
 
-  const scrollHandler = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      if (prevOffsetRef.current === null || !active) {
-        return;
-      }
+  // Measure sizes once (and keep fresh via observers), not during scroll
+  useLayoutEffect(() => {
+    // Read safe area top from CSS once; prefer CSS env() in your styles if possible
+    const cssSafeArea = getComputedStyle(document.documentElement)
+      .getPropertyValue("--ion-safe-area-top")
+      .trim();
+    safeAreaTopRef.current = parseInt(cssSafeArea || "0", 10) || 0;
 
-      const safeAreaTop = parseInt(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--ion-safe-area-top")
-          .trim(),
-        10,
+    const measure = () => {
+      if (header) {
+        const h = header.getBoundingClientRect().height; // layout read outside hot path
+        headerHeightRef.current = Math.max(0, h - safeAreaTopRef.current);
+      }
+      if (tabBar) {
+        tabBarHeightRef.current = tabBar.getBoundingClientRect().height || 0;
+      }
+    };
+
+    measure();
+
+    const ro = new ResizeObserver(measure);
+    if (header) ro.observe(header);
+    if (tabBar) ro.observe(tabBar);
+
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize, { passive: true });
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
+  }, [header, tabBar]);
+
+  // rAF tick: do math + DOM writes once per frame
+  const tick = useCallback(
+    (scrollTop: number) => {
+      tickingRef.current = false;
+
+      const headerHeight = headerHeightRef.current || 1; // avoid div-by-0
+      const tabBarHeight = tabBarHeightRef.current || 1;
+
+      const prev = prevOffsetRef.current ?? 0;
+      const delta = scrollTop - prev;
+      prevOffsetRef.current = scrollTop;
+
+      const nextHeaderAnim = _.clamp(
+        headerAnimateRef.current + delta / headerHeight,
+        0,
+        1,
+      );
+      const nextTabBarAnim = _.clamp(
+        tabBarAnimateRef.current + delta / tabBarHeight,
+        0,
+        1,
       );
 
-      if (header && toolbar && tabBar && newPostButton) {
-        const headerHeight = _.isNumber(safeAreaTop)
-          ? header.offsetHeight - safeAreaTop
-          : header.offsetHeight;
+      headerAnimateRef.current = nextHeaderAnim;
+      tabBarAnimateRef.current = nextTabBarAnim;
 
-        const scrollOffset = Math.max(e.currentTarget.scrollTop, 0);
-        const delta = scrollOffset - prevOffsetRef.current;
-        prevOffsetRef.current = scrollOffset;
-
-        headerAnimateRef.current = _.clamp(
-          headerAnimateRef.current + delta / headerHeight,
-          0,
-          1,
-        );
-        tabBarAnimateRef.current = _.clamp(
-          headerAnimateRef.current + delta / tabBar.offsetHeight,
-          0,
-          1,
-        );
-
-        header.style.transform = `translate(0, -${
-          headerAnimateRef.current * headerHeight
-        }px)`;
-        toolbar.style.opacity = String(1 - headerAnimateRef.current);
-        tabBar.style.transform = `translate(0, ${
-          tabBarAnimateRef.current * 100
-        }%)`;
-
-        newPostButton.style.opacity = String(1 - headerAnimateRef.current);
+      // DOM writes grouped together
+      if (header) {
+        header.style.transform = `translateY(-${nextHeaderAnim * headerHeight}px)`;
+      }
+      if (toolbar) {
+        toolbar.style.opacity = String(1 - nextHeaderAnim);
+      }
+      if (tabBar) {
+        tabBar.style.transform = `translateY(${nextTabBarAnim * 100}%)`;
+      }
+      if (newPostButton) {
+        newPostButton.style.opacity = String(1 - nextHeaderAnim);
       }
     },
-    [active, header, toolbar, tabBar, newPostButton],
+    [header, toolbar, tabBar, newPostButton],
   );
 
-  const scrollTop = useRef(div?.scrollTop ?? 0);
-  scrollTop.current = div?.scrollTop ?? 0;
+  const scrollHandler = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!active) return;
+      if (prevOffsetRef.current === null) return; // not initialized yet
 
+      const scrollTop = Math.max(e.currentTarget.scrollTop, 0); // single read
+      if (!tickingRef.current) {
+        tickingRef.current = true;
+        requestAnimationFrame(() => tick(scrollTop));
+      }
+    },
+    [active, tick],
+  );
+
+  // Keep the last known scrollTop in sync
+  const scrollTopRef = useRef(div?.scrollTop ?? 0);
+  scrollTopRef.current = div?.scrollTop ?? 0;
+
+  // Reset / initialize on active changes
   useEffect(() => {
     if (!active) {
       prevOffsetRef.current = 0;
@@ -135,7 +204,7 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
         newPostButton.style.opacity = "1";
       }
     } else {
-      prevOffsetRef.current = scrollTop.current;
+      prevOffsetRef.current = scrollTopRef.current;
     }
   }, [active, tabBar, header, toolbar, newPostButton]);
 
