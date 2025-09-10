@@ -304,12 +304,9 @@ export default function Post() {
               {/* Reversing these might be a bad idea, but I didn't */}
               {/* want keyboard users to have to tab through all comments */}
               {/* to reach the reply field */}
-              {post && !commentPath && (
+              {post && !commentPath && media.maxMd && (
                 <div key="reply-to-post">
-                  <ReplyToPost
-                    postApId={post.apId}
-                    className="md:hidden border-t"
-                  />
+                  <ReplyToPost postApId={post.apId} className="border-t" />
                   <SafeAreaBottom />
                 </div>
               )}
@@ -339,12 +336,8 @@ export default function Post() {
                       commentCount={post.commentsCount}
                     />
                   ),
-                  post && !commentPath && (
-                    <ReplyToPost
-                      key="reply-to-post"
-                      postApId={post.apId}
-                      className="max-md:hidden"
-                    />
+                  post && !commentPath && media.md && (
+                    <ReplyToPost key="reply-to-post" postApId={post.apId} />
                   ),
                   <CommentSortBar key="comment-sort-bar" />,
                 ]}

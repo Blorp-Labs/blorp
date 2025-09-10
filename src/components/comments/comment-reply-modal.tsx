@@ -186,6 +186,8 @@ export function CommentReplyProvider({
       }
     : null;
 
+  const media = useMedia();
+
   return (
     <Context.Provider value={{ setState, state: internalState }}>
       <IonModal
@@ -209,14 +211,16 @@ export function CommentReplyProvider({
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          <MarkdownEditor
-            key={signal}
-            content={body}
-            onChange={(val) => setContent(commentKey, val)}
-            className="min-h-full"
-            autoFocus
-            placeholder="Add a comment..."
-          />
+          {media.maxMd && (
+            <MarkdownEditor
+              key={signal}
+              content={body}
+              onChange={(val) => setContent(commentKey, val)}
+              className="min-h-full"
+              autoFocus
+              placeholder="Add a comment..."
+            />
+          )}
         </IonContent>
       </IonModal>
       {children}

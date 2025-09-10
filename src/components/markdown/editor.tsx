@@ -15,7 +15,7 @@ import Table from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "../ui/button";
 import {
@@ -44,6 +44,8 @@ import z from "zod";
 import { ActionMenu } from "../adaptable/action-menu";
 import { toast } from "sonner";
 import { MdOutlineFormatClear } from "react-icons/md";
+import Mention from "@tiptap/extension-mention";
+import { useMentionSuggestions } from "./editor-extensions/mention";
 
 const CustomLink = Link.extend({
   inclusive: false,
@@ -345,6 +347,8 @@ function TipTapEditor({
     });
   };
 
+  const mentionSuggestions = useMentionSuggestions();
+
   const editor = useEditor({
     autofocus: autoFocus,
     content,
@@ -375,6 +379,12 @@ function TipTapEditor({
       TableRow,
       TableHeader,
       TableCell,
+      Mention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+        suggestions: mentionSuggestions,
+      }),
     ],
     onUpdate: ({ editor }) => {
       const markdown = editor?.storage["markdown"].getMarkdown();
