@@ -219,6 +219,11 @@ export function SearchBar({
           search.setValue(value);
           props.onValueChange?.(value);
         }}
+        onBlurCapture={() => {
+          if (props.value) {
+            saveSearch(props.value);
+          }
+        }}
         loading={isOpen && searchResults.isFetching}
         endAdornment={
           <CommandShortcut className="group-focus-within:hidden max-md:hidden">
