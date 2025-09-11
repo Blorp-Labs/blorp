@@ -50,10 +50,11 @@ export function postToDraft(post: Schemas.Post): Draft {
     body: post.body ?? "",
     communitySlug: post.communitySlug,
     createdAt: dayjs(post.createdAt).toDate().valueOf(),
-    type: "text",
+    type: post.url ? "link" : post.thumbnailUrl ? "media" : "text",
     apId: post.apId,
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
+    url: post.url,
   };
 }
 

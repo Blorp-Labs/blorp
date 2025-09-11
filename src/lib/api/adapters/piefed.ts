@@ -695,7 +695,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   private async post(endpoint: string, body: Record<string, any>) {
     body = { ...body };
     for (const key in body) {
-      if (_.isNil(body[key])) {
+      if (_.isUndefined(body[key])) {
         delete body[key];
       }
     }
@@ -1428,7 +1428,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       title: form.title,
       url: form.url,
       body: form.body,
-      nsfw: form.nsfw,
+      nsfw: form.nsfw ?? false,
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
@@ -1444,9 +1444,9 @@ export class PieFedApi implements ApiBlueprint<null> {
     const res = await this.post("/post", {
       title: form.title,
       community_id: community.id,
-      url: form.url,
-      body: form.body,
-      nsfw: form.nsfw,
+      url: form.url ?? undefined,
+      body: form.body ?? undefined,
+      nsfw: form.nsfw ?? false,
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
