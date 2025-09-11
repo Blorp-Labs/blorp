@@ -4,7 +4,7 @@ import { PageTitle } from "../components/page-title";
 import z from "zod";
 import { useConfirmationAlert, useUrlSearchState } from "../lib/hooks";
 import { useSite } from "../lib/api";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "../stores/auth";
 import { useHistory } from "react-router";
 import { resolveRoute } from "../routing";
@@ -35,18 +35,22 @@ export default function Instance() {
   const addAccount = useAuth((s) => s.addAccount);
   const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
 
+  const redirecting = useRef(false);
+
   useEffect(() => {
-    if (env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE) {
+    if (env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE || redirecting.current) {
       return;
     }
 
     const siteInstance = site.data?.instance;
     if (site.error) {
+      redirecting.current = true;
       const id = setTimeout(() => {
         replace(resolveRoute("/home"));
       }, 5000);
       return () => clearTimeout(id);
     } else if (siteInstance) {
+      redirecting.current = true;
       const notLoggedIn = accounts.length <= 1 && !accounts[0]?.jwt;
 
       if (notLoggedIn) {
