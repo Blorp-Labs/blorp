@@ -1,21 +1,14 @@
-"use client";
-
-import { useState } from "react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/src/components/ui/popover";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandItem,
-  CommandEmpty,
-} from "@/src/components/ui/command";
 import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
+import { Badge } from "./badge";
+import { ChevronDown } from "lucide-react";
+import { isNotNil } from "@/src/lib/utils";
+import { Fragment } from "react/jsx-runtime";
 
 interface Option {
   value: string;
@@ -24,113 +17,61 @@ interface Option {
 
 interface MultiSelectProps {
   options: Option[];
-  selectedValues: string[];
-  setSelectedValues: (values: string[]) => void;
+  value: string[];
+  onChange: (values: string[]) => void;
   placeholder?: string;
+  renderOption: (opt: Option) => React.ReactNode;
 }
 
-export const MultiSelect: React.FC<MultiSelectProps> = ({
+export function MultiSelect({
   options,
-  selectedValues,
-  setSelectedValues,
+  value,
+  onChange,
   placeholder,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(inputValue.toLowerCase()),
-  );
-
-  const toggleSelection = (value: string) => {
-    if (selectedValues.includes(value)) {
-      setSelectedValues(selectedValues.filter((item) => item !== value));
-    } else {
-      setSelectedValues([...selectedValues, value]);
-    }
-  };
-
-  const removeSelected = (value: string) => {
-    setSelectedValues(selectedValues.filter((item) => item !== value));
-  };
+  renderOption,
+}: MultiSelectProps) {
+  const selected = value
+    .map((value) => options.find((opt) => opt.value === value))
+    .filter(isNotNil);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          className="flex justify-between px-2 pb-2 items-center min-w-[200px] rounded-lg"
-          variant="outline"
-        >
-          <div className="flex gap-1 flex-wrap">
-            {selectedValues.length > 0 ? (
-              selectedValues.map((val, index) => (
-                <Badge
-                  key={val}
-                  // className="flex items-center gap-1 px-2 py-1 bg-gray-200 text-black dark:bg-gray-700 dark:text-white rounded-md"
-                  variant="brand"
-                >
-                  {options.find((opt) => opt.value === val)?.label}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeSelected(val);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.stopPropagation();
-                        removeSelected(val);
-                      }
-                    }}
-                    className="ml-1 cursor-pointer"
-                  >
-                    <X className="h-3 w-3" />
-                  </div>
-                </Badge>
-              ))
-            ) : (
-              <span className="text-gray-500">
-                {placeholder || "Select options..."}
-              </span>
-            )}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="rounded-md">
+          {selected.length === 0 && placeholder && (
+            <span className="text-muted-foreground font-normal">
+              {placeholder}
+            </span>
+          )}
+          {selected.map((option) => (
+            <Fragment key={option.value}>{renderOption?.(option)}</Fragment>
+          ))}
+          <div className="flex-1" />
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
-        <Command>
-          <CommandInput
-            placeholder="Search..."
-            value={inputValue}
-            onValueChange={setInputValue}
-          />
-          <CommandList>
-            {filteredOptions.length === 0 ? (
-              <CommandEmpty>No options found.</CommandEmpty>
-            ) : (
-              filteredOptions.map((option) => {
-                const isSelected = selectedValues.includes(option.value);
-                return (
-                  <CommandItem
-                    key={option.value}
-                    onSelect={() => toggleSelection(option.value)}
-                  >
-                    <div className="flex items-center">
-                      <Check
-                        className={`mr-2 h-4 w-4 ${
-                          isSelected ? "opacity-100" : "opacity-0"
-                        }`}
-                      />
-                      {option.label}
-                    </div>
-                  </CommandItem>
-                );
-              })
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="start">
+        {options.map((opt) => {
+          const isSelected = value.includes(opt.value);
+          return (
+            <DropdownMenuCheckboxItem
+              key={opt.value}
+              checked={isSelected}
+              onCheckedChange={() => {
+                if (isSelected) {
+                  onChange(value.filter((val) => val !== opt.value));
+                } else {
+                  onChange([...value, opt.value]);
+                }
+              }}
+            >
+              {renderOption?.(opt)}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-};
+}
 
 export default MultiSelect;

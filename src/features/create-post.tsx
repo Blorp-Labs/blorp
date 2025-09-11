@@ -60,6 +60,7 @@ import { useCommunitiesStore } from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
+import { Badge } from "../components/ui/badge";
 
 dayjs.extend(localizedFormat);
 
@@ -371,18 +372,24 @@ export function CreatePost() {
                 <div className="gap-2 flex flex-col">
                   <Label htmlFor={`${id}-flair`}>Flair</Label>
                   <MultiSelect
-                    setSelectedValues={(values) => {
+                    onChange={(values) => {
                       patchDraft(draftId, {
                         flairs: values,
                       });
                     }}
-                    selectedValues={draft.flairs ?? []}
+                    value={draft.flairs ?? []}
                     options={
                       flairs.map(({ title }) => ({
                         value: title,
                         label: title,
                       })) ?? []
                     }
+                    placeholder="Flair"
+                    renderOption={(opt) => (
+                      <Badge variant="brand" className="rounded-full">
+                        {opt.value}
+                      </Badge>
+                    )}
                   />
                 </div>
               )}
