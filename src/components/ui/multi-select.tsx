@@ -5,33 +5,36 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { Badge } from "./badge";
 import { ChevronDown } from "lucide-react";
 import { isNotNil } from "@/src/lib/utils";
 import { Fragment } from "react/jsx-runtime";
 
-interface Option {
-  value: string;
+interface Option<V> {
+  value: V;
   label: string;
 }
 
-interface MultiSelectProps {
-  options: Option[];
-  value: string[];
-  onChange: (values: string[]) => void;
+interface MultiSelectProps<V> {
+  options: Option<V>[];
+  value: V[];
+  onChange: (values: V[]) => void;
   placeholder?: string;
-  renderOption: (opt: Option) => React.ReactNode;
+  renderOption: (opt: Option<V>) => React.ReactNode;
+  keyExtractor: (opt: V) => string | number;
 }
 
-export function MultiSelect({
+export function MultiSelect<V>({
   options,
   value,
   onChange,
   placeholder,
   renderOption,
-}: MultiSelectProps) {
+  keyExtractor,
+}: MultiSelectProps<V>) {
   const selected = value
-    .map((value) => options.find((opt) => opt.value === value))
+    .map((value) =>
+      options.find((opt) => keyExtractor(opt.value) === keyExtractor(value)),
+    )
     .filter(isNotNil);
 
   return (
@@ -44,7 +47,9 @@ export function MultiSelect({
             </span>
           )}
           {selected.map((option) => (
-            <Fragment key={option.value}>{renderOption?.(option)}</Fragment>
+            <Fragment key={keyExtractor(option.value)}>
+              {renderOption?.(option)}
+            </Fragment>
           ))}
           <div className="flex-1" />
           <ChevronDown className="h-4 w-4 opacity-50" />
@@ -52,14 +57,21 @@ export function MultiSelect({
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
         {options.map((opt) => {
-          const isSelected = value.includes(opt.value);
+          const isSelected =
+            value.findIndex(
+              (v) => keyExtractor(v) === keyExtractor(opt.value),
+            ) >= 0;
           return (
             <DropdownMenuCheckboxItem
-              key={opt.value}
+              key={keyExtractor(opt.value)}
               checked={isSelected}
               onCheckedChange={() => {
                 if (isSelected) {
-                  onChange(value.filter((val) => val !== opt.value));
+                  onChange(
+                    value.filter(
+                      (val) => keyExtractor(val) !== keyExtractor(opt.value),
+                    ),
+                  );
                 } else {
                   onChange([...value, opt.value]);
                 }

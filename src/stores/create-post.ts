@@ -5,6 +5,8 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import dayjs from "dayjs";
 import { Forms, Schemas } from "../lib/api/adapters/api-blueprint";
+import path from "path";
+import { isNotNil } from "../lib/utils";
 
 export type CommunityPartial = Pick<
   Community,
@@ -14,7 +16,6 @@ export type CommunityPartial = Pick<
 export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
   type: "text" | "media" | "link";
   createdAt: number;
-  flairs?: string[];
 }
 
 type CreatePostStore = {
@@ -59,7 +60,7 @@ export function postToDraft(
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,
-    flairs: flairs?.map((f) => f.title) ?? [],
+    flairs,
   };
 }
 
@@ -158,6 +159,17 @@ export const useCreatePostStore = create<CreatePostStore>()(
             ...prevDraft,
             ...patch,
           };
+          // Clear flairs on community change
+          if (
+            isNotNil(patch.communitySlug) &&
+            prevDraft.communitySlug !== patch.communitySlug
+          ) {
+            drafts[key].flairs = [];
+          } else {
+            drafts[key].flairs = drafts[key].flairs?.map((f) =>
+              _.pick(f, ["title", "apId"]),
+            );
+          }
           return {
             ...prev,
             drafts,

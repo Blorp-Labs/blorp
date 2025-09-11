@@ -1466,7 +1466,9 @@ export class PieFedApi implements ApiBlueprint<null> {
           slug: convertPost(data.post_view).communitySlug,
         });
         const selectedFlairs = flairs?.filter((f) =>
-          form.flairs?.includes(f.title),
+          form.flairs?.find((formF) =>
+            f.apId ? formF.apId === f.apId : formF.title === f.title,
+          ),
         );
         await this.post("/post/assign_flair", {
           post_id: data.post_view.post.id,
@@ -1474,7 +1476,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         });
         return {
           ...convertPost(data.post_view),
-          flairs: selectedFlairs?.map(({ id }) => ({ id })) ?? null,
+          flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
         };
       }
       return { ...convertPost(data.post_view) };
@@ -1498,7 +1500,9 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
       const selectedFlairs = flairs?.filter((f) =>
-        form.flairs?.includes(f.title),
+        form.flairs?.find((formF) =>
+          f.apId ? formF.apId === f.apId : formF.title === f.title,
+        ),
       );
       if (selectedFlairs) {
         await this.post("/post/assign_flair", {
@@ -1508,7 +1512,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       }
       return {
         ...convertPost(data.post_view),
-        flairs: selectedFlairs?.map(({ id }) => ({ id })) ?? null,
+        flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
       };
     } catch (err) {
       console.error(err);

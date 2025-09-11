@@ -16,7 +16,7 @@ export enum Software {
 const communitySlug = z.string();
 
 const flairSchema = z.object({
-  // apId: z.string(),
+  apId: z.string().optional().nullable(),
   id: z.number(),
   backgroundColor: z.string().nullable(),
   color: z.string().nullable(),
@@ -422,7 +422,7 @@ export namespace Forms {
       "title" | "url" | "body" | "altText" | "thumbnailUrl" | "nsfw"
     > {
     apId: string;
-    flairs?: string[];
+    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
   }
 
   export interface CreatePost
@@ -436,7 +436,7 @@ export namespace Forms {
       | "communitySlug"
       | "nsfw"
     > {
-    flairs?: string[];
+    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
   }
 
   export type CreatePostReport = {

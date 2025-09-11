@@ -61,6 +61,7 @@ import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Badge } from "../components/ui/badge";
+import { Schemas } from "../lib/api/adapters/api-blueprint";
 
 dayjs.extend(localizedFormat);
 
@@ -377,17 +378,35 @@ export function CreatePost() {
                         flairs: values,
                       });
                     }}
-                    value={draft.flairs ?? []}
+                    value={
+                      draft.flairs
+                        ?.map((flair) =>
+                          flairs.find((f) =>
+                            flair.apId
+                              ? flair.apId === f.apId
+                              : flair.title === f.title,
+                          ),
+                        )
+                        .filter(isNotNil) ?? []
+                    }
                     options={
-                      flairs.map(({ title }) => ({
-                        value: title,
-                        label: title,
+                      flairs.map((flair) => ({
+                        label: flair.title,
+                        value: flair,
                       })) ?? []
                     }
+                    keyExtractor={(val) => val.apId ?? val.title}
                     placeholder="Flair"
                     renderOption={(opt) => (
-                      <Badge variant="brand" className="rounded-full">
-                        {opt.value}
+                      <Badge
+                        className="rounded-full"
+                        style={{
+                          backgroundColor:
+                            opt.value.backgroundColor ?? undefined,
+                          color: opt.value.color ?? undefined,
+                        }}
+                      >
+                        {opt.label}
                       </Badge>
                     )}
                   />

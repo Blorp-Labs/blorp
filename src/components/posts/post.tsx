@@ -214,8 +214,11 @@ export function FeedPostCard(props: PostProps) {
           {flairs.map((flair, index) => (
             <Badge
               key={flair?.data.id ?? index}
-              variant="brand"
               className="rounded-full"
+              style={{
+                backgroundColor: flair.data.backgroundColor ?? undefined,
+                color: flair.data.color ?? undefined,
+              }}
             >
               {flair?.data.title}
             </Badge>
