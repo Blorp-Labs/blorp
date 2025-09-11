@@ -6,6 +6,7 @@ import {
   isEmptyDraft,
   NEW_DRAFT,
   useCreatePostStore,
+  useFlairLookup,
 } from "../stores/create-post";
 import { VirtualList } from "@/src/components/virtual-list";
 import { CommunityCard } from "../components/communities/community-card";
@@ -61,7 +62,6 @@ import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Badge } from "../components/ui/badge";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
 
 dayjs.extend(localizedFormat);
 
@@ -202,6 +202,8 @@ export function CreatePost() {
   const community = useCommunity({
     name: draft.communitySlug,
   });
+  const flairLookup = useFlairLookup(community.data?.flairs);
+
   const flairs = community.data?.flairs;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -380,13 +382,7 @@ export function CreatePost() {
                     }}
                     value={
                       draft.flairs
-                        ?.map((flair) =>
-                          flairs.find((f) =>
-                            flair.apId
-                              ? flair.apId === f.apId
-                              : flair.title === f.title,
-                          ),
-                        )
+                        ?.map((flair) => flairLookup[flair.apId ?? flair.title])
                         .filter(isNotNil) ?? []
                     }
                     options={

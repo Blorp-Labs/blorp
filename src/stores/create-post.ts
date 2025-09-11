@@ -5,8 +5,8 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import dayjs from "dayjs";
 import { Forms, Schemas } from "../lib/api/adapters/api-blueprint";
-import path from "path";
 import { isNotNil } from "../lib/utils";
+import { useMemo } from "react";
 
 export type CommunityPartial = Pick<
   Community,
@@ -39,7 +39,12 @@ export function isEmptyDraft(draft: Draft) {
     "communityApId",
   ]);
   for (const id in fields) {
-    if (fields[id as keyof typeof fields]) {
+    const field = fields[id as keyof typeof fields];
+    if (_.isArray(field)) {
+      if (field.length > 0) {
+        return false;
+      }
+    } else if (field) {
       return false;
     }
   }
@@ -162,6 +167,7 @@ export const useCreatePostStore = create<CreatePostStore>()(
           // Clear flairs on community change
           if (
             isNotNil(patch.communitySlug) &&
+            _.isNil(patch.flairs) &&
             prevDraft.communitySlug !== patch.communitySlug
           ) {
             drafts[key].flairs = [];
@@ -231,3 +237,21 @@ export const useCreatePostStore = create<CreatePostStore>()(
 let alreadyClean = false;
 
 sync(useCreatePostStore);
+
+export function useFlairLookup(flairs?: Schemas.Flair[]) {
+  return useMemo(() => {
+    if (!flairs) {
+      return {};
+    }
+    const flairsByTitle = _.keyBy(flairs, "title");
+    const flairsByApId = _.keyBy(
+      flairs.filter((f) => f.apId),
+      "apId",
+    );
+
+    return {
+      ...flairsByTitle,
+      ...flairsByApId,
+    };
+  }, [flairs]);
+}
