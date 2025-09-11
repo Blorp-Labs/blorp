@@ -1855,7 +1855,11 @@ export function useCreatePost() {
 
       return await (await api).createPost(draftToCreatePostData(draft));
     },
-    onSuccess: ({ apId, communitySlug }) => {
+    onMutate: () => {
+      return toast.loading("Creating post");
+    },
+    onSuccess: ({ apId, communitySlug }, _, toastId) => {
+      toast.dismiss(toastId);
       if (communitySlug) {
         router.push(
           `/home/c/${communitySlug}/posts/${encodeURIComponent(apId)}`,
@@ -1865,11 +1869,11 @@ export function useCreatePost() {
         queryKey: getPostsQueryKey,
       });
     },
-    onError: (err) => {
+    onError: (err, _, toastId) => {
       if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
+        toast.error(extractErrorContent(err), { id: toastId });
       } else {
-        toast.error("Couldn't create post");
+        toast.error("Couldn't create post", { id: toastId });
       }
     },
   });
@@ -1884,18 +1888,22 @@ export function useEditPost(apId: string) {
     mutationFn: async (draft: Draft) => {
       return await (await api).editPost(draftToEditPostData(draft));
     },
-    onSuccess: (postView) => {
+    onMutate: () => {
+      return toast.loading("Updating post");
+    },
+    onSuccess: (postView, _, toastId) => {
+      toast.dismiss(toastId);
       patchPost(apId, getCachePrefixer(), postView);
       const slug = postView.communitySlug;
       if (slug) {
         router.push(`/home/c/${slug}/posts/${encodeURIComponent(apId)}`);
       }
     },
-    onError: (err) => {
+    onError: (err, _, toastId) => {
       if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
+        toast.error(extractErrorContent(err), { id: toastId });
       } else {
-        toast.error("Couldn't update post");
+        toast.error("Couldn't update post", { id: toastId });
       }
     },
   });
