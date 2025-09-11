@@ -125,7 +125,7 @@ export const pieFedPostSchema = z.object({
   //language_id: z.number(),
   //local: z.boolean(),
   //locked: z.boolean(),
-  nsfw: z.boolean(),
+  nsfw: z.boolean().nullable().optional(),
   published: z.string(),
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
