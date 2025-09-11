@@ -614,6 +614,7 @@ export function useCommunity({
         {
           communityView: res.community,
           mods: res.mods,
+          flairs: res.flairs,
         },
       ]);
       cacheProfiles(getCachePrefixer(), res.mods);

@@ -62,6 +62,7 @@ import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Badge } from "../components/ui/badge";
+import { Flair } from "../components/flair";
 
 dayjs.extend(localizedFormat);
 
@@ -393,18 +394,7 @@ export function CreatePost() {
                     }
                     keyExtractor={(val) => val.apId ?? val.title}
                     placeholder="Flair"
-                    renderOption={(opt) => (
-                      <Badge
-                        className="rounded-full"
-                        style={{
-                          backgroundColor:
-                            opt.value.backgroundColor ?? undefined,
-                          color: opt.value.color ?? undefined,
-                        }}
-                      >
-                        {opt.label}
-                      </Badge>
-                    )}
+                    renderOption={(opt) => <Flair flair={opt.value} />}
                   />
                 </div>
               )}

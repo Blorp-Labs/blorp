@@ -32,7 +32,7 @@ import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
 import { useFlairs } from "@/src/stores/flairs";
-import { Badge } from "../ui/badge";
+import { Flair } from "../flair";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -212,16 +212,7 @@ export function FeedPostCard(props: PostProps) {
       {flairs && flairs.length > 0 && (
         <div className="flex flex-row">
           {flairs.map((flair, index) => (
-            <Badge
-              key={flair?.data.id ?? index}
-              className="rounded-full"
-              style={{
-                backgroundColor: flair.data.backgroundColor ?? undefined,
-                color: flair.data.color ?? undefined,
-              }}
-            >
-              {flair?.data.title}
-            </Badge>
+            <Flair key={flair?.data.id ?? index} flair={flair.data} />
           ))}
         </div>
       )}

@@ -10,7 +10,7 @@ import { isTest } from "../lib/device";
 type Data = {
   communityView: Schemas.Community;
   mods?: Schemas.Person[];
-  flairs?: { id: number };
+  flairs?: { id: number }[];
 };
 
 type CachedCommunity = {
@@ -63,6 +63,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
             ...patch.communityView,
           },
         };
+        updatedCommunityData.flairs = updatedCommunityData.flairs?.map((f) =>
+          _.pick(f, ["id"]),
+        );
         set({
           communities: {
             ...communities,
@@ -87,6 +90,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
               ...view.communityView,
             },
           };
+          updatedCommunityData.flairs = updatedCommunityData.flairs?.map((f) =>
+            _.pick(f, ["id"]),
+          );
           set({
             communities: {
               ...prev.communities,
@@ -108,15 +114,17 @@ export const useCommunitiesStore = create<CommunityStore>()(
           if (slug) {
             const cacheKey = prefix(slug);
             const prevCommunityData = prev[cacheKey]?.data;
-            newCommunities[cacheKey] = {
-              data: {
-                ...prevCommunityData,
-                ...view,
-                communityView: {
-                  ...prevCommunityData?.communityView,
-                  ...view.communityView,
-                },
+            const data = {
+              ...prevCommunityData,
+              ...view,
+              communityView: {
+                ...prevCommunityData?.communityView,
+                ...view.communityView,
               },
+            };
+            data.flairs = data.flairs?.map((f) => _.pick(f, ["id"]));
+            newCommunities[cacheKey] = {
+              data,
               lastUsed: Date.now(),
             };
           }
