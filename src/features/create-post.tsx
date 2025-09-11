@@ -10,6 +10,7 @@ import {
 import { VirtualList } from "@/src/components/virtual-list";
 import { CommunityCard } from "../components/communities/community-card";
 import {
+  useCommunity,
   useCreatePost,
   useEditPost,
   useListCommunities,
@@ -41,7 +42,7 @@ import { UserDropdown } from "../components/nav";
 import { Skeleton } from "../components/ui/skeleton";
 import { FaRegImage } from "react-icons/fa6";
 import { Label } from "@/src/components/ui/label";
-import { cn } from "../lib/utils";
+import { cn, isNotNil } from "../lib/utils";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Link } from "@/src/routing/index";
@@ -58,6 +59,7 @@ import { Sidebar, SidebarContent } from "../components/sidebar";
 import { useCommunitiesStore } from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { MultiSelect } from "../components/ui/multi-select";
 
 dayjs.extend(localizedFormat);
 
@@ -194,6 +196,11 @@ export function CreatePost() {
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
 
   useLoadRecentCommunity(draftId, draft);
+
+  const community = useCommunity({
+    name: draft.communitySlug,
+  });
+  const flairs = community.data?.flairs;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -359,6 +366,26 @@ export function CreatePost() {
                 <ToggleGroupItem value="media">Image</ToggleGroupItem>
                 <ToggleGroupItem value="link">Link</ToggleGroupItem>
               </ToggleGroup>
+
+              {flairs && flairs.length > 0 && (
+                <div className="gap-2 flex flex-col">
+                  <Label htmlFor={`${id}-flair`}>Flair</Label>
+                  <MultiSelect
+                    setSelectedValues={(values) => {
+                      patchDraft(draftId, {
+                        flairs: values,
+                      });
+                    }}
+                    selectedValues={draft.flairs ?? []}
+                    options={
+                      flairs.map(({ title }) => ({
+                        value: title,
+                        label: title,
+                      })) ?? []
+                    }
+                  />
+                </div>
+              )}
 
               {draft.type === "link" && (
                 <div className="gap-2 flex flex-col">

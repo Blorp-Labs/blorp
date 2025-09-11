@@ -10,6 +10,7 @@ import { isTest } from "../lib/device";
 type Data = {
   communityView: Schemas.Community;
   mods?: Schemas.Person[];
+  flairs?: { id: number };
 };
 
 type CachedCommunity = {

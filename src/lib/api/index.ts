@@ -45,6 +45,7 @@ import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
 import { isErrorLike, isNotNil, normalizeInstance } from "../utils";
 import { compressImage } from "../image";
+import { useFlairsStore } from "@/src/stores/flairs";
 
 enum Errors2 {
   OBJECT_NOT_FOUND = "couldnt_find_object",
@@ -237,6 +238,7 @@ export function usePost({
   const cachePosts = usePostsStore((s) => s.cachePosts);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
 
   return useQuery({
     queryKey,
@@ -245,7 +247,7 @@ export function usePost({
         throw new Error("ap_id undefined");
       }
 
-      const { post, creator, community } = await (
+      const { post, creator, community, flairs } = await (
         await api
       ).getPost({ apId }, { signal });
 
@@ -265,6 +267,9 @@ export function usePost({
       }
       if (creator) {
         cacheProfiles(getCachePrefixer(), [creator]);
+      }
+      if (flairs) {
+        cacheFlairs(getCachePrefixer(), flairs);
       }
 
       return post;
@@ -441,6 +446,7 @@ export function usePosts(form: Forms.GetPosts) {
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
 
   const queryFn = async ({
     pageParam,
@@ -475,6 +481,11 @@ export function usePosts(form: Forms.GetPosts) {
     cacheProfiles(
       getCachePrefixer(),
       posts.map((p) => p.creator).filter(isNotNil),
+    );
+
+    cacheFlairs(
+      getCachePrefixer(),
+      posts.flatMap((p) => p.flairs).filter(isNotNil),
     );
 
     return {
@@ -578,6 +589,7 @@ export function useCommunity({
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
 
   const queryKey = [
     ...queryKeyPrefix,
@@ -605,6 +617,9 @@ export function useCommunity({
         },
       ]);
       cacheProfiles(getCachePrefixer(), res.mods);
+      if (res.flairs) {
+        cacheFlairs(getCachePrefixer(), res.flairs);
+      }
       return res;
     },
     enabled: !!form.name && enabled,

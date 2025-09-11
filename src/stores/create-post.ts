@@ -14,6 +14,7 @@ export type CommunityPartial = Pick<
 export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
   type: "text" | "media" | "link";
   createdAt: number;
+  flairs?: string[];
 }
 
 type CreatePostStore = {
@@ -44,7 +45,10 @@ export function isEmptyDraft(draft: Draft) {
   return true;
 }
 
-export function postToDraft(post: Schemas.Post): Draft {
+export function postToDraft(
+  post: Schemas.Post,
+  flairs?: Schemas.Flair[],
+): Draft {
   return {
     title: post.title,
     body: post.body ?? "",
@@ -55,6 +59,7 @@ export function postToDraft(post: Schemas.Post): Draft {
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,
+    flairs: flairs?.map((f) => f.title) ?? [],
   };
 }
 

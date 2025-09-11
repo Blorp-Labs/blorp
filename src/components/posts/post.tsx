@@ -31,6 +31,8 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
+import { useFlairs } from "@/src/stores/flairs";
+import { Badge } from "../ui/badge";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -116,6 +118,8 @@ export function FeedPostCard(props: PostProps) {
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const patchPost = usePostsStore((s) => s.patchPost);
 
@@ -205,6 +209,20 @@ export function FeedPostCard(props: PostProps) {
         <CrossPosts key={post.apId} crossPosts={post.crossPosts} />
       )}
 
+      {flairs && flairs.length > 0 && (
+        <div className="flex flex-row">
+          {flairs.map((flair, index) => (
+            <Badge
+              key={flair?.data.id ?? index}
+              variant="brand"
+              className="rounded-full"
+            >
+              {flair?.data.title}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       <Link
         to={`${linkCtx.root}c/:communityName/posts/:post`}
         params={{
@@ -222,6 +240,7 @@ export function FeedPostCard(props: PostProps) {
         >
           {post.deleted ? "deleted" : post.title}
         </span>
+
         {!props.detailView &&
           post.body &&
           !post.deleted &&
