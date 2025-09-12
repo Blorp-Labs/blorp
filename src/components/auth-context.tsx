@@ -24,7 +24,6 @@ import {
   IonContent,
   IonHeader,
   IonModal,
-  IonTitle,
   IonToolbar,
 } from "@ionic/react";
 import { Input } from "./ui/input";
@@ -53,10 +52,12 @@ import {
 } from "./ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Software } from "../lib/api/adapters/api-blueprint";
+import { ToolbarTitle } from "./toolbar/toolbar-title";
+import { ChevronLeft, X } from "@/src/components/icons";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
-    <span className="mx-auto text-muted-foreground text-sm">
+    <span className="mx-auto text-muted-foreground text-sm text-center">
       By signing up you agree to {instance.baseurl} and{" "}
       <a
         className="underline"
@@ -91,6 +92,7 @@ function InstanceSelect({
         <SelectValue>@{instance.baseurl}</SelectValue>
       </SelectTrigger>
       <SelectContent align="end">
+        {/* TODO: Render @instance instead of full url */}
         {env.defaultInstances.map((i) => (
           <SelectItem key={i} value={i}>
             {i}
@@ -778,6 +780,7 @@ function AuthModal({
         <IonToolbar>
           <ToolbarButtons side="left">
             <IonButton
+              className="size-5"
               onClick={() => {
                 if (
                   step !== "instance-selection" &&
@@ -790,16 +793,21 @@ function AuthModal({
               }}
             >
               {step !== "instance-selection" &&
-              !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
-                ? "Back"
-                : "Close"}
+              !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ? (
+                <ChevronLeft
+                  className="-ml-1"
+                  aria-label="Back to instance selection"
+                />
+              ) : (
+                <X className="-ml-1 scale-150" aria-label="Close auth modal" />
+              )}
             </IonButton>
+            <ToolbarTitle numRightIcons={0}>
+              {step === "instance-selection"
+                ? "Chose an instance"
+                : instance.baseurl}
+            </ToolbarTitle>
           </ToolbarButtons>
-          <IonTitle>
-            {step === "instance-selection"
-              ? "Chose an instance"
-              : instance.baseurl}
-          </IonTitle>
           {step !== "instance-selection" && (
             <ToolbarButtons side="right">
               <IonButton

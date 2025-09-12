@@ -15,6 +15,10 @@ export {
 } from "react-icons/lu";
 export { FiSidebar as SidebarOutline } from "react-icons/fi";
 export { FiLogOut as LogOut } from "react-icons/fi";
+export {
+  FaChevronRight as ChevronRight,
+  FaChevronLeft as ChevronLeft,
+} from "react-icons/fa6";
 export { PiShareFat as Share } from "react-icons/pi";
 export { CgSearch as Search, CgSpinner as Spinner } from "react-icons/cg";
 export { MdOutlineImageNotSupported as NoImage } from "react-icons/md";
