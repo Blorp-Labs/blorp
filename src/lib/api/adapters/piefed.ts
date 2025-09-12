@@ -152,7 +152,7 @@ export const pieFedPostViewSchema = z.object({
   saved: z.boolean(),
   //subscribed: z.string(),
   //unread_comments: z.number(),
-  flair: z.array(pieFedFlairSchema).optional().nullable(),
+  flair_list: z.array(pieFedFlairSchema).optional().nullable(),
 });
 
 export const pieFedCommunityCountsSchema = z.object({
@@ -438,7 +438,7 @@ function convertPost(
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
-    flairs: postView.flair?.map((flair) => ({ id: flair.id })) ?? null,
+    flairs: postView.flair_list?.map((flair) => ({ id: flair.id })) ?? null,
   };
 }
 
@@ -895,7 +895,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           post: convertPost(post),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
-          flairs: post.flair?.map(convertFlair),
+          flairs: post.flair_list?.map(convertFlair),
         })),
       };
     } catch (err) {
@@ -1043,7 +1043,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         post: convertPost(post_view, cross_posts),
         community_view: convertCommunity(community_view, "partial"),
         creator: convertPerson({ person: post_view.creator }, "partial"),
-        flairs: post_view.flair?.map(convertFlair),
+        flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
       console.log(err);
