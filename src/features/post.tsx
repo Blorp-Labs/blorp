@@ -6,7 +6,7 @@ import {
   StickyPostHeader,
   PostCard,
   PostProps,
-  PostCardSkeleton,
+  LargePostCardSkeleton,
 } from "@/src/components/posts/post";
 import { CommunitySidebar } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
@@ -322,7 +322,7 @@ export default function Post() {
                   />
                 ) : (
                   <ContentGutters className="px-0" key="post-skeleton">
-                    <PostCardSkeleton hideImage={false} detailView />
+                    <LargePostCardSkeleton hideImage={false} detailView />
                     <></>
                   </ContentGutters>
                 ),

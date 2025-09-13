@@ -1,7 +1,7 @@
 import { useCommunity, useSearch } from "@/src/lib/api";
 import {
   PostCard,
-  PostCardSkeleton,
+  LargePostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import { CommunitySidebar } from "@/src/components/communities/community-sidebar";
@@ -451,7 +451,7 @@ export default function SearchFeed({
                   {type === "communities" ? (
                     <CommunityCardSkeleton className="flex-1" />
                   ) : (
-                    <PostCardSkeleton />
+                    <LargePostCardSkeleton />
                   )}
                   <></>
                 </ContentGutters>

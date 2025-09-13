@@ -1,6 +1,6 @@
 import {
   PostCard,
-  PostCardSkeleton,
+  LargePostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import {
@@ -265,7 +265,7 @@ export default function CommunityFeed() {
             placeholder={
               posts.isPending ? (
                 <ContentGutters className="px-0">
-                  <PostCardSkeleton />
+                  <LargePostCardSkeleton />
                   <></>
                 </ContentGutters>
               ) : undefined
