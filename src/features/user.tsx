@@ -1,8 +1,8 @@
 import { ContentGutters } from "../components/gutters";
 import { usePersonDetails, usePersonFeed } from "../lib/api";
 import {
-  FeedPostCard,
-  PostCardSkeleton,
+  PostCard,
+  LargePostCardSkeleton,
   PostProps,
 } from "../components/posts/post";
 import { MarkdownRenderer } from "../components/markdown/renderer";
@@ -37,7 +37,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} featuredContext="user" />
+    <PostCard {...props} featuredContext="user" />
     <></>
   </ContentGutters>
 ));
@@ -248,7 +248,7 @@ export default function User() {
             refresh={refetch}
             placeholder={
               <ContentGutters className="px-0">
-                <PostCardSkeleton />
+                <LargePostCardSkeleton />
                 <></>
               </ContentGutters>
             }

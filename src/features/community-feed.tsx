@@ -1,6 +1,6 @@
 import {
-  FeedPostCard,
-  PostCardSkeleton,
+  PostCard,
+  LargePostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import {
@@ -52,7 +52,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} />
+    <PostCard {...props} />
     <></>
   </ContentGutters>
 ));
@@ -255,7 +255,7 @@ export default function CommunityFeed() {
             placeholder={
               posts.isPending ? (
                 <ContentGutters className="px-0">
-                  <PostCardSkeleton />
+                  <LargePostCardSkeleton />
                   <></>
                 </ContentGutters>
               ) : undefined

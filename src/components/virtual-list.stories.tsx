@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { VirtualList } from "./virtual-list";
-import { FeedPostCard } from "./posts/post";
+import { PostCard } from "./posts/post";
 import * as api from "@/test-utils/api";
 import _ from "lodash";
 import { useAuth } from "../stores/auth";
@@ -59,7 +59,7 @@ export const PostFeed: Story = {
   args: {
     className: "h-[500px]",
     data: POST_FEED.map((p) => p.post.apId),
-    renderItem: ({ item }) => <FeedPostCard apId={item as string} />,
+    renderItem: ({ item }) => <PostCard apId={item as string} />,
     numPlaceholders: 200,
     estimatedItemSize: 24,
   },

@@ -1,6 +1,6 @@
 import {
-  FeedPostCard,
-  PostCardSkeleton,
+  PostCard,
+  LargePostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
@@ -42,7 +42,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} featuredContext="home" />
+    <PostCard {...props} featuredContext="home" />
     <></>
   </ContentGutters>
 ));
@@ -257,7 +257,7 @@ export default function HomeFeed() {
             }
             placeholder={
               <ContentGutters className="px-0">
-                <PostCardSkeleton />
+                <LargePostCardSkeleton />
                 <></>
               </ContentGutters>
             }
