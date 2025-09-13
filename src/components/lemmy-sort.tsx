@@ -12,6 +12,7 @@ import {
   FaArrowTrendUp,
   FaHourglassEnd,
 } from "react-icons/fa6";
+import { HiOutlineRectangleStack } from "react-icons/hi2";
 
 import { IoSkullOutline, IoChevronDown } from "react-icons/io5";
 import { TbMessageCircleUp } from "react-icons/tb";
@@ -20,6 +21,7 @@ import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { useAvailableSorts } from "../lib/api";
+import { useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
   return str.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -331,6 +333,68 @@ export function PostSortButton({
           >
             {isValidSort && getIconForSort(postSort)}
             {!isValidSort && <TbArrowsDownUp />}
+          </div>
+        )
+      }
+    />
+  );
+}
+
+export function PostCardStyleButton({
+  hideOnGtMd,
+  align = "end",
+  variant = "icon",
+  className,
+}: {
+  hideOnGtMd?: boolean;
+  align?: "start" | "end";
+  variant?: "button" | "icon";
+  className?: string;
+}) {
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+  const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
+
+  const media = useMedia();
+
+  if (hideOnGtMd && media.md) {
+    return null;
+  }
+
+  return (
+    <ActionMenu
+      header="Display posts as"
+      align={align}
+      actions={[
+        {
+          text: "Card",
+          value: "large",
+          onClick: () => setPostCardStyle("large"),
+        },
+        {
+          text: "Compact",
+          value: "small",
+          onClick: () => setPostCardStyle("small"),
+        },
+      ]}
+      selectedValue={postCardStyle}
+      triggerAsChild={variant === "button"}
+      trigger={
+        variant === "button" ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className={className}
+            aria-label={postCardStyle}
+          >
+            <HiOutlineRectangleStack />
+            <IoChevronDown />
+          </Button>
+        ) : (
+          <div
+            className={cn("text-2xl text-muted-foreground", className)}
+            aria-label={postCardStyle}
+          >
+            <HiOutlineRectangleStack />
           </div>
         )
       }

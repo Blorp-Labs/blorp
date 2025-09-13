@@ -1,5 +1,5 @@
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
@@ -51,7 +51,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} />
+    <PostCard {...props} />
     <></>
   </ContentGutters>
 ));

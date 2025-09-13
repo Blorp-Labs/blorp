@@ -3,8 +3,8 @@ import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
 import { usePost, useComments, useCommunity } from "@/src/lib/api/index";
 import {
-  PostBottomBar,
-  FeedPostCard,
+  StickyPostHeader,
+  PostCard,
   PostProps,
   PostCardSkeleton,
 } from "@/src/components/posts/post";
@@ -68,7 +68,7 @@ function useDelayedReady(delay: number) {
 
 const MemoedPostCard = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} detailView />
+    <PostCard {...props} detailView />
     <></>
   </ContentGutters>
 ));
@@ -84,7 +84,7 @@ function PostBottomBarWithCtx({
   return (
     <>
       <ContentGutters className="px-0">
-        <PostBottomBar
+        <StickyPostHeader
           apId={postApId}
           commentsCount={commentCount}
           onReply={() =>

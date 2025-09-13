@@ -91,29 +91,96 @@ export function PostCardSkeleton(props: {
   );
 }
 
-export function FeedPostCard(props: PostProps) {
-  const id = useId();
+export function StickyPostHeader({
+  apId,
+}: {
+  apId: string;
+  commentsCount: number;
+  onReply: () => void;
+}) {
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const postView = usePostsStore(
+    (s) => s.posts[getCachePrefixer()(apId)]?.data,
+  );
 
-  const showNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
+  if (!postView) {
+    return null;
+  }
+  return (
+    <div
+      className={cn(
+        "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
+        postView.thumbnailUrl && "max-md:pr-0",
+      )}
+    >
+      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden">
+        {postView.title}
+      </div>
+      {postView.thumbnailUrl && (
+        <img
+          src={postView.thumbnailUrl}
+          className="w-[58px] aspect-square object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
+function CrossPosts({
+  crossPosts,
+}: {
+  crossPosts: Schemas.Post["crossPosts"];
+}) {
+  const linkCtx = useLinkContext();
+  return (
+    <span className="text-brand text-sm flex flex-row items-center gap-x-2 gap-y-1 flex-wrap">
+      <LuRepeat2 />
+      {crossPosts?.map(({ apId, communitySlug }) => (
+        <Link
+          key={apId}
+          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          params={{
+            post: encodeApId(apId),
+            communityName: communitySlug,
+          }}
+          className="hover:underline line-clamp-1"
+        >
+          {communitySlug}
+        </Link>
+      ))}
+    </span>
+  );
+}
+
+function LargePostCard({
+  post,
+  detailView,
+  featuredContext,
+  pinned,
+  modApIds,
+  apId,
+}: {
+  post?: Schemas.Post;
+  detailView?: boolean;
+  featuredContext: PostProps["featuredContext"];
+  pinned: boolean;
+  modApIds?: string[];
+  apId: string;
+}) {
   const blurNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
+
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(props.apId)]?.data,
-  );
 
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const [removeBlur, setRemoveBlur] = useState(false);
 
   const linkCtx = useLinkContext();
-
-  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
@@ -129,10 +196,6 @@ export function FeedPostCard(props: PostProps) {
       : undefined,
   );
 
-  if (post?.nsfw === true && !showNsfw) {
-    return props.detailView ? <Notice>Hidden due to NSFW</Notice> : null;
-  }
-
   if (!post) {
     return <PostCardSkeleton />;
   }
@@ -143,31 +206,14 @@ export function FeedPostCard(props: PostProps) {
     displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
   }
 
+  const encodedApId = encodeApId(post.apId);
   const embed = post ? getPostEmbed(post) : null;
 
   const showImage = embed?.type === "image" && !post.deleted;
   const showArticle = embed?.type === "article" && !post?.deleted;
   const blurImg = post.nsfw && !removeBlur ? blurNsfw : false;
 
-  const encodedApId = encodeApId(post.apId);
-
-  const featuredCommunity =
-    post.optimisticFeaturedCommunity ?? post.featuredCommunity;
-  const featuredLocal = post.optimisticFeaturedLocal ?? post.featuredLocal;
-  const pinned =
-    props.featuredContext === "community"
-      ? featuredCommunity
-      : props.featuredContext === "home"
-        ? featuredLocal
-        : false;
-
-  for (const keyword of filterKeywords) {
-    if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
-      return props.detailView ? (
-        <Notice>Hidden due to keyword filter "{keyword}"</Notice>
-      ) : null;
-    }
-  }
+  const id = useId();
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -177,7 +223,7 @@ export function FeedPostCard(props: PostProps) {
       data-testid="post-card"
       className={cn(
         "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 overflow-x-hidden",
-        props.detailView ? "max-md:bg-background" : "border-b",
+        detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
@@ -186,22 +232,21 @@ export function FeedPostCard(props: PostProps) {
         post={post}
         pinned={pinned}
         showCreator={
-          (props.featuredContext !== "user" &&
-            props.featuredContext !== "search") ||
-          props.detailView
+          (featuredContext !== "user" && featuredContext !== "search") ||
+          detailView
         }
         showCommunity={
-          props.featuredContext === "home" ||
-          props.featuredContext === "user" ||
-          props.featuredContext === "search"
+          featuredContext === "home" ||
+          featuredContext === "user" ||
+          featuredContext === "search"
             ? true
-            : props.detailView
+            : detailView
         }
-        canMod={myApId ? props.modApIds?.includes(myApId) : false}
-        isMod={props.modApIds?.includes(post.creatorApId)}
+        canMod={myApId ? modApIds?.includes(myApId) : false}
+        isMod={modApIds?.includes(post.creatorApId)}
       />
 
-      {props.detailView && post.crossPosts && post.crossPosts.length > 0 && (
+      {detailView && post.crossPosts && post.crossPosts.length > 0 && (
         <CrossPosts key={post.apId} crossPosts={post.crossPosts} />
       )}
 
@@ -216,13 +261,13 @@ export function FeedPostCard(props: PostProps) {
         <span
           className={twMerge(
             "text-xl font-medium",
-            !props.detailView && post.read && "text-muted-foreground",
+            !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
         >
           {post.deleted ? "deleted" : post.title}
         </span>
-        {!props.detailView &&
+        {!detailView &&
           post.body &&
           !post.deleted &&
           embed?.type === "text" && (
@@ -241,7 +286,7 @@ export function FeedPostCard(props: PostProps) {
       {showImage && embed.thumbnail && (
         <Link
           to={
-            props.featuredContext === "home"
+            featuredContext === "home"
               ? "/home/lightbox"
               : `${linkCtx.root}c/:communityName/lightbox`
           }
@@ -251,7 +296,7 @@ export function FeedPostCard(props: PostProps) {
           searchParams={`?apId=${encodeApId(post.apId)}`}
           className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
           onClick={() => {
-            if (!removeBlur && props.detailView) {
+            if (!removeBlur && detailView) {
               setRemoveBlur(true);
             }
           }}
@@ -317,7 +362,7 @@ export function FeedPostCard(props: PostProps) {
         <PostLoopsEmbed
           url={embed.embedUrl}
           thumbnail={embed.thumbnail}
-          autoPlay={props.detailView}
+          autoPlay={detailView}
           blurNsfw={blurImg}
         />
       )}
@@ -325,7 +370,7 @@ export function FeedPostCard(props: PostProps) {
         <YouTubeVideoEmbed url={embed.embedUrl} />
       )}
 
-      {props.detailView && post.body && !post.deleted && (
+      {detailView && post.body && !post.deleted && (
         <div className="flex-1" {...doubeTapLike}>
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
@@ -336,7 +381,7 @@ export function FeedPostCard(props: PostProps) {
           leftHandedMode && "flex-row-reverse",
         )}
       >
-        <PostShareButton postApId={props.apId} />
+        <PostShareButton postApId={apId} />
         <div className="flex-1" />
         <PostCommentsButton postApId={post.apId} />
         <PostVoting apId={post.apId} />
@@ -345,63 +390,212 @@ export function FeedPostCard(props: PostProps) {
   );
 }
 
-export function PostBottomBar({
+function SmallPostCard({
+  post,
+  detailView,
+  featuredContext,
+  pinned,
+  modApIds,
   apId,
 }: {
+  post?: Schemas.Post;
+  detailView?: boolean;
+  featuredContext: PostProps["featuredContext"];
+  pinned: boolean;
+  modApIds?: string[];
   apId: string;
-  commentsCount: number;
-  onReply: () => void;
 }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const postView = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(apId)]?.data,
+  const blurNsfw =
+    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
+
+  const myApId = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
 
-  if (!postView) {
-    return null;
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  const linkCtx = useLinkContext();
+
+  const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+
+  const patchPost = usePostsStore((s) => s.patchPost);
+
+  if (!post) {
+    return <PostCardSkeleton />;
   }
+
+  let displayUrl = post.url;
+  if (displayUrl) {
+    const parsedUrl = new URL(displayUrl);
+    displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
+  }
+
+  const encodedApId = encodeApId(post.apId);
+  const embed = post ? getPostEmbed(post) : null;
+
+  const showImage = !post.deleted;
+  const blurImg = post.nsfw && blurNsfw;
+
+  const id = useId();
+
+  const titleId = `${id}-title`;
+  const bodyId = `${id}-title`;
+
   return (
-    <div
+    <article
+      data-testid="post-card"
       className={cn(
-        "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
-        postView.thumbnailUrl && "max-md:pr-0",
+        "flex-1 py-3 gap-4 flex max-md:px-3.5 overflow-x-hidden",
+        detailView ? "max-md:bg-background" : "border-b",
       )}
+      aria-labelledby={titleId}
+      aria-describedby={bodyId}
     >
-      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden">
-        {postView.title}
-      </div>
-      {postView.thumbnailUrl && (
-        <img
-          src={postView.thumbnailUrl}
-          className="w-[58px] aspect-square object-cover"
+      {embed?.thumbnail && showImage && (
+        <ProgressiveImage
+          lowSrc={embed?.thumbnail}
+          highSrc={embed?.fullResThumbnail}
+          className={cn(
+            "h-32 w-32 md:w-40 rounded-md shrink-0",
+            blurImg && "blur-3xl",
+          )}
+          onAspectRatio={(thumbnailAspectRatio) => {
+            if (!post.thumbnailAspectRatio) {
+              patchPost(post.apId, getCachePrefixer(), {
+                thumbnailAspectRatio,
+              });
+            }
+          }}
         />
       )}
-    </div>
+
+      <div className="flex-1 flex flex-col">
+        <PostByline
+          post={post}
+          pinned={pinned}
+          showCreator={
+            (featuredContext !== "user" && featuredContext !== "search") ||
+            detailView
+          }
+          showCommunity={
+            featuredContext === "user" || featuredContext === "search"
+              ? true
+              : detailView
+          }
+          canMod={myApId ? modApIds?.includes(myApId) : false}
+          isMod={modApIds?.includes(post.creatorApId)}
+        />
+
+        {detailView && post.crossPosts && post.crossPosts.length > 0 && (
+          <CrossPosts key={post.apId} crossPosts={post.crossPosts} />
+        )}
+
+        <Link
+          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          params={{
+            communityName: post.communitySlug,
+            post: encodedApId,
+          }}
+          className="gap-2 flex flex-col flex-1"
+        >
+          <span
+            className={twMerge(
+              "font-medium line-clamp-2",
+              !detailView && post.read && "text-muted-foreground",
+            )}
+            id={titleId}
+          >
+            {post.deleted ? "deleted" : post.title}
+          </span>
+          {!detailView &&
+            post.body &&
+            !post.deleted &&
+            embed?.type === "text" && (
+              <p
+                className={cn(
+                  "text-sm line-clamp-3 leading-relaxed",
+                  post.read && "text-muted-foreground",
+                )}
+                id={bodyId}
+              >
+                {removeMd(post.body)}
+              </p>
+            )}
+        </Link>
+
+        <div
+          className={cn(
+            "flex flex-row items-center justify-end gap-2.5 pt-1",
+            leftHandedMode && "flex-row-reverse",
+          )}
+        >
+          <PostShareButton postApId={apId} />
+          <div className="flex-1" />
+          <PostCommentsButton postApId={post.apId} />
+          <PostVoting apId={post.apId} />
+        </div>
+      </div>
+    </article>
   );
 }
 
-function CrossPosts({
-  crossPosts,
-}: {
-  crossPosts: Schemas.Post["crossPosts"];
-}) {
-  const linkCtx = useLinkContext();
+export function PostCard(props: PostProps) {
+  const showNsfw =
+    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
+
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const post = usePostsStore(
+    (s) => s.posts[getCachePrefixer()(props.apId)]?.data,
+  );
+
+  const featuredCommunity =
+    post?.optimisticFeaturedCommunity ?? post?.featuredCommunity ?? false;
+  const featuredLocal =
+    post?.optimisticFeaturedLocal ?? post?.featuredLocal ?? false;
+  const pinned =
+    props.featuredContext === "community"
+      ? featuredCommunity
+      : props.featuredContext === "home"
+        ? featuredLocal
+        : false;
+
+  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+
+  for (const keyword of filterKeywords) {
+    if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
+      return props.detailView ? (
+        <Notice>Hidden due to keyword filter "{keyword}"</Notice>
+      ) : null;
+    }
+  }
+
+  if (post?.nsfw === true && !showNsfw) {
+    return props.detailView ? <Notice>Hidden due to NSFW</Notice> : null;
+  }
+
+  if (props.detailView || postCardStyle === "large") {
+    return (
+      <LargePostCard
+        post={post}
+        detailView={props.detailView}
+        featuredContext={props.featuredContext}
+        pinned={pinned}
+        modApIds={props.modApIds}
+        apId={props.apId}
+      />
+    );
+  }
+
   return (
-    <span className="text-brand text-sm flex flex-row items-center gap-x-2 gap-y-1 flex-wrap">
-      <LuRepeat2 />
-      {crossPosts?.map(({ apId, communitySlug }) => (
-        <Link
-          key={apId}
-          to={`${linkCtx.root}c/:communityName/posts/:post`}
-          params={{
-            post: encodeApId(apId),
-            communityName: communitySlug,
-          }}
-          className="hover:underline line-clamp-1"
-        >
-          {communitySlug}
-        </Link>
-      ))}
-    </span>
+    <SmallPostCard
+      post={post}
+      detailView={props.detailView}
+      featuredContext={props.featuredContext}
+      pinned={pinned}
+      modApIds={props.modApIds}
+      apId={props.apId}
+    />
   );
 }
