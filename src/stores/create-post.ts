@@ -238,20 +238,20 @@ let alreadyClean = false;
 
 sync(useCreatePostStore);
 
-export function useFlairLookup(flairs?: Schemas.Flair[]) {
-  return useMemo(() => {
-    if (!flairs) {
-      return {};
-    }
-    const flairsByTitle = _.keyBy(flairs, "title");
-    const flairsByApId = _.keyBy(
-      flairs.filter((f) => f.apId),
-      "apId",
-    );
+export function getFlairLookup(flairs?: Schemas.Flair[]) {
+  if (!flairs) {
+    return () => undefined;
+  }
+  const flairsByTitle = _.keyBy(flairs, "title");
+  const flairsByApId = _.keyBy(
+    flairs.filter((f) => f.apId),
+    "apId",
+  );
+  return ({ apId, title }: Pick<Schemas.Flair, "apId" | "title">) => {
+    return (apId ? flairsByApId[apId] : undefined) ?? flairsByTitle[title];
+  };
+}
 
-    return {
-      ...flairsByTitle,
-      ...flairsByApId,
-    };
-  }, [flairs]);
+export function useFlairLookup(flairs?: Schemas.Flair[]) {
+  return useMemo(() => getFlairLookup(flairs), [flairs]);
 }

@@ -382,9 +382,7 @@ export function CreatePost() {
                       });
                     }}
                     value={
-                      draft.flairs
-                        ?.map((flair) => flairLookup[flair.apId ?? flair.title])
-                        .filter(isNotNil) ?? []
+                      draft.flairs?.map(flairLookup).filter(isNotNil) ?? []
                     }
                     options={
                       flairs.map((flair) => ({

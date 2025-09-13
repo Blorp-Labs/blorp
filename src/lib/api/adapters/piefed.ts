@@ -10,6 +10,8 @@ import {
 } from "./api-blueprint";
 import z from "zod";
 import { createSlug } from "../utils";
+import { getFlairLookup } from "@/src/stores/create-post";
+import { isNotNil } from "../../utils";
 
 const POST_SORTS = [
   "Active",
@@ -1465,11 +1467,8 @@ export class PieFedApi implements ApiBlueprint<null> {
         const { flairs } = await this.getCommunity({
           slug: convertPost(data.post_view).communitySlug,
         });
-        const selectedFlairs = flairs?.filter((f) =>
-          form.flairs?.find((formF) =>
-            f.apId ? formF.apId === f.apId : formF.title === f.title,
-          ),
-        );
+        const flairLookup = getFlairLookup(flairs);
+        const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
         await this.post("/post/assign_flair", {
           post_id: data.post_view.post.id,
           flair_id_list: selectedFlairs?.map((f) => f.id),
@@ -1499,11 +1498,8 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      const selectedFlairs = flairs?.filter((f) =>
-        form.flairs?.find((formF) =>
-          f.apId ? formF.apId === f.apId : formF.title === f.title,
-        ),
-      );
+      const flairLookup = getFlairLookup(flairs);
+      const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
       if (selectedFlairs) {
         await this.post("/post/assign_flair", {
           post_id: data.post_view.post.id,
