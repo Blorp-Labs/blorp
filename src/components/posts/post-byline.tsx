@@ -34,6 +34,7 @@ import { useCommunitiesStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
+import { useTranslation } from "react-i18next";
 
 function usePostActions({
   post,
@@ -44,6 +45,8 @@ function usePostActions({
   canMod?: boolean;
   tag?: string;
 }): ActionMenuProps["actions"] {
+  const { t } = useTranslation();
+
   const [alrt] = useIonAlert();
 
   const showReportModal = useShowPostReportModal();
@@ -131,7 +134,7 @@ function usePostActions({
         ]
       : []),
     {
-      text: saved ? "Unsave post" : "Save post",
+      text: saved ? t("unsave_post") : t("save_post"),
       onClick: () =>
         requireAuth().then(() => {
           savePost.mutateAsync({
