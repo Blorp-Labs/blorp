@@ -497,6 +497,7 @@ function SmallPostCard({
             communityName: post.communitySlug,
           }}
           searchParams={`?apId=${encodeApId(post.apId)}`}
+          className="relative"
         >
           {!imageLoaded && <Skeleton className="absolute inset-0 rounded-md" />}
           <ProgressiveImage
