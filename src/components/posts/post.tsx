@@ -47,7 +47,7 @@ export interface PostProps {
   modApIds?: string[];
 }
 
-export function PostCardSkeleton(props: {
+export function LargePostCardSkeleton(props: {
   hideImage?: boolean;
   detailView?: boolean;
 }) {
@@ -86,6 +86,39 @@ export function PostCardSkeleton(props: {
         <Skeleton className="h-7 w-16 rounded-full" />
       </div>
 
+      <Separator className="max-md:-mx-3.5 w-auto!" />
+    </div>
+  );
+}
+
+function SmallPostCardSkeleton(props: {
+  hideImage?: boolean;
+  detailView?: boolean;
+}) {
+  const hideImage = useRef(Math.random()).current < 0.1;
+  return (
+    <div>
+      <div className="flex-1 py-3 gap-4 flex max-md:px-3.5 overflow-x-hidden">
+        {(!hideImage || props.hideImage === false) && (
+          <Skeleton className="h-32 w-32 md:w-40 rounded-md shrink-0" />
+        )}
+
+        <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
+          <div className="flex flex-row items-center gap-2 h-6">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+
+          <Skeleton className="h-7" />
+
+          <div className="flex-1" />
+
+          <div className="flex flex-row justify-end gap-2">
+            <Skeleton className="h-7 w-10 rounded-full" />
+            <Skeleton className="h-7 w-16 rounded-full" />
+          </div>
+        </div>
+      </div>
       <Separator className="max-md:-mx-3.5 w-auto!" />
     </div>
   );
@@ -197,7 +230,7 @@ function LargePostCard({
   );
 
   if (!post) {
-    return <PostCardSkeleton />;
+    return <LargePostCardSkeleton />;
   }
 
   let displayUrl = post.url;
@@ -405,6 +438,8 @@ function SmallPostCard({
   modApIds?: string[];
   apId: string;
 }) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   const blurNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
 
@@ -420,8 +455,10 @@ function SmallPostCard({
 
   const patchPost = usePostsStore((s) => s.patchPost);
 
+  const id = useId();
+
   if (!post) {
-    return <PostCardSkeleton />;
+    return <SmallPostCardSkeleton />;
   }
 
   let displayUrl = post.url;
@@ -435,8 +472,6 @@ function SmallPostCard({
 
   const showImage = !post.deleted;
   const blurImg = post.nsfw && blurNsfw;
-
-  const id = useId();
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -452,24 +487,38 @@ function SmallPostCard({
       aria-describedby={bodyId}
     >
       {embed?.thumbnail && showImage && (
-        <ProgressiveImage
-          lowSrc={embed?.thumbnail}
-          highSrc={embed?.fullResThumbnail}
-          className={cn(
-            "h-32 w-32 md:w-40 rounded-md shrink-0",
-            blurImg && "blur-3xl",
-          )}
-          onAspectRatio={(thumbnailAspectRatio) => {
-            if (!post.thumbnailAspectRatio) {
-              patchPost(post.apId, getCachePrefixer(), {
-                thumbnailAspectRatio,
-              });
-            }
+        <Link
+          to={
+            featuredContext === "home"
+              ? "/home/lightbox"
+              : `${linkCtx.root}c/:communityName/lightbox`
+          }
+          params={{
+            communityName: post.communitySlug,
           }}
-        />
+          searchParams={`?apId=${encodeApId(post.apId)}`}
+        >
+          {!imageLoaded && <Skeleton className="absolute inset-0 rounded-md" />}
+          <ProgressiveImage
+            lowSrc={embed?.thumbnail}
+            highSrc={embed?.fullResThumbnail}
+            className={cn(
+              "h-32 w-32 md:w-40 rounded-md shrink-0",
+              blurImg && "blur-3xl",
+            )}
+            onAspectRatio={(thumbnailAspectRatio) => {
+              setImageLoaded(true);
+              if (!post.thumbnailAspectRatio) {
+                patchPost(post.apId, getCachePrefixer(), {
+                  thumbnailAspectRatio,
+                });
+              }
+            }}
+          />
+        </Link>
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
         <PostByline
           post={post}
           pinned={pinned}
@@ -486,46 +535,24 @@ function SmallPostCard({
           isMod={modApIds?.includes(post.creatorApId)}
         />
 
-        {detailView && post.crossPosts && post.crossPosts.length > 0 && (
-          <CrossPosts key={post.apId} crossPosts={post.crossPosts} />
-        )}
-
         <Link
+          id={titleId}
           to={`${linkCtx.root}c/:communityName/posts/:post`}
           params={{
             communityName: post.communitySlug,
             post: encodedApId,
           }}
-          className="gap-2 flex flex-col flex-1"
+          className={cn(
+            "gap-2 flex flex-col flex-1 font-medium line-clamp-2",
+            !detailView && post.read && "text-muted-foreground",
+          )}
         >
-          <span
-            className={twMerge(
-              "font-medium line-clamp-2",
-              !detailView && post.read && "text-muted-foreground",
-            )}
-            id={titleId}
-          >
-            {post.deleted ? "deleted" : post.title}
-          </span>
-          {!detailView &&
-            post.body &&
-            !post.deleted &&
-            embed?.type === "text" && (
-              <p
-                className={cn(
-                  "text-sm line-clamp-3 leading-relaxed",
-                  post.read && "text-muted-foreground",
-                )}
-                id={bodyId}
-              >
-                {removeMd(post.body)}
-              </p>
-            )}
+          {post.deleted ? "deleted" : post.title}
         </Link>
 
         <div
           className={cn(
-            "flex flex-row items-center justify-end gap-2.5 pt-1",
+            "flex flex-row items-center justify-end gap-2.5",
             leftHandedMode && "flex-row-reverse",
           )}
         >
