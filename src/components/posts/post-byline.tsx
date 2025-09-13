@@ -34,6 +34,7 @@ import { useCommunitiesStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
+import { useFlairs } from "@/src/stores/flairs";
 
 function usePostActions({
   post,
@@ -63,6 +64,8 @@ function usePostActions({
   const tagUser = useTagUser();
 
   const saved = post.optimisticSaved ?? post.saved;
+
+  const flairs = useFlairs(post.flairs?.map((f) => f.id));
 
   return [
     ...(canMod
@@ -156,7 +159,13 @@ function usePostActions({
             text: "Edit post",
             onClick: () => {
               if (post) {
-                updateDraft(post.apId, postToDraft(post));
+                updateDraft(
+                  post.apId,
+                  postToDraft(
+                    post,
+                    flairs?.map((f) => f.data),
+                  ),
+                );
                 router.push(`/create?id=${encodedApId}`);
               }
             },

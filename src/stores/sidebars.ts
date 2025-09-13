@@ -20,6 +20,8 @@ type SidebarStore = {
   // Community sidebar
   communityAboutExpanded: boolean;
   setCommunityAboutExpanded: (val: boolean) => void;
+  communityFlairsExpanded: boolean;
+  setCommunityFlairsExpanded: (val: boolean) => void;
   communityModsExpanded: boolean;
   setCommunityModsExpanded: (val: boolean) => void;
 
@@ -56,6 +58,9 @@ export const useSidebarStore = create<SidebarStore>()(
       communityAboutExpanded: true,
       setCommunityAboutExpanded: (communityAboutExpanded: boolean) =>
         set({ communityAboutExpanded }),
+      communityFlairsExpanded: true,
+      setCommunityFlairsExpanded: (communityFlairsExpanded: boolean) =>
+        set({ communityFlairsExpanded }),
       communityModsExpanded: true,
       setCommunityModsExpanded: (communityModsExpanded: boolean) =>
         set({ communityModsExpanded }),

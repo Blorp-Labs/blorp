@@ -101,6 +101,7 @@ export function getPost(config?: {
     featuredLocal: false,
     read: false,
     altText: null,
+    flairs: [],
     ...config?.post,
   };
 

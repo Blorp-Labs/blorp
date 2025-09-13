@@ -6,10 +6,12 @@ import {
   isEmptyDraft,
   NEW_DRAFT,
   useCreatePostStore,
+  useFlairLookup,
 } from "../stores/create-post";
 import { VirtualList } from "@/src/components/virtual-list";
 import { CommunityCard } from "../components/communities/community-card";
 import {
+  useCommunity,
   useCreatePost,
   useEditPost,
   useListCommunities,
@@ -41,7 +43,7 @@ import { UserDropdown } from "../components/nav";
 import { Skeleton } from "../components/ui/skeleton";
 import { FaRegImage } from "react-icons/fa6";
 import { Label } from "@/src/components/ui/label";
-import { cn } from "../lib/utils";
+import { cn, isNotNil } from "../lib/utils";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Link } from "@/src/routing/index";
@@ -58,6 +60,9 @@ import { Sidebar, SidebarContent } from "../components/sidebar";
 import { useCommunitiesStore } from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { MultiSelect } from "../components/ui/multi-select";
+import { Badge } from "../components/ui/badge";
+import { Flair } from "../components/flair";
 
 dayjs.extend(localizedFormat);
 
@@ -194,6 +199,13 @@ export function CreatePost() {
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
 
   useLoadRecentCommunity(draftId, draft);
+
+  const community = useCommunity({
+    name: draft.communitySlug,
+  });
+  const flairLookup = useFlairLookup(community.data?.flairs);
+
+  const flairs = community.data?.flairs;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -359,6 +371,31 @@ export function CreatePost() {
                 <ToggleGroupItem value="media">Image</ToggleGroupItem>
                 <ToggleGroupItem value="link">Link</ToggleGroupItem>
               </ToggleGroup>
+
+              {flairs && flairs.length > 0 && (
+                <div className="gap-2 flex flex-col">
+                  <Label htmlFor={`${id}-flair`}>Flair</Label>
+                  <MultiSelect
+                    onChange={(values) => {
+                      patchDraft(draftId, {
+                        flairs: values,
+                      });
+                    }}
+                    value={
+                      draft.flairs?.map(flairLookup).filter(isNotNil) ?? []
+                    }
+                    options={
+                      flairs.map((flair) => ({
+                        label: flair.title,
+                        value: flair,
+                      })) ?? []
+                    }
+                    keyExtractor={(val) => val.apId ?? val.title}
+                    placeholder="Flair"
+                    renderOption={(opt) => <Flair flair={opt.value} />}
+                  />
+                </div>
+              )}
 
               {draft.type === "link" && (
                 <div className="gap-2 flex flex-col">
