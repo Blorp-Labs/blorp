@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { FeedPostCard } from "./post";
+import { PostCard } from "./post";
 import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { usePostsStore } from "@/src/stores/posts";
@@ -72,8 +72,8 @@ function LoadData() {
 }
 
 //👇 This default export determines where your story goes in the story list
-const meta: Meta<typeof FeedPostCard> = {
-  component: FeedPostCard,
+const meta: Meta<typeof PostCard> = {
+  component: PostCard,
   decorators: (Story) => {
     return (
       <>
@@ -85,7 +85,7 @@ const meta: Meta<typeof FeedPostCard> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FeedPostCard>;
+type Story = StoryObj<typeof PostCard>;
 
 export const Text: Story = {
   args: {

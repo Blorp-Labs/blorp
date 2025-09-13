@@ -1,6 +1,6 @@
 import { useCommunity, useSearch } from "@/src/lib/api";
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
@@ -83,7 +83,7 @@ function SearchHistoryItem({
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="max-md:px-0">
-    <FeedPostCard {...props} featuredContext="search" />
+    <PostCard {...props} featuredContext="search" />
     <></>
   </ContentGutters>
 ));
