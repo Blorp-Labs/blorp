@@ -192,6 +192,7 @@ export function PostByline({
   onNavigate,
   isMod = false,
   canMod = false,
+  showActions = true,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -200,6 +201,7 @@ export function PostByline({
   onNavigate?: () => void;
   isMod?: boolean;
   canMod?: boolean;
+  showActions?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -337,17 +339,19 @@ export function PostByline({
       {saved && <FaBookmark className="text-lg text-brand" />}
       {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
 
-      <ActionMenu
-        header="Post"
-        align="end"
-        actions={actions}
-        trigger={
-          <IoEllipsisHorizontal
-            className="text-muted-foreground"
-            aria-label="Post actions"
-          />
-        }
-      />
+      {showActions && (
+        <ActionMenu
+          header="Post"
+          align="end"
+          actions={actions}
+          trigger={
+            <IoEllipsisHorizontal
+              className="text-muted-foreground"
+              aria-label="Post actions"
+            />
+          }
+        />
+      )}
     </div>
   );
 }

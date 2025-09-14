@@ -470,7 +470,7 @@ function SmallPostCard({
   const encodedApId = encodeApId(post.apId);
   const embed = post ? getPostEmbed(post) : null;
 
-  const showImage = !post.deleted;
+  const showImage = embed?.thumbnail && !post.deleted;
   const blurImg = post.nsfw && blurNsfw;
 
   const titleId = `${id}-title`;
@@ -480,7 +480,7 @@ function SmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 py-3 gap-4 flex max-md:px-3.5 overflow-x-hidden",
+        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
@@ -504,7 +504,7 @@ function SmallPostCard({
             lowSrc={embed?.thumbnail}
             highSrc={embed?.fullResThumbnail}
             className={cn(
-              "h-32 w-32 md:w-40 rounded-md shrink-0",
+              "h-36 w-32 md:h-36 md:w-40 md:rounded-md shrink-0",
               blurImg && "blur-3xl",
             )}
             onAspectRatio={(thumbnailAspectRatio) => {
@@ -519,21 +519,31 @@ function SmallPostCard({
         </Link>
       )}
 
-      <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
+      <div
+        className={cn(
+          "flex-1 flex flex-col gap-1.5 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          !showImage && "max-md:pl-3.5",
+        )}
+      >
         <PostByline
           post={post}
           pinned={pinned}
           showCreator={
-            (featuredContext !== "user" && featuredContext !== "search") ||
+            (featuredContext !== "user" &&
+              featuredContext !== "search" &&
+              featuredContext !== "home") ||
             detailView
           }
           showCommunity={
-            featuredContext === "user" || featuredContext === "search"
+            featuredContext === "home" ||
+            featuredContext === "user" ||
+            featuredContext === "search"
               ? true
               : detailView
           }
           canMod={myApId ? modApIds?.includes(myApId) : false}
           isMod={modApIds?.includes(post.creatorApId)}
+          showActions={false}
         />
 
         <Link
@@ -544,21 +554,21 @@ function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium line-clamp-2",
+            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
-          {post.deleted ? "deleted" : post.title}
+          <span className="line-clamp-2">
+            {post.deleted ? "deleted" : post.title}
+          </span>
         </Link>
 
         <div
           className={cn(
-            "flex flex-row items-center justify-end gap-2.5",
+            "flex items-center justify-end gap-2.5",
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          <PostShareButton postApId={apId} />
-          <div className="flex-1" />
           <PostCommentsButton postApId={post.apId} />
           <PostVoting apId={post.apId} />
         </div>
