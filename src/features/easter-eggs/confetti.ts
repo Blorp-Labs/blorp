@@ -1,11 +1,23 @@
+import { isProd } from "@/src/lib/device";
 import canvasConfetti, { Shape } from "canvas-confetti";
+import _ from "lodash";
 
 const scalar = 2;
-const CAKE = canvasConfetti.shapeFromText({ text: "🎂", scalar });
-const PARTY_FACE = canvasConfetti.shapeFromText({ text: "🥳", scalar });
-const MOUSE = canvasConfetti.shapeFromText({ text: "🐁", scalar });
-const PIE = canvasConfetti.shapeFromText({ text: "🥧", scalar });
-const PENGUIN = canvasConfetti.shapeFromText({ text: "🐧", scalar });
+
+const getShapes = _.memoize(() => {
+  const cake = canvasConfetti.shapeFromText({ text: "🎂", scalar });
+  const party_face = canvasConfetti.shapeFromText({ text: "🥳", scalar });
+  const mouse = canvasConfetti.shapeFromText({ text: "🐁", scalar });
+  const pie = canvasConfetti.shapeFromText({ text: "🥧", scalar });
+  const penguin = canvasConfetti.shapeFromText({ text: "🐧", scalar });
+  return {
+    cake,
+    party_face,
+    mouse,
+    pie,
+    penguin,
+  };
+});
 
 const CONFIG = {
   spread: 360,
@@ -18,24 +30,28 @@ const CONFIG = {
 };
 
 export function confetti(text: string) {
+  if (!isProd()) {
+    return;
+  }
+  const shapes = getShapes();
   text = text.toLowerCase().replaceAll(" ", "");
-  const shapes: Shape[] = [];
+  const shapesArr: Shape[] = [];
   if (text.includes("happycakeday")) {
-    shapes.push(CAKE, PARTY_FACE);
+    shapesArr.push(shapes.cake, shapes.party_face);
   }
   if (text.includes("linux")) {
-    shapes.push(PENGUIN);
+    shapesArr.push(shapes.penguin);
   }
   if (text.includes("lemmy")) {
-    shapes.push(MOUSE);
+    shapesArr.push(shapes.mouse);
   }
   if (text.includes("piefed")) {
-    shapes.push(PIE);
+    shapesArr.push(shapes.pie);
   }
-  if (shapes.length > 0) {
+  if (shapesArr.length > 0) {
     canvasConfetti({
       ...CONFIG,
-      shapes,
+      shapes: shapesArr,
     });
   }
 }
