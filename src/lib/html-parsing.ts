@@ -25,10 +25,10 @@ export const parseOgData = (html: string) => {
     .querySelector('meta[name="twitter:image"]')
     ?.getAttribute("content");
 
-  const image = ogImage ?? twitterImage;
+  const imageUrl = ogImage ?? twitterImage;
 
   return {
     title,
-    image,
+    imageUrl,
   };
 };

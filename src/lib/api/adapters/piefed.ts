@@ -10,6 +10,7 @@ import {
 } from "./api-blueprint";
 import z from "zod";
 import { createSlug } from "../utils";
+import { parseOgData } from "../../html-parsing";
 
 const POST_SORTS = [
   "Active",
@@ -1763,6 +1764,20 @@ export class PieFedApi implements ApiBlueprint<null> {
     } catch (err) {
       console.error(err);
       throw err;
+    }
+  }
+
+  async getLinkMetadata(form: Forms.GetLinkMetadata) {
+    try {
+      const res = await fetch(form.url);
+      const text = await res.text();
+      const og = parseOgData(text);
+      return {
+        imageUrl: og.imageUrl,
+        title: og.title,
+      };
+    } catch {
+      return {};
     }
   }
 

@@ -2198,3 +2198,12 @@ export function useResolveObject(query: string) {
       await (await api).resolveObject({ q: query }, { signal }),
   });
 }
+
+export function useLinkMetadat() {
+  const { api } = useApiClients();
+  return useMutation({
+    mutationFn: async (form: Forms.GetLinkMetadata) => {
+      return await (await api).getLinkMetadata(form);
+    },
+  });
+}
