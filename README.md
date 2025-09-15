@@ -37,6 +37,7 @@
 | [b.feddit.uk](https://b.feddit.uk) || ✅ ||
 | [blorp.europe.pub](https://blorp.europe.pub) || ✅ ||
 | [b.lemmy.nz](https://b.lemmy.nz/) || ✅ ||
+| [b.lazysoci.al](https://b.lazysoci.al) || ✅ ||
 
 ## 🚀 Download
 
@@ -53,18 +54,21 @@
 
 ## 🐳 Self host via Docker
 
+*Recommended: use the [Blorp deployment configuration tool](https://deploy.blorpblorp.xyz/)*
+
 ```bash
 # pull the latest Blorp image
-docker pull christianjuth/blorp:latest
+docker pull ghcr.io/blorp-labs/blorp:latest
 
 # run it on port 8080 (host → container), passing any runtime env‑vars you need
-docker run -d \
-  --name blorp \
-  -p 8080:80 \
-  -e REACT_APP_DEFAULT_INSTANCE="https://lemmy.zip" \
-  -e REACT_APP_NAME="Blorp" \
-  -e REACT_APP_LOCK_TO_DEFAULT_INSTANCE="false" \
-  christianjuth/blorp:latest
+docker run -d \ 
+  --name blorp \ 
+  -p 8080:80 \ 
+  -e REACT_APP_NAME="Blorp" \ 
+  -e REACT_APP_DEFAULT_INSTANCE="https://lemmy.world,https://piefed.zip" \ 
+  -e REACT_APP_LOCK_TO_DEFAULT_INSTANCE="1" \ 
+  -e REACT_APP_INSTANCE_SELECTION_MODE="default_first"  
+  ghcr.io/blorp-labs/blorp:latest
 ```
 
 ## 💬 Blorp Community
