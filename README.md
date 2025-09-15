@@ -74,7 +74,7 @@ docker run -d \
 ## 💬 Blorp Community
 
 Want to ask questions, share feedback, or just chat with other Blorp users? Head over to our community at  
-[lemmy.ml/c/blorp](https://lemmy.ml/c/blorp).
+[lemmy.zip/c/blorp](https://lemmy.zip/c/blorp).
 
 ## 📚 Stack
 
