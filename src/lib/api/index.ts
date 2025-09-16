@@ -45,6 +45,7 @@ import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
 import { isErrorLike, isNotNil, normalizeInstance } from "../utils";
 import { compressImage } from "../image";
+import { confetti } from "@/src/features/easter-eggs/confetti";
 
 enum Errors2 {
   OBJECT_NOT_FOUND = "couldnt_find_object",
@@ -1095,6 +1096,7 @@ export function useCreateComment() {
       };
     },
     onMutate: ({ postApId, parentPath, body, queryKeyParentId }) => {
+      confetti(body);
       const date = new Date();
       const isoDate = date.toISOString();
       const commentId = _.random(1, 1000000) * -1;

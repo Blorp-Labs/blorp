@@ -2,6 +2,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -306,4 +307,51 @@ export function useDebouncedState<T>(initValue: T, debounceTime: number) {
   );
 
   return { value, setValue, setValueImediate, cancelSet: setValue.cancel };
+}
+
+type Rect = {
+  width: number;
+  height: number;
+  top: number;
+  left: number;
+};
+
+export function useElementRect<T extends HTMLElement | null>(
+  ref: React.RefObject<T>,
+) {
+  const [rect, setRect] = useState<Rect>({
+    width: 0,
+    height: 0,
+    top: 0,
+    left: 0,
+  });
+
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+
+    const updateRect = () => {
+      if (ref.current) {
+        const { width, height, top, left } =
+          ref.current.getBoundingClientRect();
+        setRect({ width, height, top, left });
+      }
+    };
+
+    // Observe resize
+    const resizeObserver = new ResizeObserver(updateRect);
+    resizeObserver.observe(ref.current);
+
+    // Update on scroll
+    window.addEventListener("scroll", updateRect, true);
+
+    // Initial measurement
+    updateRect();
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", updateRect, true);
+    };
+  }, [ref]);
+
+  return rect;
 }
