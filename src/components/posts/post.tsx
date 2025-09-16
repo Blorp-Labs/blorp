@@ -223,11 +223,13 @@ function LargePostCard({
     post
       ? {
           postId: post.id,
-          postApId: post.apId,
+          postApId: apId,
           score: 1,
         }
       : undefined,
   );
+
+  const id = useId();
 
   if (!post) {
     return <LargePostCardSkeleton />;
@@ -239,14 +241,12 @@ function LargePostCard({
     displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
   }
 
-  const encodedApId = encodeApId(post.apId);
+  const encodedApId = encodeApId(apId);
   const embed = post ? getPostEmbed(post) : null;
 
   const showImage = embed?.type === "image" && !post.deleted;
   const showArticle = embed?.type === "article" && !post?.deleted;
   const blurImg = post.nsfw && !removeBlur ? blurNsfw : false;
-
-  const id = useId();
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -280,7 +280,7 @@ function LargePostCard({
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
-        <CrossPosts key={post.apId} crossPosts={post.crossPosts} />
+        <CrossPosts key={apId} crossPosts={post.crossPosts} />
       )}
 
       <Link
@@ -326,7 +326,7 @@ function LargePostCard({
           params={{
             communityName: post.communitySlug,
           }}
-          searchParams={`?apId=${encodeApId(post.apId)}`}
+          searchParams={`?apId=${encodeApId(apId)}`}
           className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
           onClick={() => {
             if (!removeBlur && detailView) {
@@ -347,7 +347,7 @@ function LargePostCard({
             onAspectRatio={(thumbnailAspectRatio) => {
               setImageLoaded(true);
               if (!post.thumbnailAspectRatio) {
-                patchPost(post.apId, getCachePrefixer(), {
+                patchPost(apId, getCachePrefixer(), {
                   thumbnailAspectRatio,
                 });
               }
@@ -416,8 +416,8 @@ function LargePostCard({
       >
         <PostShareButton postApId={apId} />
         <div className="flex-1" />
-        <PostCommentsButton postApId={post.apId} />
-        <PostVoting apId={post.apId} />
+        <PostCommentsButton postApId={apId} />
+        <PostVoting apId={apId} />
       </div>
     </article>
   );
@@ -467,7 +467,7 @@ function SmallPostCard({
     displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
   }
 
-  const encodedApId = encodeApId(post.apId);
+  const encodedApId = encodeApId(apId);
   const embed = post ? getPostEmbed(post) : null;
 
   const showImage = embed?.thumbnail && !post.deleted;
@@ -496,7 +496,7 @@ function SmallPostCard({
           params={{
             communityName: post.communitySlug,
           }}
-          searchParams={`?apId=${encodeApId(post.apId)}`}
+          searchParams={`?apId=${encodeApId(apId)}`}
           className="relative"
         >
           {!imageLoaded && <Skeleton className="absolute inset-0 rounded-md" />}
@@ -510,7 +510,7 @@ function SmallPostCard({
             onAspectRatio={(thumbnailAspectRatio) => {
               setImageLoaded(true);
               if (!post.thumbnailAspectRatio) {
-                patchPost(post.apId, getCachePrefixer(), {
+                patchPost(apId, getCachePrefixer(), {
                   thumbnailAspectRatio,
                 });
               }
@@ -569,8 +569,8 @@ function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          <PostCommentsButton postApId={post.apId} />
-          <PostVoting apId={post.apId} />
+          <PostCommentsButton postApId={apId} />
+          <PostVoting apId={apId} />
         </div>
       </div>
     </article>
