@@ -121,7 +121,7 @@ export const pieFedPostSchema = z.object({
   published: z.string(),
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
-  //sticky: z.boolean(),
+  sticky: z.boolean().nullish(),
   thumbnail_url: z.string().nullable().optional(),
   title: z.string(),
   url: z.string().nullable().optional(),
@@ -370,10 +370,13 @@ export const pieFedCrosspostSchema = z.object({
   //unread_comments: z.number(),
 });
 
-function convertPost(
-  postView: z.infer<typeof pieFedPostViewSchema>,
-  crossPosts?: z.infer<typeof pieFedCrosspostSchema>[],
-): Schemas.Post {
+function convertPost({
+  postView,
+  crossPosts,
+}: {
+  postView: z.infer<typeof pieFedPostViewSchema>;
+  crossPosts?: z.infer<typeof pieFedCrosspostSchema>[];
+}): Schemas.Post {
   const { post, counts, community, creator } = postView;
   return {
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
@@ -411,8 +414,7 @@ function convertPost(
           name: cp.community.name,
         }).slug,
       })) ?? null,
-    // TODO: see if this exists
-    featuredCommunity: false,
+    featuredCommunity: postView.post.sticky ?? false,
     // TODO: see if this exists
     featuredLocal: false,
     read: postView.read,
@@ -867,7 +869,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         nextCursor: data.next_page ?? null,
         posts: data.posts.map((post) => ({
-          post: convertPost(post),
+          post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
         })),
@@ -1013,7 +1015,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        post: convertPost(post_view, cross_posts),
+        post: convertPost({ postView: post_view, crossPosts: cross_posts }),
         community_view: convertCommunity(community_view, "partial"),
         creator: convertPerson({ person: post_view.creator }, "partial"),
       };
@@ -1043,7 +1045,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1057,7 +1059,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1257,7 +1259,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const hasNextCursor = hasMorePosts || hasMoreCommunities || hasMoreUsers;
 
       return {
-        posts: posts.map((p) => convertPost(p)),
+        posts: posts.map((p) => convertPost({ postView: p })),
         communities: communities.map((c) => convertCommunity(c, "partial")),
         comments: [],
         users: users.map((p) => convertPerson(p, "partial")),
@@ -1282,7 +1284,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1412,7 +1414,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        posts: posts?.map((p) => convertPost(p)) ?? [],
+        posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
         comments: comments?.map(convertComment) ?? [],
         nextCursor: next_page ?? null,
       };
@@ -1433,7 +1435,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.error(err);
       throw err;
@@ -1451,7 +1453,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.error(err);
       throw err;
@@ -1541,7 +1543,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.error(err);
       throw err;
@@ -1757,7 +1759,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        post: post ? convertPost(post) : null,
+        post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
       };
