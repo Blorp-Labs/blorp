@@ -1,5 +1,5 @@
 import { isCapacitor } from "@/src/lib/device";
-import { useIsActiveRoute, useMedia } from "@/src/lib/hooks";
+import { useElementRect, useIsActiveRoute, useMedia } from "@/src/lib/hooks";
 import { isNotNil } from "@/src/lib/utils";
 import { Oneko as oneko } from "lots-o-nekos";
 import { useEffect, useRef } from "react";
@@ -36,6 +36,8 @@ export default function Oneko({
     return null;
   })();
 
+  const rect = useElementRect(containerRef);
+
   useEffect(() => {
     const container = containerRef.current;
     if (
@@ -50,9 +52,12 @@ export default function Oneko({
       cat.element = null;
       cat.element = div;
       cat.source = `/sprints/${type}.png`;
+
+      // If the container was previously unmounted
+      // this is required to restart the animation loop
       cat.onAnimationFrame(0);
+
       const onMouseMove = (event: MouseEvent) => {
-        const rect = container.getBoundingClientRect();
         const x = _.round(_.clamp(event.clientX - rect.left, 0, rect.width));
         const y = _.round(_.clamp(event.clientY - rect.top, 0, rect.height));
         const deltaX = cat.x ? Math.abs(x - cat.x) : 0;
@@ -62,12 +67,12 @@ export default function Oneko({
           cat.targetY = y;
         }
       };
-      window.addEventListener("mousemove", onMouseMove);
+      container.addEventListener("mousemove", onMouseMove);
       return () => {
-        window.removeEventListener("mousemove", onMouseMove);
+        container.removeEventListener("mousemove", onMouseMove);
       };
     }
-  }, [isActive, isDesktop, type]);
+  }, [isActive, isDesktop, type, rect]);
 
   if (!isActive || !type) {
     return children;
