@@ -5,7 +5,7 @@ import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
 import { PostArticleEmbed } from "./post-article-embed";
-import { PostByline } from "./post-byline";
+import { PostActionButtion, PostByline, usePostActions } from "./post-byline";
 import {
   PostCommentsButton,
   PostShareButton,
@@ -31,6 +31,7 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
+import { useMedia } from "@/src/lib/hooks";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -457,6 +458,8 @@ function SmallPostCard({
 
   const id = useId();
 
+  const media = useMedia();
+
   if (!post) {
     return <SmallPostCardSkeleton />;
   }
@@ -475,6 +478,8 @@ function SmallPostCard({
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
+
+  const canMod = myApId ? modApIds?.includes(myApId) : false;
 
   return (
     <article
@@ -541,9 +546,9 @@ function SmallPostCard({
               ? true
               : detailView
           }
-          canMod={myApId ? modApIds?.includes(myApId) : false}
+          canMod={canMod}
           isMod={modApIds?.includes(post.creatorApId)}
-          showActions={false}
+          showActions={media.md}
         />
 
         <Link
@@ -569,6 +574,7 @@ function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
+          {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} />
           <PostVoting apId={apId} />
         </div>
