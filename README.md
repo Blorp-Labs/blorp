@@ -28,19 +28,9 @@
 </p>
 <br/>
 
-## Try it!
-| Url | Official Instance | Lemmy | PieFed |
-|-----|-----|-----|-----|
-| **[blorpblorp.xyz](https://blorpblorp.xyz/)** | ✅ | ✅ | ✅ |
-| [blorp.lemmy.zip](https://blorp.lemmy.zip) || ✅ ||
-| [blorp.piefed.zip](https://blorp.piefed.zip) ||| ✅ |
-| [b.feddit.uk](https://b.feddit.uk) || ✅ ||
-| [blorp.europe.pub](https://blorp.europe.pub) || ✅ ||
-| [b.lemmy.nz](https://b.lemmy.nz/) || ✅ ||
-| [b.lazysoci.al](https://b.lazysoci.al) || ✅ ||
-
 ## 🚀 Download
 
+* [Web - blorpblorp.xyz](https://blorpblorp.xyz)
 * [iOS](https://apps.apple.com/us/app/blorp-for-lemmy/id6739925430)
 * Android
     * [Google Play](https://play.google.com/store/apps/details?id=xyz.blorpblorp.app)
@@ -51,6 +41,20 @@
 
 * [Join iOS TestFlight Beta](https://testflight.apple.com/join/T2pYyShr)
 * [Join Google Play Beta](https://play.google.com/apps/testing/xyz.blorpblorp.app)
+
+## ❤️ Friends of Blorp
+| Url | Lemmy | PieFed |
+|-----|-----|-----|
+| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ ||
+| [blorp.piefed.world](https://blorp.piefed.world) || ✅ |
+| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
+| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
+| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
+| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
+| [b.feddit.uk](https://b.feddit.uk) | ✅ ||
+| [blorp.europe.pub](https://blorp.europe.pub) | ✅ ||
+| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ ||
+| [b.lazysoci.al](https://b.lazysoci.al) | ✅ ||
 
 ## 🐳 Self host via Docker
 
