@@ -152,7 +152,7 @@ export default function SavedFeed() {
         <PostReportProvider>
           <VirtualList<Item>
             key={type === "comments" ? "comments" : type + postSort}
-            className="h-full ion-content-scroll-host"
+            scrollHost
             data={
               data.length === 0 && !posts.isRefetching && !posts.isPending
                 ? [NO_ITEMS]

@@ -12,7 +12,6 @@ import {
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { twMerge } from "tailwind-merge";
 import { subscribeToScrollEvent } from "../lib/scroll-events";
 import _ from "lodash";
 import {
@@ -261,6 +260,8 @@ export function VirtualList<T>({
   className,
   onScroll,
   refresh,
+  scrollHost,
+  fullscreen,
   ...props
 }: {
   data?: T[] | readonly T[];
@@ -279,6 +280,8 @@ export function VirtualList<T>({
   placeholder?: ReactNode;
   numPlaceholders?: number;
   header?: ReactNode[];
+  fullscreen?: boolean;
+  scrollHost?: boolean;
 }) {
   const media = useMedia();
   const [key, setKey] = useState(0);
@@ -330,8 +333,11 @@ export function VirtualList<T>({
 
       <div
         ref={scrollRef}
-        className={twMerge(
+        className={cn(
           "overflow-y-scroll overscroll-auto flex-1",
+          scrollHost && "h-full ion-content-scroll-host",
+          fullscreen &&
+            "max-md:absolute max-md:inset-0 max-md:pt-[var(--offset-top)] max-md:pb-[var(--offset-bottom)]",
           className,
         )}
         style={{

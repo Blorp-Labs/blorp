@@ -2,7 +2,14 @@ import { SmallScreenSidebar } from "@/src/components/communities/community-sideb
 import { useEffect, useMemo } from "react";
 import { useCommunity } from "../lib/api";
 import _ from "lodash";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonRefresher,
+  IonRefresherContent,
+  IonToolbar,
+} from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
 
@@ -74,7 +81,15 @@ export default function CommunityFeed() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <IonContent fullscreen>
+        <IonRefresher
+          slot="fixed"
+          onIonRefresh={(e) =>
+            community.refetch().finally(() => e.detail.complete())
+          }
+        >
+          <IonRefresherContent />
+        </IonRefresher>
         <ContentGutters className="px-0">
           <SmallScreenSidebar
             communityName={communityName}

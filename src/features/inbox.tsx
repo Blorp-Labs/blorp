@@ -397,7 +397,7 @@ export default function Inbox() {
             }
           }}
           estimatedItemSize={375}
-          className="h-full ion-content-scroll-host"
+          scrollHost
           refresh={replies.refetch}
           placeholder={<Placeholder />}
         />

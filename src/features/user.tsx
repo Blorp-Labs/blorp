@@ -194,7 +194,7 @@ export default function User() {
         <PostReportProvider>
           <VirtualList<Item>
             key={type === "Comments" ? "comments" : type + postSort}
-            className="h-full ion-content-scroll-host"
+            scrollHost
             data={listData.length === 0 && !isLoading ? [NO_ITEMS] : listData}
             header={[
               <ContentGutters

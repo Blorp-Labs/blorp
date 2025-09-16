@@ -330,10 +330,11 @@ export default function SearchFeed({
           </IonToolbar>
         )}
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
           <VirtualList<Item>
-            className="h-full ion-content-scroll-host"
+            scrollHost
+            fullscreen
             data={data}
             header={[
               <ContentGutters
