@@ -330,6 +330,7 @@ export default function Inbox() {
       </IonHeader>
       <IonContent scrollY={false}>
         <VirtualList<Item>
+          key={type}
           header={[
             <ContentGutters className="max-md:hidden" key="type-select-header">
               <div className="py-2 bg-background border-b-[.5px]">
