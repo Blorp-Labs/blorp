@@ -49,8 +49,6 @@
 | [blorp.piefed.world](https://blorp.piefed.world) || ✅ |
 | [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
 | [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
-| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
-| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
 | [b.feddit.uk](https://b.feddit.uk) | ✅ ||
 | [blorp.europe.pub](https://blorp.europe.pub) | ✅ ||
 | [b.lemmy.nz](https://b.lemmy.nz/) | ✅ ||
