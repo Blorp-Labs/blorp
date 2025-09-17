@@ -34,8 +34,13 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
   const actions = usePersonActions({ person });
 
   return (
-    <div className={cn("p-4 pt-2", !expanded && "md:hidden")}>
-      <div className="flex flex-row items-start gap-3 flex-1 mb-3">
+    <div className={cn("gap-3 p-4 pt-2", !expanded && "md:hidden")}>
+      <div
+        className={cn(
+          "flex flex-row items-start gap-3 flex-1 mb-1",
+          person?.bio && "mb-4",
+        )}
+      >
         <Avatar className="h-13 w-13">
           <AvatarImage
             src={person?.avatar ?? undefined}
@@ -79,10 +84,10 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
       </div>
 
       {expanded && person?.bio && (
-        <>
+        <div>
           <span>BIO</span>
           <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
-        </>
+        </div>
       )}
 
       {person?.bio && (
