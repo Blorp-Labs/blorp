@@ -1,11 +1,11 @@
+import { Browser } from "@capacitor/browser";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   InAppBrowser,
   DefaultSystemBrowserOptions,
 } from "@capacitor/inappbrowser";
-import { isCapacitor, isTauri } from "@/src/lib/device";
+import { isAndroid, isCapacitor, isIos, isTauri } from "@/src/lib/device";
 import { cn } from "@/src/lib/utils";
-import { Capacitor } from "@capacitor/core";
 import { Skeleton } from "../ui/skeleton";
 import { MouseEventHandler, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
@@ -23,30 +23,63 @@ function getDisplayUrl(url: string) {
   }
 }
 
-function getLinkHandler(
+function deferUntilFocused(fn: () => void) {
+  if (typeof document !== "undefined" && !document.hasFocus()) {
+    const onFocus = () => {
+      window.removeEventListener("focus", onFocus);
+      // Tiny deferral lets Android settle window focus
+      setTimeout(fn, 50);
+    };
+    window.addEventListener("focus", onFocus);
+  } else {
+    // Next tick prevents running inside an onClick bubble
+    setTimeout(fn, 0);
+  }
+}
+
+export function getLinkHandler(
   url?: string | null,
 ): MouseEventHandler<HTMLAnchorElement> {
   return (e) => {
-    if (!url) {
-      return;
-    }
+    if (!url) return;
 
+    // Desktop (Tauri): open with OS
     if (isTauri()) {
       e.preventDefault();
       openUrl(url);
-    } else if (isCapacitor()) {
-      e.preventDefault();
-      InAppBrowser.openInSystemBrowser({
-        url,
-        options: {
-          ...DefaultSystemBrowserOptions,
-          iOS: {
-            ...DefaultSystemBrowserOptions.iOS,
-            enableReadersMode: true,
-          },
-        },
-      });
+      return;
     }
+
+    // Mobile (Capacitor)
+    if (isCapacitor() && isAndroid()) {
+      // Use Capacitor Browser (Custom Tabs) – safer on Android
+      e.preventDefault();
+      deferUntilFocused(() => {
+        Browser.open({ url });
+      });
+      return;
+    }
+
+    if (isCapacitor() && isIos()) {
+      // Keep InAppBrowser on iOS with Reader Mode
+      e.preventDefault();
+      deferUntilFocused(() => {
+        InAppBrowser.openInSystemBrowser({
+          url,
+          options: {
+            ...DefaultSystemBrowserOptions,
+            iOS: {
+              ...DefaultSystemBrowserOptions.iOS,
+              enableReadersMode: true,
+            },
+          },
+        });
+      });
+      return;
+    }
+
+    // Web fallback: let the anchor behave normally (no preventDefault)
+    // so Cmd/Ctrl+click etc works.
   };
 }
 
