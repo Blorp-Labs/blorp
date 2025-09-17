@@ -529,7 +529,7 @@ function SmallPostCard({
       <div
         className={cn(
           "flex-1 flex flex-col gap-1.5 overflow-hidden max-md:py-2 max-md:pr-3.5",
-          !showImage && "max-md:pl-3.5",
+          !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
         <PostByline

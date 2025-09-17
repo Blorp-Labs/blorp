@@ -13,13 +13,20 @@ import { FaExternalLinkAlt } from "react-icons/fa";
 function getDisplayUrl(url: string) {
   try {
     let displayUrl = url;
+    let host = url;
     if (displayUrl) {
       const parsedUrl = new URL(displayUrl);
-      displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
+      host = parsedUrl.host.replace(/^www\./, "");
+      displayUrl = `${host}${parsedUrl.pathname.replace(/\/$/, "")}`;
     }
-    return displayUrl;
+    return {
+      host,
+      displayUrl,
+    };
   } catch {
-    return url;
+    return {
+      displayUrl: url,
+    };
   }
 }
 
@@ -106,13 +113,13 @@ export function PostArticleMiniEmbed({
         display: !url ? "none" : undefined,
       }}
       className={cn(
-        "flex flex-col overflow-hidden",
+        "flex flex-col relative overflow-hidden",
         !thumbnail && "bg-secondary",
         className,
       )}
     >
       {thumbnail ? (
-        <div className="relative flex-1">
+        <>
           {!imageLoaded && (
             <Skeleton className="absolute inset-0 rounded-b-none" />
           )}
@@ -129,15 +136,16 @@ export function PostArticleMiniEmbed({
               NSFW
             </div>
           )}
-        </div>
+        </>
       ) : (
-        <div className="flex-1 flex">
-          <FaExternalLinkAlt className="m-auto text-2xl text-muted-foreground" />
-        </div>
+        <FaExternalLinkAlt className="text-2xl text-muted-foreground m-auto -translate-y-2" />
       )}
       {url && (
-        <div className="px-2 py-1.5 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis text-xs text-zinc-500">
-          <span className="line-clamp-1">{getDisplayUrl(url)}</span>
+        <div className="absolute inset-x-1 bottom-1 bg-black/30 text-white rounded-sm px-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
+          <span className="text-xs line-clamp-1 flex-1">
+            {getDisplayUrl(url).host}
+          </span>
+          {thumbnail && <FaExternalLinkAlt className="text-xs scale-80" />}
         </div>
       )}
     </a>
@@ -169,12 +177,12 @@ export function PostArticleEmbed({
       {thumbnail && (
         <div className="relative aspect-video overflow-hidden">
           {!imageLoaded && (
-            <Skeleton className="absolute inset-0 rounded-b-none rounded-t-xl" />
+            <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
           )}
           <img
             src={thumbnail}
             className={cn(
-              "absolute inset-0 object-cover w-full h-full aspect-video rounded-t-xl",
+              "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
               blurNsfw && "blur-3xl",
             )}
             onLoad={() => setImageLoaded(true)}
@@ -184,16 +192,27 @@ export function PostArticleEmbed({
               NSFW
             </div>
           )}
+
+          {url && (
+            <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
+              <span className="line-clamp-1 flex-1">
+                {getDisplayUrl(url).displayUrl}
+              </span>
+              <FaExternalLinkAlt className="text-sm" />
+            </div>
+          )}
         </div>
       )}
-      {url && (
+      {url && !thumbnail && (
         <div
           className={cn(
-            "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-b-xl text-sm text-zinc-500",
-            !thumbnail && "rounded-t-xl",
+            "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
           )}
         >
-          <span className="line-clamp-1">{getDisplayUrl(url)}</span>
+          <span className="line-clamp-1 flex-1">
+            {getDisplayUrl(url).displayUrl}
+          </span>
+          <FaExternalLinkAlt className="text-sm" />
         </div>
       )}
     </a>
