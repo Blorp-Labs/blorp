@@ -4,7 +4,7 @@ import { useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
-import { PostArticleEmbed } from "./post-article-embed";
+import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
 import { PostActionButtion, PostByline, usePostActions } from "./post-byline";
 import {
   PostCommentsButton,
@@ -366,9 +366,7 @@ function LargePostCard({
 
       {showArticle && (
         <PostArticleEmbed
-          name={post.title}
           url={showArticle ? embed.embedUrl : undefined}
-          displayUrl={showArticle ? displayUrl : undefined}
           thumbnail={showArticle ? embed.thumbnail : null}
           blurNsfw={blurImg}
         />
@@ -464,16 +462,12 @@ function SmallPostCard({
     return <SmallPostCardSkeleton />;
   }
 
-  let displayUrl = post.url;
-  if (displayUrl) {
-    const parsedUrl = new URL(displayUrl);
-    displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
-  }
-
   const encodedApId = encodeApId(apId);
   const embed = post ? getPostEmbed(post) : null;
 
-  const showImage = embed?.thumbnail && !post.deleted;
+  const showImage =
+    embed?.thumbnail && !post.deleted && embed.type !== "article";
+  const showArticle = !post.deleted && embed?.type === "article";
   const blurImg = post.nsfw && blurNsfw;
 
   const titleId = `${id}-title`;
@@ -522,6 +516,14 @@ function SmallPostCard({
             }}
           />
         </Link>
+      )}
+      {showArticle && (
+        <PostArticleMiniEmbed
+          url={embed.embedUrl}
+          thumbnail={embed.thumbnail}
+          blurNsfw={blurImg ?? false}
+          className="h-36 w-32 md:h-36 md:w-40 md:rounded-md shrink-0"
+        />
       )}
 
       <div
