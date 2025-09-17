@@ -55,7 +55,6 @@ const UpdateProfile = lazy(
 );
 const CommunityFeed = lazy(() => import("@/src/features/community-feed"));
 const CommunitySidebar = lazy(() => import("@/src/features/community-sidebar"));
-const UserSidbar = lazy(() => import("@/src/features/user-sidebar"));
 const CommunitiesFeed = lazy(() => import("@/src/features/communities-feed"));
 const User = lazy(() => import("@/src/features/user"));
 const SavedFeed = lazy(() => import("@/src/features/saved-feed"));
@@ -140,12 +139,6 @@ const HOME_STACK = [
     component={Post}
   />,
   <Route key="/home/u/:userId" exact path="/home/u/:userId" component={User} />,
-  <Route
-    key="/home/u/:userId/sidebar"
-    exact
-    path="/home/u/:userId/sidebar"
-    component={UserSidbar}
-  />,
   <Route key="/home/saved" exact path="/home/saved" component={SavedFeed} />,
   <Route
     key="/home/lightbox"
@@ -227,12 +220,6 @@ const COMMUNITIES_STACK = [
     component={User}
   />,
   <Route
-    key="/communities/u/:userId/sidebar"
-    exact
-    path="/communities/u/:userId/sidebar"
-    component={UserSidbar}
-  />,
-  <Route
     key="/communities/lightbox/c/:communityName"
     exact
     path="/communities/c/:communityName/lightbox"
@@ -288,12 +275,6 @@ const INBOX_STACK = [
     exact
     path="/inbox/u/:userId"
     component={User}
-  />,
-  <Route
-    key="/inbox/u/:userId/sidebar"
-    exact
-    path="/inbox/u/:userId/sidebar"
-    component={UserSidbar}
   />,
   <Route
     key="/inbox/lightbox/c/:communityName"

@@ -24,23 +24,13 @@ import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { usePersonActions } from "./person-action-menu";
 import { cn } from "@/src/lib/utils";
-import { Link } from "@/src/routing";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useState } from "react";
+import { Button } from "../ui/button";
 
 dayjs.extend(localizedFormat);
 
-export function SmallScreenSidebar({
-  person,
-  expanded,
-}: {
-  person?: Schemas.Person;
-  expanded?: boolean;
-}) {
-  const open = useSidebarStore((s) => s.personBioExpanded);
-  const setOpen = useSidebarStore((s) => s.setPersonBioExpanded);
-
-  const linkCtx = useLinkContext();
-
+export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
+  const [expanded, setExpanded] = useState(false);
   const actions = usePersonActions({ person });
 
   return (
@@ -88,23 +78,21 @@ export function SmallScreenSidebar({
         />
       </div>
 
-      {person && !expanded && (
-        <Link
-          to={`${linkCtx.root}u/:userId/sidebar`}
-          params={{
-            userId: person?.slug,
-          }}
-          className="text-brand"
-        >
-          Show more
-        </Link>
-      )}
-
       {expanded && person?.bio && (
         <>
           <span>BIO</span>
           <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
         </>
+      )}
+
+      {person?.bio && (
+        <Button
+          variant="link"
+          className="-ml-4 text-brand"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Hide" : "Show"} bio
+        </Button>
       )}
     </div>
   );
