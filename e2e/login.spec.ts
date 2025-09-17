@@ -297,6 +297,7 @@ test("login", async ({ page }, testInfo) => {
   }
 
   const authModal = page.getByTestId("auth-modal");
+  await page.getByTestId("auth-filter-lemmy").click();
   await authModal.getByText("lemmy.world").click();
   await authModal.getByPlaceholder("Username").fill("jondoe");
   await authModal.getByPlaceholder("Password").fill("password");
