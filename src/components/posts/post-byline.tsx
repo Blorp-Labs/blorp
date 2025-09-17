@@ -35,7 +35,7 @@ import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 
-function usePostActions({
+export function usePostActions({
   post,
   canMod,
   tag,
@@ -184,6 +184,30 @@ function usePostActions({
   ];
 }
 
+export function PostActionButtion({
+  post,
+  canMod = false,
+}: {
+  post: Schemas.Post;
+  canMod?: boolean;
+}) {
+  const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
+  const actions = usePostActions({ post, canMod, tag });
+  return (
+    <ActionMenu
+      header="Post"
+      align="end"
+      actions={actions}
+      trigger={
+        <IoEllipsisHorizontal
+          className="text-muted-foreground"
+          aria-label="Post actions"
+        />
+      }
+    />
+  );
+}
+
 export function PostByline({
   post,
   pinned,
@@ -192,6 +216,7 @@ export function PostByline({
   onNavigate,
   isMod = false,
   canMod = false,
+  showActions = true,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -200,6 +225,7 @@ export function PostByline({
   onNavigate?: () => void;
   isMod?: boolean;
   canMod?: boolean;
+  showActions?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -221,8 +247,6 @@ export function PostByline({
   const encodedCreatorApId = encodeApId(post.creatorApId);
 
   const saved = post.optimisticSaved ?? post.saved;
-
-  const actions = usePostActions({ post, canMod, tag });
 
   const [communityName, communityHost] = post.communitySlug.split("@");
   const [creatorName, creatorHost] = post.creatorSlug.split("@");
@@ -337,17 +361,7 @@ export function PostByline({
       {saved && <FaBookmark className="text-lg text-brand" />}
       {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
 
-      <ActionMenu
-        header="Post"
-        align="end"
-        actions={actions}
-        trigger={
-          <IoEllipsisHorizontal
-            className="text-muted-foreground"
-            aria-label="Post actions"
-          />
-        }
-      />
+      {showActions && <PostActionButtion post={post} canMod={canMod} />}
     </div>
   );
 }

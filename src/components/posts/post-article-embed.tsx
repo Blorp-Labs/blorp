@@ -1,23 +1,155 @@
+import { Browser } from "@capacitor/browser";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
   InAppBrowser,
   DefaultSystemBrowserOptions,
 } from "@capacitor/inappbrowser";
-import { isTauri } from "@/src/lib/device";
+import { isAndroid, isCapacitor, isIos, isTauri } from "@/src/lib/device";
 import { cn } from "@/src/lib/utils";
-import { Capacitor } from "@capacitor/core";
 import { Skeleton } from "../ui/skeleton";
-import { useState } from "react";
+import { MouseEventHandler, useState } from "react";
+import { FaExternalLinkAlt } from "react-icons/fa";
+
+function getDisplayUrl(url: string) {
+  try {
+    let displayUrl = url;
+    if (displayUrl) {
+      const parsedUrl = new URL(displayUrl);
+      displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
+    }
+    return displayUrl;
+  } catch {
+    return url;
+  }
+}
+
+function deferUntilFocused(fn: () => void) {
+  if (typeof document !== "undefined" && !document.hasFocus()) {
+    const onFocus = () => {
+      window.removeEventListener("focus", onFocus);
+      // Tiny deferral lets Android settle window focus
+      setTimeout(fn, 50);
+    };
+    window.addEventListener("focus", onFocus);
+  } else {
+    // Next tick prevents running inside an onClick bubble
+    setTimeout(fn, 0);
+  }
+}
+
+export function getLinkHandler(
+  url?: string | null,
+): MouseEventHandler<HTMLAnchorElement> {
+  return (e) => {
+    if (!url) return;
+
+    // Desktop (Tauri): open with OS
+    if (isTauri()) {
+      e.preventDefault();
+      openUrl(url);
+      return;
+    }
+
+    // Mobile (Capacitor)
+    if (isCapacitor() && isAndroid()) {
+      // Use Capacitor Browser (Custom Tabs) – safer on Android
+      e.preventDefault();
+      deferUntilFocused(() => {
+        Browser.open({ url });
+      });
+      return;
+    }
+
+    if (isCapacitor() && isIos()) {
+      // Keep InAppBrowser on iOS with Reader Mode
+      e.preventDefault();
+      deferUntilFocused(() => {
+        InAppBrowser.openInSystemBrowser({
+          url,
+          options: {
+            ...DefaultSystemBrowserOptions,
+            iOS: {
+              ...DefaultSystemBrowserOptions.iOS,
+              enableReadersMode: true,
+            },
+          },
+        });
+      });
+      return;
+    }
+
+    // Web fallback: let the anchor behave normally (no preventDefault)
+    // so Cmd/Ctrl+click etc works.
+  };
+}
+
+export function PostArticleMiniEmbed({
+  url,
+  thumbnail,
+  blurNsfw,
+  className,
+}: {
+  url?: string | null;
+  thumbnail?: string | null;
+  blurNsfw: boolean;
+  className?: string;
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  return (
+    <a
+      href={url ?? undefined}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={getLinkHandler(url)}
+      style={{
+        display: !url ? "none" : undefined,
+      }}
+      className={cn(
+        "flex flex-col overflow-hidden",
+        !thumbnail && "bg-secondary",
+        className,
+      )}
+    >
+      {thumbnail ? (
+        <div className="relative flex-1">
+          {!imageLoaded && (
+            <Skeleton className="absolute inset-0 rounded-b-none" />
+          )}
+          <img
+            src={thumbnail}
+            className={cn(
+              "absolute inset-0 object-cover w-full h-full",
+              blurNsfw && "blur-3xl",
+            )}
+            onLoad={() => setImageLoaded(true)}
+          />
+          {blurNsfw && (
+            <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
+              NSFW
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 flex">
+          <FaExternalLinkAlt className="m-auto text-2xl text-muted-foreground" />
+        </div>
+      )}
+      {url && (
+        <div className="px-2 py-1.5 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis text-xs text-zinc-500">
+          <span className="line-clamp-1">{getDisplayUrl(url)}</span>
+        </div>
+      )}
+    </a>
+  );
+}
 
 export function PostArticleEmbed({
   url,
-  displayUrl,
   thumbnail,
   blurNsfw,
 }: {
-  name: string;
   url?: string | null;
-  displayUrl?: string | null;
   thumbnail?: string | null;
   blurNsfw: boolean;
 }) {
@@ -28,28 +160,7 @@ export function PostArticleEmbed({
       href={url ?? undefined}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={(e) => {
-        if (!url) {
-          return;
-        }
-
-        if (isTauri()) {
-          e.preventDefault();
-          openUrl(url);
-        } else if (Capacitor.isNativePlatform()) {
-          e.preventDefault();
-          InAppBrowser.openInSystemBrowser({
-            url,
-            options: {
-              ...DefaultSystemBrowserOptions,
-              iOS: {
-                ...DefaultSystemBrowserOptions.iOS,
-                enableReadersMode: true,
-              },
-            },
-          });
-        }
-      }}
+      onClick={getLinkHandler(url)}
       style={{
         display: !url ? "none" : undefined,
       }}
@@ -82,7 +193,7 @@ export function PostArticleEmbed({
             !thumbnail && "rounded-t-xl",
           )}
         >
-          <span className="line-clamp-1">{displayUrl ?? url}</span>
+          <span className="line-clamp-1">{getDisplayUrl(url)}</span>
         </div>
       )}
     </a>

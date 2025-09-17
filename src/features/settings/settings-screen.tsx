@@ -33,6 +33,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/src/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
 
 const version =
   _.isObject(pkgJson) && "version" in pkgJson ? pkgJson.version : undefined;
@@ -244,8 +253,13 @@ function CacheSection() {
 }
 
 export default function SettingsPage() {
+  const id = useId();
+
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
   const setLeftHandedMode = useSettingsStore((s) => s.setLeftHandedMode);
+
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+  const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
 
   const hideRead = useSettingsStore((s) => s.hideRead);
   const setHideRead = useSettingsStore((s) => s.setHideRead);
@@ -284,6 +298,27 @@ export default function SettingsPage() {
                 >
                   Left handed mode
                 </IonToggle>
+              </SectionItem>
+            </Section>
+
+            <Section title="POSTS">
+              <SectionItem>
+                <label htmlFor={`${id}-post-display`}>Display posts as</label>
+                <Select value={postCardStyle} onValueChange={setPostCardStyle}>
+                  <SelectTrigger
+                    className="w-[120px]"
+                    id={`${id}-post-display`}
+                  >
+                    <SelectValue placeholder="Select a fruit" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Display posts as</SelectLabel>
+                      <SelectItem value="large">Cards</SelectItem>
+                      <SelectItem value="small">Compact</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </SectionItem>
             </Section>
 
