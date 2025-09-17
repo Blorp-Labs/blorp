@@ -54,6 +54,7 @@ export const routeDefs = {
     postCommentSchema,
   ),
   ...buildRoute("/home/u/:userId", userSchema),
+  ...buildRoute("/home/u/:userId/sidebar", userSchema),
   ...buildRoute("/home/saved"),
   // Communities
   ...buildRoute("/communities"),
@@ -69,6 +70,7 @@ export const routeDefs = {
     postCommentSchema,
   ),
   ...buildRoute("/communities/u/:userId", userSchema),
+  ...buildRoute("/communities/u/:userId/sidebar", userSchema),
   ...buildRoute("/communities/saved"),
   ...buildRoute("/communities/c/:communityName/lightbox", lightBoxFeedSchema),
   ...buildRoute("/communities/lightbox/:imgUrl", lightBoxSchema),
@@ -90,6 +92,7 @@ export const routeDefs = {
     postCommentSchema,
   ),
   ...buildRoute("/inbox/u/:userId", userSchema),
+  ...buildRoute("/inbox/u/:userId/sidebar", userSchema),
   ...buildRoute("/inbox/saved"),
   ...buildRoute("/inbox/c/:communityName/lightbox", lightBoxFeedSchema),
   ...buildRoute("/inbox/lightbox/:imgUrl", lightBoxSchema),
