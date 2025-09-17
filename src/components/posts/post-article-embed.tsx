@@ -106,20 +106,20 @@ export function PostArticleMiniEmbed({
         display: !url ? "none" : undefined,
       }}
       className={cn(
-        "flex flex-col relative overflow-hidden",
+        "flex flex-col overflow-hidden",
         !thumbnail && "bg-secondary",
         className,
       )}
     >
-      {thumbnail && (
-        <>
+      {thumbnail ? (
+        <div className="relative flex-1">
           {!imageLoaded && (
-            <Skeleton className="absolute inset-0 rounded-b-none rounded-t-xl" />
+            <Skeleton className="absolute inset-0 rounded-b-none" />
           )}
           <img
             src={thumbnail}
             className={cn(
-              "absolute inset-0 object-cover w-full h-full aspect-video rounded-t-xl",
+              "absolute inset-0 object-cover w-full h-full",
               blurNsfw && "blur-3xl",
             )}
             onLoad={() => setImageLoaded(true)}
@@ -129,14 +129,17 @@ export function PostArticleMiniEmbed({
               NSFW
             </div>
           )}
-        </>
+        </div>
+      ) : (
+        <div className="flex-1 flex">
+          <FaExternalLinkAlt className="m-auto text-2xl text-muted-foreground" />
+        </div>
       )}
-      <FaExternalLinkAlt
-        className={cn(
-          "text-white text-3xl m-auto relative",
-          !thumbnail && "text-muted-foreground",
-        )}
-      />
+      {url && (
+        <div className="px-2 py-1.5 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis text-xs text-zinc-500">
+          <span className="line-clamp-1">{getDisplayUrl(url)}</span>
+        </div>
+      )}
     </a>
   );
 }
