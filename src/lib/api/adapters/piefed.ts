@@ -463,6 +463,8 @@ function convertCommunity(
 
   if (mode === "full" || communityView.community.description) {
     c.description = communityView.community.description ?? null;
+  }
+  if (mode === "full" || communityView.community.banner) {
     c.banner = communityView.community.banner ?? null;
   }
 
@@ -1260,9 +1262,25 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         posts: posts.map((p) => convertPost({ postView: p })),
-        communities: communities.map((c) => convertCommunity(c, "partial")),
+        communities: _.uniqBy(
+          [
+            ...communities.map((c) => convertCommunity(c, "partial")),
+            ...posts.map((p) =>
+              convertCommunity({ community: p.community }, "partial"),
+            ),
+          ],
+          (c) => c.apId,
+        ),
         comments: [],
-        users: users.map((p) => convertPerson(p, "partial")),
+        users: _.uniqBy(
+          [
+            ...users.map((p) => convertPerson(p, "partial")),
+            ...posts.map((p) =>
+              convertPerson({ person: p.creator }, "partial"),
+            ),
+          ],
+          (p) => p.apId,
+        ),
         nextCursor: hasNextCursor ? String(nextCursor) : null,
       };
     } catch (err) {
