@@ -5,7 +5,7 @@ import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
 import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
-import { PostActionButtion, PostByline, usePostActions } from "./post-byline";
+import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
   PostShareButton,
@@ -48,7 +48,20 @@ export interface PostProps {
   modApIds?: string[];
 }
 
-export function LargePostCardSkeleton(props: {
+export function PostCardSkeleton(props: {
+  hideImage?: boolean;
+  detailView?: boolean;
+}) {
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+
+  if (props.detailView || postCardStyle === "large") {
+    return <LargePostCardSkeleton />;
+  }
+
+  return <SmallPostCardSkeleton />;
+}
+
+function LargePostCardSkeleton(props: {
   hideImage?: boolean;
   detailView?: boolean;
 }) {
@@ -99,9 +112,9 @@ function SmallPostCardSkeleton(props: {
   const hideImage = useRef(Math.random()).current < 0.1;
   return (
     <div>
-      <div className="flex-1 py-3 gap-4 flex max-md:px-3.5 overflow-x-hidden">
+      <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
         {(!hideImage || props.hideImage === false) && (
-          <Skeleton className="h-32 w-32 md:w-40 rounded-md shrink-0" />
+          <Skeleton className="h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0" />
         )}
 
         <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
@@ -233,7 +246,7 @@ function LargePostCard({
   const id = useId();
 
   if (!post) {
-    return <LargePostCardSkeleton />;
+    return <PostCardSkeleton />;
   }
 
   let displayUrl = post.url;
@@ -503,7 +516,7 @@ function SmallPostCard({
             lowSrc={embed?.thumbnail}
             highSrc={embed?.fullResThumbnail}
             className={cn(
-              "h-36 w-32 md:h-36 md:w-40 md:rounded-md shrink-0",
+              "h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0",
               blurImg && "blur-3xl",
             )}
             onAspectRatio={(thumbnailAspectRatio) => {
@@ -528,7 +541,7 @@ function SmallPostCard({
 
       <div
         className={cn(
-          "flex-1 flex flex-col gap-1.5 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
           !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
@@ -565,7 +578,7 @@ function SmallPostCard({
             !detailView && post.read && "text-muted-foreground",
           )}
         >
-          <span className="line-clamp-2">
+          <span className="line-clamp-2 md:line-clamp-3">
             {post.deleted ? "deleted" : post.title}
           </span>
         </Link>

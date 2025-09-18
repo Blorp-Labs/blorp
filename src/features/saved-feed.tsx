@@ -1,6 +1,6 @@
 import {
   PostCard,
-  LargePostCardSkeleton,
+  PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
@@ -214,7 +214,7 @@ export default function SavedFeed() {
             placeholder={
               posts.isPending ? (
                 <ContentGutters className="px-0">
-                  <LargePostCardSkeleton />
+                  <PostCardSkeleton />
                   <></>
                 </ContentGutters>
               ) : undefined

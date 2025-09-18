@@ -1,6 +1,6 @@
 import {
   PostCard,
-  LargePostCardSkeleton,
+  PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
@@ -257,7 +257,7 @@ export default function HomeFeed() {
             }
             placeholder={
               <ContentGutters className="px-0">
-                <LargePostCardSkeleton />
+                <PostCardSkeleton />
                 <></>
               </ContentGutters>
             }
