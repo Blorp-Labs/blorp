@@ -62,6 +62,7 @@ interface LinkWithoutParams<P extends RoutePath>
   to: P;
   searchParams?: `?${string}`;
   params?: never;
+  disable?: boolean;
 }
 
 interface LinkWithParams<P extends RoutePath>
@@ -69,6 +70,7 @@ interface LinkWithParams<P extends RoutePath>
   to: P;
   searchParams?: `?${string}`;
   params: ParamsFor<P>;
+  disable?: boolean;
 }
 
 export type LinkProps<P extends RoutePath> =
@@ -78,8 +80,12 @@ export function Link<Path extends RoutePath>({
   searchParams,
   to,
   params,
+  disable,
   ...rest
 }: LinkProps<Path>) {
+  if (disable) {
+    return <span {...rest} />;
+  }
   try {
     const toString = compile(to, { encode: false })(params);
     return <RRLink to={toString + (searchParams ?? "")} {...rest} />;

@@ -61,6 +61,8 @@ const pieFedFlairSchema = z.object({
   text_color: z.string().optional().nullable(),
 });
 
+const nextPageSchema = z.union([z.string(), z.number()]).nullish();
+
 export const pieFedCommunitySchema = z.object({
   actor_id: z.string(),
   //ap_domain: z.string(),
@@ -368,7 +370,10 @@ export const pieFedPrivateMessageViewSchema = z.object({
 export const pieFedCrosspostSchema = z.object({
   //activity_alert: z.boolean(),
   //banned_from_community: z.boolean(),
-  community: pieFedCommunitySchema,
+  community: pieFedCommunitySchema.pick({
+    actor_id: true,
+    name: true,
+  }),
   //counts: pieFedPostCountsSchema,
   //creator: pieFedPersonSchema,
   //creator_banned_from_community: z.boolean(),
@@ -376,7 +381,9 @@ export const pieFedCrosspostSchema = z.object({
   //creator_is_moderator: z.boolean(),
   //hidden: z.boolean(),
   //my_vote: z.number(),
-  //post: pieFedPostSchema,
+  post: pieFedPostSchema.pick({
+    ap_id: true,
+  }),
   //read: z.boolean(),
   //saved: z.boolean(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
@@ -430,7 +437,7 @@ function convertPost({
     creatorApId: creator.actor_id,
     crossPosts:
       crossPosts?.map((cp) => ({
-        apId: cp.community.actor_id,
+        apId: cp.post.ap_id,
         communitySlug: createSlug({
           apId: cp.community.actor_id,
           name: cp.community.name,
@@ -888,15 +895,15 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
     try {
-      const data = z
+      const { posts, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           posts: z.array(pieFedPostViewSchema),
         })
         .parse(json);
       return {
-        nextCursor: data.next_page ?? null,
-        posts: data.posts.map((post) => ({
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        posts: posts.map((post) => ({
           post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
@@ -922,18 +929,16 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
     try {
-      const data = z
+      const { communities, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           communities: z.array(pieFedCommunityViewSchema),
         })
         .parse(json);
 
       return {
-        nextCursor: data.next_page ?? null,
-        communities: data.communities.map((c) =>
-          convertCommunity(c, "partial"),
-        ),
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        communities: communities.map((c) => convertCommunity(c, "partial")),
       };
     } catch (err) {
       console.log(err);
@@ -1139,19 +1144,19 @@ export class PieFedApi implements ApiBlueprint<null> {
           options,
         );
 
-        const data = z
+        const { comments, next_page } = z
           .object({
+            next_page: nextPageSchema,
             comments: z.array(pieFedCommentViewSchema),
-            next_page: z.string().nullable().optional(),
           })
           .parse(json);
 
         return {
-          comments: data.comments.map(convertComment),
-          creators: data.comments.map(({ creator }) =>
+          comments: comments.map(convertComment),
+          creators: comments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
-          nextCursor: data.next_page ?? null,
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       } else {
         const json = await this.get(
@@ -1169,21 +1174,21 @@ export class PieFedApi implements ApiBlueprint<null> {
           options,
         );
 
-        const data = z
+        const { comments, next_page } = z
           .object({
             comments: z.array(pieFedCommentViewSchema),
-            next_page: z.string().nullable().optional(),
+            next_page: nextPageSchema,
           })
           .parse(json);
 
-        const flattenedComments = flattenCommentViews(data.comments);
+        const flattenedComments = flattenCommentViews(comments);
 
         return {
           comments: flattenedComments.map(convertComment),
           creators: flattenedComments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
-          nextCursor: data.next_page ?? null,
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       }
     } catch (err) {
@@ -1291,9 +1296,25 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         posts: posts.map((p) => convertPost({ postView: p })),
-        communities: communities.map((c) => convertCommunity(c, "partial")),
+        communities: _.uniqBy(
+          [
+            ...communities.map((c) => convertCommunity(c, "partial")),
+            ...posts.map((p) =>
+              convertCommunity({ community: p.community }, "partial"),
+            ),
+          ],
+          (c) => c.apId,
+        ),
         comments: [],
-        users: users.map((p) => convertPerson(p, "partial")),
+        users: _.uniqBy(
+          [
+            ...users.map((p) => convertPerson(p, "partial")),
+            ...posts.map((p) =>
+              convertPerson({ person: p.creator }, "partial"),
+            ),
+          ],
+          (p) => p.apId,
+        ),
         nextCursor: hasNextCursor ? String(nextCursor) : null,
       };
     } catch (err) {
@@ -1412,7 +1433,7 @@ export class PieFedApi implements ApiBlueprint<null> {
               ...personOrUsername,
               limit: this.limit,
               sort: "New",
-              page_cursor:
+              page:
                 form.pageCursor === INIT_PAGE_TOKEN
                   ? undefined
                   : form.pageCursor,
@@ -1426,7 +1447,7 @@ export class PieFedApi implements ApiBlueprint<null> {
               ...personOrUsername,
               limit: this.limit,
               sort: "New",
-              page_cursor:
+              page:
                 form.pageCursor === INIT_PAGE_TOKEN
                   ? undefined
                   : form.pageCursor,
@@ -1440,14 +1461,14 @@ export class PieFedApi implements ApiBlueprint<null> {
         .object({
           posts: z.array(pieFedPostViewSchema).nullable().optional(),
           comments: z.array(pieFedCommentViewSchema).nullable().optional(),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
       return {
         posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
         comments: comments?.map(convertComment) ?? [],
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.log(err);
@@ -1544,7 +1565,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const { private_messages, next_page } = z
         .object({
           private_messages: z.array(pieFedPrivateMessageViewSchema),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
@@ -1559,7 +1580,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         privateMessages: private_messages.map(convertPrivateMessage),
         profiles,
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);
@@ -1625,7 +1646,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const { replies, next_page } = z
         .object({
           replies: z.array(pieFedReplyViewSchema),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
@@ -1634,7 +1655,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         profiles: replies.map((r) =>
           convertPerson({ person: r.creator }, "partial"),
         ),
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);
@@ -1656,7 +1677,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       const { replies, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           replies: z.array(pieFedReplyViewSchema),
         })
         .parse(json);
@@ -1667,7 +1688,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           replies.map((r) => convertPerson({ person: r.creator }, "partial")),
           (p) => p.apId,
         ),
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);

@@ -423,9 +423,22 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     const users = results.filter((r) => r.type_ === "Person");
     return {
       posts: posts.map(convertPost),
-      communities: communities.map(convertCommunity),
+      communities: _.uniqBy(
+        [
+          ...communities.map(convertCommunity),
+          ...posts.map((c) => convertCommunity({ community: c.community })),
+          ...comments.map((c) => convertCommunity({ community: c.community })),
+        ],
+        (c) => c.apId,
+      ),
       comments: comments.map(convertComment),
-      users: users.map(convertPerson),
+      users: _.uniqBy(
+        [
+          ...users.map(convertPerson),
+          ...posts.map((p) => convertPerson({ person: p.creator })),
+        ],
+        (u) => u.apId,
+      ),
       nextCursor: next_page ?? null,
     };
   }

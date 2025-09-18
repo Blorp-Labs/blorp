@@ -578,9 +578,22 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         : null;
     return {
       posts: posts.map((p) => convertPost(p)),
-      communities: communities.map(convertCommunity),
+      communities: _.uniqBy(
+        [
+          ...communities.map(convertCommunity),
+          ...posts.map((c) => convertCommunity({ community: c.community })),
+          ...comments.map((c) => convertCommunity({ community: c.community })),
+        ],
+        (c) => c.apId,
+      ),
       comments: comments.map(convertComment),
-      users: users.map(convertPerson),
+      users: _.uniqBy(
+        [
+          ...users.map(convertPerson),
+          ...posts.map((p) => convertPerson({ person: p.creator })),
+        ],
+        (u) => u.apId,
+      ),
       nextCursor,
     };
   }
