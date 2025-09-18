@@ -23,8 +23,85 @@ import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { usePersonActions } from "./person-action-menu";
+import { cn } from "@/src/lib/utils";
+import { useState } from "react";
+import { Button } from "../ui/button";
 
 dayjs.extend(localizedFormat);
+
+export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
+  const [expanded, setExpanded] = useState(false);
+  const actions = usePersonActions({ person });
+
+  return (
+    <div className={cn("gap-3 p-4 pt-2", !expanded && "md:hidden")}>
+      <div
+        className={cn(
+          "flex flex-row items-start gap-3 flex-1 mb-1",
+          person?.bio && "mb-4",
+        )}
+      >
+        <Avatar className="h-13 w-13">
+          <AvatarImage
+            src={person?.avatar ?? undefined}
+            className="object-cover"
+          />
+          <AvatarFallback className="text-xl">
+            {person?.slug?.substring(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <LuCakeSlice />
+            <span>
+              Created {person ? dayjs(person.createdAt).format("ll") : ""}
+            </span>
+          </div>
+
+          <AggregateBadges
+            className="mt-1"
+            aggregates={{
+              Posts: person?.postCount,
+              Comments: person?.commentCount,
+            }}
+          />
+        </div>
+
+        <div className="flex-1" />
+
+        <ActionMenu
+          header="User"
+          align="end"
+          actions={actions}
+          trigger={
+            <IoEllipsisHorizontal
+              className="text-muted-foreground mt-0.5"
+              aria-label="Person action menu"
+            />
+          }
+        />
+      </div>
+
+      {expanded && person?.bio && (
+        <div>
+          <span>BIO</span>
+          <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
+        </div>
+      )}
+
+      {person?.bio && (
+        <Button
+          variant="link"
+          className="-ml-4 text-brand"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Hide" : "Show"} bio
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function PersonSidebar({ person }: { person?: Schemas.Person }) {
   const open = useSidebarStore((s) => s.personBioExpanded);
