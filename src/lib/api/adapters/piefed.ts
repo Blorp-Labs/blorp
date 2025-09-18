@@ -11,6 +11,7 @@ import {
 import z from "zod";
 import { createSlug } from "../utils";
 import { parseOgData } from "../../html-parsing";
+import { isNotNil } from "../../utils";
 
 const POST_SORTS = [
   "Active",
@@ -49,6 +50,8 @@ const communitySortSchema = z.custom<(typeof COMMUNITY_SORTS)[number]>(
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
+
+const nextPageSchema = z.union([z.string(), z.number()]).nullish();
 
 export const pieFedCommunitySchema = z.object({
   actor_id: z.string(),
@@ -862,15 +865,15 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
     try {
-      const data = z
+      const { posts, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           posts: z.array(pieFedPostViewSchema),
         })
         .parse(json);
       return {
-        nextCursor: data.next_page ?? null,
-        posts: data.posts.map((post) => ({
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        posts: posts.map((post) => ({
           post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
@@ -895,18 +898,16 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
     try {
-      const data = z
+      const { communities, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           communities: z.array(pieFedCommunityViewSchema),
         })
         .parse(json);
 
       return {
-        nextCursor: data.next_page ?? null,
-        communities: data.communities.map((c) =>
-          convertCommunity(c, "partial"),
-        ),
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        communities: communities.map((c) => convertCommunity(c, "partial")),
       };
     } catch (err) {
       console.log(err);
@@ -1110,19 +1111,19 @@ export class PieFedApi implements ApiBlueprint<null> {
           options,
         );
 
-        const data = z
+        const { comments, next_page } = z
           .object({
+            next_page: nextPageSchema,
             comments: z.array(pieFedCommentViewSchema),
-            next_page: z.string().nullable().optional(),
           })
           .parse(json);
 
         return {
-          comments: data.comments.map(convertComment),
-          creators: data.comments.map(({ creator }) =>
+          comments: comments.map(convertComment),
+          creators: comments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
-          nextCursor: data.next_page ?? null,
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       } else {
         const json = await this.get(
@@ -1140,21 +1141,21 @@ export class PieFedApi implements ApiBlueprint<null> {
           options,
         );
 
-        const data = z
+        const { comments, next_page } = z
           .object({
             comments: z.array(pieFedCommentViewSchema),
-            next_page: z.string().nullable().optional(),
+            next_page: nextPageSchema,
           })
           .parse(json);
 
-        const flattenedComments = flattenCommentViews(data.comments);
+        const flattenedComments = flattenCommentViews(comments);
 
         return {
           comments: flattenedComments.map(convertComment),
           creators: flattenedComments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
-          nextCursor: data.next_page ?? null,
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       }
     } catch (err) {
@@ -1427,14 +1428,14 @@ export class PieFedApi implements ApiBlueprint<null> {
         .object({
           posts: z.array(pieFedPostViewSchema).nullable().optional(),
           comments: z.array(pieFedCommentViewSchema).nullable().optional(),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
       return {
         posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
         comments: comments?.map(convertComment) ?? [],
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.log(err);
@@ -1503,7 +1504,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const { private_messages, next_page } = z
         .object({
           private_messages: z.array(pieFedPrivateMessageViewSchema),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
@@ -1518,7 +1519,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         privateMessages: private_messages.map(convertPrivateMessage),
         profiles,
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);
@@ -1584,7 +1585,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const { replies, next_page } = z
         .object({
           replies: z.array(pieFedReplyViewSchema),
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
         })
         .parse(json);
 
@@ -1593,7 +1594,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         profiles: replies.map((r) =>
           convertPerson({ person: r.creator }, "partial"),
         ),
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);
@@ -1615,7 +1616,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       const { replies, next_page } = z
         .object({
-          next_page: z.string().nullable().optional(),
+          next_page: nextPageSchema,
           replies: z.array(pieFedReplyViewSchema),
         })
         .parse(json);
@@ -1626,7 +1627,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           replies.map((r) => convertPerson({ person: r.creator }, "partial")),
           (p) => p.apId,
         ),
-        nextCursor: next_page ?? null,
+        nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
       console.error(err);
