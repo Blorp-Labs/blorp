@@ -223,7 +223,9 @@ function LargePostCard({
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageStatus, setImageStatus] = useState<
+    "loading" | "error" | "success"
+  >("loading");
 
   const [removeBlur, setRemoveBlur] = useState(false);
 
@@ -258,7 +260,8 @@ function LargePostCard({
   const encodedApId = encodeApId(apId);
   const embed = post ? getPostEmbed(post) : null;
 
-  const showImage = embed?.type === "image" && !post.deleted;
+  const showImage =
+    embed?.type === "image" && !post.deleted && imageStatus !== "error";
   const showArticle = embed?.type === "article" && !post?.deleted;
   const blurImg = post.nsfw && !removeBlur ? blurNsfw : false;
 
@@ -348,7 +351,7 @@ function LargePostCard({
             }
           }}
         >
-          {!imageLoaded && (
+          {imageStatus === "loading" && (
             <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
           )}
           <ProgressiveImage
@@ -359,13 +362,14 @@ function LargePostCard({
               blurImg && "blur-3xl",
             )}
             onAspectRatio={(thumbnailAspectRatio) => {
-              setImageLoaded(true);
+              setImageStatus("success");
               if (!post.thumbnailAspectRatio) {
                 patchPost(apId, getCachePrefixer(), {
                   thumbnailAspectRatio,
                 });
               }
             }}
+            onError={() => setImageStatus("error")}
             aspectRatio={post.thumbnailAspectRatio ?? undefined}
             alt={post.altText}
           />

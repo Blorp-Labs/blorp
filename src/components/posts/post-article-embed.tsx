@@ -101,7 +101,11 @@ export function PostArticleMiniEmbed({
   blurNsfw: boolean;
   className?: string;
 }) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageStatus, setImageStatus] = useState<
+    "loading" | "error" | "success"
+  >("loading");
+
+  const showImage = thumbnail && imageStatus !== "error";
 
   return (
     <a
@@ -114,13 +118,13 @@ export function PostArticleMiniEmbed({
       }}
       className={cn(
         "flex flex-col relative overflow-hidden",
-        !thumbnail && "bg-secondary",
+        !showImage && "bg-secondary",
         className,
       )}
     >
-      {thumbnail ? (
+      {thumbnail && showImage ? (
         <>
-          {!imageLoaded && (
+          {imageStatus === "loading" && (
             <Skeleton className="absolute inset-0 rounded-b-none" />
           )}
           <img
@@ -129,7 +133,11 @@ export function PostArticleMiniEmbed({
               "absolute inset-0 object-cover w-full h-full",
               blurNsfw && "blur-3xl",
             )}
-            onLoad={() => setImageLoaded(true)}
+            onLoad={() => setImageStatus("success")}
+            onError={() => {
+              console.log("err");
+              setImageStatus("error");
+            }}
           />
           {blurNsfw && (
             <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
@@ -145,7 +153,7 @@ export function PostArticleMiniEmbed({
           <span className="text-xs line-clamp-1 flex-1">
             {getDisplayUrl(url).host}
           </span>
-          {thumbnail && <FaExternalLinkAlt className="text-xs scale-80" />}
+          {showImage && <FaExternalLinkAlt className="text-xs scale-80" />}
         </div>
       )}
     </a>
@@ -161,7 +169,11 @@ export function PostArticleEmbed({
   thumbnail?: string | null;
   blurNsfw: boolean;
 }) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageStatus, setImageStatus] = useState<
+    "loading" | "error" | "success"
+  >("loading");
+
+  const showImage = thumbnail && imageStatus !== "error";
 
   return (
     <a
@@ -174,9 +186,9 @@ export function PostArticleEmbed({
       }}
       className="flex flex-col"
     >
-      {thumbnail && (
+      {thumbnail && showImage && (
         <div className="relative aspect-video overflow-hidden">
-          {!imageLoaded && (
+          {imageStatus === "loading" && (
             <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
           )}
           <img
@@ -185,7 +197,8 @@ export function PostArticleEmbed({
               "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
               blurNsfw && "blur-3xl",
             )}
-            onLoad={() => setImageLoaded(true)}
+            onLoad={() => setImageStatus("success")}
+            onError={() => setImageStatus("error")}
           />
           {blurNsfw && (
             <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
@@ -203,7 +216,7 @@ export function PostArticleEmbed({
           )}
         </div>
       )}
-      {url && !thumbnail && (
+      {url && !showImage && (
         <div
           className={cn(
             "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
