@@ -231,6 +231,14 @@ export const registrationResponseSchema = z.object({
   registrationCreated: z.boolean().nullable(),
 });
 
+export const linkMetadataSchema = z.object({
+  contentType: z.string().nullish(),
+  description: z.string().nullish(),
+  embedVideoUrl: z.string().nullish(),
+  imageUrl: z.string().nullish(),
+  title: z.string().nullish(),
+});
+
 export const slugSchema = z.custom<`${string}@${string}`>((val) => {
   return /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val);
 });
@@ -263,9 +271,14 @@ export namespace Schemas {
   export type ResolveObject = z.infer<typeof resolveObjectResponseSchema>;
 
   export type Flair = z.infer<typeof flairSchema>;
+  export type LinkMetadata = z.infer<typeof linkMetadataSchema>;
 }
 
 export namespace Forms {
+  export type GetLinkMetadata = {
+    url: string;
+  };
+
   export type GetPerson = {
     apIdOrUsername: string;
   };
@@ -649,6 +662,10 @@ export abstract class ApiBlueprint<C> {
   abstract createPost(form: Forms.CreatePost): Promise<Schemas.Post>;
 
   abstract createPostReport(form: Forms.CreatePostReport): Promise<void>;
+
+  abstract getLinkMetadata(
+    form: Forms.GetLinkMetadata,
+  ): Promise<Schemas.LinkMetadata>;
 
   abstract createCommentReport(form: Forms.CreateCommentReport): Promise<void>;
 

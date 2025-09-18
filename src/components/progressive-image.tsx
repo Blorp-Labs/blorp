@@ -23,6 +23,8 @@ export type ProgressiveImageProps = {
   onAspectRatio?: (ratio: number) => void;
 
   aspectRatio?: number;
+
+  onError?: () => void;
 };
 
 /**
@@ -43,6 +45,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   priority = false,
   aspectRatio,
   onAspectRatio,
+  onError,
 }) => {
   const [hiVisible, setHiVisible] = useState<boolean>(priority);
 
@@ -74,7 +77,8 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         decoding="async"
         fetchPriority="high"
         onLoad={handleAspectRatio}
-        className={["w-full", imgClassName].join(" ")}
+        onError={() => onError?.()}
+        className={["w-full h-full", imgClassName].join(" ")}
       />
       {/* High-res overlay: fades in after it loads */}
       {highSrc && (

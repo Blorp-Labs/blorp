@@ -12,6 +12,7 @@ import z from "zod";
 import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
+import { parseOgData } from "../../html-parsing";
 
 const POST_SORTS = [
   "Active",
@@ -131,7 +132,7 @@ export const pieFedPostSchema = z.object({
   published: z.string(),
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
-  //sticky: z.boolean(),
+  sticky: z.boolean().nullish(),
   thumbnail_url: z.string().nullable().optional(),
   title: z.string(),
   url: z.string().nullable().optional(),
@@ -391,10 +392,13 @@ function convertFlair(flair: z.infer<typeof pieFedFlairSchema>): Schemas.Flair {
   };
 }
 
-function convertPost(
-  postView: z.infer<typeof pieFedPostViewSchema>,
-  crossPosts?: z.infer<typeof pieFedCrosspostSchema>[],
-): Schemas.Post {
+function convertPost({
+  postView,
+  crossPosts,
+}: {
+  postView: z.infer<typeof pieFedPostViewSchema>;
+  crossPosts?: z.infer<typeof pieFedCrosspostSchema>[];
+}): Schemas.Post {
   const { post, counts, community, creator } = postView;
   return {
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
@@ -432,8 +436,7 @@ function convertPost(
           name: cp.community.name,
         }).slug,
       })) ?? null,
-    // TODO: see if this exists
-    featuredCommunity: false,
+    featuredCommunity: postView.post.sticky ?? false,
     // TODO: see if this exists
     featuredLocal: false,
     read: postView.read,
@@ -894,7 +897,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         nextCursor: data.next_page ?? null,
         posts: data.posts.map((post) => ({
-          post: convertPost(post),
+          post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
           flairs: post.flair_list?.map(convertFlair),
@@ -1042,7 +1045,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        post: convertPost(post_view, cross_posts),
+        post: convertPost({ postView: post_view, crossPosts: cross_posts }),
         community_view: convertCommunity(community_view, "partial"),
         creator: convertPerson({ person: post_view.creator }, "partial"),
         flairs: post_view.flair_list?.map(convertFlair),
@@ -1073,7 +1076,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1087,7 +1090,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1287,7 +1290,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const hasNextCursor = hasMorePosts || hasMoreCommunities || hasMoreUsers;
 
       return {
-        posts: posts.map((p) => convertPost(p)),
+        posts: posts.map((p) => convertPost({ postView: p })),
         communities: communities.map((c) => convertCommunity(c, "partial")),
         comments: [],
         users: users.map((p) => convertPerson(p, "partial")),
@@ -1312,7 +1315,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
       throw err;
@@ -1442,7 +1445,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        posts: posts?.map((p) => convertPost(p)) ?? [],
+        posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
         comments: comments?.map(convertComment) ?? [],
         nextCursor: next_page ?? null,
       };
@@ -1465,7 +1468,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
       if (form.flairs) {
         const { flairs } = await this.getCommunity({
-          slug: convertPost(data.post_view).communitySlug,
+          slug: convertPost({ postView: data.post_view }).communitySlug,
         });
         const flairLookup = getFlairLookup(flairs);
         const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
@@ -1474,11 +1477,11 @@ export class PieFedApi implements ApiBlueprint<null> {
           flair_id_list: selectedFlairs?.map((f) => f.id),
         });
         return {
-          ...convertPost(data.post_view),
+          ...convertPost({ postView: data.post_view }),
           flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
         };
       }
-      return { ...convertPost(data.post_view) };
+      return { ...convertPost({ postView: data.post_view }) };
     } catch (err) {
       console.error(err);
       throw err;
@@ -1507,7 +1510,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         });
       }
       return {
-        ...convertPost(data.post_view),
+        ...convertPost({ postView: data.post_view }),
         flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
       };
     } catch (err) {
@@ -1599,7 +1602,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost(data.post_view);
+      return convertPost({ postView: data.post_view });
     } catch (err) {
       console.error(err);
       throw err;
@@ -1815,13 +1818,27 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        post: post ? convertPost(post) : null,
+        post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
       };
     } catch (err) {
       console.error(err);
       throw err;
+    }
+  }
+
+  async getLinkMetadata(form: Forms.GetLinkMetadata) {
+    try {
+      const res = await fetch(form.url);
+      const text = await res.text();
+      const og = parseOgData(text);
+      return {
+        imageUrl: og.imageUrl,
+        title: og.title,
+      };
+    } catch {
+      return {};
     }
   }
 

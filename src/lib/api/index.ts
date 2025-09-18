@@ -46,6 +46,8 @@ import { env } from "@/src/env";
 import { isErrorLike, isNotNil, normalizeInstance } from "../utils";
 import { compressImage } from "../image";
 import { useFlairsStore } from "@/src/stores/flairs";
+import { confetti } from "@/src/features/easter-eggs/confetti";
+import { useHistory } from "@/src/routing";
 
 enum Errors2 {
   OBJECT_NOT_FOUND = "couldnt_find_object",
@@ -1111,6 +1113,7 @@ export function useCreateComment() {
       };
     },
     onMutate: ({ postApId, parentPath, body, queryKeyParentId }) => {
+      confetti(body);
       const date = new Date();
       const isoDate = date.toISOString();
       const commentId = _.random(1, 1000000) * -1;
@@ -1847,6 +1850,7 @@ export function useMarkPersonMentionRead() {
 
 export function useCreatePost() {
   const router = useIonRouter();
+  const history = useHistory();
   const { api } = useApiClients();
   const queryClient = useQueryClient();
   const getPostsQueryKey = usePostsKey();
@@ -1877,7 +1881,7 @@ export function useCreatePost() {
     onSuccess: ({ apId, communitySlug }, _, toastId) => {
       toast.dismiss(toastId);
       if (communitySlug) {
-        router.push(
+        history.replace(
           `/home/c/${communitySlug}/posts/${encodeURIComponent(apId)}`,
         );
       }
@@ -1896,7 +1900,7 @@ export function useCreatePost() {
 }
 
 export function useEditPost(apId: string) {
-  const router = useIonRouter();
+  const history = useHistory();
   const { api } = useApiClients();
   const patchPost = usePostsStore((s) => s.patchPost);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -1912,7 +1916,7 @@ export function useEditPost(apId: string) {
       patchPost(apId, getCachePrefixer(), postView);
       const slug = postView.communitySlug;
       if (slug) {
-        router.push(`/home/c/${slug}/posts/${encodeURIComponent(apId)}`);
+        history.replace(`/home/c/${slug}/posts/${encodeURIComponent(apId)}`);
       }
     },
     onError: (err, _, toastId) => {
@@ -2212,5 +2216,14 @@ export function useResolveObject(query: string) {
     queryKey: [queryKeyPrefix, "resolveObject" + query],
     queryFn: async ({ signal }) =>
       await (await api).resolveObject({ q: query }, { signal }),
+  });
+}
+
+export function useLinkMetadat() {
+  const { api } = useApiClients();
+  return useMutation({
+    mutationFn: async (form: Forms.GetLinkMetadata) => {
+      return await (await api).getLinkMetadata(form);
+    },
   });
 }

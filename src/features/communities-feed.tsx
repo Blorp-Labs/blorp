@@ -76,6 +76,35 @@ export default function Communities() {
     numCols = 2;
   }
 
+  const vlist = (
+    <VirtualList<string>
+      key={communitySort + listingType}
+      fullscreen
+      scrollHost
+      numColumns={numCols}
+      data={
+        listingType === "ModeratorView" ? moderatesCommunities : communities
+      }
+      renderItem={({ item }) => <MemoedListItem communitySlug={item} />}
+      onEndReached={() => {
+        if (
+          listingType !== "ModeratorView" &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
+      estimatedItemSize={52}
+      refresh={refetch}
+      placeholder={
+        <ContentGutters className="md:contents">
+          <CommunityCardSkeleton className="mt-1" />
+        </ContentGutters>
+      }
+    />
+  );
+
   return (
     <IonPage>
       <PageTitle>Communities</PageTitle>
@@ -103,36 +132,12 @@ export default function Communities() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent scrollY={false}>
-        <ContentGutters className="h-full max-md:contents">
-          <VirtualList<string>
-            key={communitySort + listingType}
-            className="h-full ion-content-scroll-host"
-            numColumns={numCols}
-            data={
-              listingType === "ModeratorView"
-                ? moderatesCommunities
-                : communities
-            }
-            renderItem={({ item }) => <MemoedListItem communitySlug={item} />}
-            onEndReached={() => {
-              if (
-                listingType !== "ModeratorView" &&
-                hasNextPage &&
-                !isFetchingNextPage
-              ) {
-                fetchNextPage();
-              }
-            }}
-            estimatedItemSize={52}
-            refresh={refetch}
-            placeholder={
-              <ContentGutters className="md:contents">
-                <CommunityCardSkeleton className="mt-1" />
-              </ContentGutters>
-            }
-          />
-        </ContentGutters>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
+        {media.md ? (
+          <ContentGutters className="h-full">{vlist}</ContentGutters>
+        ) : (
+          vlist
+        )}
       </IonContent>
     </IonPage>
   );

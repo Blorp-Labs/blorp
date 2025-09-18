@@ -1,6 +1,6 @@
 [package]
 name = "Blorp"
-version = "1.9.21"
+version = "1.9.22"
 description = "Blorp for Lemmy"
 authors = ["you"]
 license = ""

@@ -1,5 +1,5 @@
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
@@ -23,7 +23,6 @@ import {
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
-
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
@@ -41,9 +40,9 @@ import { useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
-import { Separator } from "../components/ui/separator";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
+import { Separator } from "../components/ui/separator";
 
 const EMPTY_ARR: never[] = [];
 
@@ -52,7 +51,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} />
+    <PostCard {...props} />
     <></>
   </ContentGutters>
 ));
@@ -114,6 +113,14 @@ export default function CommunityFeed() {
       ? !(getCachePrefixer()(mostRecentPostApId) in s.posts)
       : false,
   );
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetch(), mostRecentPost.refetch()]);
+    setRefreshing(false);
+  };
 
   return (
     <IonPage>
@@ -195,11 +202,12 @@ export default function CommunityFeed() {
           </ContentGutters>
         )}
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
           <VirtualList<Item>
             key={postSort}
-            className="h-full ion-content-scroll-host"
+            fullscreen
+            scrollHost
             data={
               data.length === 0 && !posts.isRefetching && !posts.isPending
                 ? [NO_ITEMS]
@@ -221,10 +229,12 @@ export default function CommunityFeed() {
                 communityName={communityName}
                 key="community-sort-bar"
               />,
-              <Separator
-                key="separator"
-                className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden"
-              />,
+              !refreshing && (
+                <Separator
+                  key="separator"
+                  className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden"
+                />
+              ),
             ]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
@@ -251,7 +261,7 @@ export default function CommunityFeed() {
               }
             }}
             estimatedItemSize={475}
-            refresh={() => Promise.all([refetch(), mostRecentPost.refetch()])}
+            refresh={refresh}
             placeholder={
               posts.isPending ? (
                 <ContentGutters className="px-0">

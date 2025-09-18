@@ -19,6 +19,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
+      - name: Normalize lowercase vars
+        id: vars
+        run: |
+          echo "owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          echo "ref_name=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
       - name: Set up QEMU (optional, for multi-arch)
         uses: docker/setup-qemu-action@v2
 
@@ -46,7 +52,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/blorp:${{ github.ref_name }}
-            ghcr.io/${{ github.repository_owner }}/blorp:latest
+            ghcr.io/${{ env.owner_lc }}/blorp:${{ env.ref_name }}
+            ghcr.io/${{ env.owner_lc }}/blorp:latest
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/blorp:${{ github.ref_name }}
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/blorp:latest

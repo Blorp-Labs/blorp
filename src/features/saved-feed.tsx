@@ -1,5 +1,5 @@
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
@@ -39,7 +39,7 @@ type Item =
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} />
+    <PostCard {...props} />
     <></>
   </ContentGutters>
 ));
@@ -152,7 +152,7 @@ export default function SavedFeed() {
         <PostReportProvider>
           <VirtualList<Item>
             key={type === "comments" ? "comments" : type + postSort}
-            className="h-full ion-content-scroll-host"
+            scrollHost
             data={
               data.length === 0 && !posts.isRefetching && !posts.isPending
                 ? [NO_ITEMS]

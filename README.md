@@ -28,18 +28,9 @@
 </p>
 <br/>
 
-## Try it!
-| Url | Official Instance | Lemmy | PieFed |
-|-----|-----|-----|-----|
-| **[blorpblorp.xyz](https://blorpblorp.xyz/)** | ✅ | ✅ | ✅ |
-| [blorp.lemmy.zip](https://blorp.lemmy.zip) || ✅ ||
-| [blorp.piefed.zip](https://blorp.piefed.zip) ||| ✅ |
-| [b.feddit.uk](https://b.feddit.uk) || ✅ ||
-| [blorp.europe.pub](https://blorp.europe.pub) || ✅ ||
-| [b.lemmy.nz](https://b.lemmy.nz/) || ✅ ||
-
 ## 🚀 Download
 
+* [Web - blorpblorp.xyz](https://blorpblorp.xyz)
 * [iOS](https://apps.apple.com/us/app/blorp-for-lemmy/id6739925430)
 * Android
     * [Google Play](https://play.google.com/store/apps/details?id=xyz.blorpblorp.app)
@@ -51,26 +42,41 @@
 * [Join iOS TestFlight Beta](https://testflight.apple.com/join/T2pYyShr)
 * [Join Google Play Beta](https://play.google.com/apps/testing/xyz.blorpblorp.app)
 
+## ❤️ Friends of Blorp
+| Url | Lemmy | PieFed |
+|-----|-----|-----|
+| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ ||
+| [blorp.piefed.world](https://blorp.piefed.world) || ✅ |
+| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
+| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
+| [b.feddit.uk](https://b.feddit.uk) | ✅ ||
+| [blorp.europe.pub](https://blorp.europe.pub) | ✅ ||
+| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ ||
+| [b.lazysoci.al](https://b.lazysoci.al) | ✅ ||
+
 ## 🐳 Self host via Docker
+
+*Recommended: use the [Blorp deployment configuration tool](https://deploy.blorpblorp.xyz/)*
 
 ```bash
 # pull the latest Blorp image
-docker pull christianjuth/blorp:latest
+docker pull ghcr.io/blorp-labs/blorp:latest
 
 # run it on port 8080 (host → container), passing any runtime env‑vars you need
-docker run -d \
-  --name blorp \
-  -p 8080:80 \
-  -e REACT_APP_DEFAULT_INSTANCE="https://lemmy.zip" \
-  -e REACT_APP_NAME="Blorp" \
-  -e REACT_APP_LOCK_TO_DEFAULT_INSTANCE="false" \
-  christianjuth/blorp:latest
+docker run -d \ 
+  --name blorp \ 
+  -p 8080:80 \ 
+  -e REACT_APP_NAME="Blorp" \ 
+  -e REACT_APP_DEFAULT_INSTANCE="https://lemmy.world,https://piefed.zip" \ 
+  -e REACT_APP_LOCK_TO_DEFAULT_INSTANCE="1" \ 
+  -e REACT_APP_INSTANCE_SELECTION_MODE="default_first"  
+  ghcr.io/blorp-labs/blorp:latest
 ```
 
 ## 💬 Blorp Community
 
 Want to ask questions, share feedback, or just chat with other Blorp users? Head over to our community at  
-[lemmy.ml/c/blorp](https://lemmy.ml/c/blorp).
+[lemmy.zip/c/blorp](https://lemmy.zip/c/blorp).
 
 ## 📚 Stack
 

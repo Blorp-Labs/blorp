@@ -1,5 +1,5 @@
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "@/src/components/posts/post";
@@ -42,7 +42,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} featuredContext="home" />
+    <PostCard {...props} featuredContext="home" />
     <></>
   </ContentGutters>
 ));
@@ -275,7 +275,8 @@ export default function HomeFeed() {
               }
               return <Post key={item} apId={item} />;
             }}
-            className="h-full ion-content-scroll-host absolute inset-0 pt-[var(--offset-top)] pb-[var(--offset-bottom)]"
+            scrollHost
+            fullscreen
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) {
                 fetchNextPage();

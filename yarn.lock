@@ -6320,6 +6320,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/canvas-confetti@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@types/canvas-confetti@npm:1.9.0"
+  checksum: 10c0/ffe2c674d466b8e13472c81ab2a97056f3433fd40a3513dbc1bb76764e4e7c3ff0a2a58d37b16ea6a245c831077c553db321b069dda6572eab59f2be61137b2e
+  languageName: node
+  linkType: hard
+
 "@types/chai@npm:^5.2.2":
   version: 5.2.2
   resolution: "@types/chai@npm:5.2.2"
@@ -7749,6 +7756,13 @@ __metadata:
   version: 1.0.30001727
   resolution: "caniuse-lite@npm:1.0.30001727"
   checksum: 10c0/f0a441c05d8925d728c2d02ce23b001935f52183a3bf669556f302568fe258d1657940c7ac0b998f92bc41383e185b390279a7d779e6d96a2b47881f56400221
+  languageName: node
+  linkType: hard
+
+"canvas-confetti@npm:^1.9.3":
+  version: 1.9.3
+  resolution: "canvas-confetti@npm:1.9.3"
+  checksum: 10c0/94c6f16591660d5ed4a48afb8da65902826ce6b38edc7644d62521aa9bf9ef5b950aa4396e980e7fe0a38e5f41a991a6d984721412a54c9fba4de3682c1eead0
   languageName: node
   linkType: hard
 
@@ -11314,6 +11328,7 @@ __metadata:
     "@tiptap/react": "npm:^2.11.7"
     "@tiptap/starter-kit": "npm:^2.11.7"
     "@tiptap/suggestion": "npm:^3.3.0"
+    "@types/canvas-confetti": "npm:^1.9.0"
     "@types/express": "npm:^4"
     "@types/license-checker": "npm:^25.0.6"
     "@types/lodash": "npm:^4.17.13"
@@ -11331,6 +11346,7 @@ __metadata:
     "@vitest/ui": "npm:3.2.4"
     bowser: "npm:^2.11.0"
     browser-image-compression: "npm:^2.0.2"
+    canvas-confetti: "npm:^1.9.3"
     capacitor-plugin-safe-area: "npm:^4.0.0"
     chromatic: "npm:^11.25.1"
     class-variance-authority: "npm:^0.7.1"
@@ -11355,6 +11371,7 @@ __metadata:
     lint-staged: "npm:^15.3.0"
     lite-youtube-embed: "npm:^0.3.3"
     lodash: "npm:^4.17.21"
+    lots-o-nekos: "npm:^3.0.0"
     lowlight: "npm:^3.3.0"
     lucide-react: "npm:^0.484.0"
     markdown-it: "npm:^14.1.0"
@@ -11860,6 +11877,13 @@ __metadata:
   bin:
     loose-envify: cli.js
   checksum: 10c0/655d110220983c1a4b9c0c679a2e8016d4b67f6e9c7b5435ff5979ecdb20d0813f4dec0a08674fcbdd4846a3f07edbb50a36811fd37930b94aaa0d9daceb017e
+  languageName: node
+  linkType: hard
+
+"lots-o-nekos@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "lots-o-nekos@npm:3.0.0"
+  checksum: 10c0/c8a9f080f82b868ba3a65a7bc30d213e6ecdd94a7a67e5c99a5d8628eac82f15d12f157d69818f3907a34ae19530663a309a1c5e2529124b9ba1b41c5c4941ff
   languageName: node
   linkType: hard
 

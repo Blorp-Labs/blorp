@@ -1058,6 +1058,20 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     };
   }
 
+  async getLinkMetadata(form: Forms.GetLinkMetadata) {
+    const { metadata } = await this.client.getSiteMetadata({
+      url: form.url,
+    });
+
+    return {
+      title: metadata.title,
+      description: metadata.title,
+      contentType: metadata.content_type,
+      imageUrl: metadata.image,
+      embedVideoUrl: metadata.embed_video_url,
+    };
+  }
+
   getPostSorts() {
     return POST_SORTS;
   }

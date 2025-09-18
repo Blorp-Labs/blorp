@@ -35,6 +35,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
+import Oneko from "@/src/features/easter-eggs/Oneko";
 
 dayjs.extend(localizedFormat);
 
@@ -299,111 +300,114 @@ export function CommunitySidebar({
 
   return (
     <Sidebar>
-      <SidebarContent>
-        <div className="p-4 flex flex-col gap-3">
-          <div className="flex flex-row items-start justify-between flex-1">
-            <Avatar className="h-13 w-13">
-              <AvatarImage
-                src={communityView.icon ?? undefined}
-                className="object-cover"
+      <SidebarContent className="relative">
+        <Oneko seed={communityName}>
+          <div className="p-4 flex flex-col gap-3">
+            <div className="flex flex-row items-start justify-between flex-1">
+              <Avatar className="h-13 w-13">
+                <AvatarImage
+                  src={communityView.icon ?? undefined}
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-xl">
+                  {communityName.substring(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              <ActionMenu
+                header="Community"
+                align="end"
+                actions={actions}
+                trigger={
+                  <IoEllipsisHorizontal className="text-muted-foreground mt-0.5" />
+                }
               />
-              <AvatarFallback className="text-xl">
-                {communityName.substring(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            </div>
 
-            <ActionMenu
-              header="Community"
-              align="end"
-              actions={actions}
-              trigger={
-                <IoEllipsisHorizontal className="text-muted-foreground mt-0.5" />
-              }
-            />
+            <span className="font-bold line-clamp-1">{communityView.slug}</span>
+
+            <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+              <LuCakeSlice />
+              <span>Created {dayjs(communityView.createdAt).format("ll")}</span>
+            </div>
           </div>
+          <Separator />
+          <Collapsible
+            className="p-4"
+            open={aboutOpen}
+            onOpenChange={setAboutOpen}
+          >
+            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+              <span>ABOUT</span>
+              <ChevronsUpDown className="h-4 w-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-1">
+              {communityView.description && !hideDescription && (
+                <MarkdownRenderer
+                  markdown={communityView.description}
+                  dim
+                  className="py-3"
+                />
+              )}
 
-          <span className="font-bold line-clamp-1">{communityView.slug}</span>
-
-          <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-            <LuCakeSlice />
-            <span>Created {dayjs(communityView.createdAt).format("ll")}</span>
-          </div>
-        </div>
-
-        <Separator />
-
-        <Collapsible
-          className="p-4"
-          open={aboutOpen}
-          onOpenChange={setAboutOpen}
-        >
-          <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-            <span>ABOUT</span>
-            <ChevronsUpDown className="h-4 w-4" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-1">
-            {communityView.description && !hideDescription && (
-              <MarkdownRenderer
-                markdown={communityView.description}
-                dim
-                className="py-3"
+              <AggregateBadges
+                className="mt-2"
+                aggregates={{
+                  "users / day": communityView?.usersActiveDayCount,
+                  "users / week": communityView?.usersActiveWeekCount,
+                  "users / month": communityView?.usersActiveMonthCount,
+                  "users / 6 months": communityView?.usersActiveHalfYearCount,
+                  "Local subscribers": communityView?.subscribersLocalCount,
+                  Subscribers: communityView?.subscriberCount,
+                  Posts: communityView?.postCount,
+                  Comments: communityView?.commentCount,
+                }}
               />
-            )}
+            </CollapsibleContent>
+          </Collapsible>
 
-            <AggregateBadges
-              className="mt-2"
-              aggregates={{
-                "users / day": communityView?.usersActiveDayCount,
-                "users / week": communityView?.usersActiveWeekCount,
-                "users / month": communityView?.usersActiveMonthCount,
-                "users / 6 months": communityView?.usersActiveHalfYearCount,
-                "Local subscribers": communityView?.subscribersLocalCount,
-                Subscribers: communityView?.subscriberCount,
-                Posts: communityView?.postCount,
-                Comments: communityView?.commentCount,
-              }}
-            />
-          </CollapsibleContent>
-        </Collapsible>
+          {flairs && flairs.length > 0 && (
+            <>
+              <Separator />
 
-        {flairs && flairs.length > 0 && (
-          <>
-            <Separator />
+              <Collapsible
+                className="p-4"
+                open={flairsOpen}
+                onOpenChange={setFlairsOpen}
+              >
+                <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                  <span>FLAIRS</span>
+                  <ChevronsUpDown className="h-4 w-4" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pb-1 pt-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {flairs?.map((flair) => (
+                      <Flair key={flair.data.id} flair={flair.data} />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </>
+          )}
 
-            <Collapsible
-              className="p-4"
-              open={flairsOpen}
-              onOpenChange={setFlairsOpen}
-            >
-              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-                <span>FLAIRS</span>
-                <ChevronsUpDown className="h-4 w-4" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pb-1 pt-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {flairs?.map((flair) => (
-                    <Flair key={flair.data.id} flair={flair.data} />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </>
-        )}
+          <Separator />
+          <Collapsible
+            className="p-4"
+            open={modsOpen}
+            onOpenChange={setModsOpen}
+          >
+            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+              <span>MODS</span>
+              <ChevronsUpDown className="h-4 w-4" />
+            </CollapsibleTrigger>
 
-        <Separator />
-
-        <Collapsible className="p-4" open={modsOpen} onOpenChange={setModsOpen}>
-          <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-            <span>MODS</span>
-            <ChevronsUpDown className="h-4 w-4" />
-          </CollapsibleTrigger>
-
-          <CollapsibleContent className="flex flex-col gap-2 pt-3">
-            {data.mods?.map((m) => (
-              <PersonCard key={m.apId} actorId={m.apId} size="sm" />
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
+            <CollapsibleContent className="flex flex-col gap-2 pt-3">
+              {data.mods?.map((m) => (
+                <PersonCard key={m.apId} actorId={m.apId} size="sm" />
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        </Oneko>
       </SidebarContent>
     </Sidebar>
   );

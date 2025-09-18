@@ -26,7 +26,7 @@ for (const { name, base } of tabs) {
     });
 
     test("loads search results", async ({ page }) => {
-      await page.goto(`${base}s?q=linux`);
+      await page.goto(`${base}s?q=linux+phone`);
       const postCard = page
         .getByTestId(base === "/communities/" ? "community-card" : "post-card")
         .first();

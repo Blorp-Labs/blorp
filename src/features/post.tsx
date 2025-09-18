@@ -3,8 +3,8 @@ import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
 import { usePost, useComments, useCommunity } from "@/src/lib/api/index";
 import {
-  PostBottomBar,
-  FeedPostCard,
+  StickyPostHeader,
+  PostCard,
   PostProps,
   PostCardSkeleton,
 } from "@/src/components/posts/post";
@@ -68,7 +68,7 @@ function useDelayedReady(delay: number) {
 
 const MemoedPostCard = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} detailView />
+    <PostCard {...props} detailView />
     <></>
   </ContentGutters>
 ));
@@ -84,7 +84,7 @@ function PostBottomBarWithCtx({
   return (
     <>
       <ContentGutters className="px-0">
-        <PostBottomBar
+        <StickyPostHeader
           apId={postApId}
           commentsCount={commentCount}
           onReply={() =>
@@ -245,6 +245,8 @@ export default function Post() {
 
   const opId = post?.creatorId;
 
+  const showMobileReply = post && !commentPath && media.maxMd;
+
   return (
     <IonPage ref={pageElement.ref}>
       <PageTitle>{post?.title ?? "Post"}</PageTitle>
@@ -297,87 +299,87 @@ export default function Post() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
         <CommentReplyProvider presentingElement={pageElement.element}>
           <PostReportProvider>
-            <div className="flex flex-col-reverse h-full">
-              {/* Reversing these might be a bad idea, but I didn't */}
-              {/* want keyboard users to have to tab through all comments */}
-              {/* to reach the reply field */}
-              {post && !commentPath && media.maxMd && (
-                <div key="reply-to-post">
-                  <ReplyToPost postApId={post.apId} className="border-t" />
-                  <SafeAreaBottom />
-                </div>
+            <VirtualList
+              keepMountedIndices={[0]}
+              fullscreen
+              scrollHost
+              className={cn(
+                showMobileReply &&
+                  "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
               )}
-              <VirtualList
-                keepMountedIndices={[0]}
-                className="h-full ion-content-scroll-host"
-                data={data}
-                header={[
-                  post ? (
-                    <MemoedPostCard
-                      key="post-details"
-                      apId={post.apId}
-                      featuredContext="community"
-                      detailView
-                      modApIds={modApIds}
-                    />
-                  ) : (
-                    <ContentGutters className="px-0" key="post-skeleton">
-                      <PostCardSkeleton hideImage={false} detailView />
-                      <></>
-                    </ContentGutters>
-                  ),
-                  post && (
-                    <PostBottomBarWithCtx
-                      key="post-bottom-bar"
-                      postApId={post.apId}
-                      commentCount={post.commentsCount}
-                    />
-                  ),
-                  post && !commentPath && media.md && (
-                    <ReplyToPost key="reply-to-post" postApId={post.apId} />
-                  ),
-                  <CommentSortBar key="comment-sort-bar" />,
-                ]}
-                renderItem={({ item }) => (
-                  <>
-                    <MemoedPostComment
-                      highlightCommentId={highlightCommentId}
-                      postApId={decodedApId}
-                      queryKeyParentId={parentId}
-                      commentTree={item[1]}
-                      level={0}
-                      opId={opId}
-                      myUserId={myUserId}
-                      communityName={communityName}
-                      modApIds={modApIds}
-                      adminApIds={adminApIds}
-                      singleCommentThread={!!commentPath}
-                    />
-                    {commentPath && <SafeAreaBottom />}
-                  </>
-                )}
-                placeholder={
-                  comments.isPending || !isReady ? (
-                    <ContentGutters className="px-0">
-                      <CommentSkeleton />
-                      <></>
-                    </ContentGutters>
-                  ) : undefined
-                }
-                numPlaceholders={
-                  _.isNumber(post?.commentsCount)
-                    ? Math.max(1, post.commentsCount)
-                    : undefined
-                }
-                onEndReached={loadMore}
-                estimatedItemSize={450}
-                stickyHeaderIndices={[1]}
-                refresh={refresh}
-              />
-            </div>
+              data={data}
+              header={[
+                post ? (
+                  <MemoedPostCard
+                    key="post-details"
+                    apId={post.apId}
+                    featuredContext="community"
+                    detailView
+                    modApIds={modApIds}
+                  />
+                ) : (
+                  <ContentGutters className="px-0" key="post-skeleton">
+                    <PostCardSkeleton hideImage={false} detailView />
+                    <></>
+                  </ContentGutters>
+                ),
+                post && !refreshing && (
+                  <PostBottomBarWithCtx
+                    key="post-bottom-bar"
+                    postApId={post.apId}
+                    commentCount={post.commentsCount}
+                  />
+                ),
+                post && !commentPath && media.md && (
+                  <ReplyToPost key="reply-to-post" postApId={post.apId} />
+                ),
+                <CommentSortBar key="comment-sort-bar" />,
+              ]}
+              renderItem={({ item }) => (
+                <>
+                  <MemoedPostComment
+                    highlightCommentId={highlightCommentId}
+                    postApId={decodedApId}
+                    queryKeyParentId={parentId}
+                    commentTree={item[1]}
+                    level={0}
+                    opId={opId}
+                    myUserId={myUserId}
+                    communityName={communityName}
+                    modApIds={modApIds}
+                    adminApIds={adminApIds}
+                    singleCommentThread={!!commentPath}
+                  />
+                  {commentPath && <SafeAreaBottom />}
+                </>
+              )}
+              placeholder={
+                comments.isPending || !isReady ? (
+                  <ContentGutters className="px-0">
+                    <CommentSkeleton />
+                    <></>
+                  </ContentGutters>
+                ) : undefined
+              }
+              numPlaceholders={
+                _.isNumber(post?.commentsCount)
+                  ? Math.max(1, post.commentsCount)
+                  : undefined
+              }
+              onEndReached={loadMore}
+              estimatedItemSize={450}
+              stickyHeaderIndices={[1]}
+              refresh={refresh}
+            />
+            {showMobileReply && (
+              <div className="z-20 absolute bottom-0 inset-x-0">
+                <ReplyToPost postApId={post.apId} className="border-t" />
+                <SafeAreaBottom />
+              </div>
+            )}
           </PostReportProvider>
         </CommentReplyProvider>
 

@@ -1,7 +1,7 @@
 import { ContentGutters } from "../components/gutters";
 import { usePersonDetails, usePersonFeed } from "../lib/api";
 import {
-  FeedPostCard,
+  PostCard,
   PostCardSkeleton,
   PostProps,
 } from "../components/posts/post";
@@ -24,8 +24,10 @@ import { PostReportProvider } from "../components/posts/post-report";
 import { useFiltersStore } from "../stores/filters";
 import { useAuth } from "../stores/auth";
 import z from "zod";
-import { PersonSidebar } from "../components/person/person-sidebar";
-import { PersonActionMenu } from "../components/person/person-action-menu";
+import {
+  PersonSidebar,
+  SmallScreenSidebar,
+} from "../components/person/person-sidebar";
 import { useHistory } from "react-router";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
@@ -37,7 +39,7 @@ type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
-    <FeedPostCard {...props} featuredContext="user" />
+    <PostCard {...props} featuredContext="user" />
     <></>
   </ContentGutters>
 ));
@@ -155,7 +157,16 @@ export default function User() {
     <IonPage>
       <PageTitle>{person?.slug ?? "Person"}</PageTitle>
       <IonHeader>
-        <IonToolbar data-tauri-drag-region>
+        <IonToolbar
+          data-tauri-drag-region
+          style={
+            media.maxMd
+              ? {
+                  "--border-color": "var(--color-background)",
+                }
+              : undefined
+          }
+        >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle numRightIcons={1}>
@@ -166,40 +177,18 @@ export default function User() {
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
-        {media.maxMd && (
-          <IonToolbar>
-            <ToolbarButtons side="left">
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                size="sm"
-                value={type}
-                onValueChange={(val) =>
-                  val && setType(val as "Posts" | "Comments")
-                }
-              >
-                <ToggleGroupItem value="Posts">Posts</ToggleGroupItem>
-                <ToggleGroupItem value="Comments">
-                  <span>Comments</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </ToolbarButtons>
-            <ToolbarButtons side="right">
-              <PersonActionMenu person={person} />
-            </ToolbarButtons>
-          </IonToolbar>
-        )}
       </IonHeader>
       <IonContent scrollY={false}>
         <PostReportProvider>
           <VirtualList<Item>
             key={type === "Comments" ? "comments" : type + postSort}
-            className="h-full ion-content-scroll-host"
+            scrollHost
             data={listData.length === 0 && !isLoading ? [NO_ITEMS] : listData}
             header={[
+              <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
               <ContentGutters
-                className="max-md:hidden"
                 key="header-type-select"
+                className="max-md:border-b-[.5px] max-md:pb-2"
               >
                 <div className="flex md:h-12 md:border-b md:bg-background flex-1 items-center">
                   <ToggleGroup
@@ -243,7 +232,7 @@ export default function User() {
                 fetchNextPage();
               }
             }}
-            stickyHeaderIndices={[0]}
+            stickyHeaderIndices={[1]}
             estimatedItemSize={475}
             refresh={refetch}
             placeholder={

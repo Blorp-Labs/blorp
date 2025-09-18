@@ -14,6 +14,7 @@ import {
   useCommunity,
   useCreatePost,
   useEditPost,
+  useLinkMetadat,
   useListCommunities,
   useSearch,
   useUploadImage,
@@ -240,23 +241,24 @@ export function CreatePost() {
   const createPost = useCreatePost();
   const editPost = useEditPost(draftId);
 
+  const linkMetadata = useLinkMetadat();
+
   const parseUrl = (url: string) => {
     if (url) {
-      try {
-        fetch(url)
-          .then((res) => res.text())
-          .then((body) => {
-            const ogData = parseOgData(body);
-            const patch: Partial<Draft> = {};
-            if (!draft.title && ogData.title) {
-              patch.title = ogData.title;
-            }
-            if (ogData.image) {
-              patch.thumbnailUrl = ogData.image;
-            }
-            patchDraft(draftId, patch);
-          });
-      } catch {}
+      linkMetadata
+        .mutateAsync({
+          url,
+        })
+        .then((meta) => {
+          const patch: Partial<Draft> = {};
+          if (!draft.title && meta.title) {
+            patch.title = meta.title;
+          }
+          if (meta.imageUrl) {
+            patch.thumbnailUrl = meta.imageUrl;
+          }
+          patchDraft(draftId, patch);
+        });
     }
   };
 

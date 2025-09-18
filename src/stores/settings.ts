@@ -5,6 +5,8 @@ import { isTest } from "../lib/device";
 import _ from "lodash";
 
 type SettingsStore = {
+  postCardStyle: "small" | "large";
+  setPostCardStyle: (newVal: "small" | "large") => any;
   leftHandedMode: boolean;
   setLeftHandedMode: (newVal: boolean) => any;
   showMarkdown: boolean;
@@ -18,11 +20,12 @@ type SettingsStore = {
 };
 
 const INIT_STATE = {
+  postCardStyle: "large",
   leftHandedMode: false,
   showMarkdown: false,
   hideRead: false,
   filterKeywords: [],
-};
+} satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
   return _.uniq(keywords.filter(Boolean));
@@ -32,6 +35,7 @@ export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
+      setPostCardStyle: (postCardStyle) => set({ postCardStyle }),
       setLeftHandedMode: (leftHandedMode) => set({ leftHandedMode }),
       setShowMarkdown: (showMarkdown) => set({ showMarkdown }),
       setHideRead: (hideRead) => set({ hideRead }),

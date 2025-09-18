@@ -310,10 +310,10 @@ function InstanceSelectionPage({
           value={software}
           onValueChange={(val) => val && setSoftware(val as Software)}
         >
-          <ToggleGroupItem value="lemmy">
+          <ToggleGroupItem value="lemmy" data-testid="auth-filter-lemmy">
             Lemmy ({counts.lemmy})
           </ToggleGroupItem>
-          <ToggleGroupItem value="piefed">
+          <ToggleGroupItem value="piefed" data-testid="auth-filter-piefed">
             PieFed ({counts.piefed})
           </ToggleGroupItem>
         </ToggleGroup>
