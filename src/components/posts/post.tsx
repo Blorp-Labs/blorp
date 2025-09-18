@@ -114,7 +114,7 @@ function SmallPostCardSkeleton(props: {
     <div>
       <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
         {(!hideImage || props.hideImage === false) && (
-          <Skeleton className="h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0" />
+          <Skeleton className="h-32 w-32 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
         )}
 
         <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
@@ -515,7 +515,9 @@ function SmallPostCard({
           searchParams={`?apId=${encodeApId(apId)}`}
           className="relative"
         >
-          {!imageLoaded && <Skeleton className="absolute inset-0 rounded-md" />}
+          {!imageLoaded && (
+            <Skeleton className="absolute inset-0 md:rounded-md" />
+          )}
           <ProgressiveImage
             lowSrc={embed?.thumbnail}
             highSrc={embed?.fullResThumbnail}
@@ -539,7 +541,7 @@ function SmallPostCard({
           url={embed.embedUrl}
           thumbnail={embed.thumbnail}
           blurNsfw={blurImg ?? false}
-          className="h-36 w-32 md:h-36 md:w-40 md:rounded-md shrink-0"
+          className="h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0"
         />
       )}
 
