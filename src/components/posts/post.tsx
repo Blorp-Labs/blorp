@@ -307,6 +307,7 @@ function LargePostCard({
           post: encodedApId,
         }}
         className="gap-2 flex flex-col"
+        disable={detailView}
       >
         <span
           className={twMerge(
