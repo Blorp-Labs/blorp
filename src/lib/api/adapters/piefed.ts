@@ -358,7 +358,10 @@ export const pieFedPrivateMessageViewSchema = z.object({
 export const pieFedCrosspostSchema = z.object({
   //activity_alert: z.boolean(),
   //banned_from_community: z.boolean(),
-  community: pieFedCommunitySchema,
+  community: pieFedCommunitySchema.pick({
+    actor_id: true,
+    name: true,
+  }),
   //counts: pieFedPostCountsSchema,
   //creator: pieFedPersonSchema,
   //creator_banned_from_community: z.boolean(),
@@ -366,7 +369,9 @@ export const pieFedCrosspostSchema = z.object({
   //creator_is_moderator: z.boolean(),
   //hidden: z.boolean(),
   //my_vote: z.number(),
-  //post: pieFedPostSchema,
+  post: pieFedPostSchema.pick({
+    ap_id: true,
+  }),
   //read: z.boolean(),
   //saved: z.boolean(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
@@ -411,7 +416,7 @@ function convertPost({
     creatorApId: creator.actor_id,
     crossPosts:
       crossPosts?.map((cp) => ({
-        apId: cp.community.actor_id,
+        apId: cp.post.ap_id,
         communitySlug: createSlug({
           apId: cp.community.actor_id,
           name: cp.community.name,
