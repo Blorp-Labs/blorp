@@ -1,7 +1,13 @@
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { Badge } from "./ui/badge";
 
-export function Flair({ flair }: { flair: Schemas.Flair }) {
+export function Flair({
+  flair,
+  size,
+}: {
+  flair: Schemas.Flair;
+  size?: "default" | "sm";
+}) {
   return (
     <Badge
       className="rounded-full"
@@ -9,6 +15,7 @@ export function Flair({ flair }: { flair: Schemas.Flair }) {
         backgroundColor: flair.backgroundColor ?? undefined,
         color: flair.color ?? undefined,
       }}
+      size={size}
     >
       {flair?.title}
     </Badge>

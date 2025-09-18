@@ -481,6 +481,8 @@ function SmallPostCard({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
+
   const patchPost = usePostsStore((s) => s.patchPost);
 
   const id = useId();
@@ -582,6 +584,18 @@ function SmallPostCard({
           showActions={media.md}
         />
 
+        {flairs && flairs.length > 0 && (
+          <div className="flex flex-row">
+            {flairs.map((flair, index) => (
+              <Flair
+                key={flair?.data.id ?? index}
+                flair={flair.data}
+                size="sm"
+              />
+            ))}
+          </div>
+        )}
+
         <Link
           id={titleId}
           to={`${linkCtx.root}c/:communityName/posts/:post`}
@@ -594,7 +608,12 @@ function SmallPostCard({
             !detailView && post.read && "text-muted-foreground",
           )}
         >
-          <span className="line-clamp-2 md:line-clamp-3">
+          <span
+            className={cn(
+              "line-clamp-2 md:line-clamp-3",
+              flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
+            )}
+          >
             {post.deleted ? "deleted" : post.title}
           </span>
         </Link>
