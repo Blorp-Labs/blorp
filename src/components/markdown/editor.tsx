@@ -412,6 +412,38 @@ function TipTapEditor({
       attributes: {
         class: "flex-1 min-h-full space-y-4 outline-none",
       },
+      handlePaste: (view, event) => {
+        const file = event.clipboardData?.files[0];
+        if (file) {
+          const id = toast.loading("Uploading image");
+          handleFile(file)
+            .then(({ url }) => {
+              const { schema, tr, selection } = view.state;
+              const { from } = selection;
+
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // create image node
+                const transaction = tr.insert(from, node); // insert at current selection
+                view.dispatch(transaction);
+                toast.dismiss(id);
+              } else {
+                console.error("Image node is not defined in the schema");
+                toast.error("Failed to upload image", { id });
+              }
+            })
+            .catch((err) => {
+              if (err instanceof Error) {
+                toast.error(err.message, { id });
+              } else {
+                toast.error("Failed to upload image", { id });
+              }
+            });
+
+          return true; // prevent default paste behavior
+        }
+
+        return false; // allow default behavior for non-files
+      },
       handleDrop: (view, event, slice, moved) => {
         if (
           !moved &&
@@ -421,33 +453,34 @@ function TipTapEditor({
         ) {
           event.preventDefault();
           const file = event.dataTransfer.files[0];
-          if (file.type === "image/jpeg" || file.type === "image/png") {
-            handleFile(file)
-              .then(({ url }) => {
-                const { schema } = view.state;
-                const coordinates = view.posAtCoords({
-                  left: event.clientX,
-                  top: event.clientY,
-                });
-                if (schema.nodes["image"]) {
-                  const node = schema.nodes["image"].create({ src: url }); // creates the image element
-                  const transaction = view.state.tr.insert(
-                    coordinates?.pos ?? 0,
-                    node,
-                  ); // places it in the correct position
-                  return view.dispatch(transaction);
-                } else {
-                  console.error("Failed to handle dropped image");
-                }
-              })
-              .catch((err) => {
-                if (err instanceof Error) {
-                  toast.error(err.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
+          const id = toast.loading("Uploading image");
+          handleFile(file)
+            .then(({ url }) => {
+              const { schema } = view.state;
+              const coordinates = view.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
               });
-          }
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // creates the image element
+                const transaction = view.state.tr.insert(
+                  coordinates?.pos ?? 0,
+                  node,
+                ); // places it in the correct position
+                toast.dismiss(id);
+                return view.dispatch(transaction);
+              } else {
+                console.error("Failed to handle dropped image");
+                toast.error("Failed to upload image", { id });
+              }
+            })
+            .catch((err) => {
+              if (err instanceof Error) {
+                toast.error(err.message, { id });
+              } else {
+                toast.error("Failed to upload image", { id });
+              }
+            });
           return true; // handled
         }
         return false;
