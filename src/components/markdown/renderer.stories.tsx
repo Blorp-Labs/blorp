@@ -167,3 +167,19 @@ And here’s normal text after the spoiler.
 `,
   },
 };
+
+export const SubScript: Story = {
+  args: {
+    markdown: `
+Here is some~subscript~isn't that cool
+`,
+  },
+};
+
+export const SupScript: Story = {
+  args: {
+    markdown: `
+Here is some^supscript^isn't that cool
+`,
+  },
+};

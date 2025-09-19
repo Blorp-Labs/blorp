@@ -161,3 +161,19 @@ export const Placeholder: Story = {
     placeholder: "I am a placeholder",
   },
 };
+
+export const SubScript: Story = {
+  args: {
+    content: `
+Here is some~subscript~isn't that cool
+`,
+  },
+};
+
+export const SupScript: Story = {
+  args: {
+    content: `
+Here is some^supscript^isn't that cool
+`,
+  },
+};
