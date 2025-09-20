@@ -44,7 +44,6 @@ import { useIonAlert } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import z from "zod";
 import { ActionMenu } from "../adaptable/action-menu";
-import { toast } from "sonner";
 import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
@@ -412,6 +411,26 @@ function TipTapEditor({
       attributes: {
         class: "flex-1 min-h-full space-y-4 outline-none",
       },
+      handlePaste: (view, event) => {
+        const file = event.clipboardData?.files[0];
+        if (file) {
+          handleFile(file).then(({ url }) => {
+            const { schema, tr, selection } = view.state;
+            const { from } = selection;
+
+            if (schema.nodes["image"]) {
+              const node = schema.nodes["image"].create({ src: url }); // create image node
+              const transaction = tr.insert(from, node); // insert at current selection
+              view.dispatch(transaction);
+            } else {
+              console.error("Image node is not defined in the schema");
+            }
+          });
+          return true; // prevent default paste behavior
+        }
+
+        return false; // allow default behavior for non-files
+      },
       handleDrop: (view, event, slice, moved) => {
         if (
           !moved &&
@@ -421,33 +440,23 @@ function TipTapEditor({
         ) {
           event.preventDefault();
           const file = event.dataTransfer.files[0];
-          if (file.type === "image/jpeg" || file.type === "image/png") {
-            handleFile(file)
-              .then(({ url }) => {
-                const { schema } = view.state;
-                const coordinates = view.posAtCoords({
-                  left: event.clientX,
-                  top: event.clientY,
-                });
-                if (schema.nodes["image"]) {
-                  const node = schema.nodes["image"].create({ src: url }); // creates the image element
-                  const transaction = view.state.tr.insert(
-                    coordinates?.pos ?? 0,
-                    node,
-                  ); // places it in the correct position
-                  return view.dispatch(transaction);
-                } else {
-                  console.error("Failed to handle dropped image");
-                }
-              })
-              .catch((err) => {
-                if (err instanceof Error) {
-                  toast.error(err.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
-              });
-          }
+          handleFile(file).then(({ url }) => {
+            const { schema } = view.state;
+            const coordinates = view.posAtCoords({
+              left: event.clientX,
+              top: event.clientY,
+            });
+            if (schema.nodes["image"]) {
+              const node = schema.nodes["image"].create({ src: url }); // creates the image element
+              const transaction = view.state.tr.insert(
+                coordinates?.pos ?? 0,
+                node,
+              ); // places it in the correct position
+              return view.dispatch(transaction);
+            } else {
+              console.error("Failed to handle dropped image");
+            }
+          });
           return true; // handled
         }
         return false;
@@ -471,21 +480,13 @@ function TipTapEditor({
       >
         <MenuBar
           editor={editor}
-          onFile={(file) =>
-            handleFile(file)
-              .then(({ url }) => {
-                if (url) {
-                  editor?.chain().focus().setImage({ src: url }).run();
-                }
-              })
-              .catch((err) => {
-                if (err instanceof Error) {
-                  toast.error(err.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
-              })
-          }
+          onFile={(file) => {
+            handleFile(file).then(({ url }) => {
+              if (url) {
+                editor?.chain().focus().setImage({ src: url }).run();
+              }
+            });
+          }}
         />
         <Button
           size="sm"
@@ -522,19 +523,11 @@ function TipTapEditor({
           className="gap-2.5"
           editor={editor}
           onFile={(file) =>
-            handleFile(file)
-              .then(({ url }) => {
-                if (url) {
-                  editor?.chain().focus().setImage({ src: url }).run();
-                }
-              })
-              .catch((err) => {
-                if (err instanceof Error) {
-                  toast.error(err.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
-              })
+            handleFile(file).then(({ url }) => {
+              if (url) {
+                editor?.chain().focus().setImage({ src: url }).run();
+              }
+            })
           }
         />
         <Button
