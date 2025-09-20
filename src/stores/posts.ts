@@ -23,7 +23,7 @@ type SortsStore = {
     prefix: CachePrefixer,
     post: Schemas.Post[],
   ) => Record<string, CachedPost>;
-  cleanup: () => any;
+  cleanup: () => void;
   reset: () => void;
 };
 
@@ -110,7 +110,7 @@ export const usePostsStore = create<SortsStore>()(
           }
         }
 
-        return posts;
+        set({ posts });
       },
       reset: () => {
         if (isTest()) {
