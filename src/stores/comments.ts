@@ -26,7 +26,7 @@ type SortsStore = {
     comments: Schemas.Comment[],
   ) => Record<CommentPath, CachedComment>;
   markCommentForRemoval: (path: string, prefix: CachePrefixer) => void;
-  cleanup: () => any;
+  cleanup: () => void;
 };
 export const useCommentsStore = create<SortsStore>()(
   persist(
@@ -111,7 +111,7 @@ export const useCommentsStore = create<SortsStore>()(
           }
         }
 
-        return comments;
+        set({ comments });
       },
     }),
     {

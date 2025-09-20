@@ -33,7 +33,7 @@ type CommunityStore = {
     prefix: CachePrefixer,
     data: Data[],
   ) => Record<string, CachedCommunity>;
-  cleanup: () => any;
+  cleanup: () => void;
   reset: () => any;
 };
 
@@ -156,7 +156,7 @@ export const useCommunitiesStore = create<CommunityStore>()(
           }
         }
 
-        return communities;
+        set({ communities });
       },
       reset: () => {
         if (isTest()) {
