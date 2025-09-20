@@ -10,8 +10,9 @@ import {
 } from "./api-blueprint";
 import z from "zod";
 import { createSlug } from "../utils";
-import { parseOgData } from "../../html-parsing";
+import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
+import { parseOgData } from "../../html-parsing";
 
 const POST_SORTS = [
   "Active",
@@ -50,6 +51,15 @@ const communitySortSchema = z.custom<(typeof COMMUNITY_SORTS)[number]>(
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
+
+const pieFedFlairSchema = z.object({
+  background_color: z.string().optional().nullable(),
+  // blur_images: false,
+  // community_id: 599,
+  flair_title: z.string(),
+  id: z.number(),
+  text_color: z.string().optional().nullable(),
+});
 
 const nextPageSchema = z.union([z.string(), z.number()]).nullish();
 
@@ -120,7 +130,7 @@ export const pieFedPostSchema = z.object({
   //language_id: z.number(),
   //local: z.boolean(),
   //locked: z.boolean(),
-  nsfw: z.boolean(),
+  nsfw: z.boolean().nullable().optional(),
   published: z.string(),
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
@@ -147,6 +157,7 @@ export const pieFedPostViewSchema = z.object({
   saved: z.boolean(),
   //subscribed: z.string(),
   //unread_comments: z.number(),
+  flair_list: z.array(pieFedFlairSchema).optional().nullable(),
 });
 
 export const pieFedCommunityCountsSchema = z.object({
@@ -168,6 +179,7 @@ export const pieFedCommunityViewSchema = z.object({
   community: pieFedCommunitySchema,
   counts: pieFedCommunityCountsSchema,
   subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
+  flair_list: z.array(pieFedFlairSchema).optional().nullable(),
 });
 
 //export const pieFedAdminCountsSchema = z.object({
@@ -378,6 +390,15 @@ export const pieFedCrosspostSchema = z.object({
   //unread_comments: z.number(),
 });
 
+function convertFlair(flair: z.infer<typeof pieFedFlairSchema>): Schemas.Flair {
+  return {
+    id: flair.id,
+    title: flair.flair_title,
+    color: flair.text_color ?? null,
+    backgroundColor: flair.background_color ?? null,
+  };
+}
+
 function convertPost({
   postView,
   crossPosts,
@@ -429,6 +450,7 @@ function convertPost({
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
+    flairs: postView.flair_list?.map((flair) => ({ id: flair.id })) ?? null,
   };
 }
 
@@ -474,6 +496,9 @@ function convertCommunity(
   }
   if (mode === "full" || communityView.community.banner) {
     c.banner = communityView.community.banner ?? null;
+  }
+  if ("flair_list" in communityView) {
+    c.flairs = communityView.flair_list?.map(({ id }) => ({ id }));
   }
 
   return c;
@@ -882,6 +907,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
+          flairs: post.flair_list?.map(convertFlair),
         })),
       };
     } catch (err) {
@@ -951,6 +977,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         mods: moderators.map((m) =>
           convertPerson({ person: m.moderator }, "partial"),
         ),
+        flairs: community_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
       console.log(err);
@@ -1026,6 +1053,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         post: convertPost({ postView: post_view, crossPosts: cross_posts }),
         community_view: convertCommunity(community_view, "partial"),
         creator: convertPerson({ person: post_view.creator }, "partial"),
+        flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
       console.log(err);
@@ -1459,7 +1487,22 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost({ postView: data.post_view });
+      if (form.flairs) {
+        const { flairs } = await this.getCommunity({
+          slug: convertPost({ postView: data.post_view }).communitySlug,
+        });
+        const flairLookup = getFlairLookup(flairs);
+        const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
+        await this.post("/post/assign_flair", {
+          post_id: data.post_view.post.id,
+          flair_id_list: selectedFlairs?.map((f) => f.id),
+        });
+        return {
+          ...convertPost({ postView: data.post_view }),
+          flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
+        };
+      }
+      return { ...convertPost({ postView: data.post_view }) };
     } catch (err) {
       console.error(err);
       throw err;
@@ -1467,7 +1510,9 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async createPost(form: Forms.CreatePost) {
-    const { community } = await this.getCommunity({ slug: form.communitySlug });
+    const { community, flairs } = await this.getCommunity({
+      slug: form.communitySlug,
+    });
     const res = await this.post("/post", {
       title: form.title,
       community_id: community.id,
@@ -1477,7 +1522,18 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
-      return convertPost({ postView: data.post_view });
+      const flairLookup = getFlairLookup(flairs);
+      const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
+      if (selectedFlairs) {
+        await this.post("/post/assign_flair", {
+          post_id: data.post_view.post.id,
+          flair_id_list: selectedFlairs?.map((f) => f.id),
+        });
+      }
+      return {
+        ...convertPost({ postView: data.post_view }),
+        flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
+      };
     } catch (err) {
       console.error(err);
       throw err;

@@ -15,6 +15,14 @@ export enum Software {
 
 const communitySlug = z.string();
 
+const flairSchema = z.object({
+  apId: z.string().optional().nullable(),
+  id: z.number(),
+  backgroundColor: z.string().nullable(),
+  color: z.string().nullable(),
+  title: z.string(),
+});
+
 const personSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
@@ -63,6 +71,13 @@ export const postSchema = z.object({
       }),
     )
     .nullable(),
+  flairs: z
+    .array(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .nullable(),
   myVote: z.number().optional(),
   optimisticMyVote: z.number().optional(),
   featuredCommunity: z.boolean(),
@@ -93,6 +108,13 @@ const communitySchema = z.object({
   subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]).optional(),
   optimisticSubscribed: z
     .enum(["Subscribed", "NotSubscribed", "Pending"])
+    .optional(),
+  flairs: z
+    .array(
+      z.object({
+        id: z.number(),
+      }),
+    )
     .optional(),
 });
 export const siteSchema = z.object({
@@ -248,6 +270,7 @@ export namespace Schemas {
 
   export type ResolveObject = z.infer<typeof resolveObjectResponseSchema>;
 
+  export type Flair = z.infer<typeof flairSchema>;
   export type LinkMetadata = z.infer<typeof linkMetadataSchema>;
 }
 
@@ -412,7 +435,9 @@ export namespace Forms {
       "title" | "url" | "body" | "altText" | "thumbnailUrl" | "nsfw"
     > {
     apId: string;
+    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
   }
+
   export interface CreatePost
     extends Pick<
       Schemas.Post,
@@ -423,7 +448,9 @@ export namespace Forms {
       | "thumbnailUrl"
       | "communitySlug"
       | "nsfw"
-    > {}
+    > {
+    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
+  }
 
   export type CreatePostReport = {
     postId: number;
@@ -496,6 +523,7 @@ export abstract class ApiBlueprint<C> {
     post: Schemas.Post;
     community?: Schemas.Community;
     creator?: Schemas.Person;
+    flairs?: Schemas.Flair[];
   }>;
   abstract getPosts(
     form: Forms.GetPosts,
@@ -506,6 +534,7 @@ export abstract class ApiBlueprint<C> {
         post: Schemas.Post;
         community?: Schemas.Community;
         creator?: Schemas.Person;
+        flairs?: Schemas.Flair[];
       }[];
     }
   >;
@@ -548,6 +577,7 @@ export abstract class ApiBlueprint<C> {
   ): Promise<{
     community: Schemas.Community;
     mods: Schemas.Person[];
+    flairs?: Schemas.Flair[];
   }>;
 
   abstract getCommunities(

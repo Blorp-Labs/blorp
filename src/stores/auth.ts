@@ -10,7 +10,7 @@ import { isTest } from "../lib/device";
 import { normalizeInstance } from "../lib/utils";
 
 export type CacheKey = `cache_${string}`;
-export type CachePrefixer = (cacheKey: string) => CacheKey;
+export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
 export function getCachePrefixer(account?: Account): CachePrefixer {
   let prefix = "";

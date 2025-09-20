@@ -208,6 +208,7 @@ function convertPost(
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
+    flairs: [],
   };
 }
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {

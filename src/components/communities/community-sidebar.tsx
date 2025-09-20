@@ -33,6 +33,8 @@ import { AggregateBadges } from "../aggregates";
 import { useConfirmationAlert } from "@/src/lib/hooks/index";
 import { Skeleton } from "../ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Flair } from "../flair";
+import { useFlairs } from "@/src/stores/flairs";
 import Oneko from "@/src/features/easter-eggs/Oneko";
 
 dayjs.extend(localizedFormat);
@@ -48,9 +50,10 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  useCommunity({
+  const community = useCommunity({
     name: communityName,
   });
+  const flairs = useFlairs(community.data?.flairs?.map((f) => f.id));
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const data = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
@@ -159,6 +162,19 @@ export function SmallScreenSidebar({
 
           <Separator />
 
+          {flairs && flairs.length > 0 && (
+            <section className="p-3">
+              <h2>ABOUT</h2>
+              <div className="flex flex-wrap gap-1.5 mt-2 mb-1">
+                {flairs?.map((flair) => (
+                  <Flair key={flair.data.id} flair={flair.data} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <Separator />
+
           <section className="p-3 flex flex-col gap-2">
             <h2>MODS</h2>
             {data?.mods?.map((m) => (
@@ -259,8 +275,13 @@ export function CommunitySidebar({
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
   );
 
+  const flairs = useFlairs(data?.flairs?.map((f) => f.id));
+
   const aboutOpen = useSidebarStore((s) => s.communityAboutExpanded);
   const setAboutOpen = useSidebarStore((s) => s.setCommunityAboutExpanded);
+
+  const flairsOpen = useSidebarStore((s) => s.communityFlairsExpanded);
+  const setFlairsOpen = useSidebarStore((s) => s.setCommunityFlairsExpanded);
 
   const modsOpen = useSidebarStore((s) => s.communityModsExpanded);
   const setModsOpen = useSidebarStore((s) => s.setCommunityModsExpanded);
@@ -344,6 +365,31 @@ export function CommunitySidebar({
               />
             </CollapsibleContent>
           </Collapsible>
+
+          {flairs && flairs.length > 0 && (
+            <>
+              <Separator />
+
+              <Collapsible
+                className="p-4"
+                open={flairsOpen}
+                onOpenChange={setFlairsOpen}
+              >
+                <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                  <span>FLAIRS</span>
+                  <ChevronsUpDown className="h-4 w-4" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pb-1 pt-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {flairs?.map((flair) => (
+                      <Flair key={flair.data.id} flair={flair.data} />
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </>
+          )}
+
           <Separator />
           <Collapsible
             className="p-4"
