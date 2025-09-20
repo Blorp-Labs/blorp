@@ -17,10 +17,19 @@ const Subscript = Mark.create({
   addStorage() {
     return {
       markdown: {
+        // tell markdown-it how to parse `H~2~0` into a <sub> mark
         parse: {
-          setup(markdownit: MarkdownIt) {
-            markdownit.use(markdownitSub);
+          setup(md: MarkdownIt) {
+            md.use(markdownitSub);
           },
+        },
+        // tell tiptap-markdown how to *serialize* this mark back to markdown
+        serialize: {
+          open: "~",
+          close: "~",
+          // these two flags match how other inline marks behave
+          mixable: true,
+          expelEnclosingWhitespace: true,
         },
       },
     };

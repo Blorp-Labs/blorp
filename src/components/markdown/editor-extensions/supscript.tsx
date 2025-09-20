@@ -3,7 +3,7 @@ import MarkdownIt from "markdown-it";
 // @ts-expect-error
 import markdownitSup from "markdown-it-sup";
 
-const Subscript = Mark.create({
+const Superscript = Mark.create({
   name: "supscript",
 
   parseHTML() {
@@ -17,14 +17,22 @@ const Subscript = Mark.create({
   addStorage() {
     return {
       markdown: {
+        // parse ^ … ^ into <sup>
         parse: {
           setup(markdownit: MarkdownIt) {
             markdownit.use(markdownitSup);
           },
+        },
+        // serialize <sup> back to ^ … ^
+        serialize: {
+          open: "^",
+          close: "^",
+          mixable: true,
+          expelEnclosingWhitespace: true,
         },
       },
     };
   },
 });
 
-export default Subscript;
+export default Superscript;

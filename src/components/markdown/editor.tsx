@@ -305,6 +305,14 @@ const MenuBar = ({
             text: "Ordered List",
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
           },
+          {
+            text: "Subscript",
+            onClick: () => editor.chain().focus().toggleMark("subscript").run(),
+          },
+          {
+            text: "Superscript",
+            onClick: () => editor.chain().focus().toggleMark("supscript").run(),
+          },
         ]}
         trigger={
           <IoEllipsisHorizontal
