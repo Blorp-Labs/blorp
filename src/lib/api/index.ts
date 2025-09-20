@@ -2129,15 +2129,17 @@ export function useUploadImage() {
       const res = await (await api).uploadImage({ image: compressedImg });
       return res;
     },
-    onError: (err) => {
+    onMutate: () => toast.loading("Uploading image"),
+    onError: (err, _, toastId) => {
       // TOOD: find a way to determin if the request
       // failed because the image was too large
       if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
+        toast.error(extractErrorContent(err), { id: toastId });
       } else {
-        toast.error("Failed to upload image");
+        toast.error("Failed to upload image", { id: toastId });
       }
     },
+    onSuccess: (_1, _2, toastId) => toast.dismiss(toastId),
   });
 }
 
