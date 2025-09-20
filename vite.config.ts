@@ -79,67 +79,82 @@ const FEATURED_COMMUNITIES = [
 ] as const;
 
 // https://vite.dev/config/
-export default defineConfig({
-  envPrefix: "REACT_APP_",
-  plugins: [
-    circleDependency(),
-    vitePluginChecker({
-      typescript: true,
-    }),
-    tailwindcss(),
-    react(),
-    ...(!fast
-      ? [
-          legacy({
-            targets: ["defaults", "not IE 11"],
-          }),
-        ]
-      : []),
-    ...(hostname
-      ? [
-          Sitemap({
-            hostname,
-            dynamicRoutes: [
-              resolveRoute("/home"),
-              resolveRoute("/home/sidebar"),
-              resolveRoute("/communities"),
-              resolveRoute("/communities/sidebar"),
-              resolveRoute("/inbox/sidebar"),
-              ...FEATURED_COMMUNITIES.flatMap((communityName) => [
-                resolveRoute("/communities/c/:communityName", {
-                  communityName,
-                }),
-                resolveRoute("/communities/c/:communityName/sidebar", {
-                  communityName,
-                }),
-                resolveRoute("/home/c/:communityName", {
-                  communityName,
-                }),
-                resolveRoute("/home/c/:communityName/sidebar", {
-                  communityName,
-                }),
-                resolveRoute("/communities/c/:communityName", {
-                  communityName,
-                }),
-                resolveRoute("/communities/c/:communityName/sidebar", {
-                  communityName,
-                }),
-                resolveRoute("/inbox/c/:communityName", {
-                  communityName,
-                }),
-                resolveRoute("/inbox/c/:communityName/sidebar", {
-                  communityName,
-                }),
-              ]),
-            ],
-          }),
-        ]
-      : []),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname),
+export default defineConfig(({ mode }) => {
+  // Pages injects CF_PAGES_URL on every deployment (preview + production)
+  const cfPagesUrl = process.env["CF_PAGES_URL"]?.replace(/\/+$/, ""); // trim trailing slash
+  // Optional override that you can set yourself if needed
+  const explicitBase = process.env["VITE_BASE"]?.replace(/\/+$/, "");
+
+  // In production builds on Cloudflare, prefer the deployment URL;
+  // for local/dev (no env), fall back to root.
+  const base =
+    mode === "production" && (explicitBase || cfPagesUrl)
+      ? `${explicitBase || cfPagesUrl}/`
+      : "/";
+
+  return {
+    envPrefix: "REACT_APP_",
+    base,
+    plugins: [
+      circleDependency(),
+      vitePluginChecker({
+        typescript: true,
+      }),
+      tailwindcss(),
+      react(),
+      ...(!fast
+        ? [
+            legacy({
+              targets: ["defaults", "not IE 11"],
+            }),
+          ]
+        : []),
+      ...(hostname
+        ? [
+            Sitemap({
+              hostname,
+              dynamicRoutes: [
+                resolveRoute("/home"),
+                resolveRoute("/home/sidebar"),
+                resolveRoute("/communities"),
+                resolveRoute("/communities/sidebar"),
+                resolveRoute("/inbox/sidebar"),
+                ...FEATURED_COMMUNITIES.flatMap((communityName) => [
+                  resolveRoute("/communities/c/:communityName", {
+                    communityName,
+                  }),
+                  resolveRoute("/communities/c/:communityName/sidebar", {
+                    communityName,
+                  }),
+                  resolveRoute("/home/c/:communityName", {
+                    communityName,
+                  }),
+                  resolveRoute("/home/c/:communityName/sidebar", {
+                    communityName,
+                  }),
+                  resolveRoute("/communities/c/:communityName", {
+                    communityName,
+                  }),
+                  resolveRoute("/communities/c/:communityName/sidebar", {
+                    communityName,
+                  }),
+                  resolveRoute("/inbox/c/:communityName", {
+                    communityName,
+                  }),
+                  resolveRoute("/inbox/c/:communityName/sidebar", {
+                    communityName,
+                  }),
+                ]),
+              ],
+            }),
+          ]
+        : []),
+    ],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname),
+      },
     },
-  },
-  publicDir: "public",
+    publicDir: "public",
+  };
 });

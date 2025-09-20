@@ -1,5 +1,5 @@
 /*
-  Cache-Control: public, max-age=300
+  Cache-Control: no-store
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
