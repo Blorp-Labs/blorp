@@ -19,6 +19,10 @@ import DOMPurify from "dompurify";
 import { createContext } from "react";
 import { RoutePath } from "@/src/routing/routes";
 import footnotePlugin from "markdown-it-footnote";
+// @ts-expect-error
+import markdownitSub from "markdown-it-sub";
+// @ts-expect-error
+import markdownitSup from "markdown-it-sup";
 
 const COMMUNITY_BANG =
   /^!([A-Za-z0-9_-]+)@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})$/;
@@ -178,6 +182,8 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
   });
 
   md.use(footnotePlugin);
+  md.use(markdownitSub);
+  md.use(markdownitSup);
 
   // Extend linkify for lemmy links starting with "!"
   md.linkify.add("!", {

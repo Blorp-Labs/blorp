@@ -8,14 +8,16 @@ import {
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
-import Spoiler from "./spoiler-plugin";
+import Spoiler from "./editor-extensions/spoiler-plugin";
+import SubScript from "./editor-extensions/subscript";
+import SupScript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Table from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "../ui/button";
 import {
@@ -303,6 +305,14 @@ const MenuBar = ({
             text: "Ordered List",
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
           },
+          {
+            text: "Subscript",
+            onClick: () => editor.chain().focus().toggleMark("subscript").run(),
+          },
+          {
+            text: "Superscript",
+            onClick: () => editor.chain().focus().toggleMark("supscript").run(),
+          },
         ]}
         trigger={
           <IoEllipsisHorizontal
@@ -385,6 +395,8 @@ function TipTapEditor({
         },
         suggestions: mentionSuggestions,
       }),
+      SubScript,
+      SupScript,
     ],
     onUpdate: ({ editor }) => {
       const markdown = editor?.storage["markdown"].getMarkdown();
