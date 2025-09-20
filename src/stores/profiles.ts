@@ -22,7 +22,7 @@ type ProfilesStore = {
     prefixer: CachePrefixer,
     data: Schemas.Person[],
   ) => Record<string, CachedProfile>;
-  cleanup: () => any;
+  cleanup: () => void;
 };
 
 export const useProfilesStore = create<ProfilesStore>()(
@@ -98,7 +98,7 @@ export const useProfilesStore = create<ProfilesStore>()(
           }
         }
 
-        return profiles;
+        set({ profiles });
       },
     }),
     {
