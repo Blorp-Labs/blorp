@@ -48,6 +48,7 @@ import { compressImage } from "../image";
 import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
+import { getPostEmbed } from "../post";
 
 enum Errors2 {
   OBJECT_NOT_FOUND = "couldnt_find_object",
@@ -493,11 +494,7 @@ export function usePosts(form: Forms.GetPosts) {
     return {
       posts: posts.map((p) => p.post.apId),
       imagePosts: posts
-        .filter(
-          (p) =>
-            !!p.post.thumbnailUrl &&
-            !p.post.urlContentType?.includes("text/html"),
-        )
+        .filter((p) => getPostEmbed(p.post).type === "image")
         .map((p) => p.post.apId),
       nextCursor,
     };
