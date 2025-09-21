@@ -25,6 +25,12 @@ export function InstanceFavicon() {
         sizes="16x16"
         href="/favicon-16x16.png"
       />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="192x192"
+        href="/android-icon-192x192.png"
+      />
     </>
   );
 }
