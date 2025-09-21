@@ -5,8 +5,8 @@ import { isTest } from "../lib/device";
 import _ from "lodash";
 
 type SettingsStore = {
-  postCardStyle: "small" | "large";
-  setPostCardStyle: (newVal: "small" | "large") => any;
+  postCardStyle: "small" | "large" | "extra-small";
+  setPostCardStyle: (newVal: "small" | "large" | "extra-small") => any;
   leftHandedMode: boolean;
   setLeftHandedMode: (newVal: boolean) => any;
   showMarkdown: boolean;
