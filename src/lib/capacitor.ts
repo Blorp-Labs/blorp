@@ -28,6 +28,17 @@ function registerSafeArea() {
   SafeArea.addListener("safeAreaChanged", updateInsets);
   StatusBar.setOverlaysWebView({ overlay: true });
 
+  const debouncedUpdateInset = _.debounce(
+    () => SafeArea.getSafeAreaInsets().then(updateInsets),
+    50,
+  );
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      debouncedUpdateInset();
+    }
+  });
+  window.addEventListener("focus", debouncedUpdateInset);
+
   if (!isAndroid()) {
     Keyboard.addListener("keyboardWillShow", (info) => {
       keyboardShowing = true;
