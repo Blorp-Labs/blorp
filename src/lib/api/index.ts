@@ -2183,18 +2183,24 @@ export function useSubscribedCommunities() {
     (s) => getAccountSite(s.getSelectedAccount())?.follows,
   );
   return useMemo(
-    () => _.sortBy(subscribedCommunities ?? [], (c) => c.slug),
+    () =>
+      (subscribedCommunities ?? []).sort((a, b) =>
+        a.slug.localeCompare(b.slug),
+      ),
     [subscribedCommunities],
   );
 }
 
 export function useModeratingCommunities() {
-  const subscribedCommunities = useAuth(
+  const moderatingCommunities = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.moderates,
   );
   return useMemo(
-    () => _.sortBy(subscribedCommunities ?? [], (c) => c.slug),
-    [subscribedCommunities],
+    () =>
+      (moderatingCommunities ?? []).sort((a, b) =>
+        a.slug.localeCompare(b.slug),
+      ),
+    [moderatingCommunities],
   );
 }
 
