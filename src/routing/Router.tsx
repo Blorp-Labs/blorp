@@ -79,7 +79,7 @@ function SkipNav() {
 }
 
 function useMenuSwipeEnabled(side: "from-right" | "from-left") {
-  const path = usePathname();
+  const path = usePathname().replace(/\/$/, "");
   if (side === "from-left") {
     switch (path) {
       case "/home":
