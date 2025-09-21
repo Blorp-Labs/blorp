@@ -19,6 +19,7 @@ import { getAccountSite, useAuth } from "@/src/stores/auth";
 import NumberFlow from "@number-flow/react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
+import { useMedia } from "@/src/lib/hooks";
 
 type Vote = {
   postId: number;
@@ -39,9 +40,10 @@ function usePostVoting() {
 }
 
 export function useDoubleTapLike(config?: Vote) {
+  const media = useMedia();
   const vote = usePostVoting();
   return useDoubleTap(() => {
-    if (config) {
+    if (config && media.maxMd) {
       vote(config);
     }
   });

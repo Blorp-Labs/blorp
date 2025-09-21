@@ -29,6 +29,7 @@ import { isWeb } from "@/src/lib/device";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { useMedia } from "@/src/lib/hooks";
 
 export function usePostVoting(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -84,9 +85,10 @@ export function useDoubleTapPostLike(config?: {
   postId: number;
   score: -1 | 0 | 1;
 }) {
+  const media = useMedia();
   const voting = usePostVoting(config?.postApId);
   return useDoubleTap(() => {
-    if (config) {
+    if (config && media.maxMd) {
       voting?.vote(config);
     }
   });
