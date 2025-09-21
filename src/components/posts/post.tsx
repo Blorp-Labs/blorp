@@ -632,6 +632,137 @@ function SmallPostCard({
   );
 }
 
+function ExtraSmallPostCard({
+  post,
+  detailView,
+  featuredContext,
+  pinned,
+  modApIds,
+  apId,
+}: {
+  post?: Schemas.Post;
+  detailView?: boolean;
+  featuredContext: PostProps["featuredContext"];
+  pinned: boolean;
+  modApIds?: string[];
+  apId: string;
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const blurNsfw =
+    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
+
+  const myApId = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
+  );
+
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  const linkCtx = useLinkContext();
+
+  const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
+
+  const patchPost = usePostsStore((s) => s.patchPost);
+
+  const id = useId();
+
+  const media = useMedia();
+
+  if (!post) {
+    return <SmallPostCardSkeleton />;
+  }
+
+  const encodedApId = encodeApId(apId);
+  const embed = post ? getPostEmbed(post) : null;
+
+  const showImage =
+    embed?.thumbnail && !post.deleted && embed.type !== "article";
+  const showArticle = !post.deleted && embed?.type === "article";
+  const blurImg = post.nsfw && blurNsfw;
+
+  const titleId = `${id}-title`;
+  const bodyId = `${id}-title`;
+
+  const canMod = myApId ? modApIds?.includes(myApId) : false;
+
+  return (
+    <article
+      data-testid="post-card"
+      className={cn(
+        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        detailView ? "max-md:bg-background" : "border-b",
+      )}
+      aria-labelledby={titleId}
+      aria-describedby={bodyId}
+    >
+      <div
+        className={cn(
+          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
+        )}
+      >
+        <Link
+          id={titleId}
+          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          params={{
+            communityName: post.communitySlug,
+            post: encodedApId,
+          }}
+          className={cn(
+            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            !detailView && post.read && "text-muted-foreground",
+          )}
+        >
+          <span
+            className={cn(
+              "line-clamp-2 md:line-clamp-3",
+              flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
+            )}
+          >
+            {post.deleted ? "deleted" : post.title}
+          </span>
+        </Link>
+
+        <div
+          className={cn(
+            "flex items-center justify-end gap-2.5",
+            leftHandedMode && "flex-row-reverse",
+          )}
+        >
+          <PostByline
+            hideImage={media.maxMd}
+            post={post}
+            pinned={pinned}
+            showCreator={
+              (featuredContext !== "user" &&
+                featuredContext !== "search" &&
+                featuredContext !== "home") ||
+              detailView
+            }
+            showCommunity={
+              featuredContext === "home" ||
+              featuredContext === "user" ||
+              featuredContext === "search"
+                ? true
+                : detailView
+            }
+            canMod={canMod}
+            isMod={modApIds?.includes(post.creatorApId)}
+            showActions={false}
+          />
+
+          <div className="flex-1" />
+
+          <PostActionButtion post={post} canMod={canMod} />
+          <PostCommentsButton postApId={apId} />
+          <PostVoting apId={apId} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function PostCard(props: PostProps) {
   const showNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
@@ -681,14 +812,28 @@ export function PostCard(props: PostProps) {
     );
   }
 
-  return (
-    <SmallPostCard
-      post={post}
-      detailView={props.detailView}
-      featuredContext={props.featuredContext}
-      pinned={pinned}
-      modApIds={props.modApIds}
-      apId={props.apId}
-    />
-  );
+  switch (postCardStyle) {
+    case "small":
+      return (
+        <SmallPostCard
+          post={post}
+          detailView={props.detailView}
+          featuredContext={props.featuredContext}
+          pinned={pinned}
+          modApIds={props.modApIds}
+          apId={props.apId}
+        />
+      );
+    case "extra-small":
+      return (
+        <ExtraSmallPostCard
+          post={post}
+          detailView={props.detailView}
+          featuredContext={props.featuredContext}
+          pinned={pinned}
+          modApIds={props.modApIds}
+          apId={props.apId}
+        />
+      );
+  }
 }

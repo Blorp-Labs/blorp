@@ -375,6 +375,11 @@ export function PostCardStyleButton({
           value: "small",
           onClick: () => setPostCardStyle("small"),
         },
+        {
+          text: "Extra Compact",
+          value: "extra-small",
+          onClick: () => setPostCardStyle("extra-small"),
+        },
       ]}
       selectedValue={postCardStyle}
       triggerAsChild={variant === "button"}
