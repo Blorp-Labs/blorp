@@ -20,7 +20,6 @@ import {
   useUploadImage,
 } from "../lib/api";
 import _ from "lodash";
-import { parseOgData } from "../lib/html-parsing";
 import {
   IonButton,
   IonContent,
@@ -62,8 +61,8 @@ import { useCommunitiesStore } from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
-import { Badge } from "../components/ui/badge";
 import { Flair } from "../components/flair";
+import { Checkbox } from "@/src/components/ui/checkbox";
 
 dayjs.extend(localizedFormat);
 
@@ -373,6 +372,19 @@ export function CreatePost() {
                 <ToggleGroupItem value="media">Image</ToggleGroupItem>
                 <ToggleGroupItem value="link">Link</ToggleGroupItem>
               </ToggleGroup>
+
+              <div className="gap-2 flex items-center">
+                <Checkbox
+                  id={`${id}-nsfw`}
+                  checked={draft.nsfw ?? false}
+                  onCheckedChange={(nsfw) =>
+                    patchDraft(draftId, {
+                      nsfw: nsfw === true,
+                    })
+                  }
+                />
+                <Label htmlFor={`${id}-nsfw`}>NSFW</Label>
+              </div>
 
               {flairs && flairs.length > 0 && (
                 <div className="gap-2 flex flex-col">
