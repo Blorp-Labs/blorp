@@ -227,6 +227,7 @@ export function PostByline({
   canMod = false,
   showActions = true,
   hideImage,
+  className,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -237,6 +238,7 @@ export function PostByline({
   canMod?: boolean;
   showActions?: boolean;
   hideImage?: boolean;
+  className?: string;
 }) {
   const linkCtx = useLinkContext();
 
@@ -275,6 +277,7 @@ export function PostByline({
       className={cn(
         "flex flex-row items-center gap-2 h-7",
         showCommunity && showCreator && "h-9",
+        className,
       )}
     >
       {!hideImage && (

@@ -116,7 +116,7 @@ function SmallPostCardSkeleton(props: {
     <div>
       <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
         {(!hideImage || props.hideImage === false) && (
-          <Skeleton className="h-32 w-32 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
+          <Skeleton className="h-32 w-28 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
         )}
 
         <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
@@ -537,7 +537,7 @@ function SmallPostCard({
             lowSrc={embed?.thumbnail}
             highSrc={embed?.fullResThumbnail}
             className={cn(
-              "h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0",
+              "h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0",
               blurImg && "blur-3xl",
             )}
             onAspectRatio={(thumbnailAspectRatio) => {
@@ -556,13 +556,13 @@ function SmallPostCard({
           url={embed.embedUrl}
           thumbnail={embed.thumbnail}
           blurNsfw={blurImg ?? false}
-          className="h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0"
+          className="h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0"
         />
       )}
 
       <div
         className={cn(
-          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
           !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
@@ -603,7 +603,7 @@ function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
@@ -647,24 +647,15 @@ function ExtraSmallPostCard({
   modApIds?: string[];
   apId: string;
 }) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  const blurNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
-
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
-
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   const linkCtx = useLinkContext();
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
   const flairs = useFlairs(post?.flairs?.map((f) => f.id));
-
-  const patchPost = usePostsStore((s) => s.patchPost);
 
   const id = useId();
 
@@ -675,12 +666,6 @@ function ExtraSmallPostCard({
   }
 
   const encodedApId = encodeApId(apId);
-  const embed = post ? getPostEmbed(post) : null;
-
-  const showImage =
-    embed?.thumbnail && !post.deleted && embed.type !== "article";
-  const showArticle = !post.deleted && embed?.type === "article";
-  const blurImg = post.nsfw && blurNsfw;
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -726,7 +711,7 @@ function ExtraSmallPostCard({
 
         <div
           className={cn(
-            "flex items-center justify-end gap-2.5",
+            "flex items-center justify-end",
             leftHandedMode && "flex-row-reverse",
           )}
         >
@@ -750,13 +735,11 @@ function ExtraSmallPostCard({
             canMod={canMod}
             isMod={modApIds?.includes(post.creatorApId)}
             showActions={false}
+            className="mr-auto overflow-hidden"
           />
 
-          <div className="flex-1" />
-
-          <PostActionButtion post={post} canMod={canMod} />
-          <PostCommentsButton postApId={apId} />
-          <PostVoting apId={apId} />
+          <PostCommentsButton postApId={apId} variant="ghost" />
+          <PostVoting apId={apId} variant="ghost" className="-mr-2" />
         </div>
       </div>
     </article>

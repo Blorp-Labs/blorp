@@ -100,9 +100,11 @@ export function useDoubleTapPostLike(config?: {
 export function PostVoting({
   apId,
   className,
+  variant = "outline",
 }: {
   apId: string;
   className?: string;
+  variant?: "outline" | "ghost";
 }) {
   const id = useId();
 
@@ -121,7 +123,7 @@ export function PostVoting({
     return (
       <Button
         size="sm"
-        variant="outline"
+        variant={variant}
         onClick={() =>
           vote({
             score: isUpvoted ? 0 : 1,
@@ -141,6 +143,7 @@ export function PostVoting({
     <div
       className={cn(
         "flex flex-row items-center border-1 rounded-full",
+        variant === "ghost" && "border-transparent",
         className,
       )}
     >
@@ -169,16 +172,17 @@ export function PostVoting({
       </Button>
       <Tooltip>
         <TooltipTrigger aria-label={`${score} score`}>
-          <NumberFlow
-            //htmlFor={id}
-            className={cn(
-              "-mx-px cursor-pointer text-md",
-              isUpvoted && "text-brand",
-              isDownvoted && "text-brand-secondary",
-            )}
-            suffix={abbriviatedScore.suffix}
-            value={abbriviatedScore.number}
-          />
+          <label htmlFor={id}>
+            <NumberFlow
+              className={cn(
+                "-mx-px cursor-pointer text-md",
+                isUpvoted && "text-brand",
+                isDownvoted && "text-brand-secondary",
+              )}
+              suffix={abbriviatedScore.suffix}
+              value={abbriviatedScore.number}
+            />
+          </label>
         </TooltipTrigger>
         <TooltipContent>
           {voting.upvotes} upvotes, {voting.downvotes} downvotes
@@ -216,10 +220,12 @@ export function PostCommentsButton({
   postApId,
   onClick,
   className,
+  variant = "outline",
 }: {
   postApId: string;
   onClick?: () => void;
   className?: string;
+  variant?: "outline" | "ghost";
 }): React.ReactNode {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const postView = usePostsStore(
@@ -231,7 +237,7 @@ export function PostCommentsButton({
     return (
       <Button
         size="sm"
-        variant="outline"
+        variant={variant}
         className={cn("text-md font-normal", className)}
         asChild
       >
