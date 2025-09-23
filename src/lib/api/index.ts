@@ -165,22 +165,35 @@ export function usePersonDetails({
   });
 }
 
+function usePersonFeedKey({
+  apIdOrUsername,
+  type,
+  sort,
+}: Partial<Forms.GetPersonContent>) {
+  const { queryKeyPrefix } = useApiClients();
+  const queryKey = [...queryKeyPrefix, "getPersonFeed", apIdOrUsername];
+  if (type || sort) {
+    queryKey.push({ type, sort });
+  }
+  return queryKey;
+}
+
 export function usePersonFeed({
   apIdOrUsername,
   type,
   sort,
 }: SetOptional<Forms.GetPersonContent, "apIdOrUsername">) {
-  const { api, queryKeyPrefix } = useApiClients();
+  const { api } = useApiClients();
 
   const postSort = useFiltersStore((s) => s.postSort);
 
   sort ??= postSort;
 
-  const queryKey = [
-    ...queryKeyPrefix,
-    "getPersonFeed",
-    { apIdOrUsername, type, sort },
-  ];
+  const queryKey = usePersonFeedKey({
+    apIdOrUsername,
+    type,
+    sort,
+  });
 
   const cacheComments = useCommentsStore((s) => s.cacheComments);
 
@@ -1956,10 +1969,14 @@ export function useCreateCommentReport() {
   });
 }
 
-export function useBlockPerson(account?: Account) {
+export function useBlockPerson(options?: { account?: Account; apId?: string }) {
+  const { account, apId } = options ?? {};
   const queryClient = useQueryClient();
   const { api } = useApiClients(account);
   const accountsQueryKey = useRefreshAuthKey();
+  const personFeedQueryKey = usePersonFeedKey({
+    apIdOrUsername: apId,
+  });
   return useMutation({
     mutationFn: async (form: Forms.BlockPerson) =>
       (await api).blockPerson(form),
@@ -1970,10 +1987,16 @@ export function useBlockPerson(account?: Account) {
         toast.error(`Couldn't ${block ? "block" : "unblock"} person`);
       }
     },
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: accountsQueryKey,
-      }),
+      });
+      if (personFeedQueryKey) {
+        queryClient.invalidateQueries({
+          queryKey: personFeedQueryKey,
+        });
+      }
+    },
   });
 }
 

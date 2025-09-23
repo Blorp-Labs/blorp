@@ -22,7 +22,7 @@ import { PageTitle } from "../components/page-title";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import { PostReportProvider } from "../components/posts/post-report";
 import { useFiltersStore } from "../stores/filters";
-import { useAuth } from "../stores/auth";
+import { useAuth, useIsPersonBlocked } from "../stores/auth";
 import z from "zod";
 import {
   PersonSidebar,
@@ -138,6 +138,8 @@ export default function User() {
     actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
   );
 
+  const isBlocked = useIsPersonBlocked(person?.apId);
+
   const listData = useMemo(() => {
     const commentViews =
       _.uniq(data?.pages.map((res) => res.comments).flat()) ?? EMPTY_ARR;
@@ -183,7 +185,11 @@ export default function User() {
           <VirtualList<Item>
             key={type === "Comments" ? "comments" : type + postSort}
             scrollHost
-            data={listData.length === 0 && !isLoading ? [NO_ITEMS] : listData}
+            data={
+              (listData.length === 0 && !isLoading) || isBlocked
+                ? [NO_ITEMS]
+                : listData
+            }
             header={[
               <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
               <ContentGutters
@@ -214,7 +220,11 @@ export default function User() {
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing to see here</span>
+                      <span>
+                        {isBlocked
+                          ? `You have ${person?.slug} blocked`
+                          : "Nothing to see here"}
+                      </span>
                     </div>
                     <></>
                   </ContentGutters>

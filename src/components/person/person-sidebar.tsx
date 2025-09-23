@@ -27,12 +27,15 @@ import { cn } from "@/src/lib/utils";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { DateTime } from "../datetime";
+import { useIsPersonBlocked } from "@/src/stores/auth";
 
 dayjs.extend(localizedFormat);
 
 export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
   const [expanded, setExpanded] = useState(false);
   const actions = usePersonActions({ person });
+
+  const isBlocked = useIsPersonBlocked(person?.apId);
 
   return (
     <div className={cn("p-4 py-1.5", !expanded && "md:hidden")}>
@@ -80,14 +83,14 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
         />
       </div>
 
-      {expanded && person?.bio && (
+      {expanded && person?.bio && !isBlocked && (
         <div className="my-2">
           <span>BIO</span>
           <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
         </div>
       )}
 
-      {person?.bio && (
+      {person?.bio && !isBlocked && (
         <Button
           variant="link"
           className="-ml-4 text-brand"
@@ -111,6 +114,7 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
   const [name, host] = person ? person.slug.split("@") : [];
 
   const actions = usePersonActions({ person });
+  const isBlocked = useIsPersonBlocked(person?.apId);
 
   return (
     <Sidebar>
@@ -168,7 +172,7 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
           />
         </div>
 
-        {person?.bio && (
+        {person?.bio && !isBlocked && (
           <>
             <Separator />
             <Collapsible className="p-4" open={open} onOpenChange={setOpen}>

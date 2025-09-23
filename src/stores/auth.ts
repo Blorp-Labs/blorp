@@ -279,3 +279,15 @@ export const useAuth = create<AuthStore>()(
 );
 
 sync(useAuth);
+
+export function useIsPersonBlocked(apId?: string | null) {
+  return useAuth((s) => {
+    const account = s.getSelectedAccount();
+    const site = getAccountSite(account);
+    const personBlocks = site?.personBlocks;
+    if (!apId || !personBlocks || personBlocks.length === 0) {
+      return false;
+    }
+    return personBlocks.find((p) => p.apId === apId);
+  });
+}

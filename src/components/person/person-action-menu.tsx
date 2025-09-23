@@ -8,7 +8,11 @@ import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
 import { useBlockPerson } from "@/src/lib/api";
-import { getAccountActorId, useAuth } from "@/src/stores/auth";
+import {
+  getAccountActorId,
+  useAuth,
+  useIsPersonBlocked,
+} from "@/src/stores/auth";
 import { useShareActions } from "@/src/lib/share";
 import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
@@ -34,7 +38,9 @@ export function usePersonActions({
 
   const slug = person ? person.slug : undefined;
 
-  const blockPerson = useBlockPerson();
+  const blockPerson = useBlockPerson({
+    apId: person?.apId,
+  });
 
   const tagUser = useTagUser();
 
@@ -47,8 +53,10 @@ export function usePersonActions({
       : null,
   );
 
+  const isBlocked = useIsPersonBlocked(person?.apId);
+
   return [
-    ...(person
+    ...(person && !isBlocked
       ? [
           {
             text: "Message user",
@@ -81,13 +89,13 @@ export function usePersonActions({
     ...(person && person.apId !== myUserId
       ? [
           {
-            text: "Block user",
+            text: isBlocked ? "Unblock user" : "Block user",
             onClick: async () => {
               try {
                 await requireAuth();
                 const deferred = new Deferred();
                 alrt({
-                  message: `Block ${slug ?? "person"}`,
+                  message: `${isBlocked ? "Unblock" : "Block"} ${slug ?? "person"}`,
                   buttons: [
                     {
                       text: "Cancel",
@@ -104,7 +112,7 @@ export function usePersonActions({
                 await deferred.promise;
                 blockPerson.mutate({
                   personId: person?.id,
-                  block: true,
+                  block: !isBlocked,
                 });
               } catch {}
             },
