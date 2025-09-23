@@ -36,6 +36,7 @@ import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
 import Oneko from "@/src/features/easter-eggs/Oneko";
+import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);
 
@@ -70,7 +71,9 @@ export function SmallScreenSidebar({
     <div className="flex items-center gap-1.5 text-sm h-5 text-muted-foreground">
       <LuCakeSlice />
       {data ? (
-        <span>Created {dayjs(data.communityView.createdAt).format("ll")}</span>
+        <span>
+          Created <DateTime date={dayjs(data.communityView.createdAt)} />
+        </span>
       ) : (
         <Skeleton className="h-5 flex-1 max-w-32" />
       )}
@@ -328,7 +331,9 @@ export function CommunitySidebar({
 
             <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
               <LuCakeSlice />
-              <span>Created {dayjs(communityView.createdAt).format("ll")}</span>
+              <span>
+                Created <DateTime date={dayjs(data.communityView.createdAt)} />
+              </span>
             </div>
           </div>
           <Separator />

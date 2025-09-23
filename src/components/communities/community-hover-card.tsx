@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useAuth } from "@/src/stores/auth";
 import { AggregateBadges } from "../aggregates";
 import { CommunityJoinButton } from "./community-join-button";
+import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);
 
@@ -34,6 +35,7 @@ export function CommunityHoverCard({
   );
 
   const community = data?.communityView;
+  const createdAt = community ? dayjs(community.createdAt) : null;
 
   return (
     <HoverCard onOpenChange={() => setEnabled(true)}>
@@ -47,8 +49,7 @@ export function CommunityHoverCard({
         <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
           <LuCakeSlice />
           <span>
-            Created{" "}
-            {community?.createdAt && dayjs(community.createdAt).format("ll")}
+            Created <DateTime date={createdAt} />
           </span>
         </div>
 

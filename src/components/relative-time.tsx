@@ -3,12 +3,13 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
 import {
   DetailedHTMLProps,
-  HTMLAttributes,
+  TimeHTMLAttributes,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import { cn } from "../lib/utils";
+import { DateTime } from "./datetime";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -32,7 +33,10 @@ dayjs.updateLocale("en", {
 });
 
 interface Props
-  extends DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> {
+  extends DetailedHTMLProps<
+    TimeHTMLAttributes<HTMLTimeElement>,
+    HTMLTimeElement
+  > {
   time: string | number;
   prefix?: string;
 }
@@ -56,9 +60,13 @@ export function RelativeTime({ time, prefix, ...rest }: Props) {
   }, [dateObj]);
 
   return (
-    <span {...rest} className={cn("whitespace-nowrap", rest.className)}>
+    <DateTime
+      {...rest}
+      className={cn("whitespace-nowrap", rest.className)}
+      date={dateObj}
+    >
       {prefix}
       {dateStr}
-    </span>
+    </DateTime>
   );
 }

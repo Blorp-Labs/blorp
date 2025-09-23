@@ -26,6 +26,7 @@ import { usePersonActions } from "./person-action-menu";
 import { cn } from "@/src/lib/utils";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);
 
@@ -50,7 +51,8 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <LuCakeSlice />
             <span>
-              Created {person ? dayjs(person.createdAt).format("ll") : ""}
+              Created{" "}
+              <DateTime date={person ? dayjs(person.createdAt) : null} />
             </span>
           </div>
 
@@ -152,7 +154,8 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <LuCakeSlice />
             <span>
-              Created {person ? dayjs(person.createdAt).format("ll") : ""}
+              Created{" "}
+              <DateTime date={person ? dayjs(person.createdAt) : null} />
             </span>
           </div>
 
