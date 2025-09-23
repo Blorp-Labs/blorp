@@ -60,7 +60,12 @@ export function PostCardSkeleton(props: {
     return <LargePostCardSkeleton />;
   }
 
-  return <SmallPostCardSkeleton />;
+  switch (postCardStyle) {
+    case "small":
+      return <SmallPostCardSkeleton />;
+    case "extra-small":
+      return <ExtraSmallPostCardSkeleton />;
+  }
 }
 
 function LargePostCardSkeleton(props: {
@@ -119,7 +124,12 @@ function SmallPostCardSkeleton(props: {
           <Skeleton className="h-32 w-28 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
         )}
 
-        <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
+        <div
+          className={cn(
+            "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+            hideImage && "max-md:pl-3.5",
+          )}
+        >
           <div className="flex flex-row items-center gap-2 h-6">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-32" />
@@ -135,7 +145,36 @@ function SmallPostCardSkeleton(props: {
           </div>
         </div>
       </div>
-      <Separator className="max-md:-mx-3.5 w-auto!" />
+      <Separator className="w-auto!" />
+    </div>
+  );
+}
+
+function ExtraSmallPostCardSkeleton() {
+  return (
+    <div>
+      <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
+        <div
+          className={cn(
+            "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
+          )}
+        >
+          <Skeleton className="h-7" />
+
+          <div className="flex-1" />
+
+          <div className="flex flex-row justify-end gap-2">
+            <div className="flex flex-row items-center gap-2 h-6">
+              <Skeleton className="h-6 w-6 rounded-full" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex-1" />
+            <Skeleton className="h-7 w-10 rounded-full" />
+            <Skeleton className="h-7 w-16 rounded-full" />
+          </div>
+        </div>
+      </div>
+      <Separator className="w-auto!" />
     </div>
   );
 }
@@ -662,7 +701,7 @@ function ExtraSmallPostCard({
   const media = useMedia();
 
   if (!post) {
-    return <SmallPostCardSkeleton />;
+    return <ExtraSmallPostCardSkeleton />;
   }
 
   const encodedApId = encodeApId(apId);
