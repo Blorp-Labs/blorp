@@ -288,6 +288,6 @@ export function useIsPersonBlocked(apId?: string | null) {
     if (!apId || !personBlocks || personBlocks.length === 0) {
       return false;
     }
-    return personBlocks.find((p) => p.apId === apId);
+    return !!personBlocks.find((p) => p.apId === apId);
   });
 }
