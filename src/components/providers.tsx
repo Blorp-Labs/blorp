@@ -16,10 +16,11 @@ import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimen
 import { Toaster } from "@/src/components/ui/sonner";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
+import { MAX_CACHE_MS } from "../stores/config";
 
 // List the last reason for bumping the key:
 // Caching creator profiles when fetching comments
-const REACT_QUERY_CACHE_VERSON = 7;
+const REACT_QUERY_CACHE_VERSON = 8;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;
@@ -71,12 +72,10 @@ const persister: Persister = {
   },
 };
 
-const ONE_WEEK = 1000 * 60 * 24 * 7;
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      gcTime: ONE_WEEK,
+      gcTime: MAX_CACHE_MS,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
       networkMode: "online",
