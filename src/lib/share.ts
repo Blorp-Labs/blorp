@@ -8,14 +8,13 @@ import { privilegedFetch } from "./privileged-fetch";
 import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { isAndroid, isCapacitor, isFirefox, isTauri } from "./device";
+import { isAndroid, isCapacitor, isFirefox, isTauri, isWeb } from "./device";
 import { ActionMenuProps } from "../components/adaptable/action-menu";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
 import { isErrorLike } from "./utils";
-import { error } from "console";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -293,4 +292,33 @@ export function useShareActions(
       ],
     },
   ] satisfies ActionMenuProps["actions"];
+}
+
+export function canShareImage() {
+  return !isWeb();
+}
+
+export function useImageShareActions({
+  imageSrc,
+}: {
+  imageSrc?: string;
+}): ActionMenuProps<string>["actions"] {
+  return [
+    ...(imageSrc && canShareImage()
+      ? [
+          {
+            text: "Share image",
+            onClick: () => shareImage(imageSrc, imageSrc),
+          },
+        ]
+      : []),
+    ...(imageSrc && canShareImage()
+      ? [
+          {
+            text: "Download image",
+            onClick: () => downloadImage(imageSrc, imageSrc),
+          },
+        ]
+      : []),
+  ];
 }

@@ -2,9 +2,7 @@ import { useLikePost } from "@/src/lib/api/index";
 import { voteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import NumberFlow from "@number-flow/react";
-
 import { Link, resolveRoute } from "@/src/routing/index";
-
 import {
   PiArrowFatUpBold,
   PiArrowFatDownBold,
@@ -21,11 +19,16 @@ import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostsStore } from "@/src/stores/posts";
-import { shareImage, useShareActions, downloadImage } from "@/src/lib/share";
+import {
+  shareImage,
+  useShareActions,
+  downloadImage,
+  useImageShareActions,
+  canShareImage,
+} from "@/src/lib/share";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
 import { getPostEmbed } from "@/src/lib/post";
-import { isWeb } from "@/src/lib/device";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
@@ -286,7 +289,7 @@ function usePostShareActions({
 
   return [
     ...(shareActions[0]?.actions ?? []),
-    ...(post && thumbnailUrl && embed.type === "image" && !isWeb()
+    ...(post && thumbnailUrl && embed.type === "image" && canShareImage()
       ? [
           {
             text: "Share image",
@@ -294,7 +297,7 @@ function usePostShareActions({
           },
         ]
       : []),
-    ...(post && thumbnailUrl && embed.type === "image" && !isWeb()
+    ...(post && thumbnailUrl && embed.type === "image" && canShareImage()
       ? [
           {
             text: "Download image",
@@ -319,6 +322,36 @@ export function PostShareButton({
 
   const actions = usePostShareActions({ post });
 
+  return (
+    <ActionMenu
+      align="start"
+      header="Share"
+      actions={actions}
+      trigger={
+        <Button
+          size="sm"
+          variant="outline"
+          className={cn("text-md font-normal", className)}
+          asChild
+        >
+          <div>
+            <Share className="scale-110" />
+            Share
+          </div>
+        </Button>
+      }
+    />
+  );
+}
+
+export function ImageShareButton({
+  imageSrc,
+  className,
+}: {
+  imageSrc?: string;
+  className?: string;
+}): React.ReactNode {
+  const actions = useImageShareActions({ imageSrc });
   return (
     <ActionMenu
       align="start"
