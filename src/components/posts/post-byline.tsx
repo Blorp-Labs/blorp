@@ -2,7 +2,6 @@ import {
   useBlockPerson,
   useDeletePost,
   useFeaturePost,
-  useRemovePost,
   useSavePost,
 } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
@@ -59,7 +58,6 @@ export function usePostActions({
   const blockPerson = useBlockPerson();
   const deletePost = useDeletePost(post.apId);
   const featurePost = useFeaturePost(post.apId);
-  const removePost = useRemovePost();
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost(post.apId);
 
@@ -96,17 +94,7 @@ export function usePostActions({
               },
               {
                 text: post.removed ? "Restore post" : "Remove post",
-                onClick: () => {
-                  if (post.removed) {
-                    removePost.mutate({
-                      postId: post.id,
-                      apId: post.apId,
-                      removed: false,
-                    });
-                  } else {
-                    showPostRemoveModal(post.apId);
-                  }
-                },
+                onClick: () => showPostRemoveModal(post.apId),
               },
             ],
           },

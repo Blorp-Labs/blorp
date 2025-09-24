@@ -68,7 +68,7 @@ export function PostRemoveProvider({
           apId: post.apId,
           postId: post.id,
           reason,
-          removed: true,
+          removed: !post.removed,
         })
         .then(() => {
           setReason("");
@@ -107,7 +107,7 @@ export function PostRemoveProvider({
               <IonButton onClick={cancel}>Cancel</IonButton>
             </ToolbarButtons>
             <IonTitle>
-              Report {post && "Post"}
+              {post && `${post.removed ? "Restore" : "Remove"} Post`}
               {comment && "Comment"}
             </IonTitle>
             <ToolbarButtons side="right" className="md:hidden">
@@ -133,7 +133,7 @@ export function PostRemoveProvider({
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Report reason"
+                placeholder="Reason"
                 className="flex-1 min-h-[200px]"
               />
 
