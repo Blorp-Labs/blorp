@@ -304,7 +304,9 @@ export default function LightBox() {
             }}
           >
             <ContentGutters className="h-full">
-              <ImageShareButton imageSrc={src} />
+              <div className="my-auto">
+                <ImageShareButton imageSrc={src} />
+              </div>
             </ContentGutters>
           </div>
         )}
