@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
   const account = useAuth((s) => s.accounts[index]);
 
-  const blockCommunity = useBlockCommunity(account);
+  const blockCommunity = useBlockCommunity({ account });
   const blockPerson = useBlockPerson({ account });
 
   if (!account) {

@@ -376,14 +376,18 @@ export function useComments(form: Forms.GetComments) {
   });
 }
 
-function usePostsKey(form?: Forms.GetPosts) {
+function usePostsKey(config?: Forms.GetPosts) {
   const { queryKeyPrefix } = useApiClients();
+  const { communitySlug, ...form } = config ?? {};
 
   const postSort = useFiltersStore((s) => s.postSort);
   const sort = form?.sort ?? postSort;
 
   const queryKey = [...queryKeyPrefix, sort];
-  if (form) {
+  if (communitySlug) {
+    queryKey.push(communitySlug);
+  }
+  if (Object.keys(form).length > 0) {
     queryKey.push(form);
   }
 
@@ -1859,7 +1863,6 @@ export function useMarkPersonMentionRead() {
 }
 
 export function useCreatePost() {
-  const router = useIonRouter();
   const history = useHistory();
   const { api } = useApiClients();
   const queryClient = useQueryClient();
@@ -2000,7 +2003,12 @@ export function useBlockPerson(options?: { account?: Account; apId?: string }) {
   });
 }
 
-export function useBlockCommunity(account?: Account) {
+export function useBlockCommunity(options?: {
+  account?: Account;
+  communitySlug?: string;
+}) {
+  const { account, communitySlug } = options ?? {};
+  const postsQueryKey = usePostsKey({ communitySlug });
   const queryClient = useQueryClient();
   const { api } = useApiClients(account);
   const accountsQueryKey = useRefreshAuthKey();
@@ -2014,10 +2022,16 @@ export function useBlockCommunity(account?: Account) {
         toast.error(`Couldn't ${block ? "block" : "unblock"} community`);
       }
     },
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: accountsQueryKey,
-      }),
+      });
+      if (communitySlug) {
+        queryClient.invalidateQueries({
+          queryKey: postsQueryKey,
+        });
+      }
+    },
   });
 }
 
