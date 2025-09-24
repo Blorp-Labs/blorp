@@ -2,6 +2,7 @@ import {
   useBlockPerson,
   useDeletePost,
   useFeaturePost,
+  useRemovePost,
   useSavePost,
 } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
@@ -40,6 +41,7 @@ import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
+import { useShowPostRemoveModal } from "./post-remove";
 
 export function usePostActions({
   post,
@@ -57,6 +59,8 @@ export function usePostActions({
   const blockPerson = useBlockPerson();
   const deletePost = useDeletePost(post.apId);
   const featurePost = useFeaturePost(post.apId);
+  const removePost = useRemovePost();
+  const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost(post.apId);
 
   const router = useIonRouter();
@@ -89,6 +93,20 @@ export function usePostActions({
                     postId: post.id,
                     featured: !post.featuredCommunity,
                   }),
+              },
+              {
+                text: post.removed ? "Restore post" : "Remove post",
+                onClick: () => {
+                  if (post.removed) {
+                    removePost.mutate({
+                      postId: post.id,
+                      apId: post.apId,
+                      removed: false,
+                    });
+                  } else {
+                    showPostRemoveModal(post.apId);
+                  }
+                },
               },
             ],
           },
@@ -180,7 +198,9 @@ export function usePostActions({
             danger: true,
           },
         ]
-      : [
+      : []),
+    ...(!isMyPost && !canMod
+      ? [
           {
             text: "Report post",
             onClick: () =>
@@ -189,7 +209,8 @@ export function usePostActions({
               }),
             danger: true,
           },
-        ]),
+        ]
+      : []),
   ];
 }
 

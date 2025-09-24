@@ -2158,6 +2158,38 @@ export function useFeaturePost(apId: string) {
   });
 }
 
+export function useRemovePost() {
+  const { api } = useApiClients();
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.RemovePost & { apId: string }) =>
+      (await api).removePost(form),
+    onMutate: ({ removed, apId }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticRemoved: removed,
+      });
+    },
+    onSuccess: (_, { removed, apId }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticFeaturedCommunity: undefined,
+        removed,
+      });
+    },
+    onError: (err, { removed, apId }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticFeaturedCommunity: undefined,
+      });
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${removed ? "remove" : "restore"} post`);
+      }
+    },
+  });
+}
+
 export function useUploadImage() {
   const { api } = useApiClients();
   return useMutation({
