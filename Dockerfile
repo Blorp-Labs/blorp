@@ -32,6 +32,7 @@ RUN apk add --no-cache gettext
 
 # copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/package.json /usr/share/nginx/html/package.json
 
 # rename the real index.html so we can template it
 RUN mv /usr/share/nginx/html/index.html /usr/share/nginx/html/index.html.tmpl
