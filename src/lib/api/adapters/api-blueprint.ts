@@ -457,6 +457,12 @@ export namespace Forms {
     reason: string;
   };
 
+  export type RemovePost = {
+    postId: number;
+    reason?: string;
+    removed: boolean;
+  };
+
   export type CreateCommentReport = {
     commentId: number;
     reason: string;
@@ -662,6 +668,8 @@ export abstract class ApiBlueprint<C> {
   abstract createPost(form: Forms.CreatePost): Promise<Schemas.Post>;
 
   abstract createPostReport(form: Forms.CreatePostReport): Promise<void>;
+
+  abstract removePost(form: Forms.RemovePost): Promise<void>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

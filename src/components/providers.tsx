@@ -17,6 +17,7 @@ import { Toaster } from "@/src/components/ui/sonner";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 import { MAX_CACHE_MS } from "../stores/config";
+import { PostRemoveProvider } from "./posts/post-remove";
 
 // List the last reason for bumping the key:
 // Caching creator profiles when fetching comments
@@ -111,7 +112,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       <RefreshNotificationCount />
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <PostRemoveProvider>{children}</PostRemoveProvider>
+      </AuthProvider>
       <Toaster />
       {isDev() && (
         <TanstackDevtools
