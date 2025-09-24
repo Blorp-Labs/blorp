@@ -36,7 +36,7 @@ import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
 import { CommunityFeedSortBar } from "../components/communities/community-feed-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { useAuth } from "../stores/auth";
+import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
@@ -87,6 +87,7 @@ export default function CommunityFeed() {
   const community = useCommunity({
     name: communityName,
   });
+  const isBlocked = useIsCommunityBlocked(communityName);
 
   const modApIds = community.data?.mods.map((m) => m.apId);
 
@@ -209,7 +210,8 @@ export default function CommunityFeed() {
             fullscreen
             scrollHost
             data={
-              data.length === 0 && !posts.isRefetching && !posts.isPending
+              isBlocked ||
+              (data.length === 0 && !posts.isRefetching && !posts.isPending)
                 ? [NO_ITEMS]
                 : data
             }
@@ -241,7 +243,11 @@ export default function CommunityFeed() {
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing to see here</span>
+                      <span>
+                        {isBlocked
+                          ? `You have ${communityName} blocked`
+                          : "Nothing to see here"}
+                      </span>
                     </div>
                     <></>
                   </ContentGutters>

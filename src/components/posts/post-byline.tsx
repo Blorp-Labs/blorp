@@ -7,7 +7,12 @@ import {
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
-import { useAuth, getAccountActorId, getAccountSite } from "@/src/stores/auth";
+import {
+  useAuth,
+  getAccountActorId,
+  getAccountSite,
+  useIsPersonBlocked,
+} from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
 import { Link } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
@@ -59,6 +64,7 @@ export function usePostActions({
 
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
+  const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
 
   const encodedApId = encodeApId(post.apId);
   const tagUser = useTagUser();
@@ -100,13 +106,13 @@ export function usePostActions({
                 },
               },
               {
-                text: "Block author",
+                text: isCreatorBlocked ? "Unblock author" : "Block author",
                 onClick: async () => {
                   try {
                     await requireAuth();
                     const deferred = new Deferred();
                     alrt({
-                      message: `Block ${post.creatorSlug}`,
+                      message: `${isCreatorBlocked ? "Unblock" : "Block"} ${post.creatorSlug}`,
                       buttons: [
                         {
                           text: "Cancel",
@@ -123,7 +129,7 @@ export function usePostActions({
                     await deferred.promise;
                     blockPerson.mutate({
                       personId: post.creatorId,
-                      block: true,
+                      block: !isCreatorBlocked,
                     });
                   } catch {}
                 },

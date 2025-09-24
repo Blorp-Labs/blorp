@@ -7,7 +7,7 @@ import { useLinkContext } from "../../routing/link-context";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { useAuth } from "@/src/stores/auth";
+import { useAuth, useIsCommunityBlocked } from "@/src/stores/auth";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { openUrl } from "@/src/lib/linking";
@@ -60,6 +60,7 @@ export function SmallScreenSidebar({
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
   );
   const communityView = data?.communityView;
+  const isBlocked = useIsCommunityBlocked(communityName);
 
   const actions = useCommunityActions({
     communityName,
@@ -150,7 +151,7 @@ export function SmallScreenSidebar({
         )}
       />
 
-      {expanded && (
+      {expanded && !isBlocked && (
         <>
           <section className="p-3">
             <h2>ABOUT</h2>
@@ -200,7 +201,8 @@ function useCommunityActions({
   communityView?: Schemas.Community;
 }): ActionMenuProps["actions"] {
   const getConfirmation = useConfirmationAlert();
-  const blockCommunity = useBlockCommunity();
+  const blockCommunity = useBlockCommunity({ communitySlug: communityName });
+  const isBlocked = useIsCommunityBlocked(communityName);
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const linkCtx = useLinkContext();
@@ -216,8 +218,8 @@ function useCommunityActions({
   const shareActions = useShareActions("community", route);
 
   return [
-    ...shareActions,
-    ...(isLoggedIn
+    ...(!isBlocked ? shareActions : []),
+    ...(isLoggedIn && !isBlocked
       ? [
           {
             text: "Create post",
@@ -225,7 +227,7 @@ function useCommunityActions({
           },
         ]
       : []),
-    ...(actorId
+    ...(actorId && !isBlocked
       ? [
           {
             text: "View source",
@@ -242,15 +244,15 @@ function useCommunityActions({
     ...(isLoggedIn && communityView
       ? [
           {
-            text: "Block community",
+            text: isBlocked ? "Unblock community" : "Block community",
             danger: true,
             onClick: () =>
               getConfirmation({
-                message: `Block ${communityName}`,
+                message: `${isBlocked ? "Unblock" : "Block"} ${communityName}`,
               }).then(() =>
                 blockCommunity.mutate({
                   communityId: communityView?.id,
-                  block: true,
+                  block: !isBlocked,
                 }),
               ),
           },
@@ -277,6 +279,7 @@ export function CommunitySidebar({
   const data = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
   );
+  const isBlocked = useIsCommunityBlocked(communityName);
 
   const flairs = useFlairs(data?.flairs?.map((f) => f.id));
 
@@ -336,82 +339,88 @@ export function CommunitySidebar({
               </span>
             </div>
           </div>
-          <Separator />
-          <Collapsible
-            className="p-4"
-            open={aboutOpen}
-            onOpenChange={setAboutOpen}
-          >
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-              <span>ABOUT</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="py-1">
-              {communityView.description && !hideDescription && (
-                <MarkdownRenderer
-                  markdown={communityView.description}
-                  dim
-                  className="py-3"
-                />
-              )}
 
-              <AggregateBadges
-                className="mt-2"
-                aggregates={{
-                  "users / day": communityView?.usersActiveDayCount,
-                  "users / week": communityView?.usersActiveWeekCount,
-                  "users / month": communityView?.usersActiveMonthCount,
-                  "users / 6 months": communityView?.usersActiveHalfYearCount,
-                  "Local subscribers": communityView?.subscribersLocalCount,
-                  Subscribers: communityView?.subscriberCount,
-                  Posts: communityView?.postCount,
-                  Comments: communityView?.commentCount,
-                }}
-              />
-            </CollapsibleContent>
-          </Collapsible>
-
-          {flairs && flairs.length > 0 && (
+          {!isBlocked && (
             <>
               <Separator />
-
               <Collapsible
                 className="p-4"
-                open={flairsOpen}
-                onOpenChange={setFlairsOpen}
+                open={aboutOpen}
+                onOpenChange={setAboutOpen}
               >
                 <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-                  <span>FLAIRS</span>
+                  <span>ABOUT</span>
                   <ChevronsUpDown className="h-4 w-4" />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="pb-1 pt-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    {flairs?.map((flair) => (
-                      <Flair key={flair.data.id} flair={flair.data} />
-                    ))}
-                  </div>
+                <CollapsibleContent className="py-1">
+                  {communityView.description && !hideDescription && (
+                    <MarkdownRenderer
+                      markdown={communityView.description}
+                      dim
+                      className="py-3"
+                    />
+                  )}
+
+                  <AggregateBadges
+                    className="mt-2"
+                    aggregates={{
+                      "users / day": communityView?.usersActiveDayCount,
+                      "users / week": communityView?.usersActiveWeekCount,
+                      "users / month": communityView?.usersActiveMonthCount,
+                      "users / 6 months":
+                        communityView?.usersActiveHalfYearCount,
+                      "Local subscribers": communityView?.subscribersLocalCount,
+                      Subscribers: communityView?.subscriberCount,
+                      Posts: communityView?.postCount,
+                      Comments: communityView?.commentCount,
+                    }}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+
+              {flairs && flairs.length > 0 && (
+                <>
+                  <Separator />
+
+                  <Collapsible
+                    className="p-4"
+                    open={flairsOpen}
+                    onOpenChange={setFlairsOpen}
+                  >
+                    <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                      <span>FLAIRS</span>
+                      <ChevronsUpDown className="h-4 w-4" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pb-1 pt-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {flairs?.map((flair) => (
+                          <Flair key={flair.data.id} flair={flair.data} />
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </>
+              )}
+
+              <Separator />
+              <Collapsible
+                className="p-4"
+                open={modsOpen}
+                onOpenChange={setModsOpen}
+              >
+                <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                  <span>MODS</span>
+                  <ChevronsUpDown className="h-4 w-4" />
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="flex flex-col gap-2 pt-3">
+                  {data.mods?.map((m) => (
+                    <PersonCard key={m.apId} actorId={m.apId} size="sm" />
+                  ))}
                 </CollapsibleContent>
               </Collapsible>
             </>
           )}
-
-          <Separator />
-          <Collapsible
-            className="p-4"
-            open={modsOpen}
-            onOpenChange={setModsOpen}
-          >
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-              <span>MODS</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-
-            <CollapsibleContent className="flex flex-col gap-2 pt-3">
-              {data.mods?.map((m) => (
-                <PersonCard key={m.apId} actorId={m.apId} size="sm" />
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
         </Oneko>
       </SidebarContent>
     </Sidebar>

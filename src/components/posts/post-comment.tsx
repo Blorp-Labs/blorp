@@ -34,7 +34,7 @@ import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { useAuth } from "@/src/stores/auth";
+import { useAuth, useIsPersonBlocked } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
@@ -286,6 +286,7 @@ export function PostComment({
     commentView?.creatorSlug ? s.userTags[commentView.creatorSlug] : undefined,
   );
   const tagUser = useTagUser();
+  const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
 
   const router = useIonRouter();
 
@@ -469,13 +470,15 @@ export function PostComment({
                                 ),
                             },
                             {
-                              text: "Block commenter",
+                              text: isCreatorBlocked
+                                ? "Unblock commenter"
+                                : "Block commenter",
                               onClick: async () => {
                                 try {
                                   await requireAuth();
                                   const deferred = new Deferred();
                                   alrt({
-                                    message: `Block ${commentView.creatorSlug}`,
+                                    message: `${isCreatorBlocked ? "Unblock" : "Block"} ${commentView.creatorSlug}`,
                                     buttons: [
                                       {
                                         text: "Cancel",
@@ -492,7 +495,7 @@ export function PostComment({
                                   await deferred.promise;
                                   blockPerson.mutate({
                                     personId: commentView.creatorId,
-                                    block: true,
+                                    block: !isCreatorBlocked,
                                   });
                                 } catch {}
                               },

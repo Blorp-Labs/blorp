@@ -2,7 +2,7 @@ import { twMerge } from "tailwind-merge";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
-import { useAuth } from "@/src/stores/auth";
+import { useAuth, useIsCommunityBlocked } from "@/src/stores/auth";
 import _ from "lodash";
 
 export function CommunityBanner({ communityName }: { communityName?: string }) {
@@ -15,11 +15,12 @@ export function CommunityBanner({ communityName }: { communityName?: string }) {
       ? s.communities[getCachePrefixer()(communityName)]?.data
       : null,
   );
+  const isBlocked = useIsCommunityBlocked(communityName);
 
   const communityView = data?.communityView;
   const banner = data?.communityView.banner ?? undefined;
 
-  const hideBanner = !banner;
+  const hideBanner = !banner || isBlocked;
 
   const [name, host] = communityView?.slug.split("@") ?? [];
 
