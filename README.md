@@ -43,16 +43,16 @@
 * [Join Google Play Beta](https://play.google.com/apps/testing/xyz.blorpblorp.app)
 
 ## ❤️ Friends of Blorp
-| Url | Lemmy | PieFed |
-|-----|-----|-----|
-| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ ||
-| [blorp.piefed.world](https://blorp.piefed.world) || ✅ |
-| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ ||
-| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ |
-| [b.feddit.uk](https://b.feddit.uk) | ✅ ||
-| [blorp.europe.pub](https://blorp.europe.pub) | ✅ ||
-| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ ||
-| [b.lazysoci.al](https://b.lazysoci.al) | ✅ ||
+| Url | Lemmy | PieFed | Version |
+|-----|-----|-----|----|
+| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.world/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.piefed.world](https://blorp.piefed.world) || ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.world/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.zip/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.zip/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [b.feddit.uk](https://b.feddit.uk) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.feddit.uk/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.europe.pub](https://blorp.europe.pub) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.europe.pub/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.nz/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [b.lazysoci.al](https://b.lazysoci.al) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lazysoci.al/package.json&query=%24.version&label=&cacheSeconds=300) |
 
 ## 🐳 Self host via Docker
 
