@@ -12,7 +12,7 @@
     "build": "vite build && cap sync && yarn cp-package-json",
     "build:tauri": "tauri build",
     "build:docker": "docker build . --tag blorp",
-    "cp-package-json": "cp ./package.json ./public/package.json",
+    "cp-package-json": "cp ./package.json ./dist/package.json",
     "test": "vitest --coverage",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --watch --coverage --ui",

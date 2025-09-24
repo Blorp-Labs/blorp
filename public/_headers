@@ -1,3 +1,6 @@
+/package.json
+  Cache-Control: no-store, must-revalidate
+
 /*
   Cache-Control: no-store
 
