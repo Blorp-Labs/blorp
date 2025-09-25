@@ -1,5 +1,8 @@
 import { useEffect, useId, useState } from "react";
-import { useSettingsStore } from "@/src/stores/settings";
+import {
+  POST_CARD_STYLE_OPTIONS,
+  useSettingsStore,
+} from "@/src/stores/settings";
 import { useLogout } from "@/src/lib/api/index";
 import { Account, parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { useRequireAuth } from "@/src/components/auth-context";
@@ -314,8 +317,11 @@ export default function SettingsPage() {
                   <SelectContent align="end">
                     <SelectGroup>
                       <SelectLabel>Display posts as</SelectLabel>
-                      <SelectItem value="large">Cards</SelectItem>
-                      <SelectItem value="small">Compact</SelectItem>
+                      {POST_CARD_STYLE_OPTIONS.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
