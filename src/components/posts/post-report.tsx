@@ -76,7 +76,7 @@ export function PostReportProvider({
         })
         .then(() => {
           setReason("");
-          setApId(undefined);
+          setCommentPath(undefined);
         });
     }
   };

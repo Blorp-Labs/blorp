@@ -2173,18 +2173,50 @@ export function useRemovePost() {
     },
     onSuccess: (_, { removed, apId }) => {
       patchPost(apId, getCachePrefixer(), {
-        optimisticFeaturedCommunity: undefined,
+        optimisticRemoved: undefined,
         removed,
       });
     },
     onError: (err, { removed, apId }) => {
       patchPost(apId, getCachePrefixer(), {
-        optimisticFeaturedCommunity: undefined,
+        optimisticRemoved: undefined,
       });
       if (isErrorLike(err)) {
         toast.error(extractErrorContent(err));
       } else {
         toast.error(`Couldn't ${removed ? "remove" : "restore"} post`);
+      }
+    },
+  });
+}
+
+export function useRemoveComment() {
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.RemoveComment & { path: string }) =>
+      (await api).removeComment(form),
+    onMutate: ({ removed, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticRemoved: removed,
+      }));
+    },
+    onSuccess: (_, { removed, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticRemoved: undefined,
+        removed,
+      }));
+    },
+    onError: (err, { removed, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticRemoved: undefined,
+      }));
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${removed ? "remove" : "restore"} comment`);
       }
     },
   });

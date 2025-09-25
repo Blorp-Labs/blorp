@@ -170,12 +170,15 @@ export default function Post() {
 
   const myUserId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.id;
+  const myUserApId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
+    ?.apId;
 
   useCommunity({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
   const modApIds = community?.mods?.map((m) => m.apId);
+  const canMod = myUserApId ? modApIds?.includes(myUserApId) : false;
   const postQuery = usePost({
     ap_id: decodedApId,
   });
@@ -357,6 +360,7 @@ export default function Post() {
                     modApIds={modApIds}
                     adminApIds={adminApIds}
                     singleCommentThread={!!commentPath}
+                    canMod={canMod}
                   />
                   {commentPath && <SafeAreaBottom />}
                 </>
