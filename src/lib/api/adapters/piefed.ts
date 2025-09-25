@@ -1757,6 +1757,14 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
   }
 
+  async removeComment(form: Forms.RemoveComment) {
+    await this.post("/comment/remove", {
+      comment_id: form.commentId,
+      removed: form.removed,
+      reason: form.reason,
+    });
+  }
+
   async blockPerson(form: Forms.BlockPerson) {
     await this.post("/user/block", {
       person_id: form.personId,

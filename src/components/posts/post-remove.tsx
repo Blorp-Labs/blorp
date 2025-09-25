@@ -1,11 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostsStore } from "@/src/stores/posts";
-import {
-  useCreatePostReport,
-  useCreateCommentReport,
-  useRemovePost,
-} from "@/src/lib/api";
+import { useRemoveComment, useRemovePost } from "@/src/lib/api";
 import { useCommentsStore } from "@/src/stores/comments";
 import {
   IonButton,
@@ -41,7 +37,7 @@ export function PostRemoveProvider({
   const [commentPath, setCommentPath] = useState<string | undefined>();
 
   const removePost = useRemovePost();
-  const createCommentReport = useCreateCommentReport();
+  const removeComment = useRemoveComment();
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -75,14 +71,16 @@ export function PostRemoveProvider({
           setApId(undefined);
         });
     } else if (comment) {
-      createCommentReport
+      removeComment
         .mutateAsync({
+          path: comment.data.path,
           commentId: comment.data.id,
           reason,
+          removed: !comment.data.removed,
         })
         .then(() => {
           setReason("");
-          setApId(undefined);
+          setCommentPath(undefined);
         });
     }
   };
