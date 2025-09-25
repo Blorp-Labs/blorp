@@ -10,7 +10,6 @@ import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { encodeApId } from "@/src/lib/api/utils";
 import { useLinkContext } from "../../routing/link-context";
-import { usePersonDetails } from "@/src/lib/api";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
@@ -38,10 +37,6 @@ export function PersonCard({
   const personView = useProfilesStore((s) =>
     actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
   );
-  usePersonDetails({
-    actorId,
-    enabled: !personView,
-  });
   const p = override ?? personView;
 
   if (!personView && !override) {

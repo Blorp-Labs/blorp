@@ -6,7 +6,6 @@ import {
 import { cn } from "@/src/lib/utils";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { usePersonDetails } from "@/src/lib/api";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 
 export function PersonAvatar({
@@ -24,11 +23,6 @@ export function PersonAvatar({
   const personView = useProfilesStore((s) =>
     actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
   );
-  usePersonDetails({
-    actorId,
-    enabled: !personView,
-  });
-
   return (
     <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8", className)}>
       <AvatarImage
