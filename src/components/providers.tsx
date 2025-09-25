@@ -106,6 +106,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       client={queryClient}
       persistOptions={{
         persister,
+        maxAge: MAX_CACHE_MS,
         buster: String(REACT_QUERY_CACHE_VERSON),
       }}
     >
