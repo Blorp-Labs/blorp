@@ -457,9 +457,21 @@ export namespace Forms {
     reason: string;
   };
 
+  export type RemovePost = {
+    postId: number;
+    reason?: string;
+    removed: boolean;
+  };
+
   export type CreateCommentReport = {
     commentId: number;
     reason: string;
+  };
+
+  export type RemoveComment = {
+    commentId: number;
+    reason: string;
+    removed: boolean;
   };
 
   export type BlockPerson = {
@@ -662,6 +674,10 @@ export abstract class ApiBlueprint<C> {
   abstract createPost(form: Forms.CreatePost): Promise<Schemas.Post>;
 
   abstract createPostReport(form: Forms.CreatePostReport): Promise<void>;
+
+  abstract removePost(form: Forms.RemovePost): Promise<Schemas.Post>;
+
+  abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

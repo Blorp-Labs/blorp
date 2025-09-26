@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostsStore } from "@/src/stores/posts";
-import { useCreatePostReport, useCreateCommentReport } from "@/src/lib/api";
+import { useRemoveComment, useRemovePost } from "@/src/lib/api";
 import { useCommentsStore } from "@/src/stores/comments";
 import {
   IonButton,
@@ -27,7 +27,7 @@ const Context = createContext<{
   setCommentPath: _.noop,
 });
 
-export function PostReportProvider({
+export function PostRemoveProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -36,8 +36,8 @@ export function PostReportProvider({
   const [apId, setApId] = useState<string | undefined>();
   const [commentPath, setCommentPath] = useState<string | undefined>();
 
-  const createPostReport = useCreatePostReport();
-  const createCommentReport = useCreateCommentReport();
+  const removePost = useRemovePost();
+  const removeComment = useRemoveComment();
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -59,20 +59,24 @@ export function PostReportProvider({
 
   const submit = () => {
     if (post) {
-      createPostReport
+      removePost
         .mutateAsync({
+          apId: post.apId,
           postId: post.id,
           reason,
+          removed: !post.removed,
         })
         .then(() => {
           setReason("");
           setApId(undefined);
         });
     } else if (comment) {
-      createCommentReport
+      removeComment
         .mutateAsync({
+          path: comment.data.path,
           commentId: comment.data.id,
           reason,
+          removed: !comment.data.removed,
         })
         .then(() => {
           setReason("");
@@ -101,7 +105,7 @@ export function PostReportProvider({
               <IonButton onClick={cancel}>Cancel</IonButton>
             </ToolbarButtons>
             <IonTitle>
-              Report {post && "Post"}
+              {post && `${post.removed ? "Restore" : "Remove"} Post`}
               {comment && "Comment"}
             </IonTitle>
             <ToolbarButtons side="right" className="md:hidden">
@@ -127,7 +131,7 @@ export function PostReportProvider({
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Report reason"
+                placeholder="Reason"
                 className="flex-1 min-h-[200px]"
               />
 
@@ -152,10 +156,10 @@ export function PostReportProvider({
   );
 }
 
-export function useShowPostReportModal() {
+export function useShowPostRemoveModal() {
   return useContext(Context).setApId;
 }
 
-export function useShowCommentReportModal() {
+export function useShowCommentRemoveModal() {
   return useContext(Context).setCommentPath;
 }
