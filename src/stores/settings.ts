@@ -4,9 +4,29 @@ import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 import _ from "lodash";
 
+type PostCardStyle = "small" | "large" | "extra-small";
+
+export const POST_CARD_STYLE_OPTIONS: {
+  label: string;
+  value: PostCardStyle;
+}[] = [
+  {
+    value: "large",
+    label: "Card",
+  },
+  {
+    value: "small",
+    label: "Compact",
+  },
+  {
+    value: "extra-small",
+    label: "Extra Compact",
+  },
+];
+
 type SettingsStore = {
-  postCardStyle: "small" | "large";
-  setPostCardStyle: (newVal: "small" | "large") => any;
+  postCardStyle: PostCardStyle;
+  setPostCardStyle: (newVal: PostCardStyle) => any;
   leftHandedMode: boolean;
   setLeftHandedMode: (newVal: boolean) => any;
   showMarkdown: boolean;

@@ -21,7 +21,7 @@ import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { useAvailableSorts } from "../lib/api";
-import { useSettingsStore } from "../stores/settings";
+import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
   return str.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -364,18 +364,11 @@ export function PostCardStyleButton({
     <ActionMenu
       header="Display posts as"
       align={align}
-      actions={[
-        {
-          text: "Card",
-          value: "large",
-          onClick: () => setPostCardStyle("large"),
-        },
-        {
-          text: "Compact",
-          value: "small",
-          onClick: () => setPostCardStyle("small"),
-        },
-      ]}
+      actions={POST_CARD_STYLE_OPTIONS.map(({ label, value }) => ({
+        text: label,
+        value,
+        onClick: () => setPostCardStyle(value),
+      }))}
       selectedValue={postCardStyle}
       triggerAsChild={variant === "button"}
       trigger={
