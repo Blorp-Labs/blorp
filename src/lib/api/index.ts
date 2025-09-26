@@ -1106,6 +1106,7 @@ export function useCreateComment() {
   const myProfile = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
   const commentSort = useFiltersStore((s) => s.commentSort);
   const cacheComments = useCommentsStore((s) => s.cacheComments);
+  const patchComment = useCommentsStore((s) => s.patchComment);
   const markCommentForRemoval = useCommentsStore(
     (s) => s.markCommentForRemoval,
   );
@@ -1114,10 +1115,70 @@ export function useCreateComment() {
 
   const getCommentsKey = useCommentsKey();
 
+  const patchReactQuery = ({
+    sorts,
+    postApId,
+    queryKeyParentId,
+    patchFn,
+  }: {
+    sorts: string[] | Readonly<string[]>;
+    postApId: string;
+    queryKeyParentId?: number;
+    patchFn: (comments?: string[]) => string[] | undefined;
+  }) => {
+    sort: for (const sort of sorts) {
+      const form: Forms.GetComments = {
+        postApId,
+        parentId: queryKeyParentId,
+        sort,
+      };
+
+      let comments = queryClient.getQueryData<
+        InfiniteData<
+          {
+            comments: string[];
+            nextPage: number | null;
+          },
+          unknown
+        >
+      >(getCommentsKey(form));
+
+      if (!comments) {
+        // TODO: I think we have to trigger an API fetch here
+        continue;
+      }
+
+      comments = _.cloneDeep(comments);
+
+      // Technically we can skip this if we are removing
+      // the comment from the cache
+      for (const p of comments.pages) {
+        const output = patchFn(p.comments);
+        if (output) {
+          p.comments = output;
+          queryClient.setQueryData(getCommentsKey(form), comments);
+          continue sort;
+        }
+      }
+
+      // If we're here then we didn't find the optimistic comment
+      const firstPage = comments.pages[0];
+      if (!firstPage) {
+        // TODO: I think we have to trigger an API fetch here
+        continue;
+      }
+      const newComment = patchFn();
+      if (firstPage && newComment) {
+        firstPage.comments.unshift(...newComment);
+      }
+      queryClient.setQueryData(getCommentsKey(form), comments);
+    }
+  };
+
   return useMutation({
     mutationFn: async ({
-      parentPath,
-      queryKeyParentId,
+      parentPath: _1,
+      queryKeyParentId: _2,
       ...form
     }: CreateComment) => {
       const newComment = await (await api).createComment(form);
@@ -1156,34 +1217,25 @@ export function useCreateComment() {
 
       cacheComments(getCachePrefixer(), [newComment]);
 
-      const form: Forms.GetComments = {
-        postApId,
-        parentId: queryKeyParentId,
-        sort: commentSort,
+      const newReactQueryItem = {
+        path: newComment.path,
+        creatorId: newComment.creatorId,
+        postId: newComment.postId,
+        createdAt: newComment.createdAt,
       };
 
-      let comments = queryClient.getQueryData<
-        InfiniteData<
-          {
-            comments: string[];
-            nextPage: number | null;
-          },
-          unknown
-        >
-      >(getCommentsKey(form));
-
-      if (!comments) {
-        return;
-      }
-
-      comments = _.cloneDeep(comments);
-
-      const firstPage = comments.pages[0];
-      if (firstPage) {
-        firstPage.comments.unshift(newComment.path);
-      }
-
-      queryClient.setQueryData(getCommentsKey(form), comments);
+      patchReactQuery({
+        postApId,
+        queryKeyParentId,
+        sorts: [commentSort],
+        patchFn: (comments) => {
+          if (comments) {
+            return [newReactQueryItem.path, ...comments];
+          } else {
+            return [newReactQueryItem.path];
+          }
+        },
+      });
 
       return newComment;
     },
@@ -1198,51 +1250,39 @@ export function useCreateComment() {
       markCommentForRemoval(ctx.path, getCachePrefixer());
       cacheComments(getCachePrefixer(), [newComment]);
 
-      sort: for (const sort of sorts) {
-        const form: Forms.GetComments = {
-          postApId,
-          parentId: queryKeyParentId,
-          sort,
-        };
-
-        let comments = queryClient.getQueryData<
-          InfiniteData<
-            {
-              comments: string[];
-              nextPage: number | null;
-            },
-            unknown
-          >
-        >(getCommentsKey(form));
-
-        if (!comments) {
-          // TODO: I think we have to trigger an API fetch here
-          continue;
-        }
-
-        comments = _.cloneDeep(comments);
-
-        // Technically we can skip this if we are removing
-        // the comment from the cache
-        for (const p of comments.pages) {
-          const index = p.comments.findIndex((p) => p === ctx.path);
-          if (index >= 0) {
-            p.comments[index] = settledComment.path;
-            queryClient.setQueryData(getCommentsKey(form), comments);
-            continue sort;
+      patchReactQuery({
+        postApId,
+        queryKeyParentId,
+        sorts,
+        patchFn: (comments) => {
+          if (comments) {
+            const index = comments.findIndex((p) => p === ctx.path);
+            if (index >= 0) {
+              const clone = [...comments];
+              clone[index] = settledComment.path;
+              return clone;
+            }
+          } else {
+            return [settledComment.path];
           }
-        }
-
-        // If we're here then we didn't find the optimistic comment
-        const firstPage = comments.pages[0];
-        if (!firstPage) {
-          // TODO: I think we have to trigger an API fetch here
-          continue;
-        }
-        if (firstPage) {
-          firstPage.comments.unshift(settledComment.path);
-        }
-        queryClient.setQueryData(getCommentsKey(form), comments);
+        },
+      });
+    },
+    onError: (_1, { postApId, queryKeyParentId }, ctx) => {
+      if (ctx) {
+        patchReactQuery({
+          postApId,
+          queryKeyParentId,
+          sorts: [commentSort],
+          patchFn: (comments) => {
+            if (comments) {
+              const index = comments.findIndex((p) => p === ctx.path);
+              if (index >= 0) {
+                return comments.filter((p) => p !== ctx.path);
+              }
+            }
+          },
+        });
       }
     },
   });
