@@ -102,8 +102,10 @@ function LargePostCardSkeleton(props: {
         <Skeleton className="aspect-video max-md:-mx-3.5 max-md:rounded-none" />
       )}
 
-      <div className="flex flex-row justify-end gap-2">
-        <Skeleton className="h-7 w-10 rounded-full" />
+      <div className="flex flex-row gap-2">
+        <Skeleton className="h-7 w-20 rounded-full" />
+        <div className="flex-1" />
+        <Skeleton className="h-7 w-12 rounded-full" />
         <Skeleton className="h-7 w-16 rounded-full" />
       </div>
 
@@ -130,12 +132,12 @@ function SmallPostCardSkeleton(props: {
             hideImage && "max-md:pl-3.5",
           )}
         >
-          <div className="flex flex-row items-center gap-2 h-6">
+          <div className="flex flex-row items-center gap-2 h-7">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-32" />
           </div>
 
-          <Skeleton className="h-7" />
+          <Skeleton className="h-6" />
 
           <div className="flex-1" />
 
@@ -153,25 +155,23 @@ function SmallPostCardSkeleton(props: {
 function ExtraSmallPostCardSkeleton() {
   return (
     <div>
-      <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
-        <div
-          className={cn(
-            "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
-          )}
-        >
-          <Skeleton className="h-7" />
+      <div
+        className={cn(
+          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:px-3.5 md:py-2",
+        )}
+      >
+        <Skeleton className="h-6" />
 
-          <div className="flex-1" />
+        <div className="flex-1" />
 
-          <div className="flex flex-row justify-end gap-2">
-            <div className="flex flex-row items-center gap-2 h-6">
-              <Skeleton className="h-6 w-6 rounded-full" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <div className="flex-1" />
-            <Skeleton className="h-7 w-10 rounded-full" />
-            <Skeleton className="h-7 w-16 rounded-full" />
+        <div className="flex flex-row justify-end gap-2">
+          <div className="flex flex-row items-center gap-2 h-6">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-3 w-32" />
           </div>
+          <div className="flex-1" />
+          <Skeleton className="h-7 w-10 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-full" />
         </div>
       </div>
       <Separator className="w-auto!" />
