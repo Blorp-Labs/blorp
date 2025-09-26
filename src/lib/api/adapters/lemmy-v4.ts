@@ -13,6 +13,7 @@ import { createSlug } from "../utils";
 import _ from "lodash";
 import z from "zod";
 import { isErrorLike } from "../../utils";
+import { getIdFromLocalApId } from "./lemmy-common";
 
 const POST_SORTS: lemmyV4.PostSortType[] = [
   "Hot",
@@ -199,6 +200,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
   private resolveObjectId = _.memoize(
     async (apId: string) => {
+      // This shortcut only works for local objects
+      if (apId.startsWith(this.instance)) {
+        const local = getIdFromLocalApId(apId);
+        if (local) {
+          return local;
+        }
+      }
+
       // @ts-expect-error
       const { post, comment, community, person } =
         await this.client.resolveObject({

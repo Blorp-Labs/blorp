@@ -13,6 +13,7 @@ import { createSlug } from "../utils";
 import _ from "lodash";
 import z from "zod";
 import { isErrorLike } from "../../utils";
+import { getIdFromLocalApId } from "./lemmy-common";
 
 function is2faError(err?: Error | null) {
   if (!err) {
@@ -318,6 +319,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
   private resolveObjectId = _.memoize(
     async (apId: string) => {
+      // This shortcut only works for local objects
+      if (apId.startsWith(this.instance)) {
+        const local = getIdFromLocalApId(apId);
+        if (local) {
+          return local;
+        }
+      }
+
       const { post, comment, community, person } =
         await this.client.resolveObject({
           q: apId,
@@ -333,8 +342,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   );
 
   constructor({ instance, jwt }: { instance: string; jwt?: string }) {
-    this.instance = instance;
-    this.client = new lemmyV3.LemmyHttp(instance.replace(/\/$/, ""), {
+    this.instance = instance.replace(/\/$/, "");
+    this.client = new lemmyV3.LemmyHttp(this.instance, {
       headers: DEFAULT_HEADERS,
       fetchFunction: (arg1, arg2) =>
         fetch(arg1, {

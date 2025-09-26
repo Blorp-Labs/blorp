@@ -52,6 +52,26 @@ const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
 
+export function getIdFromLocalApId(apId: string) {
+  try {
+    const pathname = new URL(apId).pathname;
+    const id = pathname.match(/^\/(post|comment)\/([0-9]+)$/)?.[2];
+    const RESOLVED = {
+      post_Id: undefined,
+      comment_id: undefined,
+      community_id: undefined,
+      person_id: undefined,
+    };
+    if (id && pathname.startsWith("/post/")) {
+      return {
+        ...RESOLVED,
+        post_id: _.parseInt(id),
+      };
+    }
+  } catch {}
+  return null;
+}
+
 const pieFedFlairSchema = z.object({
   background_color: z.string().optional().nullable(),
   // blur_images: false,
@@ -780,6 +800,14 @@ export class PieFedApi implements ApiBlueprint<null> {
 
   private resolveObjectId = _.memoize(
     async (apId: string) => {
+      // This shortcut only works for local objects
+      if (apId.startsWith(this.instance)) {
+        const local = getIdFromLocalApId(apId);
+        if (local) {
+          return local;
+        }
+      }
+
       const json = await this.get("/resolve_object", {
         q: apId,
       });
@@ -822,7 +850,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   );
 
   constructor({ instance, jwt }: { instance: string; jwt?: string }) {
-    this.instance = instance;
+    this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
   }
 
