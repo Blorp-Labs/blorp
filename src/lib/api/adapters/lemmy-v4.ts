@@ -709,11 +709,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async removePost(form: Forms.RemovePost) {
-    await this.client.removePost({
+    const { post_view } = await this.client.removePost({
       post_id: form.postId,
       removed: form.removed,
       reason: form.reason,
     });
+    return convertPost(post_view);
   }
 
   async createCommentReport(form: Forms.CreateCommentReport) {

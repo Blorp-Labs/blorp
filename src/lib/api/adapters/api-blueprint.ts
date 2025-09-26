@@ -675,7 +675,7 @@ export abstract class ApiBlueprint<C> {
 
   abstract createPostReport(form: Forms.CreatePostReport): Promise<void>;
 
-  abstract removePost(form: Forms.RemovePost): Promise<void>;
+  abstract removePost(form: Forms.RemovePost): Promise<Schemas.Post>;
 
   abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
 
