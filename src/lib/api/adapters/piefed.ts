@@ -1758,11 +1758,17 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async removeComment(form: Forms.RemoveComment) {
-    await this.post("/comment/remove", {
+    const json = await this.post("/comment/remove", {
       comment_id: form.commentId,
       removed: form.removed,
       reason: form.reason,
     });
+    const { comment_view } = z
+      .object({
+        comment_view: pieFedCommentViewSchema,
+      })
+      .parse(json);
+    return convertComment(comment_view);
   }
 
   async blockPerson(form: Forms.BlockPerson) {

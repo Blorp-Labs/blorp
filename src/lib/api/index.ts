@@ -2193,6 +2193,7 @@ export function useRemovePost() {
 export function useRemoveComment() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   return useMutation({
@@ -2203,12 +2204,8 @@ export function useRemoveComment() {
         optimisticRemoved: removed,
       }));
     },
-    onSuccess: (_, { removed, path }) => {
-      patchComment(path, getCachePrefixer(), () => ({
-        optimisticRemoved: undefined,
-        removed,
-      }));
-    },
+    onSuccess: (commentView) =>
+      cacheComments(getCachePrefixer(), [commentView]),
     onError: (err, { removed, path }) => {
       patchComment(path, getCachePrefixer(), () => ({
         optimisticRemoved: undefined,

@@ -724,11 +724,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async removeComment(form: Forms.RemoveComment) {
-    await this.client.removeComment({
+    const { comment_view } = await this.client.removeComment({
       comment_id: form.commentId,
       removed: form.removed,
       reason: form.reason,
     });
+    return convertComment(comment_view);
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {
