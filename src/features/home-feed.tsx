@@ -172,7 +172,7 @@ export default function HomeFeed() {
     isRefetching,
   } = posts;
 
-  const mostRecentPostApId = mostRecentPost?.data?.post.apId;
+  const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const hasNewPost = usePostsStore((s) =>
     mostRecentPostApId

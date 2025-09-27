@@ -411,33 +411,32 @@ export function useMostRecentPost(
     ...form,
   } satisfies Forms.GetPosts;
 
-  const query = useQuery({
-    queryKey: [...queryKeyPrefix, "mostRecentPost", form],
-    queryFn: async ({ signal }) =>
-      (await api).getPosts(
+  return useQuery({
+    queryKey: [...queryKeyPrefix, "mostRecentPost", featuredContext, form],
+    queryFn: async ({ signal }) => {
+      const { posts } = await (
+        await api
+      ).getPosts(
         {
           ...form,
           sort: form.sort as any,
           type: form.type,
         },
         { signal },
-      ),
+      );
+      return posts?.find(({ post }) => {
+        switch (featuredContext) {
+          case "local":
+            return !post.featuredLocal;
+          case "community":
+            return !post.featuredCommunity;
+        }
+      })?.post.apId;
+    },
     refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
-
-  return {
-    ...query,
-    data: query.data?.posts?.find(({ post }) => {
-      switch (featuredContext) {
-        case "local":
-          return !post.featuredLocal;
-        case "community":
-          return !post.featuredCommunity;
-      }
-    }),
-  };
 }
 
 export function usePosts(form: Forms.GetPosts) {
