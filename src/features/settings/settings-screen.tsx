@@ -42,87 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import {
-  dehydrate,
-  type QueryClient,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
-
-function timestampName(base = "react-query-cache") {
-  const dt = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const name = `${base}-${dt.getFullYear()}${pad(dt.getMonth() + 1)}${pad(dt.getDate())}-${pad(dt.getHours())}${pad(dt.getMinutes())}${pad(dt.getSeconds())}.json`;
-  return name;
-}
-
-export async function saveReactQueryCache(
-  queryClient: QueryClient,
-  opts?: {
-    filename?: string; // default: timestamped .json
-    directory?: Directory; // default: Directory.Documents
-    alsoShare?: boolean; // default: false
-    androidToDownloads?: boolean; // put it in Downloads on Android
-  },
-) {
-  const dehydrated = dehydrate(queryClient);
-  const json = JSON.stringify(dehydrated, null, 2);
-
-  const platform = Capacitor.getPlatform(); // 'ios' | 'android' | 'web'
-  const filename =
-    opts?.filename && opts.filename.endsWith(".json")
-      ? opts.filename
-      : opts?.filename
-        ? `${opts.filename}.json`
-        : timestampName();
-
-  // Choose where to save
-  let directory = opts?.directory ?? Directory.Documents;
-  let path = filename;
-
-  // If you specifically want Android "Downloads", use ExternalStorage + "Download/..."
-  if (platform === "android" && opts?.androidToDownloads) {
-    directory = Directory.ExternalStorage; // Android only
-    path = `Download/${filename}`; // shows up under the Downloads app/folder
-  }
-
-  if (Capacitor.isNativePlatform()) {
-    // Write the file natively
-    await Filesystem.writeFile({
-      path,
-      data: json,
-      directory,
-      encoding: Encoding.UTF8,
-      // recursive: true, // uncomment if your path has nested folders and your plugin version supports it
-    });
-
-    // Optional: open the share sheet so users can export it out of the sandbox
-    if (opts?.alsoShare) {
-      const { uri } = await Filesystem.getUri({ path, directory });
-      await Share.share({
-        title: "React Query Cache",
-        text: "Exported TanStack Query cache",
-        url: uri, // file/content URI for iOS/Android
-        dialogTitle: "Share cache file",
-      });
-    }
-
-    return { path, directory };
-  }
-
-  // Web fallback (when running in browser)
-  const blob = new Blob([json], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-
-  return { path: filename, directory: "web-download" as any };
-}
 
 const version =
   _.isObject(pkgJson) && "version" in pkgJson ? pkgJson.version : undefined;
@@ -351,8 +270,6 @@ export default function SettingsPage() {
 
   const keywords = [...filterKeywords, ""];
 
-  const queryClient = useQueryClient();
-
   return (
     <IonPage>
       <PageTitle>Settings</PageTitle>
@@ -370,15 +287,6 @@ export default function SettingsPage() {
       <IonContent fullscreen={true}>
         <ContentGutters className="pt-4 pb-12 max-md:px-3.5">
           <div className="flex-1 gap-9 flex flex-col">
-            <button
-              onClick={() =>
-                saveReactQueryCache(queryClient, {
-                  alsoShare: true,
-                })
-              }
-            >
-              Download react query cache
-            </button>
             <AccountSection />
 
             <Section title="ACCESSIBILITY">
