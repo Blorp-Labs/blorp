@@ -377,14 +377,11 @@ function useLightboxPostFeedData({
     }
 
     if (missingPost) {
-      return [
-        ...(initPostQuery.data ? [initPostQuery.data.apId] : []),
-        ...posts,
-      ];
+      return [...(initPostApId ? [initPostApId] : []), ...posts];
     }
 
     return posts;
-  }, [missingPost, initPostQuery.data, initPostQuery.isPending, posts]);
+  }, [missingPost, initPostApId, initPostQuery.isPending, posts]);
 
   return {
     data,

@@ -287,7 +287,7 @@ export function usePost({
         cacheFlairs(getCachePrefixer(), flairs);
       }
 
-      return post;
+      return {};
     },
     retry: (count, err) => {
       const notFound = err.message === Errors2.OBJECT_NOT_FOUND;
