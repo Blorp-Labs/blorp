@@ -6,6 +6,8 @@ import { MAX_CACHE_MS } from "./config";
 import { CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
+import { useShallow } from "zustand/shallow";
+import { isNotNil } from "../lib/utils";
 
 type Data = {
   communityView: Schemas.Community;
@@ -196,5 +198,16 @@ export function useCommunityFromStore(communitySlug?: string) {
     communitySlug
       ? s.communities[cachePrefixer()(communitySlug)]?.data
       : undefined,
+  );
+}
+
+export function useCommunitiesFromStore(communitySlug?: string[]) {
+  const cachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return useCommunitiesStore(
+    useShallow((s) =>
+      communitySlug
+        ?.map((slug) => s.communities[cachePrefixer()(slug)]?.data)
+        .filter(isNotNil),
+    ),
   );
 }

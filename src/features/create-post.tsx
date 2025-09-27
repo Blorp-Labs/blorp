@@ -58,6 +58,7 @@ import { getAccountActorId, useAuth } from "../stores/auth";
 import { usePathname } from "../routing/hooks";
 import { Sidebar, SidebarContent } from "../components/sidebar";
 import {
+  useCommunitiesFromStore,
   useCommunitiesStore,
   useCommunityFromStore,
 } from "../stores/communities";
@@ -532,10 +533,11 @@ function ChooseCommunity({
   const subscribedCommunitiesRes = useListCommunities({
     type: "Subscribed",
   });
-  const subscribedCommunities =
+  const subscribedCommunities = useCommunitiesFromStore(
     subscribedCommunitiesRes.data?.pages
       .flatMap((p) => p.communities)
-      .sort((a, b) => a.slug.localeCompare(b.slug)) ?? EMPTY_ARR;
+      .sort((a, b) => a.localeCompare(b)) ?? EMPTY_ARR,
+  );
 
   const searchResultsRes = useSearch({
     q: search,
@@ -568,8 +570,11 @@ function ChooseCommunity({
     data.push("Recent", ...recentCommunities.recentlyVisited.slice(0, 5));
   }
 
-  if (recentCommunities.recentlyVisited.length > 0) {
-    data.push("Subscribed", ...subscribedCommunities);
+  if (subscribedCommunities && recentCommunities.recentlyVisited.length > 0) {
+    data.push(
+      "Subscribed",
+      ...subscribedCommunities.map((c) => ({ slug: c.communityView.slug })),
+    );
   }
 
   if (search || searchFocused) {

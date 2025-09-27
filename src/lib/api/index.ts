@@ -581,7 +581,7 @@ export function useListCommunities(form: Forms.GetCommunities) {
         communities.map((communityView) => ({ communityView })),
       );
       return {
-        communities,
+        communities: communities.map((c) => c.slug),
         nextPage: nextCursor,
       };
     },
