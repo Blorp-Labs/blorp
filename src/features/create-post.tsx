@@ -57,12 +57,16 @@ import { usePostsStore } from "../stores/posts";
 import { getAccountActorId, useAuth } from "../stores/auth";
 import { usePathname } from "../routing/hooks";
 import { Sidebar, SidebarContent } from "../components/sidebar";
-import { useCommunitiesStore } from "../stores/communities";
+import {
+  useCommunitiesStore,
+  useCommunityFromStore,
+} from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Flair } from "../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
+import { useFlairs } from "../stores/flairs";
 
 dayjs.extend(localizedFormat);
 
@@ -200,12 +204,12 @@ export function CreatePost() {
 
   useLoadRecentCommunity(draftId, draft);
 
-  const community = useCommunity({
+  useCommunity({
     name: draft.communitySlug,
   });
-  const flairLookup = useFlairLookup(community.data?.flairs);
-
-  const flairs = community.data?.flairs;
+  const community = useCommunityFromStore(draft.communitySlug);
+  const flairs = useFlairs(community?.flairs?.map((f) => f.id));
+  const flairLookup = useFlairLookup(flairs);
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>

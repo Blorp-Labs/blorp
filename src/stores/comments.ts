@@ -3,8 +3,10 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CachePrefixer } from "./auth";
+import { CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { useShallow } from "zustand/shallow";
+import { isNotNil } from "../lib/utils";
 
 type CachedComment = {
   data: Schemas.Comment;
@@ -139,3 +141,12 @@ export const useCommentsStore = create<SortsStore>()(
 );
 
 sync(useCommentsStore);
+
+export function useCommentsByPaths(ps: string[]) {
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return useCommentsStore(
+    useShallow((s) =>
+      ps.map((p) => s.comments[getCachePrefixer()(p)]?.data).filter(isNotNil),
+    ),
+  );
+}

@@ -48,6 +48,8 @@ import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { cn } from "../lib/utils";
 import { SearchBar } from "./search/search-bar";
+import { useCommentsByPaths } from "../stores/comments";
+import { useCommunityFromStore } from "../stores/communities";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -169,10 +171,11 @@ export default function Post() {
   const myUserId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.id;
 
-  const community = useCommunity({
+  useCommunity({
     name: communityName,
   });
-  const modApIds = community.data?.mods.map((m) => m.apId);
+  const community = useCommunityFromStore(communityName);
+  const modApIds = community?.mods?.map((m) => m.apId);
   const postQuery = usePost({
     ap_id: decodedApId,
   });
@@ -195,13 +198,15 @@ export default function Post() {
 
   const isReady = useDelayedReady(500);
 
-  const allComments = useMemo(
+  const allCommentPaths = useMemo(
     () =>
       comments.data?.pages && isReady
         ? comments.data.pages.map((p) => p.comments).flat()
         : EMPTY_ARR,
     [comments.data?.pages, isReady],
   );
+
+  const allComments = useCommentsByPaths(allCommentPaths);
 
   const structured = useMemo(() => {
     if (!isReady) {
@@ -388,7 +393,7 @@ export default function Post() {
           {communityName && (
             <CommunitySidebar
               communityName={communityName}
-              actorId={community.data?.community.apId}
+              actorId={community?.communityView.apId}
             />
           )}
         </ContentGutters>

@@ -43,6 +43,7 @@ import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
+import { useCommunityFromStore } from "../stores/communities";
 
 const EMPTY_ARR: never[] = [];
 
@@ -84,20 +85,21 @@ export default function CommunityFeed() {
     communitySlug: communityName,
   });
 
-  const community = useCommunity({
+  useCommunity({
     name: communityName,
   });
+  const community = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
-
-  const modApIds = community.data?.mods.map((m) => m.apId);
 
   const updateRecent = useRecentCommunitiesStore((s) => s.update);
 
+  const modApIds = community?.mods?.map((m) => m.apId);
+
   useEffect(() => {
-    if (community.data) {
-      updateRecent(community.data.community);
+    if (community?.communityView) {
+      updateRecent(community.communityView);
     }
-  }, [community.data, updateRecent]);
+  }, [community?.communityView, updateRecent]);
 
   const {
     hasNextPage,
@@ -220,7 +222,7 @@ export default function CommunityFeed() {
               <Fragment key="community-header">
                 <SmallScreenSidebar
                   communityName={communityName}
-                  actorId={community.data?.community.apId}
+                  actorId={community?.communityView.apId}
                 />
                 <ContentGutters className="max-md:hidden pt-4">
                   <CommunityBanner communityName={communityName} />
@@ -284,7 +286,7 @@ export default function CommunityFeed() {
           {communityName && (
             <CommunitySidebar
               communityName={communityName}
-              actorId={community.data?.community.apId}
+              actorId={community?.communityView.apId}
             />
           )}
         </ContentGutters>

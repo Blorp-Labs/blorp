@@ -44,6 +44,7 @@ import { RecentSearchesSidebar } from "./recent-searches-sidebar";
 import { useSearchStore } from "@/src/stores/search";
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
+import { useCommunityFromStore } from "@/src/stores/communities";
 
 const EMPTY_ARR: never[] = [];
 
@@ -210,9 +211,10 @@ export default function SearchFeed({
 
   const postSort = useFiltersStore((s) => s.postSort);
 
-  const community = useCommunity({
+  useCommunity({
     name: communityName,
   });
+  const community = useCommunityFromStore(communityName);
 
   let type_: SearchType;
   switch (type) {
@@ -466,7 +468,7 @@ export default function SearchFeed({
           {communityName ? (
             <CommunitySidebar
               communityName={communityName}
-              actorId={community.data?.community.apId}
+              actorId={community?.communityView.apId}
             />
           ) : (
             <RecentSearchesSidebar

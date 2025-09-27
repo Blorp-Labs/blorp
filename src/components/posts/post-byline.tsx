@@ -165,13 +165,7 @@ export function usePostActions({
             text: "Edit post",
             onClick: () => {
               if (post) {
-                updateDraft(
-                  post.apId,
-                  postToDraft(
-                    post,
-                    flairs?.map((f) => f.data),
-                  ),
-                );
+                updateDraft(post.apId, postToDraft(post, flairs));
                 router.push(`/create?id=${encodedApId}`);
               }
             },

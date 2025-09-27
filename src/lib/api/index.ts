@@ -21,7 +21,6 @@ import { useCommentsStore } from "../../stores/comments";
 import { useCommunitiesStore } from "../../stores/communities";
 import { lemmyTimestamp } from "./utils";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { useIonRouter } from "@ionic/react";
 import { toast } from "sonner";
 import {
   Draft,
@@ -365,7 +364,7 @@ export function useComments(form: Forms.GetComments) {
       cacheProfiles(getCachePrefixer(), creators);
 
       return {
-        comments,
+        comments: comments.map((c) => c.path),
         nextCursor,
       };
     },
@@ -636,7 +635,7 @@ export function useCommunity({
       if (res.flairs) {
         cacheFlairs(getCachePrefixer(), res.flairs);
       }
-      return res;
+      return {};
     },
     enabled: !!form.name && enabled,
     staleTime: 1000 * 60 * 5,
@@ -1164,12 +1163,7 @@ export function useCreateComment() {
       let comments = queryClient.getQueryData<
         InfiniteData<
           {
-            comments: {
-              path: string;
-              postId: number;
-              creatorId: number;
-              createdAt: string;
-            }[];
+            comments: string[];
             nextPage: number | null;
           },
           unknown
@@ -1184,12 +1178,7 @@ export function useCreateComment() {
 
       const firstPage = comments.pages[0];
       if (firstPage) {
-        firstPage.comments.unshift({
-          path: newComment.path,
-          creatorId: newComment.creatorId,
-          postId: newComment.postId,
-          createdAt: newComment.createdAt,
-        });
+        firstPage.comments.unshift(newComment.path);
       }
 
       queryClient.setQueryData(getCommentsKey(form), comments);
@@ -1217,12 +1206,7 @@ export function useCreateComment() {
         let comments = queryClient.getQueryData<
           InfiniteData<
             {
-              comments: {
-                path: string;
-                postId: number;
-                creatorId: number;
-                createdAt: string;
-              }[];
+              comments: string[];
               nextPage: number | null;
             },
             unknown
@@ -1239,9 +1223,9 @@ export function useCreateComment() {
         // Technically we can skip this if we are removing
         // the comment from the cache
         for (const p of comments.pages) {
-          const index = p.comments.findIndex((c) => c.path === ctx.path);
+          const index = p.comments.findIndex((p) => p === ctx.path);
           if (index >= 0) {
-            p.comments[index] = settledComment;
+            p.comments[index] = settledComment.path;
             queryClient.setQueryData(getCommentsKey(form), comments);
             continue sort;
           }
@@ -1254,7 +1238,7 @@ export function useCreateComment() {
           continue;
         }
         if (firstPage) {
-          firstPage.comments.unshift(settledComment);
+          firstPage.comments.unshift(settledComment.path);
         }
         queryClient.setQueryData(getCommentsKey(form), comments);
       }

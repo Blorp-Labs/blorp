@@ -117,7 +117,7 @@ export function useFlairs(flairIds?: number[]) {
     useShallow((s) =>
       flairIds
         ? flairIds
-            .map((id) => s.flairs[getCachePrefixer()(id)])
+            .map((id) => s.flairs[getCachePrefixer()(id)]?.data)
             .filter(isNotNil)
         : null,
     ),

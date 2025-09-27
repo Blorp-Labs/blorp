@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CachePrefixer } from "./auth";
+import { CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 
@@ -189,3 +189,12 @@ export const useCommunitiesStore = create<CommunityStore>()(
 );
 
 sync(useCommunitiesStore);
+
+export function useCommunityFromStore(communitySlug?: string) {
+  const cachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return useCommunitiesStore((s) =>
+    communitySlug
+      ? s.communities[cachePrefixer()(communitySlug)]?.data
+      : undefined,
+  );
+}
