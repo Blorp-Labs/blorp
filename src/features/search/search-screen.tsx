@@ -29,7 +29,6 @@ import { PostReportProvider } from "@/src/components/posts/post-report";
 import z from "zod";
 import { PersonCard } from "@/src/components/person/person-card";
 import { useLinkContext } from "@/src/routing/link-context";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { BadgeIcon } from "@/src/components/badge-count";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
@@ -45,11 +44,12 @@ import { useSearchStore } from "@/src/stores/search";
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
+import { useCommentsByPaths } from "@/src/stores/comments";
 
 const EMPTY_ARR: never[] = [];
 
 const NO_ITEMS = "NO_ITEMS";
-type Item = string | Schemas.Comment;
+type Item = string;
 
 function SearchHistoryItem({
   search,
@@ -89,8 +89,14 @@ const Post = memo((props: PostProps) => (
   </ContentGutters>
 ));
 
-function Comment({ comment }: { comment: Schemas.Comment }) {
+function Comment({ commentPath }: { commentPath: string }) {
+  const [comment] = useCommentsByPaths([commentPath]);
   const linkCtx = useLinkContext();
+
+  if (!comment) {
+    return null;
+  }
+
   const path = comment.path.split(".");
   const parent = path.at(-2);
   const newPath = [parent !== "0" ? parent : undefined, comment.id]
@@ -399,10 +405,6 @@ export default function SearchFeed({
                 );
               }
 
-              if (!_.isString(item)) {
-                return <Comment comment={item} />;
-              }
-
               if (item === NO_ITEMS) {
                 return (
                   <ContentGutters>
@@ -412,6 +414,10 @@ export default function SearchFeed({
                     <></>
                   </ContentGutters>
                 );
+              }
+
+              if (type === "comments") {
+                return <Comment commentPath={item} />;
               }
 
               if (type === "posts") {

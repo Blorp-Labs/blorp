@@ -600,6 +600,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         [
           ...users.map(convertPerson),
           ...posts.map((p) => convertPerson({ person: p.creator })),
+          ...comments.map((p) => convertPerson({ person: p.creator })),
         ],
         (u) => u.apId,
       ),

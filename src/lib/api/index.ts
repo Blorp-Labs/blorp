@@ -1643,6 +1643,7 @@ export function useSearch(form: Forms.Search) {
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cachePosts = usePostsStore((s) => s.cachePosts);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   return useThrottledInfiniteQuery({
@@ -1664,11 +1665,12 @@ export function useSearch(form: Forms.Search) {
       );
       cacheProfiles(getCachePrefixer(), users);
       cachePosts(getCachePrefixer(), posts);
+      cacheComments(getCachePrefixer(), comments);
 
       return {
         communities: communities.map((c) => c.slug),
         posts: posts.map((p) => p.apId),
-        comments,
+        comments: comments.map((c) => c.path),
         users: users.map((u) => u.apId),
         next_page: nextCursor,
       };
