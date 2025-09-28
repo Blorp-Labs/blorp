@@ -80,6 +80,7 @@ export function ActionMenu<V extends string>({
         ...actions.map((a, index) => ({
           text: a.text,
           data: index,
+          cssClass: a.actions ? "detail" : undefined,
           role: a.danger
             ? "destructive"
             : _.isString(a.value) && a.value === selectedValue

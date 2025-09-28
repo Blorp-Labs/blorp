@@ -37,12 +37,28 @@ ion-action-sheet .action-sheet-selected .action-sheet-button-inner:after {
   content: "";
   z-index: 1;
   position: absolute;
-  right: 14px;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
   background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="%23000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>');
   width: 24px;
   height: 24px;
+}
+ion-action-sheet .detail .action-sheet-button-inner:before {
+  content: "";
+  z-index: 1;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="%2392949c44" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M184 112l144 144-144 144"/></svg>');
+  width: 24px;
+  height: 24px;
+}
+ion-action-sheet
+  .action-sheet-selected.detail
+  .action-sheet-button-inner:after {
+  right: 30px;
 }
 @media (prefers-color-scheme: dark) {
   ion-action-sheet .action-sheet-selected .action-sheet-button-inner:after {
