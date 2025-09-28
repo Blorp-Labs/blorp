@@ -20,7 +20,7 @@ import { MAX_CACHE_MS } from "../stores/config";
 
 // List the last reason for bumping the key:
 // Caching creator profiles when fetching comments
-const REACT_QUERY_CACHE_VERSON = 8;
+const REACT_QUERY_CACHE_VERSON = 9;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;

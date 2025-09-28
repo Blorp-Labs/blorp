@@ -5,6 +5,7 @@ import _ from "lodash";
 import { Deferred } from "@/src/lib/deferred";
 import { useAuth } from "@/src/stores/auth";
 import { useCommunity } from "@/src/lib/api";
+import { useCommunityFromStore } from "@/src/stores/communities";
 
 export function useCommunityCreatePost({
   communityName,
@@ -17,12 +18,12 @@ export function useCommunityCreatePost({
   const drafts = useCreatePostStore((s) => s.drafts);
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
 
-  const communityView = useCommunity({
+  useCommunity({
     name: communityName,
   });
+  const community = useCommunityFromStore(communityName)?.communityView;
 
   return async () => {
-    const community = communityView.data?.community;
     if (!community) {
       return;
     }

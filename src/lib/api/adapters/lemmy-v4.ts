@@ -445,6 +445,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         [
           ...users.map(convertPerson),
           ...posts.map((p) => convertPerson({ person: p.creator })),
+          ...comments.map((p) => convertPerson({ person: p.creator })),
         ],
         (u) => u.apId,
       ),

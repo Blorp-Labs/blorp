@@ -307,7 +307,7 @@ function LargePostCard({
       {flairs && flairs.length > 0 && (
         <div className="flex flex-row gap-1">
           {flairs.map((flair, index) => (
-            <Flair key={flair?.data.id ?? index} flair={flair.data} />
+            <Flair key={flair?.id ?? index} flair={flair} />
           ))}
         </div>
       )}
@@ -590,11 +590,7 @@ function SmallPostCard({
         {flairs && flairs.length > 0 && (
           <div className="flex flex-row">
             {flairs.map((flair, index) => (
-              <Flair
-                key={flair?.data.id ?? index}
-                flair={flair.data}
-                size="sm"
-              />
+              <Flair key={flair?.id ?? index} flair={flair} size="sm" />
             ))}
           </div>
         )}

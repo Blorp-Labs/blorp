@@ -22,6 +22,7 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useMedia } from "../lib/hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { useCommunityFromStore } from "../stores/communities";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -35,17 +36,18 @@ export default function CommunityFeed() {
     [communityNameEncoded],
   );
 
-  const community = useCommunity({
+  const communityQuery = useCommunity({
     name: communityName,
   });
+  const community = useCommunityFromStore(communityName)?.communityView;
 
   const updateRecent = useRecentCommunitiesStore((s) => s.update);
 
   useEffect(() => {
-    if (community.data) {
-      updateRecent(community.data.community);
+    if (community) {
+      updateRecent(community);
     }
-  }, [community.data, updateRecent]);
+  }, [community, updateRecent]);
 
   return (
     <IonPage>
@@ -85,7 +87,7 @@ export default function CommunityFeed() {
         <IonRefresher
           slot="fixed"
           onIonRefresh={(e) =>
-            community.refetch().finally(() => e.detail.complete())
+            communityQuery.refetch().finally(() => e.detail.complete())
           }
         >
           <IonRefresherContent />
@@ -93,7 +95,7 @@ export default function CommunityFeed() {
         <ContentGutters className="px-0">
           <SmallScreenSidebar
             communityName={communityName}
-            actorId={community.data?.community.apId}
+            actorId={community?.apId}
             expanded
           />
           <></>

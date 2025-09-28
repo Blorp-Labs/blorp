@@ -21,7 +21,6 @@ import { useCommentsStore } from "../../stores/comments";
 import { useCommunitiesStore } from "../../stores/communities";
 import { lemmyTimestamp } from "./utils";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { useIonRouter } from "@ionic/react";
 import { toast } from "sonner";
 import {
   Draft,
@@ -288,7 +287,7 @@ export function usePost({
         cacheFlairs(getCachePrefixer(), flairs);
       }
 
-      return post;
+      return {};
     },
     retry: (count, err) => {
       const notFound = err.message === Errors2.OBJECT_NOT_FOUND;
@@ -365,7 +364,7 @@ export function useComments(form: Forms.GetComments) {
       cacheProfiles(getCachePrefixer(), creators);
 
       return {
-        comments,
+        comments: comments.map((c) => c.path),
         nextCursor,
       };
     },
@@ -411,33 +410,34 @@ export function useMostRecentPost(
     ...form,
   } satisfies Forms.GetPosts;
 
-  const query = useQuery({
-    queryKey: [...queryKeyPrefix, "mostRecentPost", form],
-    queryFn: async ({ signal }) =>
-      (await api).getPosts(
+  return useQuery({
+    queryKey: [...queryKeyPrefix, "mostRecentPost", featuredContext, form],
+    queryFn: async ({ signal }) => {
+      const { posts } = await (
+        await api
+      ).getPosts(
         {
           ...form,
           sort: form.sort as any,
           type: form.type,
         },
         { signal },
-      ),
+      );
+      return (
+        posts?.find(({ post }) => {
+          switch (featuredContext) {
+            case "local":
+              return !post.featuredLocal;
+            case "community":
+              return !post.featuredCommunity;
+          }
+        })?.post.apId ?? null
+      );
+    },
     refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
-
-  return {
-    ...query,
-    data: query.data?.posts?.find(({ post }) => {
-      switch (featuredContext) {
-        case "local":
-          return !post.featuredLocal;
-        case "community":
-          return !post.featuredCommunity;
-      }
-    }),
-  };
 }
 
 export function usePosts(form: Forms.GetPosts) {
@@ -583,7 +583,7 @@ export function useListCommunities(form: Forms.GetCommunities) {
         communities.map((communityView) => ({ communityView })),
       );
       return {
-        communities,
+        communities: communities.map((c) => c.slug),
         nextPage: nextCursor,
       };
     },
@@ -637,7 +637,7 @@ export function useCommunity({
       if (res.flairs) {
         cacheFlairs(getCachePrefixer(), res.flairs);
       }
-      return res;
+      return {};
     },
     enabled: !!form.name && enabled,
     staleTime: 1000 * 60 * 5,
@@ -1165,12 +1165,7 @@ export function useCreateComment() {
       let comments = queryClient.getQueryData<
         InfiniteData<
           {
-            comments: {
-              path: string;
-              postId: number;
-              creatorId: number;
-              createdAt: string;
-            }[];
+            comments: string[];
             nextPage: number | null;
           },
           unknown
@@ -1185,12 +1180,7 @@ export function useCreateComment() {
 
       const firstPage = comments.pages[0];
       if (firstPage) {
-        firstPage.comments.unshift({
-          path: newComment.path,
-          creatorId: newComment.creatorId,
-          postId: newComment.postId,
-          createdAt: newComment.createdAt,
-        });
+        firstPage.comments.unshift(newComment.path);
       }
 
       queryClient.setQueryData(getCommentsKey(form), comments);
@@ -1218,12 +1208,7 @@ export function useCreateComment() {
         let comments = queryClient.getQueryData<
           InfiniteData<
             {
-              comments: {
-                path: string;
-                postId: number;
-                creatorId: number;
-                createdAt: string;
-              }[];
+              comments: string[];
               nextPage: number | null;
             },
             unknown
@@ -1240,9 +1225,9 @@ export function useCreateComment() {
         // Technically we can skip this if we are removing
         // the comment from the cache
         for (const p of comments.pages) {
-          const index = p.comments.findIndex((c) => c.path === ctx.path);
+          const index = p.comments.findIndex((p) => p === ctx.path);
           if (index >= 0) {
-            p.comments[index] = settledComment;
+            p.comments[index] = settledComment.path;
             queryClient.setQueryData(getCommentsKey(form), comments);
             continue sort;
           }
@@ -1255,7 +1240,7 @@ export function useCreateComment() {
           continue;
         }
         if (firstPage) {
-          firstPage.comments.unshift(settledComment);
+          firstPage.comments.unshift(settledComment.path);
         }
         queryClient.setQueryData(getCommentsKey(form), comments);
       }
@@ -1660,6 +1645,7 @@ export function useSearch(form: Forms.Search) {
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cachePosts = usePostsStore((s) => s.cachePosts);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   return useThrottledInfiniteQuery({
@@ -1681,11 +1667,12 @@ export function useSearch(form: Forms.Search) {
       );
       cacheProfiles(getCachePrefixer(), users);
       cachePosts(getCachePrefixer(), posts);
+      cacheComments(getCachePrefixer(), comments);
 
       return {
         communities: communities.map((c) => c.slug),
         posts: posts.map((p) => p.apId),
-        comments,
+        comments: comments.map((c) => c.path),
         users: users.map((u) => u.apId),
         next_page: nextCursor,
       };

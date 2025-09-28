@@ -57,12 +57,17 @@ import { usePostsStore } from "../stores/posts";
 import { getAccountActorId, useAuth } from "../stores/auth";
 import { usePathname } from "../routing/hooks";
 import { Sidebar, SidebarContent } from "../components/sidebar";
-import { useCommunitiesStore } from "../stores/communities";
+import {
+  useCommunitiesFromStore,
+  useCommunitiesStore,
+  useCommunityFromStore,
+} from "../stores/communities";
 import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Flair } from "../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
+import { useFlairs } from "../stores/flairs";
 
 dayjs.extend(localizedFormat);
 
@@ -200,12 +205,12 @@ export function CreatePost() {
 
   useLoadRecentCommunity(draftId, draft);
 
-  const community = useCommunity({
+  useCommunity({
     name: draft.communitySlug,
   });
-  const flairLookup = useFlairLookup(community.data?.flairs);
-
-  const flairs = community.data?.flairs;
+  const community = useCommunityFromStore(draft.communitySlug);
+  const flairs = useFlairs(community?.flairs?.map((f) => f.id));
+  const flairLookup = useFlairLookup(flairs);
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -528,10 +533,11 @@ function ChooseCommunity({
   const subscribedCommunitiesRes = useListCommunities({
     type: "Subscribed",
   });
-  const subscribedCommunities =
+  const subscribedCommunities = useCommunitiesFromStore(
     subscribedCommunitiesRes.data?.pages
       .flatMap((p) => p.communities)
-      .sort((a, b) => a.slug.localeCompare(b.slug)) ?? EMPTY_ARR;
+      .sort((a, b) => a.localeCompare(b)) ?? EMPTY_ARR,
+  );
 
   const searchResultsRes = useSearch({
     q: search,
@@ -564,8 +570,11 @@ function ChooseCommunity({
     data.push("Recent", ...recentCommunities.recentlyVisited.slice(0, 5));
   }
 
-  if (recentCommunities.recentlyVisited.length > 0) {
-    data.push("Subscribed", ...subscribedCommunities);
+  if (subscribedCommunities && recentCommunities.recentlyVisited.length > 0) {
+    data.push(
+      "Subscribed",
+      ...subscribedCommunities.map((c) => ({ slug: c.communityView.slug })),
+    );
   }
 
   if (search || searchFocused) {

@@ -53,7 +53,7 @@ export function isEmptyDraft(draft: Draft) {
 
 export function postToDraft(
   post: Schemas.Post,
-  flairs?: Schemas.Flair[],
+  flairs?: Schemas.Flair[] | null,
 ): Draft {
   return {
     title: post.title,
@@ -65,7 +65,7 @@ export function postToDraft(
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,
-    flairs,
+    flairs: flairs ?? undefined,
   };
 }
 
@@ -238,20 +238,29 @@ let alreadyClean = false;
 
 sync(useCreatePostStore);
 
-export function getFlairLookup(flairs?: Schemas.Flair[]) {
+export function getFlairLookup(flairs?: Schemas.Flair[] | null) {
   if (!flairs) {
     return () => undefined;
   }
+  const flairsById = _.keyBy(flairs, "id");
   const flairsByTitle = _.keyBy(flairs, "title");
   const flairsByApId = _.keyBy(
     flairs.filter((f) => f.apId),
     "apId",
   );
-  return ({ apId, title }: Pick<Schemas.Flair, "apId" | "title">) => {
-    return (apId ? flairsByApId[apId] : undefined) ?? flairsByTitle[title];
+  return ({ apId, title, id }: Partial<Schemas.Flair>) => {
+    if (apId && flairsByApId[apId]) {
+      return flairsByApId[apId];
+    }
+    if (id && flairsById[id]) {
+      return flairsById[id];
+    }
+    if (title && flairsByTitle[title]) {
+      return flairsByTitle[title];
+    }
   };
 }
 
-export function useFlairLookup(flairs?: Schemas.Flair[]) {
+export function useFlairLookup(flairs?: Schemas.Flair[] | null) {
   return useMemo(() => getFlairLookup(flairs), [flairs]);
 }

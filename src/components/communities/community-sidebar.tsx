@@ -4,7 +4,10 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { CommunityJoinButton } from "./community-join-button";
 import { useLinkContext } from "../../routing/link-context";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import {
+  useCommunitiesStore,
+  useCommunityFromStore,
+} from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { useAuth, useIsCommunityBlocked } from "@/src/stores/auth";
@@ -51,10 +54,11 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  const community = useCommunity({
+  useCommunity({
     name: communityName,
   });
-  const flairs = useFlairs(community.data?.flairs?.map((f) => f.id));
+  const community = useCommunityFromStore(communityName);
+  const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const data = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
@@ -170,9 +174,7 @@ export function SmallScreenSidebar({
             <section className="p-3">
               <h2>ABOUT</h2>
               <div className="flex flex-wrap gap-1.5 mt-2 mb-1">
-                {flairs?.map((flair) => (
-                  <Flair key={flair.data.id} flair={flair.data} />
-                ))}
+                {flairs?.map((flair) => <Flair key={flair.id} flair={flair} />)}
               </div>
             </section>
           )}
@@ -394,7 +396,7 @@ export function CommunitySidebar({
                     <CollapsibleContent className="pb-1 pt-3">
                       <div className="flex flex-wrap gap-1.5">
                         {flairs?.map((flair) => (
-                          <Flair key={flair.data.id} flair={flair.data} />
+                          <Flair key={flair.id} flair={flair} />
                         ))}
                       </div>
                     </CollapsibleContent>

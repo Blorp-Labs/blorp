@@ -137,9 +137,7 @@ describe("creating comments", () => {
 
     const NEW_COMMENT_PATH = "0.1234";
     const pages1 = allComments.result.current.data?.pages;
-    expect(pages1?.flatMap((p) => p.comments).map((c) => c.path)).not.toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages1?.flatMap((p) => p.comments)).not.toContain(NEW_COMMENT_PATH);
 
     mockCreateComment(NEW_COMMENT_PATH);
 
@@ -150,9 +148,7 @@ describe("creating comments", () => {
     allComments.rerender();
 
     const pages2 = allComments.result.current.data?.pages;
-    expect(pages2?.flatMap((p) => p.comments).map((c) => c.path)).toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages2?.flatMap((p) => p.comments)).toContain(NEW_COMMENT_PATH);
   });
 
   test("create reply comment", async () => {
@@ -199,9 +195,7 @@ describe("creating comments", () => {
     const NEW_COMMENT_PATH = `${parentPath}.1234`;
 
     const pages1 = allComments.result.current.data?.pages;
-    expect(pages1?.flatMap((p) => p.comments).map((c) => c.path)).not.toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages1?.flatMap((p) => p.comments)).not.toContain(NEW_COMMENT_PATH);
 
     mockCreateComment(NEW_COMMENT_PATH);
 
@@ -213,9 +207,7 @@ describe("creating comments", () => {
     allComments.rerender();
 
     const pages2 = allComments.result.current.data?.pages;
-    expect(pages2?.flatMap((p) => p.comments).map((c) => c.path)).toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages2?.flatMap((p) => p.comments)).toContain(NEW_COMMENT_PATH);
   });
 
   test("create reply comment while in thread", async () => {
@@ -265,9 +257,7 @@ describe("creating comments", () => {
     const NEW_COMMENT_PATH = `${parentPath}.1234`;
 
     const pages1 = allComments.result.current.data?.pages;
-    expect(pages1?.flatMap((p) => p.comments).map((c) => c.path)).not.toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages1?.flatMap((p) => p.comments)).not.toContain(NEW_COMMENT_PATH);
 
     mockCreateComment(NEW_COMMENT_PATH);
 
@@ -281,8 +271,6 @@ describe("creating comments", () => {
     allComments.rerender();
 
     const pages2 = allComments.result.current.data?.pages;
-    expect(pages2?.flatMap((p) => p.comments).map((c) => c.path)).toContain(
-      NEW_COMMENT_PATH,
-    );
+    expect(pages2?.flatMap((p) => p.comments)).toContain(NEW_COMMENT_PATH);
   });
 });

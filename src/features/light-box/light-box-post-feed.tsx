@@ -42,6 +42,7 @@ import { IonButtons, IonButton, IonModal, IonTitle } from "@ionic/react";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
+import { useCommunityFromStore } from "@/src/stores/communities";
 
 const EMPTY_ARR: never[] = [];
 
@@ -376,14 +377,11 @@ function useLightboxPostFeedData({
     }
 
     if (missingPost) {
-      return [
-        ...(initPostQuery.data ? [initPostQuery.data.apId] : []),
-        ...posts,
-      ];
+      return [...(initPostApId ? [initPostApId] : []), ...posts];
     }
 
     return posts;
-  }, [missingPost, initPostQuery.data, initPostQuery.isPending, posts]);
+  }, [missingPost, initPostApId, initPostQuery.isPending, posts]);
 
   return {
     data,
@@ -453,17 +451,18 @@ export default function LightBoxPostFeed() {
     postApId ? s.posts[getCachePrefixer()(postApId)]?.data : null,
   );
 
-  const community = useCommunity({
+  useCommunity({
     name: communityName,
   });
+  const community = useCommunityFromStore(communityName);
 
   const updateRecent = useRecentCommunitiesStore((s) => s.update);
 
   useEffect(() => {
-    if (community.data) {
-      updateRecent(community.data.community);
+    if (community?.communityView) {
+      updateRecent(community.communityView);
     }
-  }, [community.data, updateRecent]);
+  }, [community?.communityView, updateRecent]);
 
   const voting = usePostVoting(postApId);
   const { vote, isUpvoted, isDownvoted } = voting ?? {};

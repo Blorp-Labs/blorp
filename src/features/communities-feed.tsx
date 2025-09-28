@@ -61,11 +61,7 @@ export default function Communities() {
   });
 
   const communities = useMemo(
-    () =>
-      data?.pages
-        .map((p) => p.communities)
-        .flat()
-        .map(({ slug }) => slug),
+    () => data?.pages.map((p) => p.communities).flat(),
     [data?.pages],
   );
 
