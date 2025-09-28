@@ -423,14 +423,16 @@ export function useMostRecentPost(
         },
         { signal },
       );
-      return posts?.find(({ post }) => {
-        switch (featuredContext) {
-          case "local":
-            return !post.featuredLocal;
-          case "community":
-            return !post.featuredCommunity;
-        }
-      })?.post.apId;
+      return (
+        posts?.find(({ post }) => {
+          switch (featuredContext) {
+            case "local":
+              return !post.featuredLocal;
+            case "community":
+              return !post.featuredCommunity;
+          }
+        })?.post.apId ?? null
+      );
     },
     refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,

@@ -256,7 +256,7 @@ export function getFlairLookup(flairs?: Schemas.Flair[] | null) {
       return flairsById[id];
     }
     if (title && flairsByTitle[title]) {
-      return flairsByApId[title];
+      return flairsByTitle[title];
     }
   };
 }
