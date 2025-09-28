@@ -58,7 +58,7 @@ const linkSchema = z.object({
   url: z.string(),
 });
 
-function IconFileInput({ onFile }: { onFile: (file: File) => void }) {
+function IconFileInput({ onFiles }: { onFiles: (file: File[]) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -67,11 +67,11 @@ function IconFileInput({ onFile }: { onFile: (file: File) => void }) {
         type="file"
         ref={fileInputRef}
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) {
-            onFile(file);
+          if (event.target.files && event.target.files.length > 0) {
+            onFiles(Array.from(event.target.files));
           }
         }}
       />
@@ -106,11 +106,11 @@ function getActiveLinkInfo(editor: Editor) {
 
 const MenuBar = ({
   editor,
-  onFile,
+  onFiles,
   className,
 }: {
   editor: Editor | null;
-  onFile: (file: File) => void;
+  onFiles: (file: File[]) => void;
   className?: string;
 }) => {
   const [alrt] = useIonAlert();
@@ -120,7 +120,7 @@ const MenuBar = ({
   }
   return (
     <div className={cn("flex flex-row items-center gap-1.5", className)}>
-      <IconFileInput onFile={onFile} />
+      <IconFileInput onFiles={onFiles} />
 
       <Toggle
         size="icon"
@@ -416,23 +416,23 @@ function TipTapEditor({
         class: "flex-1 min-h-full space-y-4 outline-none",
       },
       handlePaste: (view, event) => {
-        const file = event.clipboardData?.files[0];
-        if (file) {
-          handleFile(file).then(({ url }) => {
-            const { schema, tr, selection } = view.state;
-            const { from } = selection;
+        if (event.clipboardData && event.clipboardData.files.length > 0) {
+          for (const file of Array.from(event.clipboardData?.files ?? [])) {
+            handleFile(file).then(({ url }) => {
+              const { schema, tr, selection } = view.state;
+              const { from } = selection;
 
-            if (schema.nodes["image"]) {
-              const node = schema.nodes["image"].create({ src: url }); // create image node
-              const transaction = tr.insert(from, node); // insert at current selection
-              view.dispatch(transaction);
-            } else {
-              console.error("Image node is not defined in the schema");
-            }
-          });
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // create image node
+                const transaction = tr.insert(from, node); // insert at current selection
+                view.dispatch(transaction);
+              } else {
+                console.error("Image node is not defined in the schema");
+              }
+            });
+          }
           return true; // prevent default paste behavior
         }
-
         return false; // allow default behavior for non-files
       },
       handleDrop: (view, event, slice, moved) => {
@@ -440,28 +440,29 @@ function TipTapEditor({
           !moved &&
           event.dataTransfer &&
           event.dataTransfer.files &&
-          event.dataTransfer.files[0]
+          event.dataTransfer.files.length > 0
         ) {
           event.preventDefault();
-          const file = event.dataTransfer.files[0];
-          handleFile(file).then(({ url }) => {
-            const { schema } = view.state;
-            const coordinates = view.posAtCoords({
-              left: event.clientX,
-              top: event.clientY,
+          for (const file of Array.from(event.dataTransfer.files)) {
+            handleFile(file).then(({ url }) => {
+              const { schema } = view.state;
+              const coordinates = view.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
+              });
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // creates the image element
+                const transaction = view.state.tr.insert(
+                  coordinates?.pos ?? 0,
+                  node,
+                ); // places it in the correct position
+                return view.dispatch(transaction);
+              } else {
+                console.error("Failed to handle dropped image");
+              }
             });
-            if (schema.nodes["image"]) {
-              const node = schema.nodes["image"].create({ src: url }); // creates the image element
-              const transaction = view.state.tr.insert(
-                coordinates?.pos ?? 0,
-                node,
-              ); // places it in the correct position
-              return view.dispatch(transaction);
-            } else {
-              console.error("Failed to handle dropped image");
-            }
-          });
-          return true; // handled
+          }
+          return true;
         }
         return false;
       },
@@ -485,12 +486,20 @@ function TipTapEditor({
       >
         <MenuBar
           editor={editor}
-          onFile={(file) => {
-            handleFile(file).then(({ url }) => {
-              if (url) {
-                editor?.chain().focus().setImage({ src: url }).run();
-              }
-            });
+          onFiles={(files) => {
+            for (const file of files) {
+              handleFile(file).then(({ url }) => {
+                if (url) {
+                  const { to } = editor.state.selection;
+                  editor
+                    ?.chain()
+                    .focus()
+                    .setTextSelection(to)
+                    .setImage({ src: url })
+                    .run();
+                }
+              });
+            }
           }}
         />
         <Button
@@ -527,13 +536,21 @@ function TipTapEditor({
         <MenuBar
           className="gap-2.5"
           editor={editor}
-          onFile={(file) =>
-            handleFile(file).then(({ url }) => {
-              if (url) {
-                editor?.chain().focus().setImage({ src: url }).run();
-              }
-            })
-          }
+          onFiles={(files) => {
+            for (const file of files) {
+              handleFile(file).then(({ url }) => {
+                if (url) {
+                  const { to } = editor.state.selection;
+                  editor
+                    ?.chain()
+                    .focus()
+                    .setTextSelection(to)
+                    .setImage({ src: url })
+                    .run();
+                }
+              });
+            }
+          }}
         />
         <Button
           size="sm"
