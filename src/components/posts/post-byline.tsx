@@ -226,6 +226,8 @@ export function PostByline({
   isMod = false,
   canMod = false,
   showActions = true,
+  hideImage,
+  className,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -235,6 +237,8 @@ export function PostByline({
   isMod?: boolean;
   canMod?: boolean;
   showActions?: boolean;
+  hideImage?: boolean;
+  className?: string;
 }) {
   const linkCtx = useLinkContext();
 
@@ -273,23 +277,26 @@ export function PostByline({
       className={cn(
         "flex flex-row items-center gap-2 h-7",
         showCommunity && showCreator && "h-9",
+        className,
       )}
     >
-      <Avatar
-        className={cn(
-          "h-6 w-6 text-sm",
-          showCommunity && showCreator && "h-8 w-8 text-md",
-        )}
-        aria-hidden
-      >
-        <AvatarImage
-          src={community?.communityView.icon ?? undefined}
-          className="object-cover"
-        />
-        <AvatarFallback>
-          {communityName?.substring(0, 1).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      {!hideImage && (
+        <Avatar
+          className={cn(
+            "h-6 w-6 text-sm",
+            showCommunity && showCreator && "h-8 w-8 text-md",
+          )}
+          aria-hidden
+        >
+          <AvatarImage
+            src={community?.communityView.icon ?? undefined}
+            className="object-cover"
+          />
+          <AvatarFallback>
+            {communityName?.substring(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      )}
 
       <div className="flex flex-col text-muted-foreground">
         {showCommunity && (

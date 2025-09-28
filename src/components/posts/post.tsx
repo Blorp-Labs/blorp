@@ -60,7 +60,12 @@ export function PostCardSkeleton(props: {
     return <LargePostCardSkeleton />;
   }
 
-  return <SmallPostCardSkeleton />;
+  switch (postCardStyle) {
+    case "small":
+      return <SmallPostCardSkeleton />;
+    case "extra-small":
+      return <ExtraSmallPostCardSkeleton />;
+  }
 }
 
 function LargePostCardSkeleton(props: {
@@ -97,8 +102,10 @@ function LargePostCardSkeleton(props: {
         <Skeleton className="aspect-video max-md:-mx-3.5 max-md:rounded-none" />
       )}
 
-      <div className="flex flex-row justify-end gap-2">
-        <Skeleton className="h-7 w-10 rounded-full" />
+      <div className="flex flex-row gap-2">
+        <Skeleton className="h-7 w-20 rounded-full" />
+        <div className="flex-1" />
+        <Skeleton className="h-7 w-12 rounded-full" />
         <Skeleton className="h-7 w-16 rounded-full" />
       </div>
 
@@ -116,16 +123,21 @@ function SmallPostCardSkeleton(props: {
     <div>
       <div className="flex-1 gap-2.5 flex overflow-x-hidden md:py-2">
         {(!hideImage || props.hideImage === false) && (
-          <Skeleton className="h-32 w-32 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
+          <Skeleton className="h-32 w-28 md:h-36 md:w-40 rounded-none md:rounded-md shrink-0" />
         )}
 
-        <div className="flex-1 flex flex-col gap-1.5 overflow-y-hidden">
-          <div className="flex flex-row items-center gap-2 h-6">
+        <div
+          className={cn(
+            "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+            hideImage && "max-md:pl-3.5",
+          )}
+        >
+          <div className="flex flex-row items-center gap-2 h-7">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-32" />
           </div>
 
-          <Skeleton className="h-7" />
+          <Skeleton className="h-6" />
 
           <div className="flex-1" />
 
@@ -135,7 +147,34 @@ function SmallPostCardSkeleton(props: {
           </div>
         </div>
       </div>
-      <Separator className="max-md:-mx-3.5 w-auto!" />
+      <Separator className="w-auto!" />
+    </div>
+  );
+}
+
+function ExtraSmallPostCardSkeleton() {
+  return (
+    <div>
+      <div
+        className={cn(
+          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:px-3.5 md:py-2",
+        )}
+      >
+        <Skeleton className="h-6" />
+
+        <div className="flex-1" />
+
+        <div className="flex flex-row justify-end gap-2">
+          <div className="flex flex-row items-center gap-2 h-6">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <div className="flex-1" />
+          <Skeleton className="h-7 w-10 rounded-full" />
+          <Skeleton className="h-7 w-16 rounded-full" />
+        </div>
+      </div>
+      <Separator className="w-auto!" />
     </div>
   );
 }
@@ -537,7 +576,7 @@ function SmallPostCard({
             lowSrc={embed?.thumbnail}
             highSrc={embed?.fullResThumbnail}
             className={cn(
-              "h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0",
+              "h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0",
               blurImg && "blur-3xl",
             )}
             onAspectRatio={(thumbnailAspectRatio) => {
@@ -556,13 +595,13 @@ function SmallPostCard({
           url={embed.embedUrl}
           thumbnail={embed.thumbnail}
           blurNsfw={blurImg ?? false}
-          className="h-32 w-32 md:h-36 md:w-40 md:rounded-md shrink-0"
+          className="h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0"
         />
       )}
 
       <div
         className={cn(
-          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
           !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
@@ -603,7 +642,7 @@ function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
@@ -626,6 +665,120 @@ function SmallPostCard({
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} />
           <PostVoting apId={apId} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ExtraSmallPostCard({
+  post,
+  detailView,
+  featuredContext,
+  pinned,
+  modApIds,
+  apId,
+}: {
+  post?: Schemas.Post;
+  detailView?: boolean;
+  featuredContext: PostProps["featuredContext"];
+  pinned: boolean;
+  modApIds?: string[];
+  apId: string;
+}) {
+  const myApId = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
+  );
+
+  const linkCtx = useLinkContext();
+
+  const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
+
+  const id = useId();
+
+  const media = useMedia();
+
+  if (!post) {
+    return <ExtraSmallPostCardSkeleton />;
+  }
+
+  const encodedApId = encodeApId(apId);
+
+  const titleId = `${id}-title`;
+  const bodyId = `${id}-title`;
+
+  const canMod = myApId ? modApIds?.includes(myApId) : false;
+
+  return (
+    <article
+      data-testid="post-card"
+      className={cn(
+        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        detailView ? "max-md:bg-background" : "border-b",
+      )}
+      aria-labelledby={titleId}
+      aria-describedby={bodyId}
+    >
+      <div
+        className={cn(
+          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
+        )}
+      >
+        <Link
+          id={titleId}
+          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          params={{
+            communityName: post.communitySlug,
+            post: encodedApId,
+          }}
+          className={cn(
+            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            !detailView && post.read && "text-muted-foreground",
+          )}
+        >
+          <span
+            className={cn(
+              "line-clamp-2 md:line-clamp-3",
+              flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
+            )}
+          >
+            {post.deleted ? "deleted" : post.title}
+          </span>
+        </Link>
+
+        <div
+          className={cn(
+            "flex items-center justify-end",
+            leftHandedMode && "flex-row-reverse",
+          )}
+        >
+          <PostByline
+            hideImage={media.maxMd}
+            post={post}
+            pinned={pinned}
+            showCreator={
+              (featuredContext !== "user" &&
+                featuredContext !== "search" &&
+                featuredContext !== "home") ||
+              detailView
+            }
+            showCommunity={
+              featuredContext === "home" ||
+              featuredContext === "user" ||
+              featuredContext === "search"
+                ? true
+                : detailView
+            }
+            canMod={canMod}
+            isMod={modApIds?.includes(post.creatorApId)}
+            showActions={false}
+            className="mr-auto overflow-hidden"
+          />
+
+          <PostCommentsButton postApId={apId} variant="ghost" />
+          <PostVoting apId={apId} variant="ghost" className="-mr-2" />
         </div>
       </div>
     </article>
@@ -681,14 +834,28 @@ export function PostCard(props: PostProps) {
     );
   }
 
-  return (
-    <SmallPostCard
-      post={post}
-      detailView={props.detailView}
-      featuredContext={props.featuredContext}
-      pinned={pinned}
-      modApIds={props.modApIds}
-      apId={props.apId}
-    />
-  );
+  switch (postCardStyle) {
+    case "small":
+      return (
+        <SmallPostCard
+          post={post}
+          detailView={props.detailView}
+          featuredContext={props.featuredContext}
+          pinned={pinned}
+          modApIds={props.modApIds}
+          apId={props.apId}
+        />
+      );
+    case "extra-small":
+      return (
+        <ExtraSmallPostCard
+          post={post}
+          detailView={props.detailView}
+          featuredContext={props.featuredContext}
+          pinned={pinned}
+          modApIds={props.modApIds}
+          apId={props.apId}
+        />
+      );
+  }
 }
