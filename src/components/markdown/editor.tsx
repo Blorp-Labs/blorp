@@ -370,7 +370,6 @@ function TipTapEditor({
       }),
       Image,
       Markdown,
-      // Spoiler,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockEditor);
@@ -394,7 +393,6 @@ function TipTapEditor({
       SubScript,
       SupScript,
       DetailsWithMarkdown.configure({
-        persist: false,
         HTMLAttributes: {
           class: "details",
         },
