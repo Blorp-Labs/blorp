@@ -11,10 +11,10 @@
 
   /* Details */
   .details {
-    @apply flex border-border border rounded-lg p-2 gap-1;
+    @apply flex border-border border rounded-lg p-2 gap-2;
 
     summary {
-      @apply font-bold;
+      @apply font-bold list-none;
     }
 
     summary::marker {
@@ -22,7 +22,7 @@
     }
 
     > button {
-      @apply flex items-center justify-center text-xs mt-0.5 h-5 w-5 rounded-sm hover:bg-muted;
+      @apply flex items-center justify-center text-xs mt-0.5 h-5 w-5 rounded-sm bg-muted;
 
       &::before {
         @apply content-["\25B6"];

@@ -293,7 +293,13 @@ const MenuBar = ({
           {
             text: "Spoiler",
             onClick: () => {
-              editor.commands.setDetails();
+              editor
+                .chain()
+                .focus()
+                .insertContent(
+                  `<details open><summary>Spoiler</summary><p>Content</p></details>`,
+                )
+                .run();
             },
           },
           {

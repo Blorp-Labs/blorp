@@ -14,6 +14,17 @@ import { Node } from "prosemirror-model";
  * which is valid inside Markdown.
  */
 export const DetailsWithMarkdown = Details.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      open: {
+        default: true,
+        parseHTML: (el) => el.hasAttribute("open"),
+        renderHTML: (attrs) => (attrs["open"] ? { open: "" } : {}),
+      },
+    };
+  },
+
   addStorage() {
     return {
       markdown: {
@@ -67,7 +78,7 @@ export const DetailsWithMarkdown = Details.extend({
 
                 if (tokens[idx]!.nesting === 1) {
                   // opening tag
-                  return `<details><summary>${summaryHTML}</summary>\n`;
+                  return `<details open><summary>${summaryHTML}</summary>\n`;
                 } else {
                   // closing tag
                   return "</details>\n";
