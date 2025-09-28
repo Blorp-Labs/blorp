@@ -8,15 +8,16 @@ import {
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
-import Spoiler from "./editor-extensions/spoiler-plugin";
+import {
+  DetailsWithMarkdown,
+  DetailsContentWithMarkdown,
+  DetailsSummaryWithMarkdown,
+} from "./editor-extensions/spoiler-plugin";
 import SubScript from "./editor-extensions/subscript";
 import SupScript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
+import { TableKit } from "@tiptap/extension-table";
 import { useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "../ui/button";
@@ -292,8 +293,7 @@ const MenuBar = ({
           {
             text: "Spoiler",
             onClick: () => {
-              // @ts-expect-error
-              editor.commands.insertSpoiler();
+              editor.commands.setDetails();
             },
           },
           {
@@ -370,7 +370,7 @@ function TipTapEditor({
       }),
       Image,
       Markdown,
-      Spoiler,
+      // Spoiler,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockEditor);
@@ -382,12 +382,9 @@ function TipTapEditor({
         autolink: true,
         defaultProtocol: "https",
       }),
-      Table.configure({
-        resizable: true,
+      TableKit.configure({
+        table: { resizable: true },
       }),
-      TableRow,
-      TableHeader,
-      TableCell,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -396,8 +393,17 @@ function TipTapEditor({
       }),
       SubScript,
       SupScript,
+      DetailsWithMarkdown.configure({
+        persist: false,
+        HTMLAttributes: {
+          class: "details",
+        },
+      }),
+      DetailsSummaryWithMarkdown,
+      DetailsContentWithMarkdown,
     ],
     onUpdate: ({ editor }) => {
+      // @ts-expect-error
       const markdown = editor?.storage["markdown"].getMarkdown();
       onChange(markdown);
     },
@@ -465,6 +471,7 @@ function TipTapEditor({
   });
 
   useEffect(() => {
+    // @ts-expect-error
     if (editor?.storage["markdown"].getMarkdown() !== content) {
       editor?.commands.setContent(content);
     }
