@@ -104,6 +104,18 @@ function getActiveLinkInfo(editor: Editor) {
   return { text, href: attrs["href"], range };
 }
 
+function useRenderOnTipTapChange(editor: Editor | null) {
+  const [, setSignal] = useState(0);
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => setSignal((x) => x + 1);
+    editor.on("selectionUpdate", rerender);
+    return () => {
+      editor.off("selectionUpdate", rerender);
+    };
+  }, [editor]);
+}
+
 const MenuBar = ({
   editor,
   onFiles,
@@ -114,6 +126,8 @@ const MenuBar = ({
   className?: string;
 }) => {
   const [alrt] = useIonAlert();
+
+  useRenderOnTipTapChange(editor);
 
   if (!editor) {
     return null;
@@ -215,7 +229,7 @@ const MenuBar = ({
         data-state={editor.isActive("bold") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
+        disabled={!editor.can().chain().toggleBold().run()}
         aria-label={editor.isActive("bold") ? "Unbold" : "Bold"}
       >
         <AiOutlineBold />
@@ -226,7 +240,7 @@ const MenuBar = ({
         data-state={editor.isActive("italic") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
+        disabled={!editor.can().chain().toggleItalic().run()}
         aria-label={editor.isActive("italic") ? "Unitalicize" : "Italicize"}
       >
         <AiOutlineItalic />
@@ -237,7 +251,7 @@ const MenuBar = ({
         data-state={editor.isActive("strike") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        disabled={!editor.can().chain().focus().toggleStrike().run()}
+        disabled={!editor.can().chain().toggleStrike().run()}
         aria-label={
           editor.isActive("bold") ? "Unstrikethrough" : "Strikethrough"
         }
@@ -250,7 +264,7 @@ const MenuBar = ({
         data-state={editor.isActive("blockquote") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        disabled={!editor.can().chain().focus().toggleBlockquote().run()}
+        disabled={!editor.can().chain().toggleBlockquote().run()}
         aria-label={editor.isActive("blockquote") ? "Unquote" : "Quote"}
       >
         <FaQuoteRight />
@@ -365,6 +379,13 @@ function TipTapEditor({
   const mentionSuggestions = useMentionSuggestions();
 
   const editor = useEditor({
+    // TipTap no longer rerenders on every
+    // change. Our custom menubar component
+    // subscribes to tiptap changes and makes
+    // sure the state of the buttons are in sync.
+    // If there are any issues down the road, try
+    // uncommenting the line below.
+    // shouldRerenderOnTransaction: true,
     autofocus: autoFocus,
     content,
     extensions: [
