@@ -202,7 +202,11 @@ export function StickyPostHeader({
       )}
     >
       <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden">
-        {postView.title}
+        {postView.deleted
+          ? "deleted"
+          : postView.removed
+            ? "removed"
+            : postView.title}
       </div>
       {postView.thumbnailUrl && (
         <img
@@ -761,7 +765,7 @@ function ExtraSmallPostCard({
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
-            {post.deleted ? "deleted" : post.title}
+            {post.deleted ? "deleted" : post.removed ? "removed" : post.title}
           </span>
         </Link>
 
