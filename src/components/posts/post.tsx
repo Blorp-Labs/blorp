@@ -34,6 +34,9 @@ import { ProgressiveImage } from "../progressive-image";
 import { useMedia } from "@/src/lib/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
+import { applyFilters } from "@/src/lib/filters/filter";
+import { FieldEnum } from "@/src/lib/filters/schema";
+import { filterPolitics } from "@/src/lib/filters/politics";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -829,6 +832,21 @@ export function PostCard(props: PostProps) {
         : false;
 
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+
+  if (post) {
+    const rule = applyFilters(
+      {
+        [FieldEnum.title]: post.title,
+        [FieldEnum.body]: post.body ?? "",
+        [FieldEnum.community_name]: post.communitySlug,
+        [FieldEnum.user_name]: post.creatorSlug,
+      },
+      filterPolitics,
+    );
+    if (rule) {
+      return <Notice>{rule.name ?? "Hidden"}</Notice>;
+    }
+  }
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
