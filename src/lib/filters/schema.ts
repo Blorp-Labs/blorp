@@ -117,12 +117,12 @@ export const LemmyFiltersSchema = z.object({
   rules: z.array(RuleSchema).min(1),
 });
 
-export type LemmyFilters = z.infer<typeof LemmyFiltersSchema>;
+export type FilterFile = z.infer<typeof LemmyFiltersSchema>;
 
 // --------------------------------------
 // Helper: parse & return typed data
 // --------------------------------------
-export function parseLemmyFilters(input: unknown): LemmyFilters {
+export function parseLemmyFilters(input: unknown): FilterFile {
   return LemmyFiltersSchema.parse(input);
 }
 

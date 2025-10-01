@@ -46,6 +46,8 @@ import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import { encodeApId } from "@/src/lib/api/utils";
+import { useIsCommunityBlockedByContentFilters } from "@/src/stores/content-filters";
+import { useIsCommunityBlocked } from "@/src/stores/auth";
 
 const EMPTY_ARR: never[] = [];
 
@@ -234,12 +236,17 @@ export default function SearchFeed({
       break;
   }
 
+  const isBlocked = useIsCommunityBlocked(communityName);
+  const isBlockedByFilters =
+    useIsCommunityBlockedByContentFilters(communityName);
+
   const searchResults = useSearch({
     q: search ?? "",
     sort: type === "communities" ? "TopAll" : postSort,
     communitySlug:
       scope === "community" || type === "posts" ? communityName : undefined,
     type: type_,
+    enabled: communityName ? !isBlockedByFilters : true,
   });
 
   const { hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
@@ -273,13 +280,15 @@ export default function SearchFeed({
   const searchHistory = useSearchStore((s) => s.searchHistory);
 
   const data =
-    searchInput.length === 0
-      ? searchHistory
-      : apiData.length === 0 &&
-          !searchResults.isRefetching &&
-          !searchResults.isPending
-        ? [NO_ITEMS]
-        : apiData;
+    isBlocked || isBlockedByFilters
+      ? [NO_ITEMS]
+      : searchInput.length === 0
+        ? searchHistory
+        : apiData.length === 0 &&
+            !searchResults.isRefetching &&
+            !searchResults.isPending
+          ? [NO_ITEMS]
+          : apiData;
 
   return (
     <IonPage>
@@ -405,7 +414,13 @@ export default function SearchFeed({
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing to see here</span>
+                      <span>
+                        {isBlocked
+                          ? `You have ${communityName} blocked`
+                          : isBlockedByFilters
+                            ? `Blocked by ${isBlockedByFilters.name ?? "content filters"}`
+                            : "Nothing to see here"}
+                      </span>
                     </div>
                     <></>
                   </ContentGutters>

@@ -440,7 +440,10 @@ export function useMostRecentPost(
   });
 }
 
-export function usePosts(form: Forms.GetPosts) {
+export function usePosts({
+  enabled = true,
+  ...form
+}: Forms.GetPosts & { enabled?: boolean }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
 
@@ -522,7 +525,7 @@ export function usePosts(form: Forms.GetPosts) {
     queryFn,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: INIT_PAGE_TOKEN,
-    enabled: form.type === "Subscribed" ? isLoggedIn : true,
+    enabled: enabled && (form.type === "Subscribed" ? isLoggedIn : true),
     reduceAutomaticRefetch: true,
   });
 
@@ -1703,7 +1706,10 @@ export function useNotificationCount() {
 }
 const EMPTY_ARR: never[] = [];
 
-export function useSearch(form: Forms.Search) {
+export function useSearch({
+  enabled = true,
+  ...form
+}: Forms.Search & { enabled?: boolean }) {
   const { api, queryKeyPrefix } = useApiClients();
 
   const postSort = useFiltersStore((s) => s.postSort);
@@ -1754,7 +1760,7 @@ export function useSearch(form: Forms.Search) {
     initialPageParam: INIT_PAGE_TOKEN,
     notifyOnChangeProps: "all",
     staleTime: 1000 * 60 * 5,
-    enabled: !!form.q,
+    enabled: enabled && !!form.q,
     // refetchOnWindowFocus: false,
     // refetchOnMount: true,
     // staleTime: Infinity,
