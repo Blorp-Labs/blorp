@@ -1,6 +1,7 @@
-import { FieldEnum, LemmyFilters } from "./schema";
+import { optimizeFilterFile } from "./filter";
+import { FieldEnum, FilterFile } from "./schema";
 
-export const filterPolitics: LemmyFilters = {
+export const filterPolitics: FilterFile = {
   spec_version: "lemmy-filters/1.0",
   options: {
     normalize: "nfkc_casefold",
@@ -26,18 +27,43 @@ export const filterPolitics: LemmyFilters = {
           op: "substring",
           pattern: "trump",
         },
+        {
+          field: FieldEnum.community_name,
+          op: "substring",
+          pattern: "policeproblem",
+        },
+        {
+          field: FieldEnum.community_name,
+          op: "substring",
+          pattern: "50501.chat",
+        },
       ],
       action: "hide",
     },
     {
-      name: "Hide political posts",
+      name: "Political persons",
       any: [
         { field: FieldEnum.title, op: "substring", pattern: "epstein files" },
         { field: FieldEnum.title, op: "substring", pattern: "charlie kirk" },
         { field: FieldEnum.title, op: "substring", pattern: "pete hegseth" },
+        { field: FieldEnum.title, op: "word", pattern: "hegseth" },
+        {
+          field: FieldEnum.title,
+          op: "substring",
+          pattern: "karoline leavitt",
+        },
         { field: FieldEnum.title, op: "word", pattern: "trump" },
         { field: FieldEnum.title, op: "word", pattern: "vance" },
-        { field: FieldEnum.title, op: "word", pattern: "democrat" },
+      ],
+      action: "hide",
+    },
+    {
+      name: "Political words",
+      any: [
+        { field: FieldEnum.title, op: "substring", pattern: "democrat" },
+        { field: FieldEnum.title, op: "substring", pattern: "republican" },
+        { field: FieldEnum.title, op: "word", pattern: "maga" },
+        { field: FieldEnum.title, op: "substring", pattern: "radical left" },
       ],
       action: "hide",
     },
@@ -48,17 +74,23 @@ export const filterPolitics: LemmyFilters = {
         {
           any: [
             { field: FieldEnum.title, op: "word", pattern: "detention" },
+            { field: FieldEnum.title, op: "word", pattern: "detain" },
             { field: FieldEnum.title, op: "substring", pattern: "deport" },
+            { field: FieldEnum.title, op: "substring", pattern: "kidnap" },
+            { field: FieldEnum.title, op: "substring", pattern: "arrest" },
+            { field: FieldEnum.title, op: "substring", pattern: "raid" },
           ],
         },
       ],
       action: "hide",
     },
     {
-      name: "Shooting",
+      name: "Location scoped",
       all: [
         {
           any: [
+            { field: FieldEnum.title, op: "substring", pattern: "u.s." },
+            // US States
             { field: FieldEnum.title, op: "word", pattern: "alabama" },
             { field: FieldEnum.title, op: "word", pattern: "alaska" },
             { field: FieldEnum.title, op: "word", pattern: "arizona" },
@@ -137,12 +169,101 @@ export const filterPolitics: LemmyFilters = {
             },
             { field: FieldEnum.title, op: "word", pattern: "wisconsin" },
             { field: FieldEnum.title, op: "word", pattern: "wyoming" },
+            // Cities
+            { field: FieldEnum.title, op: "substring", pattern: "new york" },
+            { field: FieldEnum.title, op: "substring", pattern: "los angeles" },
+            { field: FieldEnum.title, op: "word", pattern: "chicago" },
+            { field: FieldEnum.title, op: "word", pattern: "houston" },
+            { field: FieldEnum.title, op: "word", pattern: "phoenix" },
+            { field: FieldEnum.title, op: "word", pattern: "philadelphia" },
+            { field: FieldEnum.title, op: "substring", pattern: "san antonio" },
+            { field: FieldEnum.title, op: "substring", pattern: "san diego" },
+            { field: FieldEnum.title, op: "word", pattern: "dallas" },
+            { field: FieldEnum.title, op: "word", pattern: "jacksonville" },
+            { field: FieldEnum.title, op: "substring", pattern: "fort worth" },
+            { field: FieldEnum.title, op: "substring", pattern: "san jose" },
+            { field: FieldEnum.title, op: "word", pattern: "austin" },
+            { field: FieldEnum.title, op: "word", pattern: "charlotte" },
+            { field: FieldEnum.title, op: "word", pattern: "columbus" },
+            { field: FieldEnum.title, op: "word", pattern: "indianapolis" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "san francisco",
+            },
+            { field: FieldEnum.title, op: "word", pattern: "seattle" },
+            { field: FieldEnum.title, op: "word", pattern: "denver" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "oklahoma city",
+            },
+            { field: FieldEnum.title, op: "word", pattern: "nashville" },
+            { field: FieldEnum.title, op: "word", pattern: "washington" },
+            { field: FieldEnum.title, op: "substring", pattern: "el paso" },
+            { field: FieldEnum.title, op: "substring", pattern: "las vegas" },
+            { field: FieldEnum.title, op: "word", pattern: "boston" },
+            { field: FieldEnum.title, op: "word", pattern: "detroit" },
+            { field: FieldEnum.title, op: "word", pattern: "louisville" },
+            { field: FieldEnum.title, op: "word", pattern: "portland" },
+            { field: FieldEnum.title, op: "word", pattern: "memphis" },
+            { field: FieldEnum.title, op: "word", pattern: "baltimore" },
+            { field: FieldEnum.title, op: "word", pattern: "milwaukee" },
+            { field: FieldEnum.title, op: "word", pattern: "albuquerque" },
+            { field: FieldEnum.title, op: "word", pattern: "tucson" },
+            { field: FieldEnum.title, op: "word", pattern: "fresno" },
+            { field: FieldEnum.title, op: "word", pattern: "sacramento" },
+            { field: FieldEnum.title, op: "word", pattern: "atlanta" },
+            { field: FieldEnum.title, op: "word", pattern: "mesa" },
+            { field: FieldEnum.title, op: "substring", pattern: "kansas city" },
+            { field: FieldEnum.title, op: "word", pattern: "raleigh" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "colorado springs",
+            },
+            { field: FieldEnum.title, op: "word", pattern: "omaha" },
+            { field: FieldEnum.title, op: "word", pattern: "miami" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "virginia beach",
+            },
+            { field: FieldEnum.title, op: "substring", pattern: "long beach" },
+            { field: FieldEnum.title, op: "word", pattern: "oakland" },
+            { field: FieldEnum.title, op: "word", pattern: "minneapolis" },
+            { field: FieldEnum.title, op: "word", pattern: "bakersfield" },
+            { field: FieldEnum.title, op: "word", pattern: "tulsa" },
+            { field: FieldEnum.title, op: "word", pattern: "tampa" },
+            { field: FieldEnum.title, op: "word", pattern: "arlington" },
           ],
         },
         {
           any: [
             { field: FieldEnum.title, op: "substring", pattern: "shoot up" },
             { field: FieldEnum.title, op: "word", pattern: "shooting" },
+            { field: FieldEnum.title, op: "word", pattern: "shooter" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "border agent",
+            },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "border officer",
+            },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "detension center",
+            },
+            { field: FieldEnum.title, op: "substring", pattern: "police" },
+            {
+              field: FieldEnum.title,
+              op: "substring",
+              pattern: "law enforcement",
+            },
           ],
         },
       ],
