@@ -1,4 +1,5 @@
-import { LemmyFilters, FieldEnum, Condition, Rule } from "./schema";
+import { FilterFile, FieldEnum, Condition } from "./schema";
+import _ from "lodash";
 
 function nfkcCasefold(input: string) {
   input = input.toLowerCase();
@@ -59,47 +60,83 @@ export function containsWholeWord(
   return buildWordRegex(word, opts).test(text);
 }
 
+/**
+ * All is applied in order, so if there is a less expensive
+ * filter in the list, we should apply that one first.
+ */
+export function optimizeFilterFile(file: FilterFile) {
+  file = _.cloneDeep(file);
+  for (const rule of file.rules) {
+    rule.all?.sort((a, b) => {
+      const aIsAny = "any" in a;
+      const bIsAny = "any" in b;
+      if (aIsAny && !bIsAny) {
+        return 1;
+      }
+      if (bIsAny && !aIsAny) {
+        return -1;
+      }
+      if (aIsAny && bIsAny) {
+        return a.any.length - b.any.length;
+      }
+      return 0;
+    });
+  }
+  return file;
+}
+
 function applyAll(
   all: (Condition | { any: Condition[] })[],
-  ctx: {
+  ctx: Partial<{
     [FieldEnum.title]: string;
     [FieldEnum.body]: string;
     [FieldEnum.community_name]: string;
     [FieldEnum.user_name]: string;
-  },
+  }>,
 ) {
-  let matches = true;
   for (const cond of all ?? []) {
     if ("any" in cond) {
-      matches = matches && !!applyAny(cond.any, ctx);
+      if (!applyAny(cond.any, ctx)) {
+        return false;
+      }
       continue;
     }
 
     const text = ctx[cond.field];
 
+    if (_.isNil(text)) {
+      continue;
+    }
+
     switch (cond.op) {
       case "exact":
-        matches = matches && text === cond.pattern;
+        if (text !== cond.pattern) {
+          return false;
+        }
         break;
       case "substring":
-        matches = matches && text.includes(cond.pattern);
+        if (!text.includes(cond.pattern)) {
+          return false;
+        }
         break;
       case "word":
-        matches = matches && containsWholeWord(text, cond.pattern);
+        if (!containsWholeWord(text, cond.pattern)) {
+          return false;
+        }
         break;
     }
   }
-  return matches;
+  return true;
 }
 
 function applyAny(
   any: (Condition | { all: Condition[] })[],
-  ctx: {
+  ctx: Partial<{
     [FieldEnum.title]: string;
     [FieldEnum.body]: string;
     [FieldEnum.community_name]: string;
     [FieldEnum.user_name]: string;
-  },
+  }>,
 ) {
   for (const cond of any ?? []) {
     if ("all" in cond) {
@@ -110,6 +147,10 @@ function applyAny(
     }
 
     const text = ctx[cond.field];
+
+    if (_.isNil(text)) {
+      continue;
+    }
 
     switch (cond.op) {
       case "exact":
@@ -134,8 +175,8 @@ function applyAny(
 }
 
 export function applyFilters(
-  input: Record<FieldEnum, string>,
-  filter: LemmyFilters,
+  input: Partial<Record<FieldEnum, string>>,
+  filter: FilterFile,
 ) {
   let title = input[FieldEnum.title];
   let body = input[FieldEnum.body];
@@ -143,18 +184,22 @@ export function applyFilters(
   let community_name = input[FieldEnum.community_name];
 
   if (filter.options.strip_diacritics) {
-    title = removeDiacritics(title);
-    body = removeDiacritics(body);
-    user_name = removeDiacritics(user_name);
-    community_name = removeDiacritics(community_name);
+    title = title ? removeDiacritics(title) : title;
+    body = body ? removeDiacritics(body) : body;
+    user_name = user_name ? removeDiacritics(user_name) : user_name;
+    community_name = community_name
+      ? removeDiacritics(community_name)
+      : community_name;
   }
 
   switch (filter.options.normalize) {
     case "nfkc_casefold": {
-      title = nfkcCasefold(title);
-      body = nfkcCasefold(body);
-      user_name = nfkcCasefold(user_name);
-      community_name = nfkcCasefold(community_name);
+      title = title ? nfkcCasefold(title) : title;
+      body = body ? nfkcCasefold(body) : body;
+      user_name = user_name ? nfkcCasefold(user_name) : user_name;
+      community_name = community_name
+        ? nfkcCasefold(community_name)
+        : community_name;
     }
   }
 
