@@ -969,11 +969,29 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     });
   }
 
+  async removePost(form: Forms.RemovePost) {
+    const { post_view } = await this.client.removePost({
+      post_id: form.postId,
+      removed: form.removed,
+      reason: form.reason,
+    });
+    return convertPost(post_view);
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.client.createCommentReport({
       comment_id: form.commentId,
       reason: form.reason,
     });
+  }
+
+  async removeComment(form: Forms.RemoveComment) {
+    const { comment_view } = await this.client.removeComment({
+      comment_id: form.commentId,
+      removed: form.removed,
+      reason: form.reason,
+    });
+    return convertComment(comment_view);
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {

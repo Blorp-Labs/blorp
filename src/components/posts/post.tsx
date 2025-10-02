@@ -202,7 +202,11 @@ export function StickyPostHeader({
       )}
     >
       <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden">
-        {postView.title}
+        {postView.deleted
+          ? "deleted"
+          : postView.removed
+            ? "removed"
+            : postView.title}
       </div>
       {postView.thumbnailUrl && (
         <img
@@ -304,8 +308,12 @@ function LargePostCard({
   const embed = post ? getPostEmbed(post) : null;
 
   const showImage =
-    embed?.type === "image" && !post.deleted && imageStatus !== "error";
-  const showArticle = embed?.type === "article" && !post?.deleted;
+    embed?.type === "image" &&
+    !post.deleted &&
+    !post.removed &&
+    imageStatus !== "error";
+  const showArticle =
+    embed?.type === "article" && !post?.deleted && !post.removed;
   const blurImg = post.nsfw && !removeBlur ? blurNsfw : false;
 
   const titleId = `${id}-title`;
@@ -367,11 +375,12 @@ function LargePostCard({
           )}
           id={titleId}
         >
-          {post.deleted ? "deleted" : post.title}
+          {post.deleted ? "deleted" : post.removed ? "removed" : post.title}
         </span>
         {!detailView &&
           post.body &&
           !post.deleted &&
+          !post.removed &&
           embed?.type === "text" && (
             <p
               className={cn(
@@ -441,37 +450,45 @@ function LargePostCard({
         />
       )}
 
-      {embed?.type === "generic-video" && !post.deleted && embed.embedUrl && (
-        <IFramePostEmbed embedVideoUrl={embed.embedUrl} />
-      )}
-      {embed?.type === "peertube" && !post.deleted && embed.embedUrl && (
-        <PeerTubeEmbed url={embed.embedUrl} />
-      )}
-      {embed?.type === "soundcloud" && !post.deleted && embed.embedUrl && (
-        <SoundCloudEmbed url={embed.embedUrl} />
-      )}
-      {embed?.type === "spotify" && !post.deleted && embed.embedUrl && (
-        <SpotifyEmbed url={embed.embedUrl} />
-      )}
+      {embed?.type === "generic-video" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && <IFramePostEmbed embedVideoUrl={embed.embedUrl} />}
+      {embed?.type === "peertube" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && <PeerTubeEmbed url={embed.embedUrl} />}
+      {embed?.type === "soundcloud" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && <SoundCloudEmbed url={embed.embedUrl} />}
+      {embed?.type === "spotify" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && <SpotifyEmbed url={embed.embedUrl} />}
       {embed?.type &&
         PostVideoEmbed.embedTypes.includes(embed?.type) &&
         !post.deleted &&
+        !post.removed &&
         embed.embedUrl && (
           <PostVideoEmbed url={embed.embedUrl} blurNsfw={blurImg} />
         )}
-      {embed?.type === "loops" && !post.deleted && embed.embedUrl && (
-        <PostLoopsEmbed
-          url={embed.embedUrl}
-          thumbnail={embed.thumbnail}
-          autoPlay={detailView}
-          blurNsfw={blurImg}
-        />
-      )}
-      {embed?.type === "youtube" && !post.deleted && (
+      {embed?.type === "loops" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && (
+          <PostLoopsEmbed
+            url={embed.embedUrl}
+            thumbnail={embed.thumbnail}
+            autoPlay={detailView}
+            blurNsfw={blurImg}
+          />
+        )}
+      {embed?.type === "youtube" && !post.deleted && !post.removed && (
         <YouTubeVideoEmbed url={embed.embedUrl} />
       )}
 
-      {detailView && post.body && !post.deleted && (
+      {detailView && post.body && !post.deleted && !post.removed && (
         <div className="flex-1" {...doubeTapLike}>
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
@@ -537,8 +554,12 @@ function SmallPostCard({
   const embed = post ? getPostEmbed(post) : null;
 
   const showImage =
-    embed?.thumbnail && !post.deleted && embed.type !== "article";
-  const showArticle = !post.deleted && embed?.type === "article";
+    embed?.thumbnail &&
+    !post.deleted &&
+    !post.removed &&
+    embed.type !== "article";
+  const showArticle =
+    !post.deleted && !post.removed && embed?.type === "article";
   const blurImg = post.nsfw && blurNsfw;
 
   const titleId = `${id}-title`;
@@ -652,7 +673,7 @@ function SmallPostCard({
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
-            {post.deleted ? "deleted" : post.title}
+            {post.deleted ? "deleted" : post.removed ? "removed" : post.title}
           </span>
         </Link>
 
@@ -744,7 +765,7 @@ function ExtraSmallPostCard({
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
-            {post.deleted ? "deleted" : post.title}
+            {post.deleted ? "deleted" : post.removed ? "removed" : post.title}
           </span>
         </Link>
 

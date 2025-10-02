@@ -1742,11 +1742,43 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
   }
 
+  async removePost(form: Forms.RemovePost) {
+    const json = await this.post("/post/remove", {
+      post_id: form.postId,
+      removed: form.removed,
+      reason: form.reason,
+    });
+    const { post_view, cross_posts } = z
+      .object({
+        post_view: pieFedPostViewSchema,
+        cross_posts: z.array(pieFedCrosspostSchema).nullish(),
+      })
+      .parse(json);
+    return convertPost({
+      postView: post_view,
+      crossPosts: cross_posts ?? undefined,
+    });
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.post("/comment/report", {
       comment_id: form.commentId,
       reason: form.reason,
     });
+  }
+
+  async removeComment(form: Forms.RemoveComment) {
+    const json = await this.post("/comment/remove", {
+      comment_id: form.commentId,
+      removed: form.removed,
+      reason: form.reason,
+    });
+    const { comment_view } = z
+      .object({
+        comment_view: pieFedCommentViewSchema,
+      })
+      .parse(json);
+    return convertComment(comment_view);
   }
 
   async blockPerson(form: Forms.BlockPerson) {

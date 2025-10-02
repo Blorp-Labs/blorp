@@ -2158,6 +2158,69 @@ export function useFeaturePost(apId: string) {
   });
 }
 
+export function useRemovePost() {
+  const { api } = useApiClients();
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.RemovePost & { apId: string }) =>
+      (await api).removePost(form),
+    onMutate: ({ removed, apId }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticRemoved: removed,
+      });
+    },
+    onSuccess: (postView) => {
+      patchPost(postView.apId, getCachePrefixer(), {
+        optimisticRemoved: undefined,
+        ...postView,
+      });
+    },
+    onError: (err, { removed, apId }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticRemoved: undefined,
+      });
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${removed ? "remove" : "restore"} post`);
+      }
+    },
+  });
+}
+
+export function useRemoveComment() {
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.RemoveComment & { path: string }) =>
+      (await api).removeComment(form),
+    onMutate: ({ removed, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticRemoved: removed,
+      }));
+    },
+    onSuccess: (commentView) =>
+      patchComment(commentView.path, getCachePrefixer(), () => ({
+        optimisticRemoved: undefined,
+        ...commentView,
+      })),
+    onError: (err, { removed, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticRemoved: undefined,
+      }));
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${removed ? "remove" : "restore"} comment`);
+      }
+    },
+  });
+}
+
 export function useUploadImage() {
   const { api } = useApiClients();
   return useMutation({
