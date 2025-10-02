@@ -2,7 +2,6 @@ import { FilterFile, Condition, FilterCtx } from "./schema";
 import _ from "lodash";
 
 function nfkcCasefold(input: string) {
-  input = input.toLowerCase();
   try {
     return input.normalize("NFKD");
   } catch {
@@ -43,7 +42,7 @@ export function buildWordRegex(word: string, { caseInsensitive = true } = {}) {
     // Start: start-of-string or NOT a word char
     // End: end-of-string or NOT a word char
     const pattern = `(?:^|[^${WORD}])${w}(?=$|[^${WORD}])`;
-    return new RegExp(pattern, caseInsensitive ? "iu" : "u");
+    return new RegExp(pattern, caseInsensitive ? "u" : "iu");
   }
 
   // ASCII fallback: \b is fine for [A-Za-z0-9_]
@@ -85,10 +84,14 @@ export function optimizeFilterFile(file: FilterFile) {
   return file;
 }
 
-function applyAll(all: (Condition | { any: Condition[] })[], ctx: FilterCtx) {
+function applyAll(
+  all: (Condition | { any: Condition[] })[],
+  ctx: FilterCtx,
+  lowerCaseCtx: FilterCtx,
+) {
   for (const cond of all ?? []) {
     if ("any" in cond) {
-      if (!applyAny(cond.any, ctx)) {
+      if (!applyAny(cond.any, ctx, lowerCaseCtx)) {
         return false;
       }
       continue;
@@ -109,7 +112,7 @@ function applyAll(all: (Condition | { any: Condition[] })[], ctx: FilterCtx) {
     }
 
     for (const field of fields) {
-      const text = ctx[field];
+      const text = cond.caseSensitive ? ctx[field] : lowerCaseCtx[field];
 
       if (_.isNil(text)) {
         continue;
@@ -127,7 +130,11 @@ function applyAll(all: (Condition | { any: Condition[] })[], ctx: FilterCtx) {
           }
           break;
         case "word":
-          if (!containsWholeWord(text, cond.pattern)) {
+          if (
+            !containsWholeWord(text, cond.pattern, {
+              caseInsensitive: cond.caseSensitive ?? false,
+            })
+          ) {
             return false;
           }
           break;
@@ -137,10 +144,14 @@ function applyAll(all: (Condition | { any: Condition[] })[], ctx: FilterCtx) {
   return true;
 }
 
-function applyAny(any: (Condition | { all: Condition[] })[], ctx: FilterCtx) {
+function applyAny(
+  any: (Condition | { all: Condition[] })[],
+  ctx: FilterCtx,
+  lowerCaseCtx: FilterCtx,
+) {
   for (const cond of any ?? []) {
     if ("all" in cond) {
-      if (applyAny(cond.all, ctx)) {
+      if (applyAny(cond.all, ctx, lowerCaseCtx)) {
         return true;
       }
       continue;
@@ -161,7 +172,7 @@ function applyAny(any: (Condition | { all: Condition[] })[], ctx: FilterCtx) {
     }
 
     for (const field of fields) {
-      const text = ctx[field];
+      const text = cond.caseSensitive ? ctx[field] : lowerCaseCtx[field];
 
       if (_.isNil(text)) {
         continue;
@@ -179,7 +190,11 @@ function applyAny(any: (Condition | { all: Condition[] })[], ctx: FilterCtx) {
           }
           break;
         case "word":
-          if (containsWholeWord(text, cond.pattern)) {
+          if (
+            containsWholeWord(text, cond.pattern, {
+              caseInsensitive: cond.caseSensitive ?? false,
+            })
+          ) {
             return true;
           }
           break;
@@ -193,7 +208,7 @@ function applyAny(any: (Condition | { all: Condition[] })[], ctx: FilterCtx) {
 export function applyFilters(input: FilterCtx, filter: FilterFile) {
   let { title, body, userName, communityName } = input;
 
-  if (filter.options.strip_diacritics) {
+  if (filter.options.stripDiacritics) {
     title = title ? removeDiacritics(title) : title;
     body = body ? removeDiacritics(body) : body;
     userName = userName ? removeDiacritics(userName) : userName;
@@ -215,20 +230,27 @@ export function applyFilters(input: FilterCtx, filter: FilterFile) {
 
   const normalizedInput = {
     title,
-    body,
+    body: body ? body.substring(1, filter.options.maxBodyChars) : body,
     communityName,
     userName,
   };
 
+  const normalizedLowerCaseInput = {
+    title: title?.toLowerCase(),
+    body: body?.toLowerCase(),
+    communityName: communityName?.toLowerCase(),
+    userName: userName?.toLowerCase(),
+  };
+
   for (const rule of filter.rules) {
     if (rule.any) {
-      if (applyAny(rule.any, normalizedInput)) {
+      if (applyAny(rule.any, normalizedInput, normalizedLowerCaseInput)) {
         return rule;
       }
     }
 
     if (rule.all) {
-      if (applyAll(rule.all, normalizedInput)) {
+      if (applyAll(rule.all, normalizedInput, normalizedLowerCaseInput)) {
         return rule;
       }
     }
