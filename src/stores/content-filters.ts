@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { isTest } from "../lib/device";
-import { FilterFile, FieldEnum } from "../lib/filters/schema";
+import { FilterFile } from "../lib/filters/schema";
 import { filterPolitics } from "../lib/filters/politics";
 import { applyFilters, optimizeFilterFile } from "../lib/filters/filter";
 import { useMemo } from "react";
@@ -43,7 +43,7 @@ export function useIsCommunityBlockedByContentFilters(communityName?: string) {
     for (const { file } of filters) {
       const rule = applyFilters(
         {
-          [FieldEnum.community_name]: communityName,
+          communityName,
         },
         file,
       );
