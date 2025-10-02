@@ -40,6 +40,7 @@ export type FilterCtx = Partial<{
 export const Condition = z.object({
   op: z.union([z.literal("exact"), z.literal("substring"), z.literal("word")]),
   pattern: z.string(),
+  caseSensitive: z.boolean().optional(),
   title: z.boolean().optional(),
   body: z.boolean().optional(),
   communityName: z.boolean().optional(),
@@ -82,8 +83,8 @@ export type Rule = z.infer<typeof RuleSchema>;
 // --------------------------------------
 export const OptionsSchema = z.object({
   normalize: NormalizeEnum.default("nfkc_casefold"),
-  strip_diacritics: z.boolean().default(true),
-  max_body_chars: z.number().int().min(0).default(50000),
+  stripDiacritics: z.boolean().default(true),
+  maxBodyChars: z.number().int().min(0).default(50000),
 });
 export type Options = z.infer<typeof OptionsSchema>;
 
@@ -91,11 +92,11 @@ export type Options = z.infer<typeof OptionsSchema>;
 // Top-level spec
 // --------------------------------------
 export const LemmyFiltersSchema = z.object({
-  spec_version: z
+  specVersion: z
     .string()
     .regex(
-      /^lemmy-filters\/\d+\.\d+$/,
-      "spec_version must look like 'lemmy-filters/1.0'",
+      /^blorp-filters\/\d+\.\d+$/,
+      "spec_version must look like 'blorp-filters/1.0'",
     ),
   options: OptionsSchema.default({}),
   rules: z.array(RuleSchema).min(1),
