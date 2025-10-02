@@ -1,11 +1,11 @@
 import { FilterFile } from "./schema";
 
 export const filterPolitics: FilterFile = {
-  spec_version: "lemmy-filters/1.0",
+  specVersion: "lemmy-filters/1.0",
   options: {
     normalize: "nfkc_casefold",
-    strip_diacritics: true,
-    max_body_chars: 50000,
+    stripDiacritics: true,
+    maxBodyChars: 50000,
   },
   rules: [
     {
@@ -115,7 +115,7 @@ export const filterPolitics: FilterFile = {
         },
         {
           title: true,
-          op: "word",
+          op: "substring",
           pattern: "trump",
         },
         { title: true, op: "word", pattern: "vance" },
@@ -134,6 +134,11 @@ export const filterPolitics: FilterFile = {
     },
     {
       name: "ICE",
+      any: [{ title: true, op: "word", pattern: "ICE", caseSensitive: true }],
+      action: "hide",
+    },
+    {
+      name: "ice",
       all: [
         { title: true, op: "substring", pattern: "ice" },
         {
