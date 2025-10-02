@@ -36,7 +36,6 @@ import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { applyFilters } from "@/src/lib/filters/filter";
-import { FieldEnum } from "@/src/lib/filters/schema";
 import { useContentFiltersStore } from "@/src/stores/content-filters";
 
 function Notice({ children }: { children: React.ReactNode }) {
@@ -846,10 +845,10 @@ export function PostCard(props: PostProps) {
     for (const file of filterFiles) {
       const rule = applyFilters(
         {
-          [FieldEnum.title]: post.title,
-          [FieldEnum.body]: post.body ?? "",
-          [FieldEnum.community_name]: post.communitySlug,
-          [FieldEnum.user_name]: post.creatorSlug,
+          title: post.title,
+          body: post.body ?? "",
+          communityName: post.communitySlug,
+          userName: post.creatorSlug,
         },
         file,
       );

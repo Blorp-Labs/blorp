@@ -24,44 +24,28 @@ import { z } from "zod";
 // --------------------------------------
 // Enums & basic primitives
 // --------------------------------------
-export enum FieldEnum {
-  "title",
-  "body",
-  "community_name",
-  "user_name",
-}
-
 export const ActionTypeEnum = z.enum(["hide"]);
 export const NormalizeEnum = z.enum(["none", "nfkc_casefold"]);
+
+export type FilterCtx = Partial<{
+  title: string;
+  body: string;
+  communityName: string;
+  userName: string;
+}>;
 
 // --------------------------------------
 // Condition shapes (discriminated by `op`)
 // --------------------------------------
-const BaseCondition = z.object({
-  field: z.nativeEnum(FieldEnum),
+export const Condition = z.object({
+  op: z.union([z.literal("exact"), z.literal("substring"), z.literal("word")]),
+  pattern: z.string(),
+  title: z.boolean().optional(),
+  body: z.boolean().optional(),
+  communityName: z.boolean().optional(),
+  userName: z.boolean().optional(),
 });
 
-const ExactCondition = BaseCondition.extend({
-  op: z.literal("exact"),
-  pattern: z.string().min(1),
-});
-
-const SubstringCondition = BaseCondition.extend({
-  op: z.literal("substring"),
-  pattern: z.string().min(1),
-});
-
-const WordCondition = BaseCondition.extend({
-  // Whole-word match for a single token (after normalization/tokenization in your engine)
-  op: z.literal("word"),
-  pattern: z.string().min(1),
-});
-
-export const Condition = z.discriminatedUnion("op", [
-  ExactCondition,
-  SubstringCondition,
-  WordCondition,
-]);
 export type Condition = z.infer<typeof Condition>;
 
 // --------------------------------------
