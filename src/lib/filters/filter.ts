@@ -1,4 +1,4 @@
-import { FilterFile, FieldEnum, Condition } from "./schema";
+import { FilterFile, Condition, FilterCtx } from "./schema";
 import _ from "lodash";
 
 function nfkcCasefold(input: string) {
@@ -85,15 +85,7 @@ export function optimizeFilterFile(file: FilterFile) {
   return file;
 }
 
-function applyAll(
-  all: (Condition | { any: Condition[] })[],
-  ctx: Partial<{
-    [FieldEnum.title]: string;
-    [FieldEnum.body]: string;
-    [FieldEnum.community_name]: string;
-    [FieldEnum.user_name]: string;
-  }>,
-) {
+function applyAll(all: (Condition | { any: Condition[] })[], ctx: FilterCtx) {
   for (const cond of all ?? []) {
     if ("any" in cond) {
       if (!applyAny(cond.any, ctx)) {
@@ -102,42 +94,50 @@ function applyAll(
       continue;
     }
 
-    const text = ctx[cond.field];
-
-    if (_.isNil(text)) {
-      continue;
+    const fields: (keyof FilterCtx)[] = [];
+    if (cond.title) {
+      fields.push("title");
+    }
+    if (cond.body) {
+      fields.push("body");
+    }
+    if (cond.communityName) {
+      fields.push("communityName");
+    }
+    if (cond.userName) {
+      fields.push("userName");
     }
 
-    switch (cond.op) {
-      case "exact":
-        if (text !== cond.pattern) {
-          return false;
-        }
-        break;
-      case "substring":
-        if (!text.includes(cond.pattern)) {
-          return false;
-        }
-        break;
-      case "word":
-        if (!containsWholeWord(text, cond.pattern)) {
-          return false;
-        }
-        break;
+    for (const field of fields) {
+      const text = ctx[field];
+
+      if (_.isNil(text)) {
+        continue;
+      }
+
+      switch (cond.op) {
+        case "exact":
+          if (text !== cond.pattern) {
+            return false;
+          }
+          break;
+        case "substring":
+          if (!text.includes(cond.pattern)) {
+            return false;
+          }
+          break;
+        case "word":
+          if (!containsWholeWord(text, cond.pattern)) {
+            return false;
+          }
+          break;
+      }
     }
   }
   return true;
 }
 
-function applyAny(
-  any: (Condition | { all: Condition[] })[],
-  ctx: Partial<{
-    [FieldEnum.title]: string;
-    [FieldEnum.body]: string;
-    [FieldEnum.community_name]: string;
-    [FieldEnum.user_name]: string;
-  }>,
-) {
+function applyAny(any: (Condition | { all: Condition[] })[], ctx: FilterCtx) {
   for (const cond of any ?? []) {
     if ("all" in cond) {
       if (applyAny(cond.all, ctx)) {
@@ -146,68 +146,78 @@ function applyAny(
       continue;
     }
 
-    const text = ctx[cond.field];
-
-    if (_.isNil(text)) {
-      continue;
+    const fields: (keyof FilterCtx)[] = [];
+    if (cond.title) {
+      fields.push("title");
+    }
+    if (cond.body) {
+      fields.push("body");
+    }
+    if (cond.communityName) {
+      fields.push("communityName");
+    }
+    if (cond.userName) {
+      fields.push("userName");
     }
 
-    switch (cond.op) {
-      case "exact":
-        if (text === cond.pattern) {
-          return true;
-        }
-        break;
-      case "substring":
-        if (text.includes(cond.pattern)) {
-          return true;
-        }
-        break;
-      case "word":
-        if (containsWholeWord(text, cond.pattern)) {
-          return true;
-        }
-        break;
+    for (const field of fields) {
+      const text = ctx[field];
+
+      if (_.isNil(text)) {
+        continue;
+      }
+
+      switch (cond.op) {
+        case "exact":
+          if (text === cond.pattern) {
+            return true;
+          }
+          break;
+        case "substring":
+          if (text.includes(cond.pattern)) {
+            return true;
+          }
+          break;
+        case "word":
+          if (containsWholeWord(text, cond.pattern)) {
+            return true;
+          }
+          break;
+      }
     }
   }
 
   return false;
 }
 
-export function applyFilters(
-  input: Partial<Record<FieldEnum, string>>,
-  filter: FilterFile,
-) {
-  let title = input[FieldEnum.title];
-  let body = input[FieldEnum.body];
-  let user_name = input[FieldEnum.user_name];
-  let community_name = input[FieldEnum.community_name];
+export function applyFilters(input: FilterCtx, filter: FilterFile) {
+  let { title, body, userName, communityName } = input;
 
   if (filter.options.strip_diacritics) {
     title = title ? removeDiacritics(title) : title;
     body = body ? removeDiacritics(body) : body;
-    user_name = user_name ? removeDiacritics(user_name) : user_name;
-    community_name = community_name
-      ? removeDiacritics(community_name)
-      : community_name;
+    userName = userName ? removeDiacritics(userName) : userName;
+    communityName = communityName
+      ? removeDiacritics(communityName)
+      : communityName;
   }
 
   switch (filter.options.normalize) {
     case "nfkc_casefold": {
       title = title ? nfkcCasefold(title) : title;
       body = body ? nfkcCasefold(body) : body;
-      user_name = user_name ? nfkcCasefold(user_name) : user_name;
-      community_name = community_name
-        ? nfkcCasefold(community_name)
-        : community_name;
+      userName = userName ? nfkcCasefold(userName) : userName;
+      communityName = communityName
+        ? nfkcCasefold(communityName)
+        : communityName;
     }
   }
 
   const normalizedInput = {
-    [FieldEnum.title]: title,
-    [FieldEnum.body]: body,
-    [FieldEnum.community_name]: community_name,
-    [FieldEnum.user_name]: user_name,
+    title,
+    body,
+    communityName,
+    userName,
   };
 
   for (const rule of filter.rules) {
