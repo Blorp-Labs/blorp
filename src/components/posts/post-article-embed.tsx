@@ -150,7 +150,7 @@ export function PostArticleMiniEmbed({
       )}
       {url && (
         <div className="absolute inset-x-1 bottom-1 bg-black/30 text-white rounded-sm px-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
-          <span className="text-xs line-clamp-1 flex-1">
+          <span className="text-xs truncate text-ellipsis flex-1">
             {getDisplayUrl(url).host}
           </span>
           {showImage && <FaExternalLinkAlt className="text-xs scale-80" />}
@@ -208,7 +208,7 @@ export function PostArticleEmbed({
 
           {url && (
             <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
-              <span className="line-clamp-1 flex-1">
+              <span className="truncate text-ellipsis flex-1">
                 {getDisplayUrl(url).displayUrl}
               </span>
               <FaExternalLinkAlt className="text-sm" />
@@ -222,7 +222,7 @@ export function PostArticleEmbed({
             "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
           )}
         >
-          <span className="line-clamp-1 flex-1">
+          <span className="truncate text-ellipsis">
             {getDisplayUrl(url).displayUrl}
           </span>
           <FaExternalLinkAlt className="text-sm" />
