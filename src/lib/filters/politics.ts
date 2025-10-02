@@ -160,6 +160,7 @@ export const filterPolitics: FilterFile = {
         {
           any: [
             { title: true, op: "substring", pattern: "u.s." },
+            { title: true, op: "word", pattern: "US", caseSensitive: true },
             // US States
             { title: true, op: "word", pattern: "alabama" },
             { title: true, op: "word", pattern: "alaska" },
