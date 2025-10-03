@@ -59,10 +59,7 @@ export function SmallScreenSidebar({
   });
   const community = useCommunityFromStore(communityName);
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const data = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(communityName)]?.data,
-  );
+  const data = useCommunityFromStore(communityName);
   const communityView = data?.communityView;
   const isBlocked = useIsCommunityBlocked(communityName);
 
