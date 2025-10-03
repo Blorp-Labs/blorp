@@ -217,7 +217,7 @@ export default function CommunityFeed() {
                 ? [NO_ITEMS]
                 : data
             }
-            stickyHeaderIndices={[1, 2]}
+            stickyHeaderIndices={[1]}
             header={[
               <Fragment key="community-header">
                 <SmallScreenSidebar
@@ -229,16 +229,12 @@ export default function CommunityFeed() {
                   <></>
                 </ContentGutters>
               </Fragment>,
-              <CommunityFeedSortBar
-                communityName={communityName}
-                key="community-sort-bar"
-              />,
-              !refreshing && (
-                <Separator
-                  key="separator"
-                  className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden"
-                />
-              ),
+              <Fragment key="community-sort-bar">
+                <CommunityFeedSortBar communityName={communityName} />
+                {!refreshing && (
+                  <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
+                )}
+              </Fragment>,
             ]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
