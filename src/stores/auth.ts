@@ -21,6 +21,9 @@ export function getCachePrefixer(account?: Account): CachePrefixer {
     prefix += "authed_";
   }
   return (cacheKey) => {
+    if (_.isString(cacheKey)) {
+      cacheKey = cacheKey.toLowerCase();
+    }
     return (prefix + cacheKey) as CacheKey;
   };
 }
