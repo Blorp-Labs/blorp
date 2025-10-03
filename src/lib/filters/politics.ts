@@ -312,8 +312,8 @@ export const filterPolitics: FilterFile = {
         {
           any: [
             { title: true, op: "substring", pattern: "shoot up" },
-            { title: true, op: "word", pattern: "shooting" },
-            { title: true, op: "word", pattern: "shooter" },
+            { title: true, op: "substring", pattern: "shooting" },
+            { title: true, op: "substring", pattern: "shooter" },
             {
               title: true,
               op: "substring",
