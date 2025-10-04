@@ -149,24 +149,34 @@ export function CommentReplyProvider({
       setState(null);
       return;
     }
+    const clearEditor = () => {
+      setContent(commentKey, null);
+      setState(null);
+      setSignal((s) => s + 1);
+    };
+    const undoClearEditor = () => {
+      setContent(commentKey, body);
+    };
     if (comment) {
-      editComment.mutate({
-        id: comment.id,
-        path: comment.path,
-        body: body,
-      });
+      editComment
+        .mutateAsync({
+          id: comment.id,
+          path: comment.path,
+          body: body,
+        })
+        .catch(() => undoClearEditor());
     } else if (_.isString(postApId)) {
-      createComment.mutate({
-        postApId,
-        body: body,
-        parentId: parent?.id,
-        parentPath: parent?.path,
-        queryKeyParentId,
-      });
+      createComment
+        .mutateAsync({
+          postApId,
+          body: body,
+          parentId: parent?.id,
+          parentPath: parent?.path,
+          queryKeyParentId,
+        })
+        .catch(() => undoClearEditor());
     }
-    setContent(commentKey, null);
-    setState(null);
-    setSignal((s) => s + 1);
+    clearEditor();
   };
 
   const onCancel = () => {
