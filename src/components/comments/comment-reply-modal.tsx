@@ -165,7 +165,6 @@ export function CommentReplyProvider({
           path: comment.path,
           body: body,
         })
-        .then(() => clearEditor())
         .catch(() => undoClearEditor());
     } else if (_.isString(postApId)) {
       createComment
@@ -176,7 +175,6 @@ export function CommentReplyProvider({
           parentPath: parent?.path,
           queryKeyParentId,
         })
-        .then(() => clearEditor())
         .catch(() => undoClearEditor());
     }
     clearEditor();
