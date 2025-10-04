@@ -44,6 +44,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
+import { useIsCommunityBlockedByContentFilters } from "../stores/content-filters";
 
 const EMPTY_ARR: never[] = [];
 
@@ -73,8 +74,13 @@ export default function CommunityFeed() {
   );
 
   const postSort = useFiltersStore((s) => s.postSort);
+
+  const isBlocked = useIsCommunityBlocked(communityName);
+  const isBlockedByFilters =
+    useIsCommunityBlockedByContentFilters(communityName);
   const posts = usePosts({
     communitySlug: communityName,
+    enabled: !isBlocked && !isBlockedByFilters,
   });
   const data = useMemo(
     () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
@@ -89,7 +95,6 @@ export default function CommunityFeed() {
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
-  const isBlocked = useIsCommunityBlocked(communityName);
 
   const updateRecent = useRecentCommunitiesStore((s) => s.update);
 
@@ -213,6 +218,7 @@ export default function CommunityFeed() {
             scrollHost
             data={
               isBlocked ||
+              isBlockedByFilters ||
               (data.length === 0 && !posts.isRefetching && !posts.isPending)
                 ? [NO_ITEMS]
                 : data
@@ -244,7 +250,9 @@ export default function CommunityFeed() {
                       <span>
                         {isBlocked
                           ? `You have ${communityName} blocked`
-                          : "Nothing to see here"}
+                          : isBlockedByFilters
+                            ? `Blocked by ${isBlockedByFilters.name ?? "content filters"}`
+                            : "Nothing to see here"}
                       </span>
                     </div>
                     <></>
