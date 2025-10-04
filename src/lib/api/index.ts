@@ -1236,12 +1236,9 @@ export function useCreateComment() {
         },
       });
 
-      const toastId = toast.loading("Creating comment");
-      return { newComment, toastId };
+      return newComment;
     },
     onSuccess: ({ newComment, sorts }, { postApId, queryKeyParentId }, ctx) => {
-      toast.dismiss(ctx.toastId);
-
       const settledComment = {
         path: newComment.path,
         creatorId: newComment.creatorId,
@@ -1249,7 +1246,7 @@ export function useCreateComment() {
         createdAt: newComment.createdAt,
       };
 
-      markCommentForRemoval(ctx.newComment.path, getCachePrefixer());
+      markCommentForRemoval(ctx.path, getCachePrefixer());
       cacheComments(getCachePrefixer(), [newComment]);
 
       patchReactQuery({
@@ -1258,7 +1255,7 @@ export function useCreateComment() {
         sorts,
         patchFn: (comments) => {
           if (comments) {
-            const index = comments.findIndex((p) => p === ctx.newComment.path);
+            const index = comments.findIndex((p) => p === ctx.path);
             if (index >= 0) {
               const clone = [...comments];
               clone[index] = settledComment.path;
@@ -1271,19 +1268,17 @@ export function useCreateComment() {
       });
     },
     onError: (_1, { postApId, queryKeyParentId }, ctx) => {
+      toast.error("Couldn't create comment");
       if (ctx) {
-        toast.error("Couldn't create comment");
         patchReactQuery({
           postApId,
           queryKeyParentId,
           sorts: [commentSort],
           patchFn: (comments) => {
             if (comments) {
-              const index = comments.findIndex(
-                (p) => p === ctx.newComment.path,
-              );
+              const index = comments.findIndex((p) => p === ctx.path);
               if (index >= 0) {
-                return comments.filter((p) => p !== ctx.newComment.path);
+                return comments.filter((p) => p !== ctx.path);
               }
             }
           },
@@ -1307,15 +1302,11 @@ export function useEditComment() {
         ...prev,
         body,
       }));
-      return toast.loading("Updating comment");
     },
-    onSuccess: (commentView, _ctx, toastId) => {
-      toast.dismiss(toastId);
+    onSuccess: (commentView) => {
       cacheComments(getCachePrefixer(), [commentView]);
     },
-    onError: (_err, _ctx, toastId) => {
-      toast.error("Couldn't update comment", { id: toastId });
-    },
+    onError: () => toast.error("Couldn't update comment"),
   });
 }
 
@@ -1340,6 +1331,8 @@ export function useDeleteComment() {
     onSuccess: (commentView) => {
       cacheComments(getCachePrefixer(), [commentView]);
     },
+    onError: (_err, { deleted }) =>
+      toast.error(`Failed to ${deleted ? "delete" : "undelete"} comment`),
   });
 }
 
