@@ -156,7 +156,6 @@ export function CommentReplyProvider({
     };
     const undoClearEditor = () => {
       setContent(commentKey, body);
-      setState(state);
     };
     if (comment) {
       editComment
