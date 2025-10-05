@@ -7652,7 +7652,7 @@ __metadata:
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     cmdk: "npm:^1.1.1"
-    cursor-effects: "npm:^1.0.17"
+    cursor-effects: "npm:1.0.17"
     dayjs: "npm:^1.11.13"
     dompurify: "npm:^3.2.6"
     express: "npm:^4.21.2"
@@ -8778,7 +8778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cursor-effects@npm:^1.0.17":
+"cursor-effects@npm:1.0.17":
   version: 1.0.17
   resolution: "cursor-effects@npm:1.0.17"
   checksum: 10c0/637272a247eca061ccc16c90f01c3d501832d095636e71e937a61bf6a29fef99776faeb2ff2b003397b2f45a4ca0fc2ddc1364a330c5cffd0e33c1321b6bd880
