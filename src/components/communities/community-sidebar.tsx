@@ -38,7 +38,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
-import Oneko from "@/src/features/easter-eggs/Oneko";
+import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);
@@ -309,7 +309,7 @@ export function CommunitySidebar({
   return (
     <Sidebar>
       <SidebarContent className="relative">
-        <Oneko seed={communityName}>
+        <EasterEggBox seed={communityName}>
           <div className="p-4 flex flex-col gap-3">
             <div className="flex flex-row items-start justify-between flex-1">
               <Avatar className="h-13 w-13">
@@ -423,7 +423,7 @@ export function CommunitySidebar({
               </Collapsible>
             </>
           )}
-        </Oneko>
+        </EasterEggBox>
       </SidebarContent>
     </Sidebar>
   );

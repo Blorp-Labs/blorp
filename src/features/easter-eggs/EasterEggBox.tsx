@@ -1,9 +1,9 @@
 import { isCapacitor } from "@/src/lib/device";
 import { useElementRect, useIsActiveRoute, useMedia } from "@/src/lib/hooks";
-import { isNotNil } from "@/src/lib/utils";
 import { Oneko as oneko } from "lots-o-nekos";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
+import { rainbowCursor } from "cursor-effects";
 
 const div = document.createElement("div");
 div.style = "position: absolute; inset: 0";
@@ -13,12 +13,12 @@ const cat = new oneko({
   skipElementInit: true,
 });
 
-export default function Oneko({
-  seed,
+function Oneko({
+  type,
   children,
 }: {
-  seed: string;
   children?: React.ReactNode;
+  type: "dog" | "cat";
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,27 +26,11 @@ export default function Oneko({
   const media = useMedia();
   const isDesktop = media.md;
 
-  const type = (() => {
-    const normalized = seed.trim().toLowerCase();
-    if (normalized.includes("dog")) {
-      return "dog";
-    } else if (normalized.includes("cat") || normalized.includes("aww")) {
-      return "cat";
-    }
-    return null;
-  })();
-
   const rect = useElementRect(containerRef);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (
-      container &&
-      isActive &&
-      isDesktop &&
-      !isCapacitor() &&
-      isNotNil(type)
-    ) {
+    if (container && isActive && isDesktop && !isCapacitor()) {
       container.appendChild(div);
 
       cat.element = null;
@@ -83,4 +67,56 @@ export default function Oneko({
       {children}
     </div>
   );
+}
+
+function RainbowCursor({ children }: { children: React.ReactNode }) {
+  const [signal, setSignal] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const div = ref.current;
+    if (div) {
+      const cursor = rainbowCursor({ element: div });
+      return () => cursor.destroy();
+    }
+  }, [signal]);
+  return (
+    <div
+      ref={ref}
+      onMouseEnter={() => setSignal((s) => s + 1)}
+      onMouseLeave={() => setSignal((s) => s + 1)}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function EasterEggBox({
+  seed,
+  children,
+}: {
+  seed: string;
+  children?: React.ReactNode;
+}) {
+  const type = (() => {
+    const normalized = seed.trim().toLowerCase();
+    if (normalized.includes("dog")) {
+      return "dog";
+    } else if (normalized.includes("cat") || normalized.includes("aww")) {
+      return "cat";
+    } else if (normalized.includes("lgbt") || normalized.includes("queer")) {
+      return "lgbt";
+    }
+    return null;
+  })();
+
+  switch (type) {
+    case "cat":
+      return <Oneko type="cat">{children}</Oneko>;
+    case "dog":
+      return <Oneko type="dog">{children}</Oneko>;
+    case "lgbt":
+      return <RainbowCursor>{children}</RainbowCursor>;
+    default:
+      return children;
+  }
 }
