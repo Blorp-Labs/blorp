@@ -58,10 +58,6 @@ function Oneko({
     }
   }, [isActive, isDesktop, type, rect]);
 
-  if (!isActive || !type) {
-    return children;
-  }
-
   return (
     <div className="relative" ref={containerRef}>
       {children}
@@ -97,6 +93,8 @@ export function EasterEggBox({
   seed: string;
   children?: React.ReactNode;
 }) {
+  const isActive = useIsActiveRoute();
+
   const type = (() => {
     const normalized = seed.trim().toLowerCase();
     if (normalized.includes("dog")) {
@@ -108,6 +106,10 @@ export function EasterEggBox({
     }
     return null;
   })();
+
+  if (!isActive) {
+    return children;
+  }
 
   switch (type) {
     case "cat":
