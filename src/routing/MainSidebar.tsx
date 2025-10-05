@@ -3,7 +3,7 @@ import { Link, ParamsFor } from "@/src/routing/index";
 import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import { useAuth } from "@/src/stores/auth";
+import { getAccountSite, useAuth } from "@/src/stores/auth";
 import {
   useModeratingCommunities,
   useNotificationCount,
@@ -30,8 +30,13 @@ import {
 import { ChevronsUpDown } from "lucide-react";
 import { useSidebarStore } from "../stores/sidebars";
 import { IoSettingsOutline } from "react-icons/io5";
+import { Button } from "../components/ui/button";
+import { cn } from "../lib/utils";
+import { isTauri } from "../lib/device";
+import { ChevronLeft, ChevronRight } from "../components/icons";
 
 function SidebarTabs() {
+  const mainSidebarCollapse = useSidebarStore((s) => s.mainSidebarCollapsed);
   const selectedAccountIndex = useAuth((s) => s.accountIndex);
   const messageCount = usePrivateMessagesCount()[selectedAccountIndex];
   const inboxCount = useNotificationCount()[selectedAccountIndex];
@@ -53,6 +58,7 @@ function SidebarTabs() {
             className={twMerge(
               "relative max-md:hidden text-md flex flex-row items-center py-2 px-3 rounded-xl hover:bg-secondary",
               isActive ? "bg-secondary" : "text-muted-foreground",
+              mainSidebarCollapse && "mx-auto",
             )}
           >
             <BadgeCount
@@ -70,7 +76,11 @@ function SidebarTabs() {
                 className="text-2xl"
               />
             </BadgeCount>
-            <span className="text-sm ml-2">{t.label}</span>
+            <span
+              className={cn("text-sm ml-2", mainSidebarCollapse && "sr-only")}
+            >
+              {t.label}
+            </span>
           </button>
         );
       })}
@@ -81,6 +91,11 @@ function SidebarTabs() {
 }
 
 export function MainSidebar() {
+  const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
+  const icon = site?.icon;
+  const siteTitle = site?.title;
+
+  const mainSidebarCollapse = useSidebarStore((s) => s.mainSidebarCollapsed);
   const recentCommunities = useRecentCommunitiesStore((s) => s.recentlyVisited);
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const instance = useAuth((s) => s.getSelectedAccount().instance);
@@ -103,135 +118,207 @@ export function MainSidebar() {
   } catch {}
 
   return (
-    <>
-      <SidebarTabs />
-
-      {recentCommunities.length > 0 && (
-        <>
-          <Collapsible
-            className="py-1"
-            open={recentOpen}
-            onOpenChange={setRecentOpen}
-          >
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
-              <span>RECENT</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-
-            <CollapsibleContent className="pt-2 flex flex-col gap-1">
-              {recentCommunities.slice(0, 5).map((c) => (
-                <IonMenuToggle
-                  key={c.id}
-                  menu={LEFT_SIDEBAR_MENU_ID}
-                  autoHide={false}
-                >
-                  <CommunityCard
-                    communitySlug={c.slug}
-                    size="sm"
-                    className="hover:bg-secondary px-4 h-10 md:rounded-xl"
-                  />
-                </IonMenuToggle>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
-          <Separator className="my-2" />
-        </>
+    <div className="overflow-y-auto h-full">
+      {isTauri() && (
+        <div
+          className="h-12 -mb-6 w-full top-0 sticky bg-gradient-to-b from-background to-transparent from-30% z-10"
+          data-tauri-drag-region
+        />
       )}
+      <button
+        className={cn(
+          "h-[60px] mt-3 md:mt-1 px-4 flex items-center gap-1.5",
+          mainSidebarCollapse && "mx-auto",
+        )}
+        onClick={() => {
+          const tab = document.querySelector(`ion-tab-button[tab="home"]`);
+          if (tab && "click" in tab && _.isFunction(tab.click)) {
+            tab.click();
+          }
+        }}
+      >
+        {icon && (
+          <img
+            src={icon}
+            className="h-7.5 aspect-square object-cover rounded-sm"
+          />
+        )}
+        <span
+          className={cn(
+            "font-jersey text-3xl",
+            mainSidebarCollapse && "sr-only",
+          )}
+        >
+          {siteTitle ?? "Loading..."}
+        </span>
+      </button>
 
-      {isLoggedIn && moderatingCommunities.length > 0 && (
-        <>
-          <Collapsible
-            className="py-1"
-            open={moderatingOpen}
-            onOpenChange={setModeratingOpen}
-          >
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
-              <span>MODERATING</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
+      <div className="md:px-3 pt-2 pb-4 gap-0.5 flex flex-col">
+        <SidebarTabs />
 
-            <CollapsibleContent className="pt-2 flex flex-col gap-1">
-              {moderatingCommunities.map((c) => (
-                <IonMenuToggle
-                  key={c.id}
-                  menu={LEFT_SIDEBAR_MENU_ID}
-                  autoHide={false}
-                >
-                  <CommunityCard
-                    communitySlug={c.slug}
-                    size="sm"
-                    className="hover:bg-secondary px-4 h-10 md:rounded-xl"
-                  />
-                </IonMenuToggle>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
+        {recentCommunities.length > 0 && (
+          <>
+            <Collapsible
+              className="py-1"
+              open={recentOpen}
+              onOpenChange={setRecentOpen}
+            >
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
+                <span>{mainSidebarCollapse ? "R" : "RECENT"}</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
 
-          <Separator className="my-2" />
-        </>
-      )}
+              <CollapsibleContent
+                className={cn(
+                  "pt-2 flex flex-col gap-1",
+                  mainSidebarCollapse && "items-center",
+                )}
+              >
+                {recentCommunities.slice(0, 5).map((c) => (
+                  <IonMenuToggle
+                    key={c.id}
+                    menu={LEFT_SIDEBAR_MENU_ID}
+                    autoHide={false}
+                  >
+                    <CommunityCard
+                      communitySlug={c.slug}
+                      size="sm"
+                      className={cn(
+                        "hover:bg-secondary px-4 h-10 md:rounded-xl",
+                        mainSidebarCollapse && "px-2",
+                      )}
+                      hideText={mainSidebarCollapse}
+                    />
+                  </IonMenuToggle>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+            <Separator className="my-2" />
+          </>
+        )}
 
-      {isLoggedIn && subscribedCommunities.length > 0 && (
-        <>
-          <Collapsible
-            className="py-1"
-            open={subscribedOpen}
-            onOpenChange={setSubscribedOpen}
-          >
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
-              <span>SUBSCRIBED</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
+        {isLoggedIn && moderatingCommunities.length > 0 && (
+          <>
+            <Collapsible
+              className="py-1"
+              open={moderatingOpen}
+              onOpenChange={setModeratingOpen}
+            >
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
+                <span>{mainSidebarCollapse ? "M" : "MODERATING"}</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
 
-            <CollapsibleContent className="pt-2 flex flex-col gap-1">
-              {subscribedCommunities.map((c) => (
-                <IonMenuToggle
-                  key={c.id}
-                  menu={LEFT_SIDEBAR_MENU_ID}
-                  autoHide={false}
-                >
-                  <CommunityCard
-                    communitySlug={c.slug}
-                    size="sm"
-                    className="hover:bg-secondary px-4 h-10 md:rounded-xl"
-                  />
-                </IonMenuToggle>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
+              <CollapsibleContent
+                className={cn(
+                  "pt-2 flex flex-col gap-1",
+                  mainSidebarCollapse && "items-center",
+                )}
+              >
+                {moderatingCommunities.map((c) => (
+                  <IonMenuToggle
+                    key={c.id}
+                    menu={LEFT_SIDEBAR_MENU_ID}
+                    autoHide={false}
+                  >
+                    <CommunityCard
+                      communitySlug={c.slug}
+                      size="sm"
+                      className={cn(
+                        "hover:bg-secondary px-4 h-10 md:rounded-xl",
+                        mainSidebarCollapse && "px-2",
+                      )}
+                      hideText={mainSidebarCollapse}
+                    />
+                  </IonMenuToggle>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
 
-          <Separator className="my-2" />
-        </>
-      )}
+            <Separator className="my-2" />
+          </>
+        )}
 
-      <section className="md:hidden">
-        <h2 className="px-4 pt-1 pb-3 text-sm text-muted-foreground uppercase">
-          {instanceHost}
-        </h2>
+        {isLoggedIn && subscribedCommunities.length > 0 && (
+          <>
+            <Collapsible
+              className="py-1"
+              open={subscribedOpen}
+              onOpenChange={setSubscribedOpen}
+            >
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-4">
+                <span>{mainSidebarCollapse ? "S" : "SUBSCRIBED"}</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
 
-        <SidebarLink icon={<SidebarOutline />} to={`${linkCtx.root}sidebar`}>
-          Sidebar
-        </SidebarLink>
+              <CollapsibleContent
+                className={cn(
+                  "pt-2 flex flex-col gap-1",
+                  mainSidebarCollapse && "items-center",
+                )}
+              >
+                {subscribedCommunities.map((c) => (
+                  <IonMenuToggle
+                    key={c.id}
+                    menu={LEFT_SIDEBAR_MENU_ID}
+                    autoHide={false}
+                  >
+                    <CommunityCard
+                      communitySlug={c.slug}
+                      size="sm"
+                      className={cn(
+                        "hover:bg-secondary px-4 h-10 md:rounded-xl",
+                        mainSidebarCollapse && "px-2",
+                      )}
+                      hideText={mainSidebarCollapse}
+                    />
+                  </IonMenuToggle>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
 
-        <Separator className="mt-3" />
-      </section>
+            <Separator className="my-2" />
+          </>
+        )}
 
-      <SidebarLink icon={<IoSettingsOutline />} to="/settings">
-        Settings
-      </SidebarLink>
+        {!mainSidebarCollapse && (
+          <>
+            <section className="md:hidden">
+              <h2 className="px-4 pt-1 pb-3 text-sm text-muted-foreground uppercase">
+                {instanceHost}
+              </h2>
 
-      <SidebarLink icon={<LockClosedOutline />} to="/privacy">
-        Privacy Policy
-      </SidebarLink>
+              <SidebarLink
+                icon={<SidebarOutline />}
+                to={`${linkCtx.root}sidebar`}
+              >
+                Sidebar
+              </SidebarLink>
 
-      <SidebarLink icon={<ScrollTextOutline />} to="/terms">
-        Terms of Use
-      </SidebarLink>
+              <Separator className="mt-3" />
+            </section>
 
-      <SidebarLink icon={<DocumentsOutline />} to="/licenses">
-        OSS Licenses
-      </SidebarLink>
-    </>
+            <SidebarLink icon={<IoSettingsOutline />} to="/settings">
+              Settings
+            </SidebarLink>
+
+            <SidebarLink icon={<LockClosedOutline />} to="/privacy">
+              Privacy Policy
+            </SidebarLink>
+
+            <SidebarLink icon={<ScrollTextOutline />} to="/terms">
+              Terms of Use
+            </SidebarLink>
+
+            <SidebarLink icon={<DocumentsOutline />} to="/licenses">
+              OSS Licenses
+            </SidebarLink>
+          </>
+        )}
+      </div>
+
+      <div className="h-[var(--ion-safe-area-bottom)]" />
+    </div>
   );
 }
 
@@ -261,4 +348,25 @@ function SidebarLink<T extends RoutePath>({
       </Link>
     </IonMenuToggle>
   );
+}
+
+export function MainSidebarCollapseButton() {
+  const mainSidebarCollapse = useSidebarStore((s) => s.mainSidebarCollapsed);
+  const setMainSidebarCollapse = useSidebarStore(
+    (s) => s.setMainSidebarCollapsed,
+  );
+  return (
+    <Button
+      className="fixed left-0 bottom-10 rounded-l-none z-10 pl-0! pr-1.5! max-lg:hidden text-border hover:text-foreground"
+      variant="outline"
+      onClick={() => setMainSidebarCollapse(!mainSidebarCollapse)}
+    >
+      {mainSidebarCollapse ? <ChevronRight /> : <ChevronLeft />}
+    </Button>
+  );
+}
+
+export function useMainSidebarWidth() {
+  const mainSidebarCollapse = useSidebarStore((s) => s.mainSidebarCollapsed);
+  return mainSidebarCollapse ? 90 : 270;
 }

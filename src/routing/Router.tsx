@@ -18,16 +18,21 @@ import { useMedia } from "@/src/lib/hooks/index";
 import { useNotificationCount, usePrivateMessagesCount } from "@/src/lib/api";
 import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
-import { isAndroid, isTauri } from "@/src/lib/device";
+import { isAndroid } from "@/src/lib/device";
 import { AppUrlListener } from "@/src/components/universal-links";
 import { CreatePost } from "@/src/features/create-post";
 import { cn } from "../lib/utils";
 import { UserSidebar } from "../components/nav";
-import { MainSidebar } from "./MainSidebar";
+import {
+  MainSidebar,
+  MainSidebarCollapseButton,
+  useMainSidebarWidth,
+} from "./MainSidebar";
 import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID, TABS } from "./config";
 import InstanceSidebar from "../features/instance-sidebar";
-import { getAccountSite, useAuth } from "../stores/auth";
+import { useAuth } from "../stores/auth";
 import { usePathname } from "./hooks";
+import { useSidebarStore } from "../stores/sidebars";
 
 const CSAE = lazy(() => import("@/src/features/csae"));
 const NotFound = lazy(() => import("@/src/features/not-found"));
@@ -319,6 +324,7 @@ const SETTINGS = [
 ];
 
 function Tabs() {
+  const sidebarWidth = useMainSidebarWidth() + "px";
   const fromLeftSwipeEnabled = useMenuSwipeEnabled("from-left");
   const fromRightSwipeEnabled = useMenuSwipeEnabled("from-right");
   const selectedAccountIndex = useAuth((s) => s.accountIndex);
@@ -326,9 +332,6 @@ function Tabs() {
   const messageCount = usePrivateMessagesCount()[selectedAccountIndex];
   const media = useMedia();
   const pathname = useIonRouter().routeInfo.pathname;
-  const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
-  const icon = site?.icon;
-  const siteTitle = site?.title;
 
   return (
     <>
@@ -340,7 +343,8 @@ function Tabs() {
         side="end"
         type="push"
         style={{
-          "--side-max-width": "270px",
+          "--side-min-width": sidebarWidth,
+          "--side-max-width": sidebarWidth,
         }}
       >
         <div className="h-[var(--ion-safe-area-top)]" />
@@ -360,51 +364,19 @@ function Tabs() {
           contentId="main"
           menuId={LEFT_SIDEBAR_MENU_ID}
           style={{
-            "--side-max-width": "270px",
+            "--side-min-width": sidebarWidth,
+            "--side-max-width": sidebarWidth,
           }}
         >
           <div className="h-[var(--ion-safe-area-top)]" />
 
           <IonContent scrollY={false}>
-            <div className="overflow-y-auto h-full">
-              {isTauri() && (
-                <div
-                  className="h-12 -mb-6 w-full top-0 sticky bg-gradient-to-b from-background to-transparent from-30% z-10"
-                  data-tauri-drag-region
-                />
-              )}
-              <button
-                className="h-[60px] mt-3 md:mt-1 px-4 flex items-center"
-                onClick={() => {
-                  const tab = document.querySelector(
-                    `ion-tab-button[tab="home"]`,
-                  );
-                  if (tab && "click" in tab && _.isFunction(tab.click)) {
-                    tab.click();
-                  }
-                }}
-              >
-                {icon && (
-                  <img
-                    src={icon}
-                    className="h-7.5 mr-1.5 aspect-square object-cover rounded-sm"
-                  />
-                )}
-                <span className="font-jersey text-3xl">
-                  {siteTitle ?? "Loading..."}
-                </span>
-              </button>
-
-              <div className="md:px-3 pt-2 pb-4 gap-0.5 flex flex-col">
-                <MainSidebar />
-              </div>
-
-              <div className="h-[var(--ion-safe-area-bottom)]" />
-            </div>
+            <MainSidebar />
           </IonContent>
         </IonMenu>
 
         <IonContent id="main" scrollY={false}>
+          <MainSidebarCollapseButton />
           <IonTabs>
             <IonRouterOutlet animated={media.maxMd}>
               {...HOME_STACK}

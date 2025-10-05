@@ -4,6 +4,9 @@ import { createStorage, sync } from "./storage";
 
 type SidebarStore = {
   // Main (left) sidebar
+  mainSidebarCollapsed: boolean;
+  setMainSidebarCollapsed: (val: boolean) => void;
+
   mainSidebarRecent: boolean;
   setMainSidebarRecent: (val: boolean) => void;
   mainSidebarSubscribed: boolean;
@@ -38,6 +41,9 @@ export const useSidebarStore = create<SidebarStore>()(
   persist(
     (set) => ({
       // Main sidebar
+      mainSidebarCollapsed: false,
+      setMainSidebarCollapsed: (mainSidebarCollapsed) =>
+        set({ mainSidebarCollapsed }),
       mainSidebarRecent: true,
       setMainSidebarRecent: (mainSidebarRecent) => set({ mainSidebarRecent }),
       mainSidebarSubscribed: true,
