@@ -88,6 +88,7 @@ export function getPost(config?: {
     creatorSlug,
     creatorId: creator.id,
     creatorApId: creator.apId,
+    isBannedFromCommunity: false,
     communitySlug: community.slug,
     communityApId: community.apId,
     thumbnailUrl: null,

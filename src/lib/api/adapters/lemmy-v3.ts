@@ -176,6 +176,7 @@ function convertPost(
     urlContentType: post.url_content_type ?? null,
     creatorId: post.creator_id,
     createdAt: post.published,
+    isBannedFromCommunity: postView.creator_banned_from_community,
     id: post.id,
     apId: post.ap_id,
     title: post.name,
@@ -223,6 +224,7 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     creatorApId: creator.actor_id,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
       .slug,
+    isBannedFromCommunity: commentView.creator_banned_from_community,
     path: comment.path,
     downvotes: counts.downvotes,
     upvotes: counts.upvotes,

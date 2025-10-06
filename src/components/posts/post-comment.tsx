@@ -291,7 +291,7 @@ function Byline({
   actorId: string;
   actorSlug: string;
   publishedDate: string;
-  authorType?: "OP" | "ME" | "MOD" | "ADMIN";
+  authorType?: "OP" | "ME" | "MOD" | "ADMIN" | "BANNED";
   className?: string;
 }) {
   const linkCtx = useLinkContext();
@@ -355,6 +355,11 @@ function Byline({
           {authorType === "ME" && (
             <Badge variant="brand" size="sm" className="ml-1.5">
               Me
+            </Badge>
+          )}
+          {authorType === "BANNED" && (
+            <Badge variant="destructive" size="sm" className="ml-1.5">
+              Banned
             </Badge>
           )}
           {profileView && (
@@ -576,15 +581,17 @@ export function PostComment({
             actorSlug={commentView.creatorSlug}
             publishedDate={commentView.createdAt}
             authorType={
-              isAdmin
-                ? "ADMIN"
-                : isMod
-                  ? "MOD"
-                  : commentView.creatorId === opId
-                    ? "OP"
-                    : commentView.creatorId === myUserId
-                      ? "ME"
-                      : undefined
+              commentView.isBannedFromCommunity
+                ? "BANNED"
+                : isAdmin
+                  ? "ADMIN"
+                  : isMod
+                    ? "MOD"
+                    : commentView.creatorId === opId
+                      ? "OP"
+                      : commentView.creatorId === myUserId
+                        ? "ME"
+                        : undefined
             }
           />
         )}

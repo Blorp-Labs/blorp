@@ -163,7 +163,7 @@ export const pieFedPostSchema = z.object({
 
 export const pieFedPostViewSchema = z.object({
   //activity_alert: z.boolean(),
-  //banned_from_community: z.boolean(),
+  banned_from_community: z.boolean().nullish(),
   community: pieFedCommunitySchema,
   counts: pieFedPostCountsSchema,
   creator: pieFedPersonSchema,
@@ -326,7 +326,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
 
 const pieFedCommentViewSchema = z.object({
   //activity_alert: z.boolean(),
-  //banned_from_community: z.boolean(),
+  banned_from_community: z.boolean().nullish(),
   //can_auth_user_moderate: z.boolean().optional(),
   comment: pieFedCommentSchema,
   community: pieFedCommunitySchema,
@@ -435,6 +435,7 @@ function convertPost({
     urlContentType: null,
     creatorId: creator.id,
     createdAt: post.published,
+    isBannedFromCommunity: postView.banned_from_community ?? false,
     id: post.id,
     apId: post.ap_id,
     title: post.title,
@@ -574,6 +575,7 @@ function convertComment(
     creatorApId: creator.actor_id,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
+    isBannedFromCommunity: commentView.banned_from_community ?? false,
     path: comment.path,
     downvotes: counts.downvotes,
     upvotes: counts.upvotes,

@@ -127,9 +127,15 @@ function convertPost({
   creator,
   post_actions,
   image_details,
+  creator_banned_from_community,
 }: Pick<
   lemmyV4.PostView,
-  "post" | "community" | "creator" | "post_actions" | "image_details"
+  | "post"
+  | "community"
+  | "creator"
+  | "post_actions"
+  | "image_details"
+  | "creator_banned_from_community"
 >): Schemas.Post {
   const ar = image_details ? image_details.width / image_details.height : null;
   return {
@@ -151,6 +157,7 @@ function convertPost({
     creatorId: creator.id,
     creatorApId: creator.ap_id,
     creatorSlug: createSlug({ apId: creator.ap_id, name: creator.name }).slug,
+    isBannedFromCommunity: creator_banned_from_community,
     thumbnailAspectRatio: ar,
     url: post.url ?? null,
     urlContentType: post.url_content_type ?? null,
@@ -174,6 +181,7 @@ function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
     creatorId: creator.id,
     creatorApId: creator.ap_id,
     creatorSlug: createSlug({ apId: creator.ap_id, name: creator.name }).slug,
+    isBannedFromCommunity: commentView.creator_banned_from_community,
     path: comment.path,
     downvotes: comment.downvotes,
     upvotes: comment.upvotes,
