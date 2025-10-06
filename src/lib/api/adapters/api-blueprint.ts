@@ -37,6 +37,7 @@ const personSchema = z.object({
   bio: z.string().nullable().optional(),
   commentCount: z.number().nullable().optional(),
   postCount: z.number().nullable().optional(),
+  isBanned: z.boolean(),
 });
 export const postSchema = z.object({
   createdAt: z.string(),

@@ -51,13 +51,17 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
         </Avatar>
 
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <LuCakeSlice />
-            <span>
-              Created{" "}
-              <DateTime date={person ? dayjs(person.createdAt) : null} />
-            </span>
-          </div>
+          {person?.isBanned ? (
+            <Badge variant="destructive">Banned</Badge>
+          ) : (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <LuCakeSlice />
+              <span>
+                Created{" "}
+                <DateTime date={person ? dayjs(person.createdAt) : null} />
+              </span>
+            </div>
+          )}
 
           <AggregateBadges
             className="mt-1"
@@ -155,13 +159,17 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
             )}
           </span>
 
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <LuCakeSlice />
-            <span>
-              Created{" "}
-              <DateTime date={person ? dayjs(person.createdAt) : null} />
-            </span>
-          </div>
+          {person?.isBanned ? (
+            <Badge variant="destructive">Banned</Badge>
+          ) : (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <LuCakeSlice />
+              <span>
+                Created{" "}
+                <DateTime date={person ? dayjs(person.createdAt) : null} />
+              </span>
+            </div>
+          )}
 
           <AggregateBadges
             className="mt-1"

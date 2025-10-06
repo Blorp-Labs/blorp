@@ -41,6 +41,7 @@ export function getPerson(overrides?: Partial<Schemas.Person>): Schemas.Person {
     bio: "This is me",
     deleted: false,
     isBot: false,
+    isBanned: false,
     postCount: 100,
     commentCount: 2000,
   };

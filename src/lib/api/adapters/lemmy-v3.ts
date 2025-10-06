@@ -152,6 +152,7 @@ function convertPerson({
     deleted: person.deleted,
     createdAt: person.published,
     isBot: person.bot_account,
+    isBanned: person.banned,
     ...(counts
       ? {
           postCount: counts?.post_count ?? null,

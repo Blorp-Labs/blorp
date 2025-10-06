@@ -116,6 +116,7 @@ function convertPerson({
     deleted: person.deleted,
     createdAt: person.published_at,
     isBot: person.bot_account,
+    isBanned: false,
     postCount: person.post_count ?? null,
     commentCount: person?.comment_count ?? null,
   };

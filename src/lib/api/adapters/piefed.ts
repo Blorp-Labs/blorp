@@ -119,7 +119,7 @@ export const pieFedPersonSchema = z.object({
   actor_id: z.string(),
   avatar: z.string().nullable().optional(),
   //banner: z.string().nullable().optional(),
-  //banned: z.boolean(),
+  banned: z.boolean().nullish(),
   bot: z.boolean(),
   deleted: z.boolean(),
   id: z.number(),
@@ -546,6 +546,7 @@ function convertPerson(
     deleted: person.deleted,
     createdAt: person.published,
     isBot: person.bot,
+    isBanned: person.banned ?? false,
   };
 
   // PieFed excludes about from some endpoints.

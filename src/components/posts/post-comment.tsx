@@ -299,6 +299,9 @@ function Byline({
   const profileView = useProfilesStore(
     (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
   );
+  if (profileView?.isBanned) {
+    authorType = "BANNED";
+  }
 
   const tag = useTagUserStore((s) => s.userTags[actorSlug]);
 
