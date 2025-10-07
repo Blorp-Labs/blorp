@@ -150,6 +150,8 @@ export function ResponsiveImage({
     }
   }, [paddingT, paddingB]);
 
+  const hasFallbackImg = fallbackImg && fallbackImg !== img;
+
   const isError = state === "err";
   const [loading, setLoading] = useState(true);
 
@@ -192,7 +194,7 @@ export function ResponsiveImage({
             }}
             onError={() => {
               if (state === "full") {
-                setState(fallbackImg ? "fallback" : "err");
+                setState(hasFallbackImg ? "fallback" : "err");
               } else {
                 setState("err");
               }
