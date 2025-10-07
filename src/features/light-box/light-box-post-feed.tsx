@@ -322,6 +322,7 @@ const Post = memo(
     return img ? (
       <ResponsiveImage
         img={img}
+        fallbackImg={embed?.thumbnail}
         onZoom={onZoom}
         paddingT={paddingT}
         paddingB={paddingB}

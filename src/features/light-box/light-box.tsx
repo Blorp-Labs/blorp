@@ -80,6 +80,7 @@ const ZOOM_FACTOR = 8;
 
 export function ResponsiveImage({
   img,
+  fallbackImg,
   onZoom,
   paddingT = 0,
   paddingB = 0,
@@ -91,12 +92,15 @@ export function ResponsiveImage({
   paddingT?: number;
   paddingB?: number;
   img: string;
+  fallbackImg?: string | null;
   onZoom: (scale: number) => void;
   className?: string;
   disabled?: boolean;
   blurNsfw?: boolean | null;
   altText?: string | null;
 }) {
+  const [state, setState] = useState<"full" | "fallback" | "err">("full");
+
   const [removeBlur, setRemoveBlur] = useState(false);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
 
@@ -146,7 +150,7 @@ export function ResponsiveImage({
     }
   }, [paddingT, paddingB]);
 
-  const [error, setError] = useState(false);
+  const error = state === "err";
   const [loading, setLoading] = useState(true);
 
   return (
@@ -180,13 +184,17 @@ export function ResponsiveImage({
               error && "opacity-0",
               blurNsfw && !removeBlur && "blur-3xl",
             )}
-            src={img}
+            src={state === "full" ? img : (fallbackImg ?? undefined)}
             onLoad={(e) => {
               setLoading(false);
               setImageNaturalWidth(e.currentTarget.naturalWidth);
               setImageNaturalHeight(e.currentTarget.naturalHeight);
             }}
-            onError={() => setError(true)}
+            onError={() => {
+              if (state === "full") {
+                setState(fallbackImg ? "fallback" : "err");
+              }
+            }}
             style={{
               minWidth: imageNaturalWidth,
               width: imageNaturalWidth,
