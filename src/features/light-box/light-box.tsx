@@ -193,6 +193,8 @@ export function ResponsiveImage({
             onError={() => {
               if (state === "full") {
                 setState(fallbackImg ? "fallback" : "err");
+              } else {
+                setState("err");
               }
             }}
             style={{
