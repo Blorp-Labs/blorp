@@ -150,7 +150,7 @@ export function ResponsiveImage({
     }
   }, [paddingT, paddingB]);
 
-  const error = state === "err";
+  const isError = state === "err";
   const [loading, setLoading] = useState(true);
 
   return (
@@ -181,7 +181,7 @@ export function ResponsiveImage({
         >
           <img
             className={cn(
-              error && "opacity-0",
+              isError && "opacity-0",
               blurNsfw && !removeBlur && "blur-3xl",
             )}
             src={state === "full" ? img : (fallbackImg ?? undefined)}
@@ -222,10 +222,10 @@ export function ResponsiveImage({
         />
       </TransformWrapper>
 
-      {loading && !error && (
+      {loading && !isError && (
         <Spinner className="absolute top-1/2 left-1/2 text-4xl -translate-1/2 text-white animate-spin" />
       )}
-      {error && (
+      {isError && (
         <NoImage className="absolute top-1/2 left-1/2 h-40 w-40 -translate-1/2 text-white" />
       )}
     </div>
