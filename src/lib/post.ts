@@ -27,6 +27,12 @@ export function getPostEmbed(post: Schemas.Post) {
     | "generic-video"
     | "peertube" = "text";
 
+  const postUrlPathname = post.url ? new URL(post.url).pathname : null;
+
+  const embedVideoPathname = post.embedVideoUrl
+    ? new URL(post.embedVideoUrl).pathname
+    : null;
+
   if (post.url?.startsWith("https://vimeo.com") && VIEMO_REGEX.test(post.url)) {
     embedType = "vimeo";
   } else if (post.url?.startsWith("https://soundcloud.com/")) {
@@ -40,17 +46,17 @@ export function getPostEmbed(post: Schemas.Post) {
     embedType = "loops";
   } else if (
     (urlContentType && urlContentType.indexOf("image/") !== -1) ||
-    post.url?.endsWith(".jpeg") ||
-    post.url?.endsWith(".jpg") ||
-    post.url?.endsWith(".png") ||
-    post.url?.endsWith(".webp") ||
-    post.url?.endsWith(".gif")
+    postUrlPathname?.endsWith(".jpeg") ||
+    postUrlPathname?.endsWith(".jpg") ||
+    postUrlPathname?.endsWith(".png") ||
+    postUrlPathname?.endsWith(".webp") ||
+    postUrlPathname?.endsWith(".gif")
   ) {
     embedType = "image";
   } else if (
-    post.embedVideoUrl?.endsWith(".mp4") ||
-    post.embedVideoUrl?.endsWith(".m3u8") ||
-    post.embedVideoUrl?.endsWith(".gifv")
+    embedVideoPathname?.endsWith(".mp4") ||
+    embedVideoPathname?.endsWith(".m3u8") ||
+    embedVideoPathname?.endsWith(".gifv")
   ) {
     embedType = "video";
     embedUrl = post.embedVideoUrl;
