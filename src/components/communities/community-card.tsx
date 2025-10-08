@@ -17,11 +17,13 @@ export function CommunityCard({
   communitySlug,
   disableLink,
   className,
+  hideText,
   size = "md",
 }: {
   communitySlug: string;
   disableLink?: boolean;
   className?: string;
+  hideText?: boolean;
   size?: "sm" | "md";
 }) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -52,7 +54,12 @@ export function CommunityCard({
         <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
-      <div className="flex flex-col gap-0.5 flex-1 overflow-hidden text-left">
+      <div
+        className={cn(
+          "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
+          hideText && "sr-only",
+        )}
+      >
         <span
           className={cn(
             "text-sm overflow-hidden overflow-ellipsis",
