@@ -32,7 +32,6 @@ import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID, TABS } from "./config";
 import InstanceSidebar from "../features/instance-sidebar";
 import { useAuth } from "../stores/auth";
 import { usePathname } from "./hooks";
-import { useSidebarStore } from "../stores/sidebars";
 
 const CSAE = lazy(() => import("@/src/features/csae"));
 const NotFound = lazy(() => import("@/src/features/not-found"));
