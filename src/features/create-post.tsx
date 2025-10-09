@@ -105,13 +105,13 @@ function DraftsSidebar({
             <div key={key} className="relative">
               <Link
                 to="/create"
-                searchParams={`?id=${key}`}
+                searchParams={`?id=${key}&test=123`}
                 className={cn(
                   "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
                   createPostId === key &&
                     "border-brand border-dashed bg-brand/20",
                 )}
-                onClickCapture={onClickDraft}
+                onClick={onClickDraft}
               >
                 <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
                   <RelativeTime time={draft.createdAt} />
