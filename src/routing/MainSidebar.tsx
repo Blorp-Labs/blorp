@@ -35,6 +35,7 @@ import { cn } from "../lib/utils";
 import { isTauri } from "../lib/device";
 import { ChevronLeft, ChevronRight } from "../components/icons";
 import { useMedia } from "../lib/hooks";
+import { usePathname } from "./hooks";
 
 function useMainSidebarCollapsed() {
   const media = useMedia();
@@ -372,14 +373,23 @@ function SidebarLink<T extends RoutePath>({
   );
 }
 
+function useIsLightboxRoute() {
+  const path = usePathname().replace(/\/$/, "");
+  return /\/lightbox(\/|\?|$)/.test(path);
+}
+
 export function MainSidebarCollapseButton() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
   const setMainSidebarCollapsed = useSidebarStore(
     (s) => s.setMainSidebarCollapsed,
   );
+  const isLightbox = useIsLightboxRoute();
   return (
     <Button
-      className="fixed left-0 bottom-10 rounded-l-none z-10 pl-0! pr-1.5! max-lg:hidden text-border opacity-75 hover:opacity-100 hover:text-foreground border-l-0"
+      className={cn(
+        "fixed left-0 bottom-25 rounded-l-none z-10 pl-0! pr-1.5! max-lg:hidden text-border opacity-75 hover:opacity-100 hover:text-foreground border-l-0 bg-transparent duration-75",
+        isLightbox && "dark",
+      )}
       variant="outline"
       onClick={() => setMainSidebarCollapsed(!mainSidebarCollapsed)}
     >
