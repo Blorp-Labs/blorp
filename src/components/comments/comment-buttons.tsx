@@ -129,16 +129,17 @@ export function CommentVoting({
       </Button>
       <Tooltip>
         <TooltipTrigger aria-label={`${score} score`}>
-          <NumberFlow
-            //htmlFor={id}
-            className={cn(
-              "-mx-0.5 cursor-pointer",
-              isUpvoted && "text-brand",
-              isDownvoted && "text-brand-secondary",
-            )}
-            suffix={abbriviatedScore.suffix}
-            value={abbriviatedScore.number}
-          />
+          <label htmlFor={id}>
+            <NumberFlow
+              className={cn(
+                "-mx-0.5 cursor-pointer",
+                isUpvoted && "text-brand",
+                isDownvoted && "text-brand-secondary",
+              )}
+              suffix={abbriviatedScore.suffix}
+              value={abbriviatedScore.number}
+            />
+          </label>
         </TooltipTrigger>
         <TooltipContent>
           {commentView.upvotes} upvotes, {commentView.downvotes} downvotes
