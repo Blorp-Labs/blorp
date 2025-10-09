@@ -1204,6 +1204,7 @@ export function useCreateComment() {
         creatorId: myProfile?.id ?? -1,
         creatorApId: myProfile?.apId ?? "",
         creatorSlug: myProfile ? (myProfile.slug ?? "") : "",
+        isBannedFromCommunity: false,
         postId: -1,
         postApId,
         communitySlug: "",

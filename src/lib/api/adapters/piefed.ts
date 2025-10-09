@@ -119,7 +119,7 @@ export const pieFedPersonSchema = z.object({
   actor_id: z.string(),
   avatar: z.string().nullable().optional(),
   //banner: z.string().nullable().optional(),
-  //banned: z.boolean(),
+  banned: z.boolean().nullish(),
   bot: z.boolean(),
   deleted: z.boolean(),
   id: z.number(),
@@ -163,11 +163,11 @@ export const pieFedPostSchema = z.object({
 
 export const pieFedPostViewSchema = z.object({
   //activity_alert: z.boolean(),
-  //banned_from_community: z.boolean(),
+  // banned_from_community: z.boolean().nullish(),
   community: pieFedCommunitySchema,
   counts: pieFedPostCountsSchema,
   creator: pieFedPersonSchema,
-  //creator_banned_from_community: z.boolean(),
+  creator_banned_from_community: z.boolean().nullish(),
   //creator_is_admin: z.boolean(),
   //creator_is_moderator: z.boolean(),
   //hidden: z.boolean(),
@@ -321,18 +321,19 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     creator: pieFedPersonSchema,
     my_vote: z.number(),
     replies: z.array(pieFedCommentChildSchema),
+    creator_banned_from_community: z.boolean().nullish(),
   }),
 );
 
 const pieFedCommentViewSchema = z.object({
   //activity_alert: z.boolean(),
-  //banned_from_community: z.boolean(),
+  // banned_from_community: z.boolean().nullish(),
   //can_auth_user_moderate: z.boolean().optional(),
   comment: pieFedCommentSchema,
   community: pieFedCommunitySchema,
   counts: pieFedCommentCountsSchema,
   creator: pieFedPersonSchema,
-  //creator_banned_from_community: z.boolean(),
+  creator_banned_from_community: z.boolean().nullish(),
   //creator_blocked: z.boolean(),
   //creator_is_admin: z.boolean(),
   //creator_is_moderator: z.boolean(),
@@ -435,6 +436,7 @@ function convertPost({
     urlContentType: null,
     creatorId: creator.id,
     createdAt: post.published,
+    isBannedFromCommunity: postView.creator_banned_from_community ?? false,
     id: post.id,
     apId: post.ap_id,
     title: post.title,
@@ -545,6 +547,7 @@ function convertPerson(
     deleted: person.deleted,
     createdAt: person.published,
     isBot: person.bot,
+    isBanned: person.banned ?? false,
   };
 
   // PieFed excludes about from some endpoints.
@@ -574,6 +577,7 @@ function convertComment(
     creatorApId: creator.actor_id,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
+    isBannedFromCommunity: commentView.creator_banned_from_community ?? false,
     path: comment.path,
     downvotes: counts.downvotes,
     upvotes: counts.upvotes,

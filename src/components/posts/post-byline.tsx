@@ -364,6 +364,11 @@ export function PostByline({
                 <span className="text-xs text-brand">ADMIN</span>
               </div>
             )}
+            {(post.isBannedFromCommunity || creator?.isBanned) && (
+              <Badge size="sm" variant="destructive">
+                Banned
+              </Badge>
+            )}
             {creator && (
               <CakeDay
                 date={creator.createdAt}
