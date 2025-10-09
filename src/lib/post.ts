@@ -1,5 +1,6 @@
 import { isYouTubeVideoUrl } from "./youtube";
 import { Schemas } from "./api/adapters/api-blueprint";
+import { urlStripAfterPath } from "./utils";
 
 const VIEMO_REGEX = /https:\/\/vimeo.com\/[0-9]+/i;
 
@@ -9,14 +10,6 @@ const SPOTIFY_REGEX =
 const PEERTUBE_REGEX =
   /^https?:\/\/[\w.-]+\/videos\/watch\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:[?#].*)?$/i;
 const PEERTUBE_REGEX2 = /^https?:\/\/[\w.-]+\/w\/[0-9a-z]+$/i;
-
-function stripAfterPath(url: string) {
-  const q = url.indexOf("?");
-  const h = url.indexOf("#");
-  const cut =
-    q === -1 ? (h === -1 ? url.length : h) : h === -1 ? q : Math.min(q, h);
-  return url.slice(0, cut);
-}
 
 export function getPostEmbed(post: Schemas.Post) {
   const urlContentType = post.urlContentType;
@@ -35,10 +28,10 @@ export function getPostEmbed(post: Schemas.Post) {
     | "generic-video"
     | "peertube" = "text";
 
-  const strippedPostUrl = post.url ? stripAfterPath(post.url) : null;
+  const strippedPostUrl = post.url ? urlStripAfterPath(post.url) : null;
 
   const strippedPostVideoUrl = post.embedVideoUrl
-    ? stripAfterPath(post.embedVideoUrl)
+    ? urlStripAfterPath(post.embedVideoUrl)
     : null;
 
   if (post.url?.startsWith("https://vimeo.com") && VIEMO_REGEX.test(post.url)) {

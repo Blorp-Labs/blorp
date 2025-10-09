@@ -76,3 +76,16 @@ export function isErrorLike(value: unknown): value is ErrorLike {
     _.isString(_.get(value, "message"))
   );
 }
+
+/**
+ * A fast function for removing the query string and
+ * hash from a url. This ensures the pathname is the
+ * last thing in the url.
+ */
+export function urlStripAfterPath(url: string) {
+  const q = url.indexOf("?");
+  const h = url.indexOf("#");
+  const cut =
+    q === -1 ? (h === -1 ? url.length : h) : h === -1 ? q : Math.min(q, h);
+  return url.slice(0, cut);
+}
