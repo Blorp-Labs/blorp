@@ -10,6 +10,7 @@ import { PageTitle } from "@/src/components/page-title";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
   useElementHasFocus,
+  useElementRect,
   useHideTabBarOnMount,
   useIsActiveRoute,
   useKeyboardShortcut,
@@ -110,9 +111,11 @@ function HorizontalVirtualizer<T>({
 }) {
   const count = data?.length ?? 0;
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const itemWidth = scrollRef.current?.clientWidth ?? window.innerWidth;
+  const container = useElementRect(containerRef);
+  const itemWidth = useElementRect(scrollRef).width || window.innerWidth;
 
   const initialOffset = activeIndex * itemWidth;
 
@@ -143,6 +146,9 @@ function HorizontalVirtualizer<T>({
       height: window.innerHeight,
     },
   });
+  useEffect(() => {
+    rowVirtualizer.shouldAdjustScrollPositionOnItemSizeChange = () => false;
+  }, [rowVirtualizer]);
 
   const virtualItems = rowVirtualizer.getVirtualItems();
   const { scrollBy } = rowVirtualizer;
@@ -255,6 +261,7 @@ function HorizontalVirtualizer<T>({
       [itemWidth, scrollBy, updateIndex, focused],
     ),
   );
+  console.log(itemWidth);
 
   return (
     <div
