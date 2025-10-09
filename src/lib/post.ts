@@ -1,5 +1,6 @@
 import { isYouTubeVideoUrl } from "./youtube";
 import { Schemas } from "./api/adapters/api-blueprint";
+import { urlStripAfterPath } from "./utils";
 
 const VIEMO_REGEX = /https:\/\/vimeo.com\/[0-9]+/i;
 
@@ -27,6 +28,12 @@ export function getPostEmbed(post: Schemas.Post) {
     | "generic-video"
     | "peertube" = "text";
 
+  const strippedPostUrl = post.url ? urlStripAfterPath(post.url) : null;
+
+  const strippedPostVideoUrl = post.embedVideoUrl
+    ? urlStripAfterPath(post.embedVideoUrl)
+    : null;
+
   if (post.url?.startsWith("https://vimeo.com") && VIEMO_REGEX.test(post.url)) {
     embedType = "vimeo";
   } else if (post.url?.startsWith("https://soundcloud.com/")) {
@@ -40,24 +47,24 @@ export function getPostEmbed(post: Schemas.Post) {
     embedType = "loops";
   } else if (
     (urlContentType && urlContentType.indexOf("image/") !== -1) ||
-    post.url?.endsWith(".jpeg") ||
-    post.url?.endsWith(".jpg") ||
-    post.url?.endsWith(".png") ||
-    post.url?.endsWith(".webp") ||
-    post.url?.endsWith(".gif")
+    strippedPostUrl?.endsWith(".jpeg") ||
+    strippedPostUrl?.endsWith(".jpg") ||
+    strippedPostUrl?.endsWith(".png") ||
+    strippedPostUrl?.endsWith(".webp") ||
+    strippedPostUrl?.endsWith(".gif")
   ) {
     embedType = "image";
   } else if (
-    post.embedVideoUrl?.endsWith(".mp4") ||
-    post.embedVideoUrl?.endsWith(".m3u8") ||
-    post.embedVideoUrl?.endsWith(".gifv")
+    strippedPostVideoUrl?.endsWith(".mp4") ||
+    strippedPostVideoUrl?.endsWith(".m3u8") ||
+    strippedPostVideoUrl?.endsWith(".gifv")
   ) {
     embedType = "video";
     embedUrl = post.embedVideoUrl;
   } else if (
     (urlContentType && urlContentType.indexOf("video/") !== -1) ||
-    post.url?.endsWith(".mp4") ||
-    post.url?.endsWith(".gifv")
+    strippedPostUrl?.endsWith(".mp4") ||
+    strippedPostUrl?.endsWith(".gifv")
   ) {
     embedType = "video";
   } else if (post.url && isYouTubeVideoUrl(post.url)) {
