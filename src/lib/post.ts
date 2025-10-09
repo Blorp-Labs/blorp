@@ -10,6 +10,14 @@ const PEERTUBE_REGEX =
   /^https?:\/\/[\w.-]+\/videos\/watch\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:[?#].*)?$/i;
 const PEERTUBE_REGEX2 = /^https?:\/\/[\w.-]+\/w\/[0-9a-z]+$/i;
 
+function stripAfterPath(url: string) {
+  const q = url.indexOf("?");
+  const h = url.indexOf("#");
+  const cut =
+    q === -1 ? (h === -1 ? url.length : h) : h === -1 ? q : Math.min(q, h);
+  return url.slice(0, cut);
+}
+
 export function getPostEmbed(post: Schemas.Post) {
   const urlContentType = post.urlContentType;
   let embedUrl = post.url;
@@ -27,10 +35,10 @@ export function getPostEmbed(post: Schemas.Post) {
     | "generic-video"
     | "peertube" = "text";
 
-  const postUrlPathname = post.url ? new URL(post.url).pathname : null;
+  const strippedPostUrl = post.url ? stripAfterPath(post.url) : null;
 
-  const embedVideoPathname = post.embedVideoUrl
-    ? new URL(post.embedVideoUrl).pathname
+  const strippedPostVideoUrl = post.embedVideoUrl
+    ? stripAfterPath(post.embedVideoUrl)
     : null;
 
   if (post.url?.startsWith("https://vimeo.com") && VIEMO_REGEX.test(post.url)) {
@@ -46,24 +54,24 @@ export function getPostEmbed(post: Schemas.Post) {
     embedType = "loops";
   } else if (
     (urlContentType && urlContentType.indexOf("image/") !== -1) ||
-    postUrlPathname?.endsWith(".jpeg") ||
-    postUrlPathname?.endsWith(".jpg") ||
-    postUrlPathname?.endsWith(".png") ||
-    postUrlPathname?.endsWith(".webp") ||
-    postUrlPathname?.endsWith(".gif")
+    strippedPostUrl?.endsWith(".jpeg") ||
+    strippedPostUrl?.endsWith(".jpg") ||
+    strippedPostUrl?.endsWith(".png") ||
+    strippedPostUrl?.endsWith(".webp") ||
+    strippedPostUrl?.endsWith(".gif")
   ) {
     embedType = "image";
   } else if (
-    embedVideoPathname?.endsWith(".mp4") ||
-    embedVideoPathname?.endsWith(".m3u8") ||
-    embedVideoPathname?.endsWith(".gifv")
+    strippedPostVideoUrl?.endsWith(".mp4") ||
+    strippedPostVideoUrl?.endsWith(".m3u8") ||
+    strippedPostVideoUrl?.endsWith(".gifv")
   ) {
     embedType = "video";
     embedUrl = post.embedVideoUrl;
   } else if (
     (urlContentType && urlContentType.indexOf("video/") !== -1) ||
-    post.url?.endsWith(".mp4") ||
-    post.url?.endsWith(".gifv")
+    strippedPostUrl?.endsWith(".mp4") ||
+    strippedPostUrl?.endsWith(".gifv")
   ) {
     embedType = "video";
   } else if (post.url && isYouTubeVideoUrl(post.url)) {
