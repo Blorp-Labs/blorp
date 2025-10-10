@@ -138,6 +138,7 @@
     "remove-focus-outline": "^1.2.1",
     "remove-markdown": "^0.6.2",
     "sonner": "^2.0.3",
+    "swiper": "^12.0.2",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
     "tiptap-markdown": "^0.9.0",

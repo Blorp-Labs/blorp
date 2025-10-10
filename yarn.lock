@@ -7731,6 +7731,7 @@ __metadata:
     remove-markdown: "npm:^0.6.2"
     sonner: "npm:^2.0.3"
     storybook: "npm:^9.0.12"
+    swiper: "npm:^12.0.2"
     tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.1.11"
     terser: "npm:^5.39.0"
@@ -15699,6 +15700,13 @@ __metadata:
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
   checksum: 10c0/6c4032340701a9950865f7ae8ef38578d8d7053f5e10518076e6554a9381fa91bd9c6850193695c141f32b21f979c985db07265a758867bac95de05f7d8aeb39
+  languageName: node
+  linkType: hard
+
+"swiper@npm:^12.0.2":
+  version: 12.0.2
+  resolution: "swiper@npm:12.0.2"
+  checksum: 10c0/e7826eb5973828c622a30f321dc7740300a32666d26810b381e2498ad60f2f84e070058a1aa0ee32acce8a6d31f2d2919c388b2e5921db45690c59af41b1c7b8
   languageName: node
   linkType: hard
 
