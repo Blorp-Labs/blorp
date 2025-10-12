@@ -8,7 +8,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { useAuth } from "@/src/stores/auth";
+import { Account, useAuth } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
@@ -19,19 +19,21 @@ export function CommunityCard({
   className,
   hideText,
   size = "md",
+  account,
 }: {
   communitySlug: string;
   disableLink?: boolean;
   className?: string;
   hideText?: boolean;
   size?: "sm" | "md";
+  account?: Account;
 }) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const fromRecent = useRecentCommunitiesStore((s) => {
     return s.recentlyVisited.find((r) => r.slug === communitySlug);
   });
   const fromCommunityCache = useCommunitiesStore((s) => {
-    return s.communities[getCachePrefixer()(communitySlug)]?.data;
+    return s.communities[getCachePrefixer(account)(communitySlug)]?.data;
   });
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 

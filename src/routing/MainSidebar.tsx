@@ -235,12 +235,12 @@ export function MainSidebar() {
               >
                 {moderatingCommunities.map((c) => (
                   <IonMenuToggle
-                    key={c.id}
+                    key={c}
                     menu={LEFT_SIDEBAR_MENU_ID}
                     autoHide={false}
                   >
                     <CommunityCard
-                      communitySlug={c.slug}
+                      communitySlug={c}
                       size="sm"
                       className={cn(
                         "hover:bg-secondary px-3 h-10 md:rounded-xl",
@@ -282,12 +282,12 @@ export function MainSidebar() {
               >
                 {subscribedCommunities.map((c) => (
                   <IonMenuToggle
-                    key={c.id}
+                    key={c}
                     menu={LEFT_SIDEBAR_MENU_ID}
                     autoHide={false}
                   >
                     <CommunityCard
-                      communitySlug={c.slug}
+                      communitySlug={c}
                       size="sm"
                       className={cn(
                         "hover:bg-secondary px-3 h-10 md:rounded-xl",

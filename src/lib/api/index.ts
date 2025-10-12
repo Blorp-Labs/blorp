@@ -795,33 +795,27 @@ export function useRefreshAuth() {
         const p = sites[i];
 
         if (p?.status === "fulfilled") {
-          const site = p.value;
+          const { site, communities, profiles } = p.value;
 
           if (api?.isLoggedIn && site && !site.me) {
             logoutIndicies.push(i);
             continue;
           }
 
-          const me = site.me;
-          if (me) {
-            cacheProfiles(getCachePrefixer(account), [me]);
+          if (profiles) {
+            cacheProfiles(getCachePrefixer(account), profiles);
+          }
+
+          if (communities) {
             cacheCommunities(
               getCachePrefixer(account),
-              [
-                ...(site?.follows ?? []),
-                ...(site?.moderates ?? []),
-                ...(site?.communityBlocks ?? []),
-              ].map((community) => ({
+              communities.map((community) => ({
                 communityView: community,
               })),
             );
           }
 
           if (site) {
-            cacheProfiles(getCachePrefixer(account), [
-              ...site.admins,
-              ...(site.personBlocks ?? []),
-            ]);
             updateAccount(i, {
               site,
             });
@@ -2311,10 +2305,7 @@ export function useSubscribedCommunities() {
     (s) => getAccountSite(s.getSelectedAccount())?.follows,
   );
   return useMemo(
-    () =>
-      (subscribedCommunities ?? []).sort((a, b) =>
-        a.slug.localeCompare(b.slug),
-      ),
+    () => (subscribedCommunities ?? []).sort((a, b) => a.localeCompare(b)),
     [subscribedCommunities],
   );
 }
@@ -2324,10 +2315,7 @@ export function useModeratingCommunities() {
     (s) => getAccountSite(s.getSelectedAccount())?.moderates,
   );
   return useMemo(
-    () =>
-      (moderatingCommunities ?? []).sort((a, b) =>
-        a.slug.localeCompare(b.slug),
-      ),
+    () => (moderatingCommunities ?? []).sort((a, b) => a.localeCompare(b)),
     [moderatingCommunities],
   );
 }

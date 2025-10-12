@@ -58,7 +58,7 @@ type AuthStore = {
   setAccountIndex: (index: number) => Account | null;
   logout: (index?: number | Account) => any;
   logoutMultiple: (index: number[]) => any;
-  getCachePrefixer: () => CachePrefixer;
+  getCachePrefixer: (index?: number | Account) => CachePrefixer;
   reset: () => void;
 } & z.infer<typeof storeSchema>;
 
@@ -235,10 +235,13 @@ export const useAuth = create<AuthStore>()(
           accounts,
         });
       },
-      getCachePrefixer: () => {
-        let { accounts, accountIndex } = get();
-        const selectedAccount = accounts[accountIndex];
-        return getCachePrefixer(selectedAccount);
+      getCachePrefixer: (accountSelector) => {
+        const { accounts, accountIndex } = get();
+        const index = _.isObject(accountSelector)
+          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
+          : accountSelector;
+        const account = accounts[index ?? accountIndex];
+        return getCachePrefixer(account);
       },
       reset: () => {
         if (isTest()) {
@@ -249,7 +252,7 @@ export const useAuth = create<AuthStore>()(
     {
       name: "auth",
       storage: createStorage<AuthStore>(),
-      version: 3,
+      version: 4,
       migrate: (state) => {
         const parsed = storeSchema.parse(state) as AuthStore;
         return {
@@ -291,7 +294,7 @@ export function useIsPersonBlocked(apId?: string | null) {
     if (!apId || !personBlocks || personBlocks.length === 0) {
       return false;
     }
-    return !!personBlocks.find((p) => p.apId === apId);
+    return !!personBlocks.find((p) => p === apId);
   });
 }
 
@@ -303,6 +306,6 @@ export function useIsCommunityBlocked(slug?: string | null) {
     if (!slug || !communityBlocks || communityBlocks.length === 0) {
       return false;
     }
-    return !!communityBlocks.find((c) => c.slug === slug);
+    return !!communityBlocks.find((c) => c === slug);
   });
 }

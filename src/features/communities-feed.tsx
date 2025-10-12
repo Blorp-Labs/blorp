@@ -46,7 +46,7 @@ export default function Communities() {
   const moderates = useAuth((s) =>
     getAccountSite(s.getSelectedAccount()),
   )?.moderates;
-  const moderatesCommunities = moderates?.map(({ slug }) => slug);
+  const moderatesCommunities = moderates ?? undefined;
 
   const {
     data,

@@ -14,6 +14,7 @@ import _ from "lodash";
 import z from "zod";
 import { isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 function is2faError(err?: Error | null) {
   if (!err) {
@@ -363,57 +364,76 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async getSite(options: RequestOptions) {
-    const site = await this.client.getSite(options);
-    const me = site.my_user?.local_user_view.person;
+    const lemmySite = await this.client.getSite(options);
+    const lemmyMe = lemmySite.my_user?.local_user_view.person;
     // TODO: figure out why lemmy types are broken here
     const enableDownvotes =
-      "enable_downvotes" in site.site_view.local_site &&
-      site.site_view.local_site.enable_downvotes === true;
+      "enable_downvotes" in lemmySite.site_view.local_site &&
+      lemmySite.site_view.local_site.enable_downvotes === true;
 
-    return {
-      privateInstance: site.site_view.local_site.private_instance,
-      public: site,
-      description: site.site_view.site.description ?? null,
+    const moderates = lemmySite.my_user?.moderates.map(({ community }) =>
+      convertCommunity({ community }),
+    );
+
+    const follows = lemmySite.my_user?.follows.map(({ community }) =>
+      convertCommunity({ community }),
+    );
+
+    const personBlocks = lemmySite.my_user?.person_blocks.map((p) =>
+      shrinkBlockedPerson(convertPerson({ person: p.target })),
+    );
+
+    const communityBlocks = lemmySite.my_user?.community_blocks.map(
+      ({ community }) =>
+        shrinkBlockedCommunity(convertCommunity({ community })),
+    );
+
+    const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
+
+    const site = {
+      privateInstance: lemmySite.site_view.local_site.private_instance,
+      public: lemmySite,
+      description: lemmySite.site_view.site.description ?? null,
       instance: this.instance,
-      admins: site.admins.map((p) => convertPerson(p)),
-      me: me ? convertPerson({ person: me }) : null,
-      myEmail: site.my_user?.local_user_view.local_user.email ?? null,
-      version: site.version,
-      usersActiveDayCount: site.site_view.counts.users_active_day,
-      usersActiveWeekCount: site.site_view.counts.users_active_week,
-      usersActiveMonthCount: site.site_view.counts.users_active_month,
-      usersActiveHalfYearCount: site.site_view.counts.users_active_half_year,
-      postCount: site.site_view.counts.posts,
-      commentCount: site.site_view.counts.comments,
-      userCount: site.site_view.counts.users,
-      sidebar: site.site_view.site.sidebar ?? null,
-      icon: site.site_view.site.icon ?? null,
-      title: site.site_view.site.name,
-      moderates:
-        site.my_user?.moderates.map(({ community }) =>
-          convertCommunity({ community }),
-        ) ?? null,
-      follows:
-        site.my_user?.follows.map(({ community }) =>
-          convertCommunity({ community }),
-        ) ?? null,
-      personBlocks:
-        site.my_user?.person_blocks.map((block) =>
-          convertPerson({ person: block.target }),
-        ) ?? null,
-      communityBlocks:
-        site.my_user?.community_blocks.map(({ community }) =>
-          convertCommunity({ community }),
-        ) ?? null,
+      admins: lemmySite.admins.map((p) => convertPerson(p)),
+      me,
+      myEmail: lemmySite.my_user?.local_user_view.local_user.email ?? null,
+      version: lemmySite.version,
+      usersActiveDayCount: lemmySite.site_view.counts.users_active_day,
+      usersActiveWeekCount: lemmySite.site_view.counts.users_active_week,
+      usersActiveMonthCount: lemmySite.site_view.counts.users_active_month,
+      usersActiveHalfYearCount:
+        lemmySite.site_view.counts.users_active_half_year,
+      postCount: lemmySite.site_view.counts.posts,
+      commentCount: lemmySite.site_view.counts.comments,
+      userCount: lemmySite.site_view.counts.users,
+      sidebar: lemmySite.site_view.site.sidebar ?? null,
+      icon: lemmySite.site_view.site.icon ?? null,
+      title: lemmySite.site_view.site.name,
+      moderates: moderates?.map((c) => c.slug) ?? null,
+      follows: follows?.map((c) => c.slug) ?? null,
+      personBlocks: personBlocks?.map((p) => p.apId) ?? null,
+      communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
       applicationQuestion:
-        site.site_view.local_site.application_question ?? null,
-      registrationMode: site.site_view.local_site.registration_mode,
-      showNsfw: site.my_user?.local_user_view.local_user.show_nsfw ?? false,
-      blurNsfw: site.my_user?.local_user_view.local_user.blur_nsfw ?? true,
-      hideDownvotes: site.site_view.local_site.enable_downvotes === false,
+        lemmySite.site_view.local_site.application_question ?? null,
+      registrationMode: lemmySite.site_view.local_site.registration_mode,
+      showNsfw:
+        lemmySite.my_user?.local_user_view.local_user.show_nsfw ?? false,
+      blurNsfw: lemmySite.my_user?.local_user_view.local_user.blur_nsfw ?? true,
+      hideDownvotes: lemmySite.site_view.local_site.enable_downvotes === false,
       enablePostDownvotes: enableDownvotes,
       enableCommentDownvotes: enableDownvotes,
       software: this.software,
+    };
+
+    return {
+      site,
+      profiles: [...(personBlocks ?? []), ...(me ? [me] : [])],
+      communities: [
+        ...(moderates ?? []),
+        ...(follows ?? []),
+        ...(communityBlocks ?? []),
+      ],
     };
   }
 

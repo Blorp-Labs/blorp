@@ -252,7 +252,7 @@ function InstanceSelectionPage({
     const output = [...(instances.data ?? [])];
     if (site.data) {
       try {
-        const url = normalizeInstance(site.data.instance);
+        const url = normalizeInstance(site.data.site.instance);
         const host = new URL(url).host;
         output.push({
           host,
@@ -484,7 +484,7 @@ function LoginForm({
         </Button>
       </span>
 
-      {site.data?.privateInstance === false && (
+      {site.data?.site.privateInstance === false && (
         <Button
           type="button"
           className="mx-auto"
@@ -566,18 +566,18 @@ function SignupForm({
       });
   };
 
-  const applicationQuestion = site.data?.applicationQuestion;
+  const applicationQuestion = site.data?.site.applicationQuestion;
 
   return (
     <div className="p-4 overflow-y-auto ion-content-scroll-host h-full">
-      {site.data?.software === "piefed" && (
+      {site.data?.site.software === "piefed" && (
         <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           PieFed doesn't yet support registrations through 3rd party clients
           like Blorp
         </div>
       )}
 
-      {site.data?.registrationMode === "Closed" && (
+      {site.data?.site.registrationMode === "Closed" && (
         <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           This instance is not currently accepting registrations
         </div>

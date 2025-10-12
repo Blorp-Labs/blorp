@@ -13,6 +13,7 @@ import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 const POST_SORTS = [
   "Active",
@@ -861,16 +862,38 @@ export class PieFedApi implements ApiBlueprint<null> {
   async getSite(options: RequestOptions) {
     const json = await this.get("/site", {}, options);
     try {
-      const site = pieFedSiteSchema.parse(json);
-      const me = site.my_user?.local_user_view?.person;
-      return {
+      const pieFedSite = pieFedSiteSchema.parse(json);
+      const pieFedMe = pieFedSite.my_user?.local_user_view?.person;
+
+      const moderates = pieFedSite.my_user?.moderates?.map(({ community }) =>
+        convertCommunity({ community }, "partial"),
+      );
+
+      const follows = pieFedSite.my_user?.follows?.map(({ community }) =>
+        convertCommunity({ community }, "partial"),
+      );
+
+      const communityBlocks = pieFedSite.my_user?.community_blocks?.map(
+        ({ community }) =>
+          shrinkBlockedCommunity(convertCommunity({ community }, "partial")),
+      );
+
+      const me = pieFedMe
+        ? convertPerson({ person: pieFedMe }, "partial")
+        : null;
+
+      const personBlocks = pieFedSite.my_user?.person_blocks?.map((block) =>
+        shrinkBlockedPerson(convertPerson({ person: block.target }, "partial")),
+      );
+
+      const site = {
         privateInstance: false,
-        description: site.site.description ?? null,
+        description: pieFedSite.site.description ?? null,
         instance: this.instance,
-        admins: site.admins.map((p) => convertPerson(p, "full")),
-        me: me ? convertPerson({ person: me }, "partial") : null,
+        admins: pieFedSite.admins.map((p) => convertPerson(p, "full")),
+        me,
         myEmail: null,
-        version: site.version,
+        version: pieFedSite.version,
         // TODO: get these counts
         usersActiveDayCount: null,
         usersActiveWeekCount: null,
@@ -878,33 +901,32 @@ export class PieFedApi implements ApiBlueprint<null> {
         usersActiveHalfYearCount: null,
         postCount: null,
         commentCount: null,
-        userCount: site.site.user_count,
-        sidebar: site.site.sidebar ?? null,
-        icon: site.site.icon ?? null,
-        title: site.site.name,
-        moderates:
-          site.my_user?.moderates?.map(({ community }) =>
-            convertCommunity({ community }, "partial"),
-          ) ?? null,
-        follows:
-          site.my_user?.follows?.map(({ community }) =>
-            convertCommunity({ community }, "partial"),
-          ) ?? null,
-        personBlocks:
-          site.my_user?.person_blocks?.map((block) =>
-            convertPerson({ person: block.target }, "partial"),
-          ) ?? null,
-        communityBlocks:
-          site.my_user?.community_blocks?.map(({ community }) =>
-            convertCommunity({ community }, "partial"),
-          ) ?? null,
+        userCount: pieFedSite.site.user_count,
+        sidebar: pieFedSite.site.sidebar ?? null,
+        icon: pieFedSite.site.icon ?? null,
+        title: pieFedSite.site.name,
+        moderates: moderates?.map((c) => c.slug) ?? null,
+        follows: follows?.map((c) => c.slug) ?? null,
+        personBlocks: personBlocks?.map((p) => p.apId) ?? null,
+        communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
         applicationQuestion: null,
-        registrationMode: site.site.registration_mode,
-        showNsfw: site.my_user?.local_user_view?.local_user.show_nsfw ?? false,
+        registrationMode: pieFedSite.site.registration_mode,
+        showNsfw:
+          pieFedSite.my_user?.local_user_view?.local_user.show_nsfw ?? false,
         blurNsfw: true,
-        enablePostDownvotes: site.site.enable_downvotes,
-        enableCommentDownvotes: site.site.enable_downvotes,
+        enablePostDownvotes: pieFedSite.site.enable_downvotes,
+        enableCommentDownvotes: pieFedSite.site.enable_downvotes,
         software: this.software,
+      };
+
+      return {
+        site,
+        profiles: [...(personBlocks ?? []), ...(me ? [me] : [])],
+        communities: [
+          ...(moderates ?? []),
+          ...(follows ?? []),
+          ...(communityBlocks ?? []),
+        ],
       };
     } catch (err) {
       console.log(err);
