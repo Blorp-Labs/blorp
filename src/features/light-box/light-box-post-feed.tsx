@@ -43,8 +43,9 @@ import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Virtual } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/virtual";
+import "swiper/css/bundle";
+// import "swiper/css";
+// import "swiper/css/virtual";
 import { Swiper as SwiperType } from "swiper/types";
 
 const EMPTY_ARR: never[] = [];
@@ -347,14 +348,6 @@ export default function LightBoxPostFeed() {
     ),
   );
 
-  useEffect(() => {
-    const s = swiperRef.current;
-    if (!s) return;
-    s.allowTouchMove = !hideNav; // block dragging
-    s.allowSlideNext = !hideNav; // block next
-    s.allowSlidePrev = !hideNav; // block prev
-  }, [hideNav]);
-
   return (
     <IonPage className="dark">
       <PageTitle>Image</PageTitle>
@@ -394,13 +387,14 @@ export default function LightBoxPostFeed() {
 
         <Swiper
           key={isPending ? "pending" : "loaded"}
+          allowTouchMove={!hideNav && !media.md}
+          allowSlideNext={!hideNav}
+          allowSlidePrev={!hideNav}
           onSwiper={(s) => (swiperRef.current = s)}
           initialSlide={activeIndex}
           onSlideChange={(s) => onIndexChange(s.activeIndex)}
           modules={[Virtual]}
-          virtual
           slidesPerView={1}
-          spaceBetween={16}
           className="h-full"
           onReachEnd={() => {
             if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) {
