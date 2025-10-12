@@ -36,7 +36,7 @@ for (const { name, base } of tabs) {
     });
 
     test("loads community search results", async ({ page }) => {
-      await page.route("**/data/instance.full.json", async (route) => {
+      await page.route("**/api/v3/search", async (route) => {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
