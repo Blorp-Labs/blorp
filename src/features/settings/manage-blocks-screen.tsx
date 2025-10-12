@@ -8,7 +8,6 @@ import { getAccountSite, parseAccountInfo, useAuth } from "@/src/stores/auth";
 import NotFound from "../not-found";
 import { PersonCard } from "@/src/components/person/person-card";
 import { CommunityCard } from "@/src/components/communities/community-card";
-import { SectionItem, Section } from "./shared-components";
 import { useBlockCommunity, useBlockPerson } from "@/src/lib/api";
 import { useConfirmationAlert } from "@/src/lib/hooks/index";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
@@ -17,6 +16,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { useShallow } from "zustand/shallow";
 import { useCommunitiesStore } from "@/src/stores/communities";
+import { VirtualList } from "@/src/components/virtual-list";
 
 export default function SettingsPage() {
   const getConfirmation = useConfirmationAlert();
@@ -74,64 +74,111 @@ export default function SettingsPage() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen={true}>
-        <ContentGutters className="pt-4 max-md:px-3.5">
-          <div className="flex flex-col gap-8">
-            <Section title="BLOCKED USERS">
-              {blockedPersons?.map((p) => {
-                return (
-                  <SectionItem
-                    key={p.apId}
-                    onClick={() =>
-                      getConfirmation({
-                        message: `Unblock ${p.slug}`,
-                      }).then(() =>
-                        blockPerson.mutate({
-                          personId: p.id,
-                          block: false,
-                        }),
-                      )
-                    }
-                  >
-                    <PersonCard
-                      actorId={p.apId}
-                      account={account}
-                      size="sm"
-                      disableLink
-                    />
-                  </SectionItem>
-                );
-              })}
-            </Section>
+      <IonContent scrollY={false} fullscreen={true}>
+        <VirtualList
+          scrollHost
+          data={[
+            "BLOCKED USERS",
+            ...blockedPersons,
+            "BLOCKED COMMUNITIES",
+            ...blockedCommunities,
+          ]}
+          estimatedItemSize={53}
+          renderItem={({ item }) => {
+            if (_.isString(item)) {
+              return (
+                <ContentGutters className="pt-5 pb-2">
+                  <h2 className="text-xs font-medium text-muted-foreground">
+                    {item}
+                  </h2>
+                </ContentGutters>
+              );
+            }
 
-            <Section title="BLOCKED COMMUNITIES">
-              {blockedCommunities?.map((c) => {
-                return (
-                  <SectionItem
-                    key={c.apId}
-                    onClick={() =>
-                      getConfirmation({
-                        message: `Unblock ${c.slug}`,
-                      }).then(() =>
-                        blockCommunity.mutate({
-                          communityId: c.id,
-                          block: false,
-                        }),
-                      )
-                    }
-                  >
-                    <CommunityCard
-                      size="sm"
-                      communitySlug={c.slug}
-                      disableLink
-                      account={account}
-                    />
-                  </SectionItem>
-                );
-              })}
-            </Section>
-          </div>
-        </ContentGutters>
+            if ("avatar" in item) {
+              return (
+                <ContentGutters className="py-0.5">
+                  <PersonCard
+                    actorId={item.apId}
+                    account={account}
+                    size="sm"
+                    disableLink
+                    disableHover
+                  />
+                </ContentGutters>
+              );
+            }
+
+            return (
+              <ContentGutters className="py-0.5">
+                <CommunityCard
+                  size="sm"
+                  communitySlug={item.slug}
+                  disableLink
+                  account={account}
+                />
+              </ContentGutters>
+            );
+          }}
+        />
+
+        {/* <ContentGutters className="pt-4 max-md:px-3.5"> */}
+        {/*   <div className="flex flex-col gap-8"> */}
+        {/*     <Section title="BLOCKED USERS"> */}
+        {/*       {blockedPersons?.map((p) => { */}
+        {/*         return ( */}
+        {/*           <SectionItem */}
+        {/*             key={p.apId} */}
+        {/*             onClick={() => */}
+        {/*               getConfirmation({ */}
+        {/*                 message: `Unblock ${p.slug}`, */}
+        {/*               }).then(() => */}
+        {/*                 blockPerson.mutate({ */}
+        {/*                   personId: p.id, */}
+        {/*                   block: false, */}
+        {/*                 }), */}
+        {/*               ) */}
+        {/*             } */}
+        {/*           > */}
+        {/*             <PersonCard */}
+        {/*               actorId={p.apId} */}
+        {/*               account={account} */}
+        {/*               size="sm" */}
+        {/*               disableLink */}
+        {/*             /> */}
+        {/*           </SectionItem> */}
+        {/*         ); */}
+        {/*       })} */}
+        {/*     </Section> */}
+        {/**/}
+        {/*     <Section title="BLOCKED COMMUNITIES"> */}
+        {/*       {blockedCommunities?.map((c) => { */}
+        {/*         return ( */}
+        {/*           <SectionItem */}
+        {/*             key={c.apId} */}
+        {/*             onClick={() => */}
+        {/*               getConfirmation({ */}
+        {/*                 message: `Unblock ${c.slug}`, */}
+        {/*               }).then(() => */}
+        {/*                 blockCommunity.mutate({ */}
+        {/*                   communityId: c.id, */}
+        {/*                   block: false, */}
+        {/*                 }), */}
+        {/*               ) */}
+        {/*             } */}
+        {/*           > */}
+        {/*             <CommunityCard */}
+        {/*               size="sm" */}
+        {/*               communitySlug={c.slug} */}
+        {/*               disableLink */}
+        {/*               account={account} */}
+        {/*             /> */}
+        {/*           </SectionItem> */}
+        {/*         ); */}
+        {/*       })} */}
+        {/*     </Section> */}
+        {/*   </div> */}
+        {/* </ContentGutters> */}
       </IonContent>
     </IonPage>
   );
