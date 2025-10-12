@@ -252,7 +252,7 @@ export const useAuth = create<AuthStore>()(
     {
       name: "auth",
       storage: createStorage<AuthStore>(),
-      version: 3,
+      version: 4,
       migrate: (state) => {
         const parsed = storeSchema.parse(state) as AuthStore;
         return {
