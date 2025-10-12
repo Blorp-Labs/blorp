@@ -44,7 +44,7 @@ export default function SettingsPage() {
   const blockedCommunities = useCommunitiesStore(
     useShallow((s) =>
       _.compact(
-        site?.personBlocks?.map(
+        site?.communityBlocks?.map(
           (p) => s.communities[cachePrefixer(account)(p)]?.data.communityView,
         ),
       ),

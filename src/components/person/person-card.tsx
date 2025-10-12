@@ -10,7 +10,6 @@ import { Account, useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { encodeApId } from "@/src/lib/api/utils";
 import { useLinkContext } from "../../routing/link-context";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
 import { abbriviateNumber } from "@/src/lib/format";

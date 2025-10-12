@@ -380,7 +380,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     );
 
     const personBlocks = lemmySite.my_user?.person_blocks.map((p) =>
-      shrinkBlockedPerson(convertPerson({ person: p.person })),
+      shrinkBlockedPerson(convertPerson({ person: p.target })),
     );
 
     const communityBlocks = lemmySite.my_user?.community_blocks.map(
