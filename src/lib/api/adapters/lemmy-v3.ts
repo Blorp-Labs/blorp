@@ -14,6 +14,7 @@ import _ from "lodash";
 import z from "zod";
 import { isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 function is2faError(err?: Error | null) {
   if (!err) {
@@ -379,11 +380,12 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     );
 
     const personBlocks = lemmySite.my_user?.person_blocks.map((p) =>
-      convertPerson({ person: p.person }),
+      shrinkBlockedPerson(convertPerson({ person: p.person })),
     );
 
     const communityBlocks = lemmySite.my_user?.community_blocks.map(
-      ({ community }) => convertCommunity({ community }),
+      ({ community }) =>
+        shrinkBlockedCommunity(convertCommunity({ community })),
     );
 
     const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
@@ -408,8 +410,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       sidebar: lemmySite.site_view.site.sidebar ?? null,
       icon: lemmySite.site_view.site.icon ?? null,
       title: lemmySite.site_view.site.name,
-      moderates: moderates ?? null,
-      follows: follows ?? null,
+      moderates: moderates?.map((c) => c.slug) ?? null,
+      follows: follows?.map((c) => c.slug) ?? null,
       personBlocks: personBlocks?.map((p) => p.apId) ?? null,
       communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
       applicationQuestion:

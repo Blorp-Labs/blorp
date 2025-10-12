@@ -13,6 +13,7 @@ import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 const POST_SORTS = [
   "Active",
@@ -873,7 +874,8 @@ export class PieFedApi implements ApiBlueprint<null> {
       );
 
       const communityBlocks = pieFedSite.my_user?.community_blocks?.map(
-        ({ community }) => convertCommunity({ community }, "partial"),
+        ({ community }) =>
+          shrinkBlockedCommunity(convertCommunity({ community }, "partial")),
       );
 
       const me = pieFedMe
@@ -881,7 +883,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         : null;
 
       const personBlocks = pieFedSite.my_user?.person_blocks?.map((block) =>
-        convertPerson({ person: block.target }, "partial"),
+        shrinkBlockedPerson(convertPerson({ person: block.target }, "partial")),
       );
 
       const site = {
@@ -903,8 +905,8 @@ export class PieFedApi implements ApiBlueprint<null> {
         sidebar: pieFedSite.site.sidebar ?? null,
         icon: pieFedSite.site.icon ?? null,
         title: pieFedSite.site.name,
-        moderates: moderates ?? null,
-        follows: follows ?? null,
+        moderates: moderates?.map((c) => c.slug) ?? null,
+        follows: follows?.map((c) => c.slug) ?? null,
         personBlocks: personBlocks?.map((p) => p.apId) ?? null,
         communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
         applicationQuestion: null,

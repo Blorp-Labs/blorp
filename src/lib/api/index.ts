@@ -2305,10 +2305,7 @@ export function useSubscribedCommunities() {
     (s) => getAccountSite(s.getSelectedAccount())?.follows,
   );
   return useMemo(
-    () =>
-      (subscribedCommunities ?? []).sort((a, b) =>
-        a.slug.localeCompare(b.slug),
-      ),
+    () => (subscribedCommunities ?? []).sort((a, b) => a.localeCompare(b)),
     [subscribedCommunities],
   );
 }
@@ -2318,10 +2315,7 @@ export function useModeratingCommunities() {
     (s) => getAccountSite(s.getSelectedAccount())?.moderates,
   );
   return useMemo(
-    () =>
-      (moderatingCommunities ?? []).sort((a, b) =>
-        a.slug.localeCompare(b.slug),
-      ),
+    () => (moderatingCommunities ?? []).sort((a, b) => a.localeCompare(b)),
     [moderatingCommunities],
   );
 }
