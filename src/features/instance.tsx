@@ -42,7 +42,7 @@ export default function Instance() {
       return;
     }
 
-    const siteInstance = site.data?.instance;
+    const siteInstance = site.data?.site.instance;
     if (site.error) {
       redirecting.current = true;
       const id = setTimeout(() => {

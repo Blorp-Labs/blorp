@@ -294,7 +294,7 @@ export function useIsPersonBlocked(apId?: string | null) {
     if (!apId || !personBlocks || personBlocks.length === 0) {
       return false;
     }
-    return !!personBlocks.find((p) => p.apId === apId);
+    return !!personBlocks.find((p) => p === apId);
   });
 }
 
@@ -306,6 +306,6 @@ export function useIsCommunityBlocked(slug?: string | null) {
     if (!slug || !communityBlocks || communityBlocks.length === 0) {
       return false;
     }
-    return !!communityBlocks.find((c) => c.slug === slug);
+    return !!communityBlocks.find((c) => c === slug);
   });
 }

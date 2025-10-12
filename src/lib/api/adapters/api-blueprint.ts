@@ -128,8 +128,8 @@ export const siteSchema = z.object({
   admins: z.array(personSchema),
   moderates: z.array(communitySchema).nullable(),
   follows: z.array(communitySchema).nullable(),
-  personBlocks: z.array(personSchema).nullable(),
-  communityBlocks: z.array(communitySchema).nullable(),
+  personBlocks: z.array(z.string()).nullable(),
+  communityBlocks: z.array(z.string()).nullable(),
   version: z.string(),
   sidebar: z.string().nullable(),
   userCount: z.number().nullable(),
@@ -529,7 +529,11 @@ export abstract class ApiBlueprint<C> {
 
   abstract software: Software;
 
-  abstract getSite(options?: RequestOptions): Promise<Schemas.Site>;
+  abstract getSite(options?: RequestOptions): Promise<{
+    site: Schemas.Site;
+    communities?: Schemas.Community[];
+    profiles?: Schemas.Person[];
+  }>;
 
   abstract getPost(
     form: { apId: string },

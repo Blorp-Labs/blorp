@@ -251,46 +251,48 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getSite(options: RequestOptions) {
-    const site = await this.client.getSite(options);
+    const lemmySite = await this.client.getSite(options);
     // TODO: figure out why lemmy types are broken here
     const enableDownvotes =
-      "enable_downvotes" in site.site_view.local_site &&
-      site.site_view.local_site.enable_downvotes === true;
+      "enable_downvotes" in lemmySite.site_view.local_site &&
+      lemmySite.site_view.local_site.enable_downvotes === true;
     // TODO: uncomment once the below is implemented
     // const account = await this.client.getAccount();
-    return {
-      privateInstance: site.site_view.local_site.private_instance,
-      description: site.site_view.site.description ?? null,
+    const site = {
+      privateInstance: lemmySite.site_view.local_site.private_instance,
+      description: lemmySite.site_view.site.description ?? null,
       instance: this.instance,
-      admins: site.admins.map((p) => convertPerson(p)),
+      admins: lemmySite.admins.map((p) => convertPerson(p)),
       me: null,
       myEmail: null,
-      version: site.version,
+      version: lemmySite.version,
       /* me: me ? convertPerson(me) : null, */
       moderates: [],
       follows: [],
       communityBlocks: [],
       personBlocks: [],
-      usersActiveDayCount: site.site_view.local_site.users_active_day,
-      usersActiveWeekCount: site.site_view.local_site.users_active_week,
-      usersActiveMonthCount: site.site_view.local_site.users_active_month,
+      usersActiveDayCount: lemmySite.site_view.local_site.users_active_day,
+      usersActiveWeekCount: lemmySite.site_view.local_site.users_active_week,
+      usersActiveMonthCount: lemmySite.site_view.local_site.users_active_month,
       usersActiveHalfYearCount:
-        site.site_view.local_site.users_active_half_year,
-      postCount: site.site_view.local_site.posts,
-      commentCount: site.site_view.local_site.comments,
-      userCount: site.site_view.local_site.users,
-      sidebar: site.site_view.site.sidebar ?? null,
-      icon: site.site_view.site.icon ?? null,
-      title: site.site_view.site.name,
+        lemmySite.site_view.local_site.users_active_half_year,
+      postCount: lemmySite.site_view.local_site.posts,
+      commentCount: lemmySite.site_view.local_site.comments,
+      userCount: lemmySite.site_view.local_site.users,
+      sidebar: lemmySite.site_view.site.sidebar ?? null,
+      icon: lemmySite.site_view.site.icon ?? null,
+      title: lemmySite.site_view.site.name,
       applicationQuestion:
-        site.site_view.local_site.application_question ?? null,
-      registrationMode: site.site_view.local_site.registration_mode,
+        lemmySite.site_view.local_site.application_question ?? null,
+      registrationMode: lemmySite.site_view.local_site.registration_mode,
       showNsfw: false,
       blurNsfw: true,
       enablePostDownvotes: enableDownvotes,
       enableCommentDownvotes: enableDownvotes,
       software: this.software,
     };
+
+    return { site };
   }
 
   async getPost(form: { apId: string }, options: RequestOptions) {

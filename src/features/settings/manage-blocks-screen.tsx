@@ -14,6 +14,9 @@ import { useConfirmationAlert } from "@/src/lib/hooks/index";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
+import { useProfilesStore } from "@/src/stores/profiles";
+import { useShallow } from "zustand/shallow";
+import { useCommunitiesStore } from "@/src/stores/communities";
 
 export default function SettingsPage() {
   const getConfirmation = useConfirmationAlert();
@@ -26,14 +29,31 @@ export default function SettingsPage() {
   const blockCommunity = useBlockCommunity({ account });
   const blockPerson = useBlockPerson({ account });
 
+  const site = account ? getAccountSite(account) : null;
+
+  const cachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const blockedPersons = useProfilesStore(
+    useShallow((s) =>
+      _.compact(
+        site?.personBlocks?.map(
+          (p) => s.profiles[cachePrefixer(account)(p)]?.data,
+        ),
+      ),
+    ),
+  );
+  const blockedCommunities = useCommunitiesStore(
+    useShallow((s) =>
+      _.compact(
+        site?.personBlocks?.map(
+          (p) => s.communities[cachePrefixer(account)(p)]?.data.communityView,
+        ),
+      ),
+    ),
+  );
+
   if (!account) {
     return <NotFound />;
   }
-
-  const site = getAccountSite(account);
-  const personBlocks = site?.personBlocks;
-  const communityBlocks = site?.communityBlocks;
-  console.log("HERE", communityBlocks);
 
   const { person } = parseAccountInfo(account);
   const slug = person?.slug;
@@ -58,7 +78,7 @@ export default function SettingsPage() {
         <ContentGutters className="pt-4 max-md:px-3.5">
           <div className="flex flex-col gap-8">
             <Section title="BLOCKED USERS">
-              {personBlocks?.map((p) => {
+              {blockedPersons?.map((p) => {
                 return (
                   <SectionItem
                     key={p.apId}
@@ -85,7 +105,7 @@ export default function SettingsPage() {
             </Section>
 
             <Section title="BLOCKED COMMUNITIES">
-              {communityBlocks?.map((c) => {
+              {blockedCommunities?.map((c) => {
                 return (
                   <SectionItem
                     key={c.apId}
