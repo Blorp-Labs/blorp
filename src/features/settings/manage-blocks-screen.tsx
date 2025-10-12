@@ -32,7 +32,8 @@ export default function SettingsPage() {
 
   const site = getAccountSite(account);
   const personBlocks = site?.personBlocks;
-  const community_blocks = site?.communityBlocks;
+  const communityBlocks = site?.communityBlocks;
+  console.log("HERE", communityBlocks);
 
   const { person } = parseAccountInfo(account);
   const slug = person?.slug;
@@ -74,7 +75,7 @@ export default function SettingsPage() {
                   >
                     <PersonCard
                       actorId={p.apId}
-                      person={p}
+                      account={account}
                       size="sm"
                       disableLink
                     />
@@ -84,7 +85,7 @@ export default function SettingsPage() {
             </Section>
 
             <Section title="BLOCKED COMMUNITIES">
-              {community_blocks?.map((c) => {
+              {communityBlocks?.map((c) => {
                 return (
                   <SectionItem
                     key={c.apId}
@@ -103,6 +104,7 @@ export default function SettingsPage() {
                       size="sm"
                       communitySlug={c.slug}
                       disableLink
+                      account={account}
                     />
                   </SectionItem>
                 );

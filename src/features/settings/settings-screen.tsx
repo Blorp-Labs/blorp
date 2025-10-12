@@ -71,7 +71,7 @@ function AccountCard({
     <Section title={`ACCOUNT ${accountIndex + 1}`}>
       {person && (
         <SectionItem unstyled>
-          <PersonCard actorId={person.apId} person={person} size="sm" />
+          <PersonCard actorId={person.apId} account={account} size="sm" />
         </SectionItem>
       )}
 

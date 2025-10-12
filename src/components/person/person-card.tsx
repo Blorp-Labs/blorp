@@ -6,7 +6,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { useAuth } from "@/src/stores/auth";
+import { Account, useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { encodeApId } from "@/src/lib/api/utils";
 import { useLinkContext } from "../../routing/link-context";
@@ -19,27 +19,26 @@ export function PersonCard({
   actorId,
   size = "md",
   className,
-  person: override,
   disableLink,
   disableHover,
   showCounts,
+  account,
 }: {
   actorId: string;
-  person?: Schemas.Person;
   size?: "sm" | "md";
   className?: string;
   disableLink?: boolean;
   disableHover?: boolean;
   showCounts?: boolean;
+  account?: Account;
 }) {
   const linkCtx = useLinkContext();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const personView = useProfilesStore((s) =>
-    actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
+  const p = useProfilesStore((s) =>
+    actorId ? s.profiles[getCachePrefixer(account)(actorId)]?.data : undefined,
   );
-  const p = override ?? personView;
 
-  if (!personView && !override) {
+  if (!p) {
     return <PersonSkeletonCard size={size} className={className} />;
   }
 
@@ -48,13 +47,8 @@ export function PersonCard({
   const content = (
     <>
       <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
-        <AvatarImage
-          src={(override ? override.avatar : personView?.avatar) ?? undefined}
-          className="object-cover"
-        />
-        <AvatarFallback>
-          {(override?.slug ?? personView?.slug)?.substring(0, 1)}
-        </AvatarFallback>
+        <AvatarImage src={p?.avatar ?? undefined} className="object-cover" />
+        <AvatarFallback>{p?.slug?.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
       <div className="flex flex-col">
@@ -69,16 +63,16 @@ export function PersonCard({
         </span>
         {showCounts && (
           <div className="flex flex-row gap-1">
-            {_.isNumber(personView?.postCount) && size === "md" && (
+            {_.isNumber(p?.postCount) && size === "md" && (
               <span className="text-xs text-muted-foreground">
-                {abbriviateNumber(personView.postCount)} posts
-                {_.isNumber(personView?.commentCount) ? "," : ""}
+                {abbriviateNumber(p.postCount)} posts
+                {_.isNumber(p?.commentCount) ? "," : ""}
               </span>
             )}
 
-            {_.isNumber(personView?.commentCount) && size === "md" && (
+            {_.isNumber(p?.commentCount) && size === "md" && (
               <span className="text-xs text-muted-foreground">
-                {abbriviateNumber(personView.commentCount)} comments
+                {abbriviateNumber(p.commentCount)} comments
               </span>
             )}
           </div>
@@ -113,7 +107,7 @@ export function PersonCard({
       data-testid="person-card"
       to={`${linkCtx.root}u/:userId`}
       params={{
-        userId: encodeApId(override ? override.apId : actorId),
+        userId: encodeApId(actorId),
       }}
       className={cn(
         "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
