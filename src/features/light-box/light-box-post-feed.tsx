@@ -394,6 +394,7 @@ export default function LightBoxPostFeed() {
           initialSlide={activeIndex}
           onSlideChange={(s) => onIndexChange(s.activeIndex)}
           modules={[Virtual]}
+          virtual
           slidesPerView={1}
           className="h-full"
           onReachEnd={() => {
