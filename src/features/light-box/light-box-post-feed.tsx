@@ -1,5 +1,13 @@
 import { ContentGutters } from "@/src/components/gutters";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useCommunity, usePost, usePosts } from "@/src/lib/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
@@ -21,7 +29,6 @@ import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";
-import { ResponsiveImage } from "./light-box";
 import {
   PostCommentsButton,
   PostShareButton,
@@ -41,13 +48,18 @@ import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Virtual } from "swiper/modules";
-import "swiper/css/bundle";
-// import "swiper/css";
-// import "swiper/css/virtual";
+import { Swiper, SwiperSlide, useSwiper } from "swiper/react";
+import { Virtual, Zoom } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/virtual";
+import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
+import { ProgressiveImage } from "@/src/components/progressive-image";
+import { FaMinus, FaPlus } from "react-icons/fa6";
+import { MdZoomInMap } from "react-icons/md";
 
+const MIN_ZOOM_SCALE = 1;
+const MAX_ZOOM_SCALE = 3;
 const EMPTY_ARR: never[] = [];
 
 function KeyboardShortcutHelpModal({
@@ -97,19 +109,99 @@ function KeyboardShortcutHelpModal({
   );
 }
 
+function useSwiperZoomScale(swiper?: SwiperType | null) {
+  const [zoom, setZoom] = useState(0);
+  useEffect(() => {
+    const handler = (_e: SwiperType, scale: number) => {
+      setZoom(scale);
+    };
+    swiper?.on("zoomChange", handler);
+    return () => swiper?.off("zoomChange", handler);
+  }, [swiper]);
+  return zoom;
+}
+
+function useSwiperPinchZoom(swiper?: SwiperType | null) {
+  useEffect(() => {
+    if (!swiper) return;
+    const el = swiper.el as HTMLElement;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const factor = Math.exp(-e.deltaY * 0.02);
+      const next = _.clamp(
+        swiper.zoom.scale * factor,
+        MIN_ZOOM_SCALE,
+        MAX_ZOOM_SCALE,
+      );
+      swiper.zoom.in(next);
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [swiper]);
+}
+
+const Controls = ({
+  style,
+  disabled,
+}: {
+  style?: CSSProperties;
+  isZoomedIn?: boolean;
+  disabled?: boolean;
+}) => {
+  const swiper = useSwiper();
+  const zoom = useSwiperZoomScale(swiper);
+  const isZoomedIn = zoom > 1.1;
+
+  return (
+    <div
+      className="absolute right-0 z-10 dark flex flex-col mr-9 gap-2.5 max-md:hidden"
+      style={style}
+    >
+      <Button
+        variant="secondary"
+        size="icon"
+        onClick={() =>
+          swiper.zoom.in(_.clamp(zoom + 1, MIN_ZOOM_SCALE, MAX_ZOOM_SCALE))
+        }
+        tabIndex={disabled ? -1 : undefined}
+      >
+        <FaPlus />
+      </Button>
+      <Button
+        variant="secondary"
+        size="icon"
+        onClick={() =>
+          swiper.zoom.in(_.clamp(zoom - 1, MIN_ZOOM_SCALE, MAX_ZOOM_SCALE))
+        }
+        tabIndex={disabled ? -1 : undefined}
+      >
+        <FaMinus />
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
+        className="transition-opacity disabled:opacity-0"
+        onClick={() => swiper.zoom.out()}
+        disabled={!isZoomedIn || disabled}
+        tabIndex={!isZoomedIn || disabled ? -1 : undefined}
+      >
+        <MdZoomInMap />
+      </Button>
+    </div>
+  );
+};
+
 const Post = memo(
   ({
     apId,
     paddingT,
     paddingB,
-    onZoom,
-    disabled,
   }: {
     apId: string;
     paddingT: number;
     paddingB: number;
-    onZoom: (scale: number) => void;
-    disabled?: boolean;
   }) => {
     const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
     const postView = usePostsStore(
@@ -124,17 +216,17 @@ const Post = memo(
     const img = embed?.fullResThumbnail ?? embed?.thumbnail;
 
     return img ? (
-      <ResponsiveImage
-        img={img}
-        fallbackImg={embed?.thumbnail}
-        onZoom={onZoom}
-        paddingT={paddingT}
-        paddingB={paddingB}
-        className="border-x border-background -mx-px"
-        disabled={disabled}
-        blurNsfw={blurImg}
-        altText={postView?.altText}
-      />
+      <div className="h-full w-full relative">
+        <div className="swiper-zoom-container">
+          <ProgressiveImage
+            lowSrc={img}
+            // highSrc={embed?.fullResThumbnail}
+            style={{ top: paddingT, bottom: paddingB }}
+            className="absolute inset-x-0 bg-transparent overflow-visible"
+            imgClassName="object-contain"
+          />
+        </div>
+      </div>
     ) : (
       <NoImage className="absolute top-1/2 left-1/2 h-40 w-40 -translate-1/2 text-white" />
     );
@@ -218,7 +310,6 @@ export default function LightBoxPostFeed() {
   const decodedApId = encodedApId ? decodeApId(encodedApId) : null;
   const initPostApId = useRef(decodedApId).current ?? undefined;
 
-  const [hideNav, setHideNav] = useState(false);
   const media = useMedia();
   const navbar = useNavbarHeight();
   const tabbar = useTabbarHeight();
@@ -320,6 +411,9 @@ export default function LightBoxPostFeed() {
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);
   const swiperRef = useRef<SwiperType>(null);
+  const zoom = useSwiperZoomScale(swiperRef.current);
+  useSwiperPinchZoom(swiperRef.current);
+  const hideNav = zoom > 1;
 
   useKeyboardShortcut(
     useCallback(
@@ -393,7 +487,12 @@ export default function LightBoxPostFeed() {
           onSwiper={(s) => (swiperRef.current = s)}
           initialSlide={activeIndex}
           onSlideChange={(s) => onIndexChange(s.activeIndex)}
-          modules={[Virtual]}
+          modules={[Virtual, Zoom]}
+          zoom={{
+            maxRatio: MAX_ZOOM_SCALE,
+            minRatio: MIN_ZOOM_SCALE,
+            panOnMouseMove: true,
+          }}
           virtual
           slidesPerView={1}
           className="h-full"
@@ -402,15 +501,15 @@ export default function LightBoxPostFeed() {
               postsQuery.fetchNextPage();
             }
           }}
+          wrapperClass="relative"
         >
+          <Controls style={{ bottom: bottomBarHeight }} />
           {data.map((item, i) => (
             <SwiperSlide key={i} virtualIndex={i} className="relative !h-auto">
               <Post
                 apId={item}
                 paddingT={navbar.height + navbar.inset}
                 paddingB={bottomBarHeight}
-                onZoom={(scale) => setHideNav(scale > 1.05)}
-                disabled={i !== activeIndex}
               />
             </SwiperSlide>
           ))}

@@ -29,6 +29,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { ContentGutters } from "@/src/components/gutters";
 import { ImageShareButton } from "@/src/components/posts/post-buttons";
 import { canShareImage } from "@/src/lib/share";
+import { useSwiper } from "swiper/react";
 
 const Controls = ({
   style,
@@ -40,6 +41,7 @@ const Controls = ({
   disabled?: boolean;
 }) => {
   const { zoomIn, zoomOut, resetTransform } = useControls();
+  const swiper = useSwiper();
 
   return (
     <div
@@ -49,7 +51,7 @@ const Controls = ({
       <Button
         variant="secondary"
         size="icon"
-        onClick={() => zoomIn()}
+        onClick={() => swiper.zoom.in()}
         tabIndex={disabled ? -1 : undefined}
       >
         <FaPlus />
@@ -57,7 +59,7 @@ const Controls = ({
       <Button
         variant="secondary"
         size="icon"
-        onClick={() => zoomOut()}
+        onClick={() => swiper.zoom.out()}
         tabIndex={disabled ? -1 : undefined}
       >
         <FaMinus />
@@ -66,7 +68,7 @@ const Controls = ({
         size="icon"
         variant="secondary"
         className="transition-opacity disabled:opacity-0"
-        onClick={() => resetTransform()}
+        onClick={() => swiper.zoom.disable()}
         disabled={!isZoomedIn || disabled}
         tabIndex={!isZoomedIn || disabled ? -1 : undefined}
       >
