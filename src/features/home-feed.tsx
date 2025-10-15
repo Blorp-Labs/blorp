@@ -20,7 +20,7 @@ import {
 import { VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
-import { useMedia } from "../lib/hooks";
+import { useIsActiveRoute, useMedia } from "../lib/hooks";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
 import { FaArrowUp } from "react-icons/fa6";
@@ -149,6 +149,7 @@ export default function HomeFeed() {
   const media = useMedia();
   const postSort = useFiltersStore((s) => s.postSort);
   const listingType = useFiltersStore((s) => s.listingType);
+  const active = useIsActiveRoute();
 
   const posts = usePosts({
     sort: postSort,
@@ -190,7 +191,7 @@ export default function HomeFeed() {
   const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
   return (
-    <IonPage>
+    <IonPage className="home-page">
       <PageTitle />
       <IonHeader className="backdrop-blur-xs bg-gradient-to-b from-20% from-background to-background/30 dismissable">
         <IonToolbar data-tauri-drag-region className="dismissable">
@@ -243,7 +244,7 @@ export default function HomeFeed() {
           <></>
         </ContentGutters>
       </IonHeader>
-      <IonContent scrollY={false} fullscreen={media.maxMd}>
+      <IonContent scrollY={false} fullscreen={media.maxMd} key={active ? 1 : 0}>
         <PostReportProvider>
           <VirtualList<Item>
             key={postSort + listingType}
