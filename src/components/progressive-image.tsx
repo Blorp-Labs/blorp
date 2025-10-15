@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { cn } from "../lib/utils";
 
 export type ProgressiveImageProps = {
   /** Low-res URL that should be tiny and fast (~1–5KB). */
@@ -10,6 +11,7 @@ export type ProgressiveImageProps = {
   /** Optional intrinsic size to prevent layout shift. */
   width?: number;
   height?: number;
+  style?: React.CSSProperties;
   /** Tailwind classes for the outer container (positioned/clipped, sizing). */
   className?: string;
   /** Tailwind classes applied to both <img> tags (e.g., object-cover). */
@@ -41,6 +43,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   width,
   height,
   className = "",
+  style,
   imgClassName = "object-cover",
   priority = false,
   aspectRatio,
@@ -65,8 +68,8 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-neutral-100 ${className}`}
-      style={{ aspectRatio }}
+      className={cn("relative overflow-hidden bg-neutral-100", className)}
+      style={{ ...style, aspectRatio }}
     >
       {/* Low-res base: paints immediately */}
       <img
@@ -78,7 +81,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         fetchPriority="high"
         onLoad={handleAspectRatio}
         onError={() => onError?.()}
-        className={["w-full h-full", imgClassName].join(" ")}
+        className={cn("w-full h-full", imgClassName)}
       />
       {/* High-res overlay: fades in after it loads */}
       {highSrc && (
@@ -92,11 +95,11 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
             setHiVisible(true);
             handleAspectRatio(e);
           }}
-          className={[
+          className={cn(
             "absolute inset-0 w-full h-full opacity-0 object-cover",
             imgClassName,
-            hiVisible ? "opacity-100" : "",
-          ].join(" ")}
+            hiVisible && "opacity-100",
+          )}
           {...hiAttrs}
         />
       )}
