@@ -25,18 +25,21 @@ export const AllHeadings: Story = {
 
 ###### Heading Level 6
 `,
+    onChange: () => {},
   },
 };
 
 export const Paragraph: Story = {
   args: {
     content: `This is a simple paragraph to test regular text rendering. It should wrap and preserve line breaks properly when needed.`,
+    onChange: () => {},
   },
 };
 
 export const Emphasis: Story = {
   args: {
     content: `This text shows *italic*, **bold**, ***bold italic***, and ~~strikethrough~~ styles in one place.`,
+    onChange: () => {},
   },
 };
 
@@ -49,6 +52,7 @@ And here’s an image:
 
 ![test image](https://picsum.photos/id/10/200/100)
 `,
+    onChange: () => {},
   },
 };
 
@@ -67,6 +71,7 @@ Ordered list:
    1. Sub-first
    2. Sub-second
 `,
+    onChange: () => {},
   },
 };
 
@@ -79,12 +84,14 @@ export const BlockquoteAndHr: Story = {
 
 Above is a horizontal rule.
 `,
+    onChange: () => {},
   },
 };
 
 export const InlineCode: Story = {
   args: {
     content: `Here’s some inline \`code\` in a sentence.`,
+    onChange: () => {},
   },
 };
 
@@ -99,6 +106,7 @@ function greet(name) {
 console.log(greet("World"));
 \`\`\`
 `,
+    onChange: () => {},
   },
 };
 
@@ -111,6 +119,7 @@ export const Table: Story = {
 | Alignment   | ✅         | Left, center, right  |
 | Multi-line  | ✅         | Wraps text           |
 `,
+    onChange: () => {},
   },
 };
 
@@ -133,6 +142,7 @@ def add(a, b):
     return a + b
 \`\`\`
 `,
+    onChange: () => {},
   },
 };
 
@@ -153,6 +163,7 @@ You can include **formatted** text, [links](https://example.com), lists, and mor
 
 And here’s normal text after the spoiler.
 `,
+    onChange: () => {},
   },
 };
 
@@ -167,6 +178,7 @@ export const SubScript: Story = {
     content: `
 Here is some~subscript~isn't that cool
 `,
+    onChange: () => {},
   },
 };
 
@@ -175,5 +187,6 @@ export const SupScript: Story = {
     content: `
 Here is some^supscript^isn't that cool
 `,
+    onChange: () => {},
   },
 };

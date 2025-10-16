@@ -1,17 +1,40 @@
-.tiptap p.is-editor-empty:first-child::before {
-  color: #adb5bd;
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-
-.spoiler [data-node-view-content-react] > *:first-child::before {
-  content: "▼ ";
-}
-
 /* Fix text scaling */
 .ProseMirror {
   -webkit-text-size-adjust: inherit !important;
   text-size-adjust: inherit !important;
+}
+
+.tiptap {
+  p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground/75 float-left h-0 pointer-events-none content-[attr(data-placeholder)];
+  }
+
+  /* Details */
+  .details {
+    @apply flex border-border border rounded-lg p-2 gap-2;
+
+    summary {
+      @apply font-bold list-none;
+    }
+
+    summary::marker {
+      @apply content-none;
+    }
+
+    > button {
+      @apply flex items-center justify-center text-xs mt-0.5 h-5 w-5 rounded-sm bg-muted;
+
+      &::before {
+        @apply content-["\25B6"];
+      }
+    }
+
+    &.is-open > button::before {
+      @apply rotate-90;
+    }
+
+    > div {
+      @apply flex flex-col gap-2 w-full;
+    }
+  }
 }

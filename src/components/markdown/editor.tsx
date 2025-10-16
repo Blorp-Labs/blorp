@@ -8,15 +8,16 @@ import {
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
-import Spoiler from "./editor-extensions/spoiler-plugin";
+import {
+  DetailsWithMarkdown,
+  DetailsContentWithMarkdown,
+  DetailsSummaryWithMarkdown,
+} from "./editor-extensions/spoiler-plugin";
 import SubScript from "./editor-extensions/subscript";
 import SupScript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
+import { TableKit } from "@tiptap/extension-table";
 import { useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "../ui/button";
@@ -57,7 +58,7 @@ const linkSchema = z.object({
   url: z.string(),
 });
 
-function IconFileInput({ onFile }: { onFile: (file: File) => void }) {
+function IconFileInput({ onFiles }: { onFiles: (file: File[]) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -66,11 +67,11 @@ function IconFileInput({ onFile }: { onFile: (file: File) => void }) {
         type="file"
         ref={fileInputRef}
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) {
-            onFile(file);
+          if (event.target.files && event.target.files.length > 0) {
+            onFiles(Array.from(event.target.files));
           }
         }}
       />
@@ -103,23 +104,37 @@ function getActiveLinkInfo(editor: Editor) {
   return { text, href: attrs["href"], range };
 }
 
+function useRenderOnTipTapChange(editor: Editor | null) {
+  const [, setSignal] = useState(0);
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => setSignal((x) => x + 1);
+    editor.on("selectionUpdate", rerender);
+    return () => {
+      editor.off("selectionUpdate", rerender);
+    };
+  }, [editor]);
+}
+
 const MenuBar = ({
   editor,
-  onFile,
+  onFiles,
   className,
 }: {
   editor: Editor | null;
-  onFile: (file: File) => void;
+  onFiles: (file: File[]) => void;
   className?: string;
 }) => {
   const [alrt] = useIonAlert();
+
+  useRenderOnTipTapChange(editor);
 
   if (!editor) {
     return null;
   }
   return (
     <div className={cn("flex flex-row items-center gap-1.5", className)}>
-      <IconFileInput onFile={onFile} />
+      <IconFileInput onFiles={onFiles} />
 
       <Toggle
         size="icon"
@@ -214,7 +229,7 @@ const MenuBar = ({
         data-state={editor.isActive("bold") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
+        disabled={!editor.can().chain().toggleBold().run()}
         aria-label={editor.isActive("bold") ? "Unbold" : "Bold"}
       >
         <AiOutlineBold />
@@ -225,7 +240,7 @@ const MenuBar = ({
         data-state={editor.isActive("italic") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
+        disabled={!editor.can().chain().toggleItalic().run()}
         aria-label={editor.isActive("italic") ? "Unitalicize" : "Italicize"}
       >
         <AiOutlineItalic />
@@ -236,7 +251,7 @@ const MenuBar = ({
         data-state={editor.isActive("strike") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        disabled={!editor.can().chain().focus().toggleStrike().run()}
+        disabled={!editor.can().chain().toggleStrike().run()}
         aria-label={
           editor.isActive("bold") ? "Unstrikethrough" : "Strikethrough"
         }
@@ -249,7 +264,7 @@ const MenuBar = ({
         data-state={editor.isActive("blockquote") ? "on" : "off"}
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        disabled={!editor.can().chain().focus().toggleBlockquote().run()}
+        disabled={!editor.can().chain().toggleBlockquote().run()}
         aria-label={editor.isActive("blockquote") ? "Unquote" : "Quote"}
       >
         <FaQuoteRight />
@@ -292,8 +307,13 @@ const MenuBar = ({
           {
             text: "Spoiler",
             onClick: () => {
-              // @ts-expect-error
-              editor.commands.insertSpoiler();
+              editor
+                .chain()
+                .focus()
+                .insertContent(
+                  `<details open><summary>Spoiler</summary><p>Content</p></details>`,
+                )
+                .run();
             },
           },
           {
@@ -359,6 +379,13 @@ function TipTapEditor({
   const mentionSuggestions = useMentionSuggestions();
 
   const editor = useEditor({
+    // TipTap no longer rerenders on every
+    // change. Our custom menubar component
+    // subscribes to tiptap changes and makes
+    // sure the state of the buttons are in sync.
+    // If there are any issues down the road, try
+    // uncommenting the line below.
+    // shouldRerenderOnTransaction: true,
     autofocus: autoFocus,
     content,
     extensions: [
@@ -370,7 +397,6 @@ function TipTapEditor({
       }),
       Image,
       Markdown,
-      Spoiler,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockEditor);
@@ -382,12 +408,9 @@ function TipTapEditor({
         autolink: true,
         defaultProtocol: "https",
       }),
-      Table.configure({
-        resizable: true,
+      TableKit.configure({
+        table: { resizable: true },
       }),
-      TableRow,
-      TableHeader,
-      TableCell,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -396,8 +419,16 @@ function TipTapEditor({
       }),
       SubScript,
       SupScript,
+      DetailsWithMarkdown.configure({
+        HTMLAttributes: {
+          class: "details",
+        },
+      }),
+      DetailsSummaryWithMarkdown,
+      DetailsContentWithMarkdown,
     ],
     onUpdate: ({ editor }) => {
+      // @ts-expect-error
       const markdown = editor?.storage["markdown"].getMarkdown();
       onChange(markdown);
     },
@@ -412,23 +443,23 @@ function TipTapEditor({
         class: "flex-1 min-h-full space-y-4 outline-none",
       },
       handlePaste: (view, event) => {
-        const file = event.clipboardData?.files[0];
-        if (file) {
-          handleFile(file).then(({ url }) => {
-            const { schema, tr, selection } = view.state;
-            const { from } = selection;
+        if (event.clipboardData && event.clipboardData.files.length > 0) {
+          for (const file of Array.from(event.clipboardData?.files ?? [])) {
+            handleFile(file).then(({ url }) => {
+              const { schema, tr, selection } = view.state;
+              const { from } = selection;
 
-            if (schema.nodes["image"]) {
-              const node = schema.nodes["image"].create({ src: url }); // create image node
-              const transaction = tr.insert(from, node); // insert at current selection
-              view.dispatch(transaction);
-            } else {
-              console.error("Image node is not defined in the schema");
-            }
-          });
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // create image node
+                const transaction = tr.insert(from, node); // insert at current selection
+                view.dispatch(transaction);
+              } else {
+                console.error("Image node is not defined in the schema");
+              }
+            });
+          }
           return true; // prevent default paste behavior
         }
-
         return false; // allow default behavior for non-files
       },
       handleDrop: (view, event, slice, moved) => {
@@ -436,28 +467,29 @@ function TipTapEditor({
           !moved &&
           event.dataTransfer &&
           event.dataTransfer.files &&
-          event.dataTransfer.files[0]
+          event.dataTransfer.files.length > 0
         ) {
           event.preventDefault();
-          const file = event.dataTransfer.files[0];
-          handleFile(file).then(({ url }) => {
-            const { schema } = view.state;
-            const coordinates = view.posAtCoords({
-              left: event.clientX,
-              top: event.clientY,
+          for (const file of Array.from(event.dataTransfer.files)) {
+            handleFile(file).then(({ url }) => {
+              const { schema } = view.state;
+              const coordinates = view.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
+              });
+              if (schema.nodes["image"]) {
+                const node = schema.nodes["image"].create({ src: url }); // creates the image element
+                const transaction = view.state.tr.insert(
+                  coordinates?.pos ?? 0,
+                  node,
+                ); // places it in the correct position
+                return view.dispatch(transaction);
+              } else {
+                console.error("Failed to handle dropped image");
+              }
             });
-            if (schema.nodes["image"]) {
-              const node = schema.nodes["image"].create({ src: url }); // creates the image element
-              const transaction = view.state.tr.insert(
-                coordinates?.pos ?? 0,
-                node,
-              ); // places it in the correct position
-              return view.dispatch(transaction);
-            } else {
-              console.error("Failed to handle dropped image");
-            }
-          });
-          return true; // handled
+          }
+          return true;
         }
         return false;
       },
@@ -465,6 +497,7 @@ function TipTapEditor({
   });
 
   useEffect(() => {
+    // @ts-expect-error
     if (editor?.storage["markdown"].getMarkdown() !== content) {
       editor?.commands.setContent(content);
     }
@@ -480,12 +513,20 @@ function TipTapEditor({
       >
         <MenuBar
           editor={editor}
-          onFile={(file) => {
-            handleFile(file).then(({ url }) => {
-              if (url) {
-                editor?.chain().focus().setImage({ src: url }).run();
-              }
-            });
+          onFiles={(files) => {
+            for (const file of files) {
+              handleFile(file).then(({ url }) => {
+                if (url) {
+                  const { to } = editor.state.selection;
+                  editor
+                    ?.chain()
+                    .focus()
+                    .setTextSelection(to)
+                    .setImage({ src: url })
+                    .run();
+                }
+              });
+            }
           }}
         />
         <Button
@@ -522,13 +563,21 @@ function TipTapEditor({
         <MenuBar
           className="gap-2.5"
           editor={editor}
-          onFile={(file) =>
-            handleFile(file).then(({ url }) => {
-              if (url) {
-                editor?.chain().focus().setImage({ src: url }).run();
-              }
-            })
-          }
+          onFiles={(files) => {
+            for (const file of files) {
+              handleFile(file).then(({ url }) => {
+                if (url) {
+                  const { to } = editor.state.selection;
+                  editor
+                    ?.chain()
+                    .focus()
+                    .setTextSelection(to)
+                    .setImage({ src: url })
+                    .run();
+                }
+              });
+            }
+          }}
         />
         <Button
           size="sm"
