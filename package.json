@@ -134,7 +134,6 @@
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "react-textarea-autosize": "^8.5.9",
-    "react-zoom-pan-pinch": "^3.7.0",
     "remove-focus-outline": "^1.2.1",
     "remove-markdown": "^0.6.2",
     "sonner": "^2.0.3",

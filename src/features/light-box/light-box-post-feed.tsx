@@ -1,13 +1,5 @@
 import { ContentGutters } from "@/src/components/gutters";
-import {
-  CSSProperties,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommunity, usePost, usePosts } from "@/src/lib/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
@@ -48,18 +40,21 @@ import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import { Swiper, SwiperSlide, useSwiper } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { Virtual, Zoom } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
-import { FaMinus, FaPlus } from "react-icons/fa6";
-import { MdZoomInMap } from "react-icons/md";
+import { Controls } from "./controls";
+import {
+  useScrollNextSlide,
+  useSwiperPinchZoom,
+  useSwiperZoomScale,
+} from "./hooks";
+import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
 
-const MIN_ZOOM_SCALE = 1;
-const MAX_ZOOM_SCALE = 3;
 const EMPTY_ARR: never[] = [];
 
 function KeyboardShortcutHelpModal({
@@ -108,113 +103,6 @@ function KeyboardShortcutHelpModal({
     </IonModal>
   );
 }
-
-function useSwiperZoomScale(swiper?: SwiperType | null) {
-  const [zoom, setZoom] = useState(0);
-  useEffect(() => {
-    const handler = (_e: SwiperType, scale: number) => {
-      setZoom(scale);
-    };
-    swiper?.on("zoomChange", handler);
-    return () => swiper?.off("zoomChange", handler);
-  }, [swiper]);
-  return zoom;
-}
-
-function useSwiperPinchZoom(swiper?: SwiperType | null) {
-  useEffect(() => {
-    if (!swiper) return;
-    const el = swiper.el;
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const factor = Math.exp(-e.deltaY * 0.02);
-      const next = _.clamp(
-        swiper.zoom.scale * factor,
-        MIN_ZOOM_SCALE,
-        MAX_ZOOM_SCALE,
-      );
-      swiper.zoom.in(next);
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [swiper]);
-}
-
-function useScrollNextSlide(
-  el: HTMLElement | null | undefined,
-  onChange: (delta: -1 | 1) => void,
-) {
-  useEffect(() => {
-    if (el) {
-      const onWheel = _.throttle(
-        (e: WheelEvent) => {
-          e.preventDefault();
-          const delta = _.clamp(_.round(e.deltaX / 70), -1, 1);
-          if (delta === -1 || delta === 1) {
-            onChange(delta);
-          }
-        },
-        400,
-        { leading: true, trailing: false },
-      );
-      el.addEventListener("wheel", onWheel, { passive: false });
-      return () => el.removeEventListener("wheel", onWheel);
-    }
-  }, [el, onChange]);
-}
-
-const Controls = ({
-  style,
-  disabled,
-}: {
-  style?: CSSProperties;
-  isZoomedIn?: boolean;
-  disabled?: boolean;
-}) => {
-  const swiper = useSwiper();
-  const zoom = useSwiperZoomScale(swiper);
-  const isZoomedIn = zoom > 1.1;
-
-  return (
-    <div
-      className="absolute right-0 z-10 dark flex flex-col mr-9 gap-2.5 max-md:hidden"
-      style={style}
-    >
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={() =>
-          swiper.zoom.in(_.clamp(zoom + 1, MIN_ZOOM_SCALE, MAX_ZOOM_SCALE))
-        }
-        tabIndex={disabled ? -1 : undefined}
-      >
-        <FaPlus />
-      </Button>
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={() =>
-          swiper.zoom.in(_.clamp(zoom - 1, MIN_ZOOM_SCALE, MAX_ZOOM_SCALE))
-        }
-        tabIndex={disabled ? -1 : undefined}
-      >
-        <FaMinus />
-      </Button>
-      <Button
-        size="icon"
-        variant="secondary"
-        className="transition-opacity disabled:opacity-0"
-        onClick={() => swiper.zoom.out()}
-        disabled={!isZoomedIn || disabled}
-        tabIndex={!isZoomedIn || disabled ? -1 : undefined}
-      >
-        <MdZoomInMap />
-      </Button>
-    </div>
-  );
-};
 
 const Post = memo(
   ({

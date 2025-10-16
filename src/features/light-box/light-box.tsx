@@ -2,12 +2,7 @@ import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "../../routing";
 import { useLinkContext } from "@/src/routing/link-context";
-import {
-  TransformWrapper,
-  TransformComponent,
-  useControls,
-} from "react-zoom-pan-pinch";
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
 import { UserDropdown } from "../../components/nav";
 import {
@@ -21,222 +16,19 @@ import {
 import z from "zod";
 import { ToolbarTitle } from "../../components/toolbar/toolbar-title";
 import { cn } from "../../lib/utils";
-import { Button } from "@/src/components/ui/button";
-import { FaPlus, FaMinus } from "react-icons/fa";
-import { MdZoomInMap } from "react-icons/md";
-import { Spinner, NoImage } from "@/src/components/icons";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { ContentGutters } from "@/src/components/gutters";
 import { ImageShareButton } from "@/src/components/posts/post-buttons";
 import { canShareImage } from "@/src/lib/share";
-import { useSwiper } from "swiper/react";
-
-const Controls = ({
-  style,
-  isZoomedIn,
-  disabled,
-}: {
-  style?: CSSProperties;
-  isZoomedIn: boolean;
-  disabled?: boolean;
-}) => {
-  const { zoomIn, zoomOut, resetTransform } = useControls();
-  const swiper = useSwiper();
-
-  return (
-    <div
-      className="absolute right-0 dark flex flex-col mr-9 gap-2.5 max-md:hidden"
-      style={style}
-    >
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={() => swiper.zoom.in()}
-        tabIndex={disabled ? -1 : undefined}
-      >
-        <FaPlus />
-      </Button>
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={() => swiper.zoom.out()}
-        tabIndex={disabled ? -1 : undefined}
-      >
-        <FaMinus />
-      </Button>
-      <Button
-        size="icon"
-        variant="secondary"
-        className="transition-opacity disabled:opacity-0"
-        onClick={() => swiper.zoom.disable()}
-        disabled={!isZoomedIn || disabled}
-        tabIndex={!isZoomedIn || disabled ? -1 : undefined}
-      >
-        <MdZoomInMap />
-      </Button>
-    </div>
-  );
-};
-
-const ZOOM_FACTOR = 8;
-
-export function ResponsiveImage({
-  img,
-  fallbackImg,
-  onZoom,
-  paddingT = 0,
-  paddingB = 0,
-  className,
-  disabled,
-  blurNsfw,
-  altText,
-}: {
-  paddingT?: number;
-  paddingB?: number;
-  img: string;
-  fallbackImg?: string | null;
-  onZoom: (scale: number) => void;
-  className?: string;
-  disabled?: boolean;
-  blurNsfw?: boolean | null;
-  altText?: string | null;
-}) {
-  const [state, setState] = useState<"full" | "fallback" | "err">("full");
-
-  const [removeBlur, setRemoveBlur] = useState(false);
-  const [isZoomedIn, setIsZoomedIn] = useState(false);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const [containerWidth, setContainerWidth] = useState<number>(0);
-  const [containerHeight, setContainerHeight] = useState<number>(0);
-
-  const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
-  const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
-
-  const imageScale = useMemo(() => {
-    if (
-      containerWidth === 0 ||
-      containerHeight === 0 ||
-      imageNaturalWidth === 0 ||
-      imageNaturalHeight === 0
-    )
-      return 0;
-    const scale = Math.min(
-      containerWidth / imageNaturalWidth,
-      containerHeight / imageNaturalHeight,
-    );
-    return scale;
-  }, [containerWidth, containerHeight, imageNaturalWidth, imageNaturalHeight]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      const handleResize = () => {
-        if (container !== null) {
-          const rect = container.getBoundingClientRect();
-          setContainerWidth(rect.width);
-          setContainerHeight(rect.height - paddingT - paddingB);
-        } else {
-          setContainerWidth(0);
-          setContainerHeight(0);
-        }
-      };
-
-      handleResize();
-      const resizeObserver = new ResizeObserver(() => {
-        handleResize();
-      });
-
-      resizeObserver.observe(container);
-    }
-  }, [paddingT, paddingB]);
-
-  const hasFallbackImg = fallbackImg && fallbackImg !== img;
-
-  const isError = state === "err";
-  const [loading, setLoading] = useState(true);
-
-  return (
-    <div className={cn("h-full w-full bg-black", className)} ref={containerRef}>
-      <TransformWrapper
-        key={`${containerWidth}x${containerHeight}-${imageScale}`}
-        initialScale={imageScale}
-        minScale={imageScale}
-        maxScale={imageScale * ZOOM_FACTOR}
-        centerOnInit
-        onTransformed={(z) => {
-          const scale = z.state.scale / imageScale;
-          setIsZoomedIn(scale > 1.05);
-          onZoom(scale);
-        }}
-        panning={{ disabled: !isZoomedIn }}
-        wheel={{ smoothStep: 0.15 }}
-        doubleClick={{
-          mode: isZoomedIn ? "reset" : "zoomIn",
-          step: 0.75,
-        }}
-      >
-        <TransformComponent
-          wrapperStyle={{
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <img
-            className={cn(
-              isError && "opacity-0",
-              blurNsfw && !removeBlur && "blur-3xl",
-            )}
-            src={state === "full" ? img : (fallbackImg ?? undefined)}
-            onLoad={(e) => {
-              setLoading(false);
-              setImageNaturalWidth(e.currentTarget.naturalWidth);
-              setImageNaturalHeight(e.currentTarget.naturalHeight);
-            }}
-            onError={() => {
-              if (state === "full") {
-                setState(hasFallbackImg ? "fallback" : "err");
-              } else {
-                setState("err");
-              }
-            }}
-            style={{
-              minWidth: imageNaturalWidth,
-              width: imageNaturalWidth,
-              maxWidth: imageNaturalWidth,
-              minHeight: imageNaturalHeight,
-              height: imageNaturalHeight,
-              maxHeight: imageNaturalHeight,
-            }}
-            alt={altText ?? undefined}
-          />
-        </TransformComponent>
-        {blurNsfw && !removeBlur && (
-          <button
-            className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-3xl"
-            onClick={() => setRemoveBlur(true)}
-            aria-label="Show NSFW"
-          >
-            NSFW
-          </button>
-        )}
-        <Controls
-          isZoomedIn={isZoomedIn}
-          style={{ bottom: paddingB }}
-          disabled={disabled}
-        />
-      </TransformWrapper>
-
-      {loading && !isError && (
-        <Spinner className="absolute top-1/2 left-1/2 text-4xl -translate-1/2 text-white animate-spin" />
-      )}
-      {isError && (
-        <NoImage className="absolute top-1/2 left-1/2 h-40 w-40 -translate-1/2 text-white" />
-      )}
-    </div>
-  );
-}
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Zoom } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/virtual";
+import "swiper/css/zoom";
+import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
+import { Controls } from "./controls";
+import { Swiper as SwiperType } from "swiper/types";
+import { useSwiperPinchZoom, useSwiperZoomScale } from "./hooks";
 
 export default function LightBox() {
   useHideTabBarOnMount();
@@ -245,9 +37,13 @@ export default function LightBox() {
   const { imgUrl } = useParams(`${linkCtx.root}lightbox/:imgUrl`);
   const src = decodeURIComponent(imgUrl);
   const [title] = useUrlSearchState("title", "", z.string());
-  const [hideNav, setHideNav] = useState(false);
   const navbar = useNavbarHeight();
   const isActive = useIsActiveRoute();
+
+  const swiperRef = useRef<SwiperType>(null);
+  const zoom = useSwiperZoomScale(swiperRef.current);
+  useSwiperPinchZoom(swiperRef.current);
+  const hideNav = zoom > 1;
 
   const media = useMedia();
   const insets = useSafeAreaInsets();
@@ -288,20 +84,39 @@ export default function LightBox() {
         </IonToolbar>
       </IonHeader>
       <IonContent
-        fullscreen={true}
+        fullscreen
         style={{
           "--ion-background-color": "black",
         }}
         scrollY={false}
+        className="absolute inset-0"
       >
-        <ResponsiveImage
-          img={src}
-          onZoom={(scale) => {
-            setHideNav(scale > 1.05);
+        <Swiper
+          onSwiper={(s) => (swiperRef.current = s)}
+          modules={[Zoom]}
+          zoom={{
+            maxRatio: MAX_ZOOM_SCALE,
+            minRatio: MIN_ZOOM_SCALE,
           }}
-          paddingT={navbar.height + navbar.inset}
-          paddingB={tabbar.height + tabbar.inset}
-        />
+          slidesPerView={1}
+          className="h-full"
+        >
+          <Controls style={{ bottom: bottomBarHeight }} />
+          <SwiperSlide className="relative !h-auto">
+            <div
+              className="h-full relative"
+              style={{
+                paddingTop: navbar.height + navbar.inset,
+                paddingBottom: canShareImage() ? bottomBarHeight : 0,
+              }}
+            >
+              <div className="swiper-zoom-container">
+                <img src={src} className="h-full w-full object-contain" />
+              </div>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+
         {canShareImage() && (
           <div
             className={cn(
