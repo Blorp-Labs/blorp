@@ -71,18 +71,6 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
       className={cn("relative overflow-hidden bg-neutral-100", className)}
       style={{ ...style, aspectRatio }}
     >
-      {/* Low-res base: paints immediately */}
-      <img
-        src={lowSrc}
-        alt={alt ?? undefined}
-        width={width}
-        height={height}
-        decoding="async"
-        fetchPriority="high"
-        onLoad={handleAspectRatio}
-        onError={() => onError?.()}
-        className={cn("w-full h-full", imgClassName)}
-      />
       {/* High-res overlay: fades in after it loads */}
       {highSrc && (
         <img
@@ -103,6 +91,19 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
           {...hiAttrs}
         />
       )}
+
+      {/* Low-res base: paints immediately */}
+      <img
+        src={lowSrc}
+        alt={alt ?? undefined}
+        width={width}
+        height={height}
+        decoding="async"
+        fetchPriority="high"
+        onLoad={handleAspectRatio}
+        onError={() => onError?.()}
+        className={cn("w-full h-full", imgClassName, hiVisible && "opacity-0")}
+      />
     </div>
   );
 };

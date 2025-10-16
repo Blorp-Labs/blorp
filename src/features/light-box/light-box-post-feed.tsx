@@ -124,7 +124,7 @@ function useSwiperZoomScale(swiper?: SwiperType | null) {
 function useSwiperPinchZoom(swiper?: SwiperType | null) {
   useEffect(() => {
     if (!swiper) return;
-    const el = swiper.el as HTMLElement;
+    const el = swiper.el;
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -140,6 +140,29 @@ function useSwiperPinchZoom(swiper?: SwiperType | null) {
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, [swiper]);
+}
+
+function useScrollNextSlide(
+  el: HTMLElement | null | undefined,
+  onChange: (delta: -1 | 1) => void,
+) {
+  useEffect(() => {
+    if (el) {
+      const onWheel = _.throttle(
+        (e: WheelEvent) => {
+          e.preventDefault();
+          const delta = _.clamp(_.round(e.deltaX / 70), -1, 1);
+          if (delta === -1 || delta === 1) {
+            onChange(delta);
+          }
+        },
+        400,
+        { leading: true, trailing: false },
+      );
+      el.addEventListener("wheel", onWheel, { passive: false });
+      return () => el.removeEventListener("wheel", onWheel);
+    }
+  }, [el, onChange]);
 }
 
 const Controls = ({
@@ -213,16 +236,19 @@ const Post = memo(
     const blurImg = blurNsfw ? postView?.nsfw : false;
 
     const embed = postView ? getPostEmbed(postView) : null;
-    const img = embed?.fullResThumbnail ?? embed?.thumbnail;
+    const img = embed?.thumbnail;
 
     return img ? (
       <div className="h-full w-full relative">
         <div className="swiper-zoom-container">
           <ProgressiveImage
             lowSrc={img}
-            // highSrc={embed?.fullResThumbnail}
+            highSrc={embed?.fullResThumbnail}
             style={{ top: paddingT, bottom: paddingB }}
-            className="absolute inset-x-0 bg-transparent overflow-visible"
+            className={cn(
+              "absolute inset-x-0 bg-transparent overflow-visible",
+              blurImg && "blur-3xl",
+            )}
             imgClassName="object-contain"
           />
         </div>
@@ -399,6 +425,18 @@ export default function LightBoxPostFeed() {
     ),
   );
 
+  const swiperRef = useRef<SwiperType>(null);
+  useScrollNextSlide(
+    swiperRef.current?.el,
+    useCallback((delta) => {
+      if (delta > 0) {
+        swiperRef.current?.slideNext();
+      } else {
+        swiperRef.current?.slidePrev();
+      }
+    }, []),
+  );
+
   const onIndexChange = useCallback(
     (newIndex: number) => {
       const newApId = data[newIndex];
@@ -410,7 +448,6 @@ export default function LightBoxPostFeed() {
   );
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);
-  const swiperRef = useRef<SwiperType>(null);
   const zoom = useSwiperZoomScale(swiperRef.current);
   useSwiperPinchZoom(swiperRef.current);
   const hideNav = zoom > 1;
@@ -491,7 +528,6 @@ export default function LightBoxPostFeed() {
           zoom={{
             maxRatio: MAX_ZOOM_SCALE,
             minRatio: MIN_ZOOM_SCALE,
-            panOnMouseMove: true,
           }}
           virtual
           slidesPerView={1}
@@ -501,7 +537,6 @@ export default function LightBoxPostFeed() {
               postsQuery.fetchNextPage();
             }
           }}
-          wrapperClass="relative"
         >
           <Controls style={{ bottom: bottomBarHeight }} />
           {data.map((item, i) => (
