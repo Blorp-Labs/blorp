@@ -318,9 +318,9 @@ export default function LightBoxPostFeed() {
     swiperRef.current?.el,
     useCallback((delta) => {
       if (delta > 0) {
-        swiperRef.current?.slideNext();
+        swiperRef.current?.slideNext(200);
       } else {
-        swiperRef.current?.slidePrev();
+        swiperRef.current?.slidePrev(200);
       }
     }, []),
   );
@@ -378,7 +378,7 @@ export default function LightBoxPostFeed() {
               : "var(--shad-background)",
             "--ion-toolbar-border-color": "var(--shad-border)",
           }}
-          className={cn("dark", hideNav && "opacity-0")}
+          className={cn("dark transition-opacity", hideNav && "opacity-0")}
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
@@ -426,7 +426,7 @@ export default function LightBoxPostFeed() {
             }
           }}
         >
-          <Controls style={{ bottom: bottomBarHeight }} />
+          <Controls />
           {data.map((item, i) => (
             <SwiperSlide key={i} virtualIndex={i} className="relative !h-auto">
               <Post
@@ -444,8 +444,9 @@ export default function LightBoxPostFeed() {
 
         <div
           className={cn(
-            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
-            hideNav && "opacity-0",
+            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark transition-opacity",
+            hideNav &&
+              "opacity-0 hover:opacity-100 hover:bg-background/75 hover:backdrop-blur-xl",
             !isActive && "hidden",
           )}
           style={{
@@ -458,7 +459,12 @@ export default function LightBoxPostFeed() {
         >
           <ContentGutters className="h-full">
             <div className="flex flex-row items-center gap-3">
-              {postApId && <PostShareButton postApId={postApId} />}
+              {postApId && (
+                <PostShareButton
+                  postApId={postApId}
+                  className="bg-transparent"
+                />
+              )}
               <div className="flex-1" />
               <Button
                 variant="ghost"
@@ -475,7 +481,12 @@ export default function LightBoxPostFeed() {
                 <BiHelpCircle />
               </Button>
               <div className="flex-1" />
-              {postApId && <PostCommentsButton postApId={postApId} />}
+              {postApId && (
+                <PostCommentsButton
+                  postApId={postApId}
+                  className="bg-transparent"
+                />
+              )}
               {postApId && <PostVoting key={postApId} apId={postApId} />}
             </div>
           </ContentGutters>

@@ -12,14 +12,18 @@ export function useSwiperPinchZoom(swiper?: SwiperType | null) {
     const el = swiper.el;
 
     const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const factor = Math.exp(-e.deltaY * 0.02);
-      const next = _.clamp(
-        swiper.zoom.scale * factor,
-        MIN_ZOOM_SCALE,
-        MAX_ZOOM_SCALE,
-      );
-      swiper.zoom.in(next);
+      const absY = Math.abs(e.deltaY);
+      const scale = swiper.zoom.scale;
+      if ((absY > 10 || scale > 1) && absY > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        const factor = Math.exp(-e.deltaY * 0.02);
+        const next = _.clamp(
+          swiper.zoom.scale * factor,
+          MIN_ZOOM_SCALE,
+          MAX_ZOOM_SCALE,
+        );
+        swiper.zoom.in(next);
+      }
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -45,17 +49,23 @@ export function useScrollNextSlide(
 ) {
   useEffect(() => {
     if (el) {
-      const onWheel = _.throttle(
-        (e: WheelEvent) => {
-          e.preventDefault();
-          const delta = _.clamp(_.round(e.deltaX / 70), -1, 1);
-          if (delta === -1 || delta === 1) {
-            onChange(delta);
-          }
+      const throttledChange = _.throttle(
+        (delta: -1 | 1) => {
+          onChange(delta);
         },
-        400,
+        750,
         { leading: true, trailing: false },
       );
+      const onWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const absX = Math.abs(e.deltaX);
+        if (absX > 0 && absX > Math.abs(e.deltaY)) {
+          const delta = _.clamp(_.round(e.deltaX / 10), -1, 1);
+          if (delta === -1 || delta === 1) {
+            throttledChange(delta);
+          }
+        }
+      };
       el.addEventListener("wheel", onWheel, { passive: false });
       return () => el.removeEventListener("wheel", onWheel);
     }
