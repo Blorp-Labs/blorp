@@ -13,7 +13,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { subscribeToScrollEvent } from "../lib/scroll-events";
-import _ from "lodash";
+import _, { isNil } from "lodash";
 import {
   useElementHasFocus,
   useIsInAppBrowserOpen,
@@ -21,7 +21,7 @@ import {
 } from "../lib/hooks";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { useAuth } from "../stores/auth";
-import { cn } from "../lib/utils";
+import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 
 /**
@@ -94,7 +94,7 @@ function VirtualListInternal<T>({
   estimatedItemSize: number;
   onEndReached?: () => any;
   renderItem: (params: { item: T; index: number }) => React.ReactNode;
-  keepMountedIndices?: number[];
+  keepMountedIndices?: (number | T | undefined)[];
   stickyHeaderIndices?: number[];
   ref: React.RefObject<HTMLDivElement | null>;
   drawDistance?: number;
@@ -132,6 +132,7 @@ function VirtualListInternal<T>({
   if (header) {
     count += header.length;
   }
+  const headerLen = header?.length ?? 0;
   const rowVirtualizer = useVirtualizer({
     count,
     overscan,
@@ -167,15 +168,33 @@ function VirtualListInternal<T>({
             .reverse()
             .find((index) => range.startIndex >= index) ?? -1;
 
+        const keepMounted = keepMountedIndices
+          ?.map((index) => {
+            if (_.isNumber(index)) {
+              return index;
+            }
+            if (isNil(index) || !data) {
+              return undefined;
+            }
+
+            const dataIndex = data.indexOf(index);
+            if (dataIndex >= 0) {
+              return dataIndex + headerLen;
+            }
+
+            return undefined;
+          })
+          .filter(isNotNil);
+
         const all = new Set<number>([
           ...(stickyHeaderIndices ?? []),
-          ...(keepMountedIndices ?? []),
+          ...(keepMounted ?? []),
           ...defaultRangeExtractor(range),
         ]);
 
         return Array.from(all).sort((a, b) => a - b);
       },
-      [stickyHeaderIndices, keepMountedIndices],
+      [stickyHeaderIndices, keepMountedIndices, data, headerLen],
     ),
   });
 
@@ -268,7 +287,7 @@ export function VirtualList<T>({
   estimatedItemSize: number;
   onEndReached?: () => any;
   renderItem: (params: { item: T; index: number }) => React.ReactNode;
-  keepMountedIndices?: number[];
+  keepMountedIndices?: (number | T | undefined)[];
   stickyHeaderIndices?: number[];
   ref?: React.RefObject<HTMLDivElement | null>;
   drawDistance?: number;
