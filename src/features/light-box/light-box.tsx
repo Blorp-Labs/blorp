@@ -101,7 +101,7 @@ export default function LightBox() {
           slidesPerView={1}
           className="h-full"
         >
-          <Controls style={{ bottom: bottomBarHeight }} />
+          <Controls />
           <SwiperSlide className="relative !h-auto">
             <div
               className="h-full relative"
