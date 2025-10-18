@@ -5,7 +5,6 @@ import {
   UseInfiniteQueryOptions,
   DefaultError,
   QueryKey,
-  UseInfiniteQueryResult,
 } from "@tanstack/react-query";
 import _ from "lodash";
 import { useThrottleQueue } from "../throttle-queue";
@@ -101,19 +100,22 @@ export function useThrottledInfiniteQuery<
         }
       : {}),
   });
-  const extendedQuery: UseInfiniteQueryResult<TData, TError> = {
-    ...query,
-    fetchNextPage: () => {
-      const p = query.fetchNextPage();
-      throttleQueue.flush();
-      return p;
-    },
-    refetch: (refetchOptions) => {
-      const numPages = truncate();
-      throttleQueue.preApprove(numPages);
-      return query.refetch(refetchOptions);
-    },
+
+  // You're aparently not supposed to destructure query,
+  // (e.g. { ...query }) so we just overwrite the functions directly.
+  const fetchNextPage = query.fetchNextPage;
+  query.fetchNextPage = () => {
+    const p = fetchNextPage();
+    throttleQueue.flush();
+    return p;
   };
 
-  return extendedQuery;
+  const refetch = query.refetch;
+  query.refetch = (refetchOptions) => {
+    const numPages = truncate();
+    throttleQueue.preApprove(numPages);
+    return refetch(refetchOptions);
+  };
+
+  return query;
 }
