@@ -32,13 +32,16 @@ export function useSwiperPinchZoom(swiper?: SwiperType | null) {
 }
 
 export function useSwiperZoomScale(swiper?: SwiperType | null) {
-  const [zoom, setZoom] = useState(0);
+  const [zoom, setZoom] = useState(1);
   useEffect(() => {
-    const handler = (_e: SwiperType, scale: number) => {
-      setZoom(scale);
-    };
-    swiper?.on("zoomChange", handler);
-    return () => swiper?.off("zoomChange", handler);
+    if (swiper) {
+      const handler = (_e: SwiperType, scale: number) => {
+        setZoom(scale);
+      };
+      setZoom(swiper.zoom?.scale ?? 1);
+      swiper.on("zoomChange", handler);
+      return () => swiper?.off("zoomChange", handler);
+    }
   }, [swiper]);
   return zoom;
 }
