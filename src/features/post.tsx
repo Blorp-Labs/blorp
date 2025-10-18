@@ -319,7 +319,7 @@ export default function Post() {
         >
           <PostReportProvider>
             <VirtualList
-              keepMountedIndices={[0, 2, replyingToItem]}
+              keepMounted={[0, 2, replyingToItem]}
               fullscreen
               scrollHost
               className={cn(
