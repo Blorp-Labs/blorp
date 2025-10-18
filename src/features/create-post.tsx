@@ -612,7 +612,7 @@ function ChooseCommunity({
         <VirtualList
           className="h-full"
           data={data}
-          stickyHeaderIndices={[0]}
+          stickyIndicies={[0]}
           header={[
             <ContentGutters className="bg-background" key="header-search">
               <div className="border-b-[.5px] py-2">

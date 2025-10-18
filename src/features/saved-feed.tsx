@@ -209,7 +209,7 @@ export default function SavedFeed() {
               }
             }}
             estimatedItemSize={475}
-            stickyHeaderIndices={[0]}
+            stickyIndicies={[0]}
             refresh={refetch}
             placeholder={
               posts.isPending ? (
