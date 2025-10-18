@@ -242,7 +242,7 @@ export default function User() {
                 fetchNextPage();
               }
             }}
-            stickyHeaderIndices={[1]}
+            stickyIndicies={[1]}
             estimatedItemSize={475}
             refresh={refetch}
             placeholder={

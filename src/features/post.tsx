@@ -319,7 +319,7 @@ export default function Post() {
         >
           <PostReportProvider>
             <VirtualList
-              keepMounted={[0, 2, replyingToItem]}
+              keepMounted={[replyingToItem]}
               fullscreen
               scrollHost
               className={cn(
@@ -388,7 +388,7 @@ export default function Post() {
               }
               onEndReached={loadMore}
               estimatedItemSize={450}
-              stickyHeaderIndices={[1]}
+              stickyIndicies={[1]}
               refresh={refresh}
             />
             {showMobileReply && (

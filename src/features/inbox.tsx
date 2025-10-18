@@ -353,7 +353,7 @@ export default function Inbox() {
               <></>
             </ContentGutters>,
           ]}
-          stickyHeaderIndices={[0]}
+          stickyIndicies={[0]}
           data={
             data.length === 0 && !isRefetching && !isPending ? [NO_ITEMS] : data
           }

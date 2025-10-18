@@ -80,7 +80,7 @@ function VirtualListInternal<T>({
   estimatedItemSize,
   onEndReached,
   renderItem,
-  stickyHeaderIndices,
+  stickyIndicies,
   keepMounted,
   ref,
   drawDistance,
@@ -95,7 +95,7 @@ function VirtualListInternal<T>({
   onEndReached?: () => any;
   renderItem: (params: { item: T; index: number }) => React.ReactNode;
   keepMounted?: (number | T | undefined)[];
-  stickyHeaderIndices?: number[];
+  stickyIndicies?: number[];
   ref: React.RefObject<HTMLDivElement | null>;
   drawDistance?: number;
   numColumns?: number;
@@ -159,12 +159,12 @@ function VirtualListInternal<T>({
     enabled: focused,
     rangeExtractor: useCallback(
       (range: Range) => {
-        if (!stickyHeaderIndices) {
+        if (!stickyIndicies) {
           return defaultRangeExtractor(range);
         }
 
         activeStickyIndexRef.current =
-          [...stickyHeaderIndices]
+          [...stickyIndicies]
             .reverse()
             .find((index) => range.startIndex >= index) ?? -1;
 
@@ -179,22 +179,27 @@ function VirtualListInternal<T>({
 
             const dataIndex = data.indexOf(item);
             if (dataIndex >= 0) {
-              return dataIndex + headerLen;
+              return dataIndex;
             }
 
             return undefined;
           })
           .filter(isNotNil);
 
+        const headerIndicies = Array.from({ length: headerLen }).map(
+          (_, i) => i,
+        );
+
         const all = new Set<number>([
-          ...(stickyHeaderIndices ?? []),
+          ...headerIndicies,
+          ...(stickyIndicies ?? []),
           ...(keepMountedIndices ?? []),
           ...defaultRangeExtractor(range),
         ]);
 
         return Array.from(all).sort((a, b) => a - b);
       },
-      [stickyHeaderIndices, keepMounted, data, headerLen],
+      [stickyIndicies, keepMounted, data, headerLen],
     ),
   });
 
@@ -288,7 +293,7 @@ export function VirtualList<T>({
   onEndReached?: () => any;
   renderItem: (params: { item: T; index: number }) => React.ReactNode;
   keepMounted?: (number | T | undefined)[];
-  stickyHeaderIndices?: number[];
+  stickyIndicies?: number[];
   ref?: React.RefObject<HTMLDivElement | null>;
   drawDistance?: number;
   numColumns?: number;

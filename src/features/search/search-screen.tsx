@@ -465,7 +465,7 @@ export default function SearchFeed({
                 </ContentGutters>
               )
             }
-            stickyHeaderIndices={[0]}
+            stickyIndicies={[0]}
           />
         </PostReportProvider>
 
