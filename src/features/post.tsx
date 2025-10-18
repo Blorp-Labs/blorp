@@ -247,6 +247,11 @@ export default function Post() {
 
   const router = useIonRouter();
 
+  const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
+  const replyingToItem = data.find(
+    ([path]) => commentReplyParent?.includes(path) ?? false,
+  );
+
   if (!decodedApId || (postQuery.isError && !post)) {
     return <NotFound />;
   }
@@ -308,10 +313,13 @@ export default function Post() {
         </IonToolbar>
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
-        <CommentReplyProvider presentingElement={pageElement.element}>
+        <CommentReplyProvider
+          presentingElement={pageElement.element}
+          onStateChange={(state) => setCommentReplyParent(state?.parent?.path)}
+        >
           <PostReportProvider>
             <VirtualList
-              keepMountedIndices={[0]}
+              keepMounted={[replyingToItem]}
               fullscreen
               scrollHost
               className={cn(
@@ -380,7 +388,7 @@ export default function Post() {
               }
               onEndReached={loadMore}
               estimatedItemSize={450}
-              stickyHeaderIndices={[1]}
+              stickyIndicies={[1]}
               refresh={refresh}
             />
             {showMobileReply && (

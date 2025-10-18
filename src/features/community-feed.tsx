@@ -217,7 +217,7 @@ export default function CommunityFeed() {
                 ? [NO_ITEMS]
                 : data
             }
-            stickyHeaderIndices={[1]}
+            stickyIndicies={[1]}
             header={[
               <Fragment key="community-header">
                 <SmallScreenSidebar
