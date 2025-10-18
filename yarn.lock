@@ -7726,7 +7726,6 @@ __metadata:
     react-router: "npm:^5.3.4"
     react-router-dom: "npm:^5.3.4"
     react-textarea-autosize: "npm:^8.5.9"
-    react-zoom-pan-pinch: "npm:^3.7.0"
     remove-focus-outline: "npm:^1.2.1"
     remove-markdown: "npm:^0.6.2"
     sonner: "npm:^2.0.3"
@@ -14222,16 +14221,6 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/3a924db59259a6e3b834dcddc12a8661b43dcdaa1b43c41c732e0548bb2761e9a53dbc6db4e0d9e237728b4869e42c25e5417408b0391aec290c90874733a09f
-  languageName: node
-  linkType: hard
-
-"react-zoom-pan-pinch@npm:^3.7.0":
-  version: 3.7.0
-  resolution: "react-zoom-pan-pinch@npm:3.7.0"
-  peerDependencies:
-    react: "*"
-    react-dom: "*"
-  checksum: 10c0/96889849800a953128fe7f9e42bed0d5cbc48d03024995b136f5e972146236688efb24d7381d8e6f09598f5512b4897d2420f62d828a665fdf24b745b7d55911
   languageName: node
   linkType: hard
 
