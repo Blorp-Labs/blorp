@@ -179,7 +179,7 @@ function VirtualListInternal<T>({
 
             const dataIndex = data.indexOf(item);
             if (dataIndex >= 0) {
-              return dataIndex;
+              return dataIndex + headerLen;
             }
 
             return undefined;
