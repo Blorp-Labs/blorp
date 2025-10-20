@@ -75,17 +75,6 @@ function useRouterSafe() {
   }
 }
 
-export function useVirtualListState() {
-  const index = useRef(0);
-  const offset = useRef(0);
-  const cache = useRef<VirtualItem[]>([]);
-  return {
-    index,
-    offset,
-    cache,
-  };
-}
-
 function VirtualListInternal<T>({
   data,
   estimatedItemSize,
@@ -100,7 +89,6 @@ function VirtualListInternal<T>({
   placeholder,
   numPlaceholders = 25,
   header,
-  state,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -115,10 +103,10 @@ function VirtualListInternal<T>({
   placeholder?: ReactNode;
   numPlaceholders?: number;
   header?: ReactNode[];
-  state?: ReturnType<typeof useVirtualListState>;
 }) {
-  const internalState = useVirtualListState();
-  const { cache, index, offset } = state ?? internalState;
+  const index = useRef(0);
+  const offset = useRef(0);
+  const cache = useRef<VirtualItem[]>([]);
 
   const scrollRef = ref;
 
@@ -318,7 +306,6 @@ export function VirtualList<T>({
   header?: ReactNode[];
   fullscreen?: boolean;
   scrollHost?: boolean;
-  state?: ReturnType<typeof useVirtualListState>;
 }) {
   const media = useMedia();
   const [key, setKey] = useState(0);

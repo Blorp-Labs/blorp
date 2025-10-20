@@ -17,7 +17,7 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { useVirtualListState, VirtualList } from "../components/virtual-list";
+import { VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
 import { useIsActiveRoute, useMedia } from "../lib/hooks";
@@ -203,8 +203,6 @@ export default function HomeFeed() {
     focused && media.maxMd,
   );
 
-  const vListState = useVirtualListState();
-
   const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
   return (
@@ -265,7 +263,6 @@ export default function HomeFeed() {
         <PostReportProvider>
           <VirtualList<Item>
             key={postSort + listingType}
-            state={vListState}
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
