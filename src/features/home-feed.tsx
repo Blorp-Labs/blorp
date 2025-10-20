@@ -17,7 +17,7 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { VirtualList } from "../components/virtual-list";
+import { useVirtualListState, VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
 import { useIsActiveRoute, useMedia } from "../lib/hooks";
@@ -151,6 +151,18 @@ export default function HomeFeed() {
   const listingType = useFiltersStore((s) => s.listingType);
   const active = useIsActiveRoute();
 
+  // THIS IS A HACK
+  // This signal is used to force IonPage to reset.
+  // There was a bug on iOS (possibly Android) where
+  // the IonPage was incorrectly sized after the phone had been
+  // rotated from another screen. This seems to fix it.
+  const [signal, setSignal] = useState(0);
+  useEffect(() => {
+    if (active) {
+      setSignal((s) => s + 1);
+    }
+  }, [active]);
+
   const posts = usePosts({
     sort: postSort,
     type: listingType,
@@ -187,6 +199,8 @@ export default function HomeFeed() {
     scrollRef.current,
     focused && media.maxMd,
   );
+
+  const vListState = useVirtualListState();
 
   const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
@@ -244,10 +258,11 @@ export default function HomeFeed() {
           <></>
         </ContentGutters>
       </IonHeader>
-      <IonContent scrollY={false} fullscreen={media.maxMd} key={active ? 1 : 0}>
+      <IonContent scrollY={false} fullscreen={media.maxMd} key={signal}>
         <PostReportProvider>
           <VirtualList<Item>
             key={postSort + listingType}
+            state={vListState}
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
