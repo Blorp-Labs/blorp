@@ -142,6 +142,22 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
   return { scrollHandler };
 }
 
+function WrappedIonContent({ children }: { children: React.ReactNode }) {
+  const active = useIsActiveRoute();
+  const media = useMedia();
+  return (
+    <IonContent
+      // THIS IS A HACK
+      // This fixes a bug where IonContent is the wrong size
+      // after rotating your phone from another screen.
+      scrollY={!active}
+      fullscreen={media.maxMd}
+    >
+      {children}
+    </IonContent>
+  );
+}
+
 export default function HomeFeed() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
@@ -149,19 +165,6 @@ export default function HomeFeed() {
   const media = useMedia();
   const postSort = useFiltersStore((s) => s.postSort);
   const listingType = useFiltersStore((s) => s.listingType);
-  const active = useIsActiveRoute();
-
-  // THIS IS A HACK
-  // This signal is used to force IonPage to reset.
-  // There was a bug on iOS (possibly Android) where
-  // the IonPage was incorrectly sized after the phone had been
-  // rotated from another screen. This seems to fix it.
-  const [signal, setSignal] = useState(0);
-  useEffect(() => {
-    if (active) {
-      setSignal((s) => s + 1);
-    }
-  }, [active]);
 
   const posts = usePosts({
     sort: postSort,
@@ -258,7 +261,7 @@ export default function HomeFeed() {
           <></>
         </ContentGutters>
       </IonHeader>
-      <IonContent scrollY={false} fullscreen={media.maxMd} key={signal}>
+      <WrappedIonContent>
         <PostReportProvider>
           <VirtualList<Item>
             key={postSort + listingType}
@@ -306,7 +309,7 @@ export default function HomeFeed() {
           <div className="flex-1" />
           <LocalSererSidebar />
         </ContentGutters>
-      </IonContent>
+      </WrappedIonContent>
     </IonPage>
   );
 }
