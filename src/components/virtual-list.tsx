@@ -13,7 +13,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { subscribeToScrollEvent } from "../lib/scroll-events";
-import _, { isNil } from "lodash";
+import _ from "lodash";
 import {
   useElementHasFocus,
   useIsInAppBrowserOpen,
@@ -173,7 +173,7 @@ function VirtualListInternal<T>({
             if (_.isNumber(item)) {
               return item;
             }
-            if (isNil(item) || !data) {
+            if (_.isNil(item) || !data) {
               return undefined;
             }
 
