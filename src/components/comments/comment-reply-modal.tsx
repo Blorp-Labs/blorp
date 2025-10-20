@@ -123,12 +123,18 @@ export function useLoadCommentIntoEditor() {
 export function CommentReplyProvider({
   children,
   presentingElement,
+  onStateChange,
 }: {
   children: React.ReactNode;
   presentingElement?: HTMLElement;
+  onStateChange: (state: State | null) => void;
 }) {
   const [signal, setSignal] = useState(0);
-  const [state, setState] = useState<State | null>(null);
+  const [state, _setState] = useState<State | null>(null);
+  const setState = (state: State | null) => {
+    _setState(state);
+    onStateChange(state);
+  };
 
   const { queryKeyParentId, comment, postApId, parent } = state ?? {};
 
