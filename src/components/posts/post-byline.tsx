@@ -263,7 +263,7 @@ export function PostByline({
 
   const adminApIds = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.admins,
-  )?.map((a) => a.apId);
+  );
   const isAdmin = adminApIds?.includes(post.creatorApId) ?? false;
 
   const encodedCreatorApId = encodeApId(post.creatorApId);

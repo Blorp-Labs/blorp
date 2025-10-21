@@ -185,7 +185,7 @@ export default function Post() {
 
   const adminApIds = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.admins,
-  )?.map((a) => a.apId);
+  );
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -366,7 +366,7 @@ export default function Post() {
                     myUserId={myUserId}
                     communityName={communityName}
                     modApIds={modApIds}
-                    adminApIds={adminApIds}
+                    adminApIds={adminApIds ?? undefined}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}
                   />

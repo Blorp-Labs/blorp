@@ -125,7 +125,7 @@ export const siteSchema = z.object({
   description: z.string().nullable(),
   me: personSchema.nullable(),
   myEmail: z.string().nullable(),
-  admins: z.array(personSchema),
+  admins: z.array(z.string()).nullable(),
   moderates: z.array(z.string()).nullable(),
   follows: z.array(z.string()).nullable(),
   personBlocks: z.array(z.string()).nullable(),
