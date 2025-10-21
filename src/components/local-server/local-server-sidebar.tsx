@@ -12,7 +12,6 @@ import { PersonCard } from "@/src/components/person/person-card";
 import { Sidebar, SidebarContent } from "@/src/components/sidebar";
 import { useSidebarStore } from "@/src/stores/sidebars";
 import { AggregateBadges } from "../aggregates";
-import { PersonHoverCard } from "../person/person-hover-card";
 
 function InstanceSidebar({ asPage }: { asPage?: boolean }) {
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
@@ -121,7 +120,7 @@ function InstanceAdmins({ asPage }: { asPage?: boolean }) {
           {instanceHost} ADMINS
         </span>
 
-        {admins.map(({ apId }) => (
+        {admins.map((apId) => (
           <PersonCard key={apId} actorId={apId} size="sm" />
         ))}
       </section>
@@ -135,7 +134,7 @@ function InstanceAdmins({ asPage }: { asPage?: boolean }) {
         <ChevronsUpDown className="h-4 w-4" />
       </CollapsibleTrigger>
       <CollapsibleContent className="pt-2 flex flex-col gap-1">
-        {admins.map(({ apId }) => (
+        {admins.map((apId) => (
           <PersonCard key={apId} actorId={apId} size="sm" />
         ))}
       </CollapsibleContent>

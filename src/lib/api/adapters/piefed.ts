@@ -886,11 +886,13 @@ export class PieFedApi implements ApiBlueprint<null> {
         shrinkBlockedPerson(convertPerson({ person: block.target }, "partial")),
       );
 
+      const admins = pieFedSite.admins.map((p) => convertPerson(p, "full"));
+
       const site = {
         privateInstance: false,
         description: pieFedSite.site.description ?? null,
         instance: this.instance,
-        admins: pieFedSite.admins.map((p) => convertPerson(p, "full")),
+        admins: admins.map((a) => a.apId),
         me,
         myEmail: null,
         version: pieFedSite.version,
@@ -921,7 +923,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         site,
-        profiles: [...(personBlocks ?? []), ...(me ? [me] : [])],
+        profiles: [...admins, ...(personBlocks ?? []), ...(me ? [me] : [])],
         communities: [
           ...(moderates ?? []),
           ...(follows ?? []),

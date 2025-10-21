@@ -390,12 +390,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
     const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
 
+    const admins = lemmySite.admins.map((p) => convertPerson(p));
+
     const site = {
       privateInstance: lemmySite.site_view.local_site.private_instance,
       public: lemmySite,
       description: lemmySite.site_view.site.description ?? null,
       instance: this.instance,
-      admins: lemmySite.admins.map((p) => convertPerson(p)),
+      admins: admins.map((a) => a.apId),
       me,
       myEmail: lemmySite.my_user?.local_user_view.local_user.email ?? null,
       version: lemmySite.version,
@@ -428,7 +430,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
     return {
       site,
-      profiles: [...(personBlocks ?? []), ...(me ? [me] : [])],
+      profiles: [...admins, ...(personBlocks ?? []), ...(me ? [me] : [])],
       communities: [
         ...(moderates ?? []),
         ...(follows ?? []),

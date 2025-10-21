@@ -258,11 +258,13 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       lemmySite.site_view.local_site.enable_downvotes === true;
     // TODO: uncomment once the below is implemented
     // const account = await this.client.getAccount();
+
+    const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
       privateInstance: lemmySite.site_view.local_site.private_instance,
       description: lemmySite.site_view.site.description ?? null,
       instance: this.instance,
-      admins: lemmySite.admins.map((p) => convertPerson(p)),
+      admins: admins.map((a) => a.apId),
       me: null,
       myEmail: null,
       version: lemmySite.version,
@@ -292,7 +294,10 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       software: this.software,
     };
 
-    return { site };
+    return {
+      site,
+      people: [...admins],
+    };
   }
 
   async getPost(form: { apId: string }, options: RequestOptions) {
