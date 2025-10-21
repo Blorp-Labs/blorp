@@ -81,7 +81,6 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   const search = location.search;
   const frozenLocation = useRef(location);
 
-  const frozenDefaultValue = useRef(defaultValue);
   const currentValueRef = useRef(defaultValue);
 
   const isActive = useIsActiveRoute();
@@ -94,17 +93,21 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
     const params = new URLSearchParams(location.search);
     const raw = params.get(key);
-    if (raw == null) return frozenDefaultValue.current;
+    if (raw == null) {
+      return currentValueRef.current;
+    }
 
     if (!schema) {
-      return raw ?? defaultValue;
+      return raw ?? currentValueRef.current;
     }
 
     const parsed = schema.safeParse(raw);
-    const newValue = parsed.success ? parsed.data : frozenDefaultValue.current;
-    currentValueRef.current = newValue;
-    return newValue;
-  }, [location.search, key, defaultValue, schema, isActive]);
+    if (parsed.success) {
+      currentValueRef.current = parsed.data;
+      return parsed.data;
+    }
+    return currentValueRef.current;
+  }, [location.search, key, schema, isActive]);
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
@@ -130,10 +133,8 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         search: newSearch ? `?${newSearch}` : "",
       };
       replace ? history.replace(to) : history.push(to);
-
-      frozenDefaultValue.current = defaultValue;
     },
-    [history, key, schema, value, defaultValue, search],
+    [history, key, schema, value, search],
   );
 
   return [value, setValue];
