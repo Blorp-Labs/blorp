@@ -56,7 +56,7 @@ export function useScrollNextSlide(
         (delta: -1 | 1) => {
           onChange(delta);
         },
-        750,
+        500,
         { leading: true, trailing: false },
       );
       const onWheel = (e: WheelEvent) => {
