@@ -7730,7 +7730,7 @@ __metadata:
     remove-markdown: "npm:^0.6.2"
     sonner: "npm:^2.0.3"
     storybook: "npm:^9.0.12"
-    swiper: "npm:^12.0.2"
+    swiper: "npm:^12.0.3"
     tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.1.11"
     terser: "npm:^5.39.0"
@@ -15692,10 +15692,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swiper@npm:^12.0.2":
-  version: 12.0.2
-  resolution: "swiper@npm:12.0.2"
-  checksum: 10c0/e7826eb5973828c622a30f321dc7740300a32666d26810b381e2498ad60f2f84e070058a1aa0ee32acce8a6d31f2d2919c388b2e5921db45690c59af41b1c7b8
+"swiper@npm:^12.0.3":
+  version: 12.0.3
+  resolution: "swiper@npm:12.0.3"
+  checksum: 10c0/a854531791ba45cb0f6086904a99878fd207b42024820df68fbf64e01c20d542438c023ec4765b223f4dbffabf6858d311ec749bdca4ea4b4a7b74150a010162
   languageName: node
   linkType: hard
 
