@@ -53,6 +53,7 @@
 | [blorp.europe.pub](https://blorp.europe.pub) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.europe.pub/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [b.lemmy.nz](https://b.lemmy.nz/) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.nz/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [b.lazysoci.al](https://b.lazysoci.al) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lazysoci.al/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.blahaj.zone](https://blorp.blahaj.zone) | ✅ |✅| ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.blahaj.zone/package.json&query=%24.version&label=&cacheSeconds=300) |
 
 ## 🐳 Self host via Docker
 
