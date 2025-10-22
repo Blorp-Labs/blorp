@@ -103,7 +103,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         onLoad={handleAspectRatio}
         onError={() => onError?.()}
         className={cn(
-          "w-full h-full transition-opacity duration-75",
+          "w-full h-full transition-opacity duration-300",
           imgClassName,
           hiVisible && "opacity-0",
         )}
