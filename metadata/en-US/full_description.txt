@@ -9,5 +9,3 @@ Blorp is a fast, ad-free Piefed & Lemmy client. Effortlessly browse, post, and s
 - View storage cache in-app
 - Real human support from the Blorp team
 - Backwards compatible (runs great on older iPhones)
-
-Also available on macOS
