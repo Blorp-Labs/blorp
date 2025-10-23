@@ -1,6 +1,13 @@
-Why Blorp?
+Blorp is a fast, ad-free Piefed & Lemmy client. Effortlessly browse, post, and switch accounts—online or offline.
 
-- No ads!
-- Fast multi account switching from any page
-- View cached content offline
-- Free and open source
+- No ads. Free & open source
+- Instant multi-account switching
+- Post drafts: create & finish later
+- User tags + block list management
+- Update profile photo & bio
+- Left-hand mode for one-hand use
+- View storage cache in-app
+- Real human support from the Blorp team
+- Backwards compatible (runs great on older iPhones)
+
+Also available on macOS

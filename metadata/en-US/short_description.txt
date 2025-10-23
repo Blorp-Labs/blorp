@@ -1,1 +1,1 @@
-  A Threadiverse client for Lemmy and PieFed
+A Threadiverse client for Lemmy and PieFed
