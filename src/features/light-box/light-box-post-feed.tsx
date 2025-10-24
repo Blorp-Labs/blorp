@@ -128,7 +128,7 @@ const Post = memo(
 
     return img ? (
       <div className="h-full w-full relative">
-        <div className="swiper-zoom-container">
+        <div className="swiper-zoom-container transition-all">
           <ProgressiveImage
             lowSrc={img}
             highSrc={embed?.fullResThumbnail}
