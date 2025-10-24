@@ -143,7 +143,7 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
 }
 
 function WrappedIonContent({ children }: { children: React.ReactNode }) {
-  const active = useIsActiveRoute();
+  const active = useIsActiveRoute("/home");
   const media = useMedia();
   return (
     <IonContent

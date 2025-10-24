@@ -15,6 +15,7 @@ import { Deferred } from "../deferred";
 import { usePathname } from "@/src/routing/hooks";
 import { useMedia } from "./use-media";
 import _ from "lodash";
+import { RoutePath } from "@/src/routing/routes";
 
 export { useMedia } from "./use-media";
 export { useTheme } from "./use-theme";
@@ -215,10 +216,17 @@ export function useIonPageElement() {
   };
 }
 
-export function useIsActiveRoute() {
+function normalizePath(p: string) {
+  return p.replace(/\/$/, "");
+}
+
+export function useIsActiveRoute(route?: RoutePath) {
   const pathname = usePathname();
   const snapshot = useRef(pathname);
-  return snapshot.current === pathname;
+  if (route) {
+    return normalizePath(route) === normalizePath(pathname);
+  }
+  return normalizePath(snapshot.current) === normalizePath(pathname);
 }
 
 export function useHideTabBarOnMount() {
