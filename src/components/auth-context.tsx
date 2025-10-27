@@ -404,7 +404,7 @@ function LoginForm({
   return (
     <form
       onSubmit={submitLogin}
-      className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full"
+      className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden"
       data-testid="login-form"
     >
       <div className="flex flex-col gap-1">

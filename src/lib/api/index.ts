@@ -667,6 +667,9 @@ export function useRegister(config: {
   const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
   const addAccount = useAuth((s) => s.addAccount);
 
+  const queryClient = useQueryClient();
+  const refreshAuthKey = useRefreshAuthKey();
+
   const mutation = useMutation({
     mutationFn: async (form: Forms.Register) => {
       const res = await (await api).register(form);
@@ -689,6 +692,9 @@ export function useRegister(config: {
       return res;
     },
     onSuccess: ({ jwt, registrationCreated, verifyEmailSent }) => {
+      queryClient.invalidateQueries({
+        queryKey: refreshAuthKey,
+      });
       if (!jwt) {
         toast.success(
           [
@@ -724,6 +730,9 @@ export function useLogin(config: { addAccount?: boolean; instance?: string }) {
   const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
   const addAccount = useAuth((s) => s.addAccount);
 
+  const queryClient = useQueryClient();
+  const refreshAuthKey = useRefreshAuthKey();
+
   const mutation = useMutation({
     mutationFn: async (form: Forms.Login) => {
       const res = await (await api).login(form);
@@ -745,7 +754,11 @@ export function useLogin(config: { addAccount?: boolean; instance?: string }) {
       }
       return res;
     },
-    onMutate: () => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: refreshAuthKey,
+      });
+    },
     onError: (err) => {
       if (err !== Errors.MFA_REQUIRED) {
         toast.error(extractErrorContent(err));
