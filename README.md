@@ -45,15 +45,18 @@
 ## ❤️ Friends of Blorp
 | Url | Lemmy | PieFed | Version |
 |-----|-----|-----|----|
-| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.world/package.json&query=%24.version&label=&cacheSeconds=300) |
-| [blorp.piefed.world](https://blorp.piefed.world) || ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.world/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.lemmy.world](https://blorp.lemmy.world) | ✅ | ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.world/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.piefed.world](https://blorp.piefed.world) | ✅ | ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.world/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [blorp.lemmy.zip](https://blorp.lemmy.zip) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.zip/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [blorp.piefed.zip](https://blorp.piefed.zip) || ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.zip/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [b.feddit.uk](https://b.feddit.uk) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.feddit.uk/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [blorp.europe.pub](https://blorp.europe.pub) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.europe.pub/package.json&query=%24.version&label=&cacheSeconds=300) |
-| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.nz/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [b.lemmy.nz](https://b.lemmy.nz/) | ✅ | ✅ | ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.nz/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [b.lazysoci.al](https://b.lazysoci.al) | ✅ || ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lazysoci.al/package.json&query=%24.version&label=&cacheSeconds=300) |
 | [blorp.blahaj.zone](https://blorp.blahaj.zone) | ✅ |✅| ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.blahaj.zone/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.blahaj.zone](https://blorp.blahaj.zone) | ✅ |✅| ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.blahaj.zone/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.lemmy.ca](https://blorp.lemmy.ca) | ✅ |✅| ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.ca/package.json&query=%24.version&label=&cacheSeconds=300) |
+| [blorp.piefed.ca](https://blorp.piefed.ca) | ✅ |✅| ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.ca/package.json&query=%24.version&label=&cacheSeconds=300) |
 
 ## 🐳 Self host via Docker
 
