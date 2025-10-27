@@ -1,4 +1,4 @@
-import { PostComment } from "@/src/components/posts/post-comment";
+import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
 import { usePost, useComments, useCommunity } from "@/src/lib/api/index";
@@ -183,10 +183,6 @@ export default function Post() {
     ap_id: decodedApId,
   });
 
-  const adminApIds = useAuth(
-    (s) => getAccountSite(s.getSelectedAccount())?.admins,
-  );
-
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
     decodedApId ? s.posts[getCachePrefixer()(decodedApId)]?.data : null,
@@ -366,7 +362,6 @@ export default function Post() {
                     myUserId={myUserId}
                     communityName={communityName}
                     modApIds={modApIds}
-                    adminApIds={adminApIds ?? undefined}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}
                   />

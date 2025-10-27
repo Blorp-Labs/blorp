@@ -4,12 +4,12 @@ import {
   CommentReplyButton,
   CommentVoting,
   useDoubleTapLike,
-} from "../comments/comment-buttons";
+} from "./comment-buttons";
 import {
   InlineCommentReply,
   useCommentEditingState,
   useLoadCommentIntoEditor,
-} from "../comments/comment-reply-modal";
+} from "./comment-reply-modal";
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
@@ -18,7 +18,7 @@ import {
   useSaveComment,
 } from "@/src/lib/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
-import { useShowCommentReportModal } from "./post-report";
+import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
 import { useLinkContext } from "../../routing/link-context";
 import { encodeApId } from "@/src/lib/api/utils";
@@ -34,7 +34,7 @@ import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { useAuth, useIsPersonBlocked } from "@/src/stores/auth";
+import { useAuth, useIsAdmin, useIsPersonBlocked } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
@@ -48,7 +48,7 @@ import {
   CollapsibleContent,
 } from "../ui/collapsible";
 import { create } from "zustand";
-import { COMMENT_COLLAPSE_EVENT } from "./config";
+import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
 import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
@@ -58,7 +58,8 @@ import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import {
   useShowCommentRemoveModal,
   useShowPostRemoveModal,
-} from "./post-remove";
+} from "../posts/post-remove";
+import { CommentCreatorBadge } from "./comment-creator-badge";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -282,16 +283,18 @@ function useCommentActions({
 }
 
 function Byline({
+  comment,
   actorId,
   actorSlug,
   publishedDate,
-  authorType,
+  isMod,
   className,
 }: {
+  comment: Schemas.Comment;
   actorId: string;
   actorSlug: string;
   publishedDate: string;
-  authorType?: "OP" | "ME" | "MOD" | "ADMIN" | "BANNED";
+  isMod?: boolean;
   className?: string;
 }) {
   const linkCtx = useLinkContext();
@@ -299,11 +302,10 @@ function Byline({
   const profileView = useProfilesStore(
     (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
   );
-  if (profileView?.isBanned) {
-    authorType = "BANNED";
-  }
 
   const tag = useTagUserStore((s) => s.userTags[actorSlug]);
+
+  const isAdmin = useIsAdmin(comment.creatorApId);
 
   const [name, host] = profileView?.slug.split("@") ?? [];
 
@@ -330,46 +332,20 @@ function Byline({
         >
           <span className="font-medium text-xs">{name}</span>
           {tag ? (
-            <Badge size="sm" variant="brand" className="ml-2">
+            <Badge size="sm" variant="brand-secondary" className="mx-2">
               {tag}
             </Badge>
           ) : (
-            <span className="italic text-xs text-muted-foreground">
+            <span className="italic text-xs text-muted-foreground mr-2">
               @{host}
             </span>
           )}
-          {authorType === "ADMIN" && (
-            <>
-              <ShieldCheckmark className="text-brand ml-2" />
-              <span className="text-xs ml-1 text-brand">ADMIN</span>
-            </>
-          )}
-          {authorType === "OP" && (
-            <Badge variant="brand" size="sm" className="ml-1.5">
-              OP
-            </Badge>
-          )}
-          {authorType === "MOD" && (
-            <>
-              <Shield className="text-green-500 ml-2" />
-              <span className="text-xs ml-1 text-green-500">MOD</span>
-            </>
-          )}
-          {authorType === "ME" && (
-            <Badge variant="brand" size="sm" className="ml-1.5">
-              Me
-            </Badge>
-          )}
-          {authorType === "BANNED" && (
-            <Badge variant="destructive" size="sm" className="ml-1.5">
-              Banned
-            </Badge>
-          )}
+          <CommentCreatorBadge comment={comment} isMod={isMod} />
           {profileView && (
             <CakeDay
               className="ml-1.5 text-brand"
               date={profileView.createdAt}
-              isNewAccount={authorType === "ADMIN" ? false : undefined}
+              isNewAccount={isAdmin ? false : undefined}
             />
           )}
         </Link>
@@ -392,7 +368,6 @@ export function PostComment({
   myUserId,
   communityName,
   modApIds,
-  adminApIds,
   singleCommentThread,
   highlightCommentId,
   canMod,
@@ -405,7 +380,6 @@ export function PostComment({
   myUserId: number | undefined;
   communityName: string;
   modApIds?: string[];
-  adminApIds?: string[];
   singleCommentThread?: boolean;
   highlightCommentId?: string;
   canMod?: boolean;
@@ -421,7 +395,6 @@ export function PostComment({
   const commentView = useCommentsStore((s) =>
     comment ? s.comments[getCachePrefixer()(comment.path)]?.data : undefined,
   );
-  const isAdmin = commentView && adminApIds?.includes(commentView?.creatorApId);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(
@@ -583,19 +556,8 @@ export function PostComment({
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
             publishedDate={commentView.createdAt}
-            authorType={
-              commentView.isBannedFromCommunity
-                ? "BANNED"
-                : isAdmin
-                  ? "ADMIN"
-                  : isMod
-                    ? "MOD"
-                    : commentView.creatorId === opId
-                      ? "OP"
-                      : commentView.creatorId === myUserId
-                        ? "ME"
-                        : undefined
-            }
+            isMod={isMod}
+            comment={commentView}
           />
         )}
 
@@ -697,7 +659,6 @@ export function PostComment({
                   communityName={communityName}
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
-                  adminApIds={adminApIds}
                   canMod={canMod}
                 />
               ))}
