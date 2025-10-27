@@ -1,6 +1,6 @@
 Blorp is a fast, ad-free Piefed & Lemmy client. Effortlessly browse, post, and switch accounts.
 
-The Basics
+<b>The Basics</b>
 - No ads
 - Instant multi-account switching
 - Post drafts: create now, finish later
@@ -10,16 +10,17 @@ The Basics
 - Private message users
 - Smooth, infinite scrolling
 - Collapse comment threads
+- Offline mode
 
-Customization & Personalization
-- Large, compact, and extra-compact post feeds
+<b>Customization & Settings</b>
+- Post feed layouts: Large, compact, and extra-compact
 - Left-hand mode for one-handed use
 - Light and dark mode
 
-Community & Moderation Tools (Beta)
-- Remove posts
-- More features coming soon
-
-Privacy & Transparency
+<b>Privacy & Transparency</b>
 - No trackers, no telemetry
 - Open source on GitHub
+
+<b>Other Tools (beta)</b>
+- Delete others’ posts (moderation tool).
+- (more features coming soon!)
