@@ -70,7 +70,8 @@ export function CodeBlockEditor({
   return (
     <NodeViewWrapper>
       <pre className="relative font-mono text-[.75rem]">
-        <NodeViewContent as="code" />
+        {/* Types seem to be broken here */}
+        <NodeViewContent as={"code" as "div"} />
 
         <Combobox
           trigger={({ isOpen }) => (
