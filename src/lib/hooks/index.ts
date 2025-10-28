@@ -62,11 +62,13 @@ export function useIsInAppBrowserOpen() {
 
 type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
-  opts?: { replace?: boolean },
+  config?: { replace?: boolean; search?: string },
 ) => void;
 
+type And = (fn: RemoveUrlSearchParam) => { and: And };
+
 type RemoveUrlSearchParam = (opts?: { replace?: boolean; search?: string }) => {
-  chain: (fn: RemoveUrlSearchParam) => void;
+  and: And;
 };
 
 /**
@@ -143,11 +145,14 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   );
 
   const removeParam = useCallback(
-    ({ replace = true, search: searchOverride = "" } = {}): {
-      chain: (removeParam: RemoveUrlSearchParam) => void;
+    (config?: {
+      replace?: boolean;
+      search?: string;
+    }): {
+      and: And;
     } => {
       currentValueRef.current = defaultValue;
-      const params = new URLSearchParams(searchOverride || search);
+      const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
       const newSearch = params.toString();
       const to = {
@@ -158,12 +163,12 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         search: newSearch ? `?${newSearch}` : "",
       };
       const id = setTimeout(() => {
-        replace ? history.replace(to) : history.push(to);
+        config?.replace ? history.replace(to) : history.push(to);
       }, 5);
       return {
-        chain: (removeParam) => {
+        and: (removeParam) => {
           clearTimeout(id);
-          removeParam({ replace, search: newSearch });
+          return removeParam({ ...config, search: newSearch });
         },
       };
     },

@@ -184,6 +184,67 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
   }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
 }
 
+function useDraftFromUrl({
+  draft,
+  patchDraft,
+  draftId,
+}: {
+  draft: Draft;
+  patchDraft: (key: string, patch: Partial<Draft>) => void;
+  draftId: string;
+}) {
+  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
+  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
+  const [body, _3, removeBody] = useUrlSearchState("body", "", z.string());
+  const [nsfw, _4, removeNsfw] = useUrlSearchState(
+    "nsfw",
+    undefined,
+    z
+      .union([
+        z.literal("1"),
+        z.literal("0"),
+        z.literal("true"),
+        z.literal("false"),
+      ])
+      .optional(),
+  );
+
+  useEffect(() => {
+    if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
+      const updateDraft: Partial<Draft> = {};
+      if (title) {
+        updateDraft.title = title;
+      }
+      if (url) {
+        updateDraft.url = url;
+        updateDraft.type = "link";
+      }
+      if (body) {
+        updateDraft.body = body;
+      }
+      if (nsfw === "1" || nsfw === "true") {
+        updateDraft.nsfw = true;
+      }
+      patchDraft(draftId, updateDraft);
+    }
+    if (title || draft || body || nsfw) {
+      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
+    }
+  }, [
+    draft,
+    title,
+    url,
+    body,
+    nsfw,
+    patchDraft,
+    draftId,
+    removeTitle,
+    removeUrl,
+    removeBody,
+    removeNsfw,
+  ]);
+}
+
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
@@ -202,6 +263,12 @@ export function CreatePost() {
   const isEdit = !!draft.apId;
   const patchDraft = useCreatePostStore((s) => s.updateDraft);
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
+
+  useDraftFromUrl({
+    draft,
+    draftId,
+    patchDraft,
+  });
 
   useLoadRecentCommunity(draftId, draft);
 
@@ -246,26 +313,6 @@ export function CreatePost() {
   const editPost = useEditPost(draftId);
 
   const linkMetadata = useLinkMetadat();
-
-  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
-  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
-
-  useEffect(() => {
-    if (isEmptyDraft(draft) && (title || url)) {
-      const updateDraft: Partial<Draft> = {};
-      if (title) {
-        updateDraft.title = title;
-      }
-      if (url) {
-        updateDraft.url = url;
-        updateDraft.type = "link";
-      }
-      patchDraft(draftId, updateDraft);
-    }
-    if (title || draft) {
-      removeTitle().chain(removeUrl);
-    }
-  }, [draft, title, url, patchDraft, draftId]);
 
   const parseUrl = (url: string) => {
     if (url) {
