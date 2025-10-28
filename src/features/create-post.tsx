@@ -89,7 +89,7 @@ function DraftsSidebar({
         <h2 className="font-bold">Drafts</h2>
         <Button size="sm" variant="outline" asChild>
           <Link
-            to="/create"
+            to="/create_post"
             searchParams={`?id=${uuid()}`}
             onClick={onClickDraft}
           >
@@ -104,7 +104,7 @@ function DraftsSidebar({
           return (
             <div key={key} className="relative">
               <Link
-                to="/create"
+                to="/create_post"
                 searchParams={`?id=${key}&test=123`}
                 className={cn(
                   "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
@@ -169,7 +169,7 @@ function DraftsSidebar({
 
 function useLoadRecentCommunity(draftId: string, draft: Draft) {
   const pathname = usePathname();
-  const isActive = pathname === "/create";
+  const isActive = pathname === "/create_post";
   const isEmpty = isEmptyDraft(draft);
   const mostRecentCommunity = useRecentCommunitiesStore(
     (s) => s.recentlyVisited[0],

@@ -6,6 +6,7 @@ import { Deferred } from "@/src/lib/deferred";
 import { useAuth } from "@/src/stores/auth";
 import { useCommunity } from "@/src/lib/api";
 import { useCommunityFromStore } from "@/src/stores/communities";
+import { resolveRoute } from "@/src/routing";
 
 export function useCommunityCreatePost({
   communityName,
@@ -59,7 +60,7 @@ export function useCommunityCreatePost({
     updateDraft(createPostId, {
       communitySlug: community.slug,
     });
-    router.push(`/create?id=${createPostId}`);
+    router.push(resolveRoute("/create_post", `?id=${createPostId}`));
   };
 }
 

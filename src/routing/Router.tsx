@@ -88,7 +88,7 @@ function useMenuSwipeEnabled(side: "from-right" | "from-left") {
     switch (path) {
       case "/home":
       case "/communities":
-      case "/create":
+      case "/create_post":
       case "/inbox":
       case "/messages":
         return true;
@@ -165,8 +165,8 @@ const HOME_STACK = [
 ];
 
 const CREATE_POST_STACK = [
-  <Route key="/create/*" path="/create/*" component={NotFound} />,
-  <Route key="/create" exact path="/create" component={CreatePost} />,
+  <Route key="/create/*" path="/create_post/*" component={NotFound} />,
+  <Route key="/create" exact path="/create_post" component={CreatePost} />,
 ];
 
 const COMMUNITIES_STACK = [

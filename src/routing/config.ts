@@ -31,9 +31,9 @@ export const TABS: {
   },
   {
     icon: (isActive) => (isActive ? create : createOutline),
-    to: "/create",
+    to: "/create_post",
     label: "Post",
-    id: "create",
+    id: "create_post",
   },
   {
     icon: (isActive) => (isActive ? notifications : notificationsOutline),
