@@ -12,6 +12,7 @@ import { Account, useAuth } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { useEffect, useRef } from "react";
 
 export function CommunityCard({
   communitySlug,
@@ -46,9 +47,18 @@ export function CommunityCard({
 
   const [name, host] = communityView.slug.split("@");
 
+  const prevIcon = useRef(communityView.icon);
+
+  useEffect(() => {
+    prevIcon.current = communityView.icon;
+  }, [communityView.icon]);
+
   const content = (
     <>
       <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
+        {prevIcon.current && prevIcon.current !== communityView.icon && (
+          <AvatarImage src={prevIcon.current} className="object-cover" />
+        )}
         <AvatarImage
           src={communityView.icon ?? undefined}
           className="object-cover"
