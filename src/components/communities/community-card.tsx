@@ -41,17 +41,16 @@ export function CommunityCard({
   // TODO: FIX THIS
   const linkCtx = useLinkContext();
 
+  const prevIcon = useRef(communityView?.icon);
+  useEffect(() => {
+    prevIcon.current = communityView?.icon;
+  }, [communityView?.icon]);
+
   if (!communityView) {
     return <CommunityCardSkeleton size={size} />;
   }
 
   const [name, host] = communityView.slug.split("@");
-
-  const prevIcon = useRef(communityView.icon);
-
-  useEffect(() => {
-    prevIcon.current = communityView.icon;
-  }, [communityView.icon]);
 
   const content = (
     <>
