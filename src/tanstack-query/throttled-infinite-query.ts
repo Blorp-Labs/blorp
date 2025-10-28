@@ -104,6 +104,7 @@ export function useThrottledInfiniteQuery<
                   const pageIndex = prev.pageParams.indexOf(pageParam);
                   if (pageIndex >= 0) {
                     const pages = [...prev.pages];
+                    pages[pageIndex] = value;
                     const pageParams = [...prev.pageParams];
                     const nextPage = options.getNextPageParam(
                       value,
@@ -111,7 +112,6 @@ export function useThrottledInfiniteQuery<
                       pageParam,
                       pageParams,
                     );
-                    pages[pageIndex] = value;
                     pageParams[pageIndex + 1] = nextPage;
                     queryClient.setQueryData<InfiniteData<any, any>>(
                       options.queryKey,
