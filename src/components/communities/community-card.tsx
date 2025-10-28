@@ -55,13 +55,13 @@ export function CommunityCard({
   const content = (
     <>
       <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
-        {prevIcon.current && prevIcon.current !== communityView.icon && (
-          <AvatarImage src={prevIcon.current} className="object-cover" />
-        )}
         <AvatarImage
           src={communityView.icon ?? undefined}
           className="object-cover"
         />
+        {prevIcon.current && prevIcon.current !== communityView.icon && (
+          <AvatarImage src={prevIcon.current} className="object-cover" />
+        )}
         <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
