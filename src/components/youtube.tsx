@@ -16,5 +16,3 @@ export function YouTubeVideoEmbed({ url }: { url?: string | null }) {
     </div>
   );
 }
-
-// Test chromatic
