@@ -12,7 +12,7 @@ import { isDev, isTauri } from "./lib/device";
 import { updateTauri } from "./lib/tauri";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
-import { TanstackQueryProvider } from "./tanstack-query/providers";
+import { TanstackQueryProvider } from "./tanstack-query/index";
 import { AuthProvider } from "./components/auth-context";
 import { PostRemoveProvider } from "./components/posts/post-remove";
 import { Toaster } from "./components/ui/sonner";
