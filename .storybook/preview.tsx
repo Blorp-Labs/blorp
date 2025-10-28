@@ -2,8 +2,9 @@ import * as React from "react";
 import { IonApp, IonContent, IonPage } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import type { Preview } from "@storybook/react-vite";
-import { Providers } from "../src/components/providers";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { setupIonicReact } from "@ionic/react";
+import { queryClient } from "../src/tanstack-query/query-client";
 import "../src/styles/index.css";
 
 setupIonicReact();
@@ -20,13 +21,13 @@ const preview: Preview = {
   decorators: (Story) => (
     <IonApp>
       <IonReactRouter>
-        <Providers>
+        <QueryClientProvider client={queryClient}>
           <IonPage>
             <IonContent>
               <Story />
             </IonContent>
           </IonPage>
-        </Providers>
+        </QueryClientProvider>
       </IonReactRouter>
     </IonApp>
   ),
