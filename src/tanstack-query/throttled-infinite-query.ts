@@ -112,6 +112,8 @@ export function useThrottledInfiniteQuery<
                       pageParam,
                       pageParams,
                     );
+                    // This is slightly different than how react query typically works,
+                    // but without this, pageIndex (above) won't be -1 for the next page.
                     pageParams[pageIndex + 1] = nextPage;
                     queryClient.setQueryData<InfiniteData<any, any>>(
                       options.queryKey,
