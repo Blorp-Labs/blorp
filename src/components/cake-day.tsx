@@ -20,12 +20,14 @@ const today = dayjs();
  * Does so in a way that won't break hydration.
  * Shows the full date/time time on hover.
  */
-export const CakeDay = memo(function CakeDay({ date, ...rest }: Props) {
+export const CakeDay = memo(function CakeDay({
+  date,
+  isNewAccount,
+  ...rest
+}: Props) {
   const createdAt = dayjs(date);
 
-  const isNewAccount = rest.isNewAccount ?? isWithinLast30Days(createdAt);
-
-  if (isNewAccount) {
+  if (isNewAccount ?? isWithinLast30Days(createdAt)) {
     return <BabyOutline {...rest} />;
   }
 
