@@ -11,6 +11,7 @@ const TABLE_NAME = "lemmy-store";
 
 export const runTauriSecurityFix = () => {
   if (isTauri()) {
+    console.log("Running tauri security fix...");
     pRetry(
       async () => {
         const store = await load(DB_NAME);

@@ -1,17 +1,14 @@
-import { QueryClient } from "@tanstack/react-query";
 import {
   PersistedClient,
   Persister,
   PersistQueryClientProvider,
 } from "@tanstack/react-query-persist-client";
 import _ from "lodash";
-import { AuthProvider } from "../components/auth-context";
-import { createDb } from "../lib/create-storage";
+import { createDb } from "@/src/lib/create-storage";
 import pRetry from "p-retry";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
-import { Toaster } from "@/src/components/ui/sonner";
-import { MAX_CACHE_MS } from "../stores/config";
-import { PostRemoveProvider } from "../components/posts/post-remove";
+import { MAX_CACHE_MS } from "@/src/stores/config";
+import { queryClient } from "./query-client";
 
 // List the last reason for bumping the key:
 // Caching creator profiles when fetching comments
@@ -67,24 +64,17 @@ const persister: Persister = {
   },
 };
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: MAX_CACHE_MS,
-      refetchOnReconnect: true,
-      refetchOnWindowFocus: false,
-      networkMode: "online",
-    },
-  },
-});
-
 // Enable multi-tab synchronization
 broadcastQueryClient({
   queryClient,
   broadcastChannel: "react-query-sync",
 });
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function TanstackQueryProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <PersistQueryClientProvider
       client={queryClient}
@@ -94,10 +84,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         buster: String(REACT_QUERY_CACHE_VERSON),
       }}
     >
-      <AuthProvider>
-        <PostRemoveProvider>{children}</PostRemoveProvider>
-      </AuthProvider>
-      <Toaster />
+      {children}
     </PersistQueryClientProvider>
   );
 }
