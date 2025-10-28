@@ -188,9 +188,9 @@ export default function CommunityFeed() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refetch().then(() =>
-                    dispatchScrollEvent(router.routeInfo.pathname),
-                  );
+                  refetch();
+                  // This is a hack to send you to the top of the feed
+                  dispatchScrollEvent(router.routeInfo.pathname);
                 }}
               >
                 New posts

@@ -244,7 +244,9 @@ export default function HomeFeed() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refreshFeed().then(() => dispatchScrollEvent("/home/"));
+                  refreshFeed();
+                  // This is a hack to send you to the top of the feed
+                  dispatchScrollEvent("/home/");
                 }}
               >
                 New posts
