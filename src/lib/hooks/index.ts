@@ -65,6 +65,10 @@ type SetUrlSearchParam<V> = (
   opts?: { replace?: boolean },
 ) => void;
 
+type RemoveUrlSearchParam = (opts?: { replace?: boolean; search?: string }) => {
+  chain: (fn: RemoveUrlSearchParam) => void;
+};
+
 /**
  * Similar to useState but stores it's state in the url.
  * Only works with strings for now.
@@ -76,7 +80,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   key: string,
   defaultValue: z.infer<S>,
   schema: S,
-): [z.infer<S>, SetUrlSearchParam<z.infer<S>>] {
+): [z.infer<S>, SetUrlSearchParam<z.infer<S>>, RemoveUrlSearchParam] {
   const history = useHistory();
   const location = useLocation();
   const search = location.search;
@@ -138,7 +142,35 @@ export function useUrlSearchState<S extends z.ZodSchema>(
     [history, key, schema, value, search],
   );
 
-  return [value, setValue];
+  const removeParam = useCallback(
+    ({ replace = true, search: searchOverride = "" } = {}): {
+      chain: (removeParam: RemoveUrlSearchParam) => void;
+    } => {
+      currentValueRef.current = defaultValue;
+      const params = new URLSearchParams(searchOverride || search);
+      params.delete(key);
+      const newSearch = params.toString();
+      const to = {
+        // Idk why but location is getting out of sync with
+        // browser location. So we just freeze the intial value
+        // and that seems to work.
+        ...frozenLocation.current,
+        search: newSearch ? `?${newSearch}` : "",
+      };
+      const id = setTimeout(() => {
+        replace ? history.replace(to) : history.push(to);
+      }, 5);
+      return {
+        chain: (removeParam) => {
+          clearTimeout(id);
+          removeParam({ replace, search: newSearch });
+        },
+      };
+    },
+    [history, key, search, defaultValue],
+  );
+
+  return [value, setValue, removeParam];
 }
 
 export function useConfirmationAlert() {

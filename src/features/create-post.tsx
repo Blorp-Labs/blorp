@@ -105,7 +105,7 @@ function DraftsSidebar({
             <div key={key} className="relative">
               <Link
                 to="/create_post"
-                searchParams={`?id=${key}&test=123`}
+                searchParams={`?id=${key}`}
                 className={cn(
                   "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
                   createPostId === key &&
@@ -246,6 +246,26 @@ export function CreatePost() {
   const editPost = useEditPost(draftId);
 
   const linkMetadata = useLinkMetadat();
+
+  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
+  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
+
+  useEffect(() => {
+    if (isEmptyDraft(draft) && (title || url)) {
+      const updateDraft: Partial<Draft> = {};
+      if (title) {
+        updateDraft.title = title;
+      }
+      if (url) {
+        updateDraft.url = url;
+        updateDraft.type = "link";
+      }
+      patchDraft(draftId, updateDraft);
+    }
+    if (title || draft) {
+      removeTitle().chain(removeUrl);
+    }
+  }, [draft, title, url, patchDraft, draftId]);
 
   const parseUrl = (url: string) => {
     if (url) {
