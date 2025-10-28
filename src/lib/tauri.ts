@@ -8,6 +8,7 @@ import { env } from "../env";
 export async function updateTauri() {
   try {
     if (isTauri()) {
+      console.log("Checking for tauri update...");
       const update = await check();
       if (update) {
         await update.download();
