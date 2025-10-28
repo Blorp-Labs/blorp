@@ -30,7 +30,7 @@ import {
 import {
   isInfiniteQueryData,
   useThrottledInfiniteQuery,
-} from "./throttled-infinite-query";
+} from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
   Errors,
@@ -1344,9 +1344,13 @@ export function useDeleteComment() {
   });
 }
 
+function getPrivateMessagesKey(queryKeyPrefix: unknown[]) {
+  return [...queryKeyPrefix, "getPrivateMessages"];
+}
+
 function usePrivateMessagesKey() {
   const { queryKeyPrefix } = useApiClients();
-  return [...queryKeyPrefix, "getPrivateMessages"];
+  return getPrivateMessagesKey(queryKeyPrefix);
 }
 
 export function usePrivateMessages(form: {}) {
@@ -1446,14 +1450,16 @@ function usePrivateMessageCountQueryKey() {
 export function usePrivateMessagesCount() {
   const { apis } = useApiClients();
   const isLoggedIn = useAuth((a) => a.isLoggedIn());
+  const accountIndex = useAuth((a) => a.accountIndex);
 
   const queryKey = usePrivateMessageCountQueryKey();
+  const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
       const counts = await Promise.allSettled(
-        apis.map(async ({ api, isLoggedIn }) => {
+        apis.map(async ({ api, isLoggedIn, queryKeyPrefix }, index) => {
           if (!isLoggedIn) {
             return 0;
           }
@@ -1466,6 +1472,12 @@ export function usePrivateMessagesCount() {
             },
             { signal },
           );
+
+          if (index === accountIndex && privateMessages.length > 0) {
+            queryClient.invalidateQueries({
+              queryKey: getPrivateMessagesKey(queryKeyPrefix),
+            });
+          }
 
           return privateMessages.length;
         }),

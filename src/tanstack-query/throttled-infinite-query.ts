@@ -7,7 +7,7 @@ import {
   QueryKey,
 } from "@tanstack/react-query";
 import _ from "lodash";
-import { useThrottleQueue } from "../throttle-queue";
+import { useThrottleQueue } from "../lib/throttle-queue";
 import { create } from "zustand/react";
 
 const useWarmedKeysStore = create<{
@@ -22,7 +22,7 @@ const useWarmedKeysStore = create<{
   },
 }));
 
-export function isInfiniteQueryData(data: any): data is InfiniteData<any> {
+export function isInfiniteQueryData(data: any): data is InfiniteData<any, any> {
   return (
     data &&
     typeof data === "object" &&
@@ -92,9 +92,38 @@ export function useThrottledInfiniteQuery<
     ...(_.isFunction(queryFn)
       ? {
           queryFn: (ctx: any) => {
+            const pageParam = ctx.pageParam as any;
             return throttleQueue.enqueue<TQueryFnData>(async () => {
               addWarmedKey(queryKeyStr);
-              return await queryFn(ctx);
+              const value = await queryFn(ctx);
+              try {
+                const prev = queryClient.getQueryData<InfiniteData<any, any>>(
+                  options.queryKey,
+                );
+                if (prev && isInfiniteQueryData(prev)) {
+                  const pageIndex = prev.pageParams.indexOf(pageParam);
+                  if (pageIndex >= 0) {
+                    const pages = [...prev.pages];
+                    const pageParams = [...prev.pageParams];
+                    const nextPage = options.getNextPageParam(
+                      value,
+                      pages,
+                      pageParam,
+                      pageParams,
+                    );
+                    pages[pageIndex] = value;
+                    pageParams[pageIndex + 1] = nextPage;
+                    queryClient.setQueryData<InfiniteData<any, any>>(
+                      options.queryKey,
+                      {
+                        pages,
+                        pageParams,
+                      },
+                    );
+                  }
+                }
+              } catch {}
+              return value;
             });
           },
         }
