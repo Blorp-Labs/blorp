@@ -12,6 +12,7 @@ import { Account, useAuth } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { useEffect, useRef } from "react";
 
 export function CommunityCard({
   communitySlug,
@@ -40,6 +41,11 @@ export function CommunityCard({
   // TODO: FIX THIS
   const linkCtx = useLinkContext();
 
+  const prevIcon = useRef(communityView?.icon);
+  useEffect(() => {
+    prevIcon.current = communityView?.icon;
+  }, [communityView?.icon]);
+
   if (!communityView) {
     return <CommunityCardSkeleton size={size} />;
   }
@@ -53,6 +59,9 @@ export function CommunityCard({
           src={communityView.icon ?? undefined}
           className="object-cover"
         />
+        {prevIcon.current && prevIcon.current !== communityView.icon && (
+          <AvatarImage src={prevIcon.current} className="object-cover" />
+        )}
         <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
       </Avatar>
 

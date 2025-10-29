@@ -36,6 +36,8 @@ import { isTauri } from "../lib/device";
 import { ChevronLeft, ChevronRight } from "../components/icons";
 import { useMedia } from "../lib/hooks";
 import { usePathname } from "./hooks";
+import NumberFlow from "@number-flow/react";
+import { Skeleton } from "../components/ui/skeleton";
 
 function useMainSidebarCollapsed() {
   const media = useMedia();
@@ -95,11 +97,67 @@ function SidebarTabs() {
   );
 }
 
-export function MainSidebar() {
-  const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
-  const icon = site?.icon;
-  const siteTitle = site?.title;
+function SiteTitle() {
+  const accounts = useAuth((s) => s.accounts);
+  const accountIndex = useAuth((s) => s.accountIndex);
+  const sites = accounts.map((a) => getAccountSite(a));
+  const iconTranslationPct = 1 - (accountIndex + 1) / accounts.length;
+  const titleTranslationPct = accountIndex / accounts.length;
+  const siteTitle = sites[accountIndex]?.title;
 
+  if (!siteTitle) {
+    return (
+      <div className="flex flex-row items-center gap-1.5 w-full">
+        <Skeleton className="h-7.5 w-7.5" />
+        <Skeleton className="flex-1 max-w-3/5 h-7" />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-row gap-1.5"
+      key={accounts.length}
+      aria-label={siteTitle}
+    >
+      <div className="h-9 w-7.5 overflow-hidden">
+        <div
+          className="flex flex-col transition-transform duration-500 ease-in-out"
+          style={{
+            transform: `translateY(${iconTranslationPct * -100}%)`,
+          }}
+        >
+          {sites.toReversed().map((site, index) => (
+            <div key={index} className="h-9 flex items-center">
+              {site?.icon && (
+                <img
+                  src={site.icon}
+                  className="h-7.5 aspect-square object-cover rounded-sm"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="h-9 overflow-hidden" aria-hidden>
+        <div
+          className="flex flex-col transition-transform duration-500 ease-in-out"
+          style={{
+            transform: `translateY(${titleTranslationPct * -100}%)`,
+          }}
+        >
+          {sites.map((site, index) => (
+            <div key={index} className="h-9 flex flex-row items-center gap-1.5">
+              <span className="font-jersey text-3xl">{site?.title}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function MainSidebar() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
   const recentCommunities = useRecentCommunitiesStore((s) => s.recentlyVisited);
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -132,7 +190,7 @@ export function MainSidebar() {
       )}
       <button
         className={cn(
-          "h-[60px] mt-3 md:mt-1 px-3.5 flex items-center gap-1.5",
+          "h-[60px] w-full mt-3 md:mt-1 px-3.5 flex items-center gap-1.5",
           mainSidebarCollapsed && "mx-auto",
         )}
         onClick={() => {
@@ -142,20 +200,7 @@ export function MainSidebar() {
           }
         }}
       >
-        {icon && (
-          <img
-            src={icon}
-            className="h-7.5 aspect-square object-cover rounded-sm"
-          />
-        )}
-        <span
-          className={cn(
-            "font-jersey text-3xl",
-            mainSidebarCollapsed && "sr-only",
-          )}
-        >
-          {siteTitle ?? "Loading..."}
-        </span>
+        <SiteTitle />
       </button>
 
       <div className="md:px-3 pt-2 pb-4 gap-0.5 flex flex-col">
@@ -186,9 +231,9 @@ export function MainSidebar() {
                   mainSidebarCollapsed && "items-center",
                 )}
               >
-                {recentCommunities.slice(0, 5).map((c) => (
+                {recentCommunities.slice(0, 5).map((c, index) => (
                   <IonMenuToggle
-                    key={c.id}
+                    key={index}
                     menu={LEFT_SIDEBAR_MENU_ID}
                     autoHide={false}
                   >
@@ -233,9 +278,9 @@ export function MainSidebar() {
                   mainSidebarCollapsed && "items-center",
                 )}
               >
-                {moderatingCommunities.map((c) => (
+                {moderatingCommunities.map((c, index) => (
                   <IonMenuToggle
-                    key={c}
+                    key={index}
                     menu={LEFT_SIDEBAR_MENU_ID}
                     autoHide={false}
                   >
@@ -280,9 +325,9 @@ export function MainSidebar() {
                   mainSidebarCollapsed && "items-center",
                 )}
               >
-                {subscribedCommunities.map((c) => (
+                {subscribedCommunities.map((c, index) => (
                   <IonMenuToggle
-                    key={c}
+                    key={index}
                     menu={LEFT_SIDEBAR_MENU_ID}
                     autoHide={false}
                   >

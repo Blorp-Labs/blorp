@@ -24,6 +24,40 @@ import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 
+function useScrollToTopEvents({
+  scrollToTop,
+  listKey,
+  focused,
+}: {
+  scrollToTop: () => void;
+  listKey?: string;
+  focused: boolean;
+}) {
+  const isBrowserOpen = useIsInAppBrowserOpen();
+  const r = useRouterSafe();
+  const pathname = r?.routeInfo?.pathname;
+  useEffect(() => {
+    if (pathname) {
+      return subscribeToScrollEvent(pathname, () => {
+        scrollToTop();
+      });
+    }
+  }, [pathname, scrollToTop]);
+  useEffect(() => {
+    if (focused && !isBrowserOpen) {
+      const listener = () => {
+        scrollToTop();
+      };
+      window.addEventListener("statusTap", listener);
+      return () => window.removeEventListener("statusTap", listener);
+    }
+  }, [focused, isBrowserOpen, scrollToTop]);
+  const accountIndex = useAuth((s) => s.accountIndex);
+  useEffect(() => {
+    scrollToTop();
+  }, [accountIndex, listKey, scrollToTop]);
+}
+
 /**
  * This is a hack that prevents the virtualizer from shifting the
  * scroll for 50ms after a comment is expanded/collapsed
@@ -89,6 +123,7 @@ function VirtualListInternal<T>({
   placeholder,
   numPlaceholders = 25,
   header,
+  listKey,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -103,6 +138,7 @@ function VirtualListInternal<T>({
   placeholder?: ReactNode;
   numPlaceholders?: number;
   header?: ReactNode[];
+  listKey?: string;
 }) {
   const index = useRef(0);
   const offset = useRef(0);
@@ -201,6 +237,15 @@ function VirtualListInternal<T>({
       },
       [stickyIndicies, keepMounted, data, headerLen],
     ),
+  });
+
+  const scrollToOffset = rowVirtualizer.scrollToOffset;
+  useScrollToTopEvents({
+    focused,
+    listKey,
+    scrollToTop: useCallback(() => {
+      scrollToOffset(0, { behavior: "smooth" });
+    }, [scrollToOffset]),
   });
 
   usePreventScrollJumpingOnCommentCollapse({
@@ -306,37 +351,26 @@ export function VirtualList<T>({
   header?: ReactNode[];
   fullscreen?: boolean;
   scrollHost?: boolean;
+  listKey?: string;
 }) {
   const media = useMedia();
+  const focused = useRef(false);
   const [key, setKey] = useState(0);
 
+  // When the virtual list isn't in the active
+  // screen, it's better to bump the key and reset
+  // the virtualizer. Otherwise scroll events are
+  // handled by VirtualListInternal by smoothly
+  // scrolling to the top.
   const accountIndex = useAuth((s) => s.accountIndex);
+  useEffect(() => {
+    if (!focused.current) {
+      setKey((k) => k + 1);
+    }
+  }, [accountIndex, props.listKey]);
 
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
-
-  const [focused, setFocused] = useState(false);
-
-  const r = useRouterSafe();
-  const pathname = r?.routeInfo?.pathname;
-  useEffect(() => {
-    if (pathname) {
-      return subscribeToScrollEvent(pathname, () => {
-        setKey((k) => k + 1);
-      });
-    }
-  }, [pathname]);
-
-  const isBrowserOpen = useIsInAppBrowserOpen();
-  useEffect(() => {
-    if (focused && !isBrowserOpen) {
-      const listener = () => {
-        setKey((k) => k + 1);
-      };
-      window.addEventListener("statusTap", listener);
-      return () => window.removeEventListener("statusTap", listener);
-    }
-  }, [focused, isBrowserOpen]);
 
   function handleRefresh(event: CustomEvent<RefresherEventDetail>) {
     Haptics.impact({ style: ImpactStyle.Medium });
@@ -374,11 +408,11 @@ export function VirtualList<T>({
         onScroll={onScroll}
       >
         <VirtualListInternal
-          key={`${key}-${props.numColumns}-${accountIndex}`}
+          listKey={`${key}-${props.numColumns}`}
           {...props}
           ref={scrollRef}
           onFocusChange={(newFocused) => {
-            setFocused(newFocused);
+            focused.current = newFocused;
             onFocusChange?.(newFocused);
           }}
         />

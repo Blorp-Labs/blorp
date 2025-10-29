@@ -264,7 +264,7 @@ export default function HomeFeed() {
       <WrappedIonContent>
         <PostReportProvider>
           <VirtualList<Item>
-            key={postSort + listingType}
+            listKey={postSort + listingType}
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
