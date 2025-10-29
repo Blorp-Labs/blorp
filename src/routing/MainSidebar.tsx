@@ -115,7 +115,11 @@ function SiteTitle() {
   }
 
   return (
-    <div className="flex flex-row gap-1.5" key={accounts.length}>
+    <div
+      className="flex flex-row gap-1.5"
+      key={accounts.length}
+      aria-label={siteTitle}
+    >
       <div className="h-9 w-7.5 overflow-hidden">
         <div
           className="flex flex-col transition-transform duration-500 ease-in-out"
