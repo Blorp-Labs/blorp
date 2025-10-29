@@ -8,7 +8,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "../stores/filters";
 import { useMostRecentPost, usePosts } from "../lib/api";
 import _ from "lodash";
-
 import { LocalSererSidebar } from "../components/local-server/local-server-sidebar";
 import {
   IonContent,
@@ -142,15 +141,34 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
   return { scrollHandler };
 }
 
-function WrappedIonContent({ children }: { children: React.ReactNode }) {
+function useScrollY() {
   const active = useIsActiveRoute("/home");
+  const [scrollY, setScrollY] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      const handler = _.debounce(() => {
+        setScrollY(true);
+      }, 100);
+      window.addEventListener("resize", handler);
+      return () => window.removeEventListener("resize", handler);
+    } else {
+      setScrollY(false);
+    }
+  }, [active]);
+
+  return scrollY;
+}
+
+function WrappedIonContent({ children }: { children: React.ReactNode }) {
+  const scrollY = useScrollY();
   const media = useMedia();
   return (
     <IonContent
       // THIS IS A HACK
       // This fixes a bug where IonContent is the wrong size
       // after rotating your phone from another screen.
-      scrollY={!active}
+      scrollY={scrollY}
       fullscreen={media.maxMd}
     >
       {children}
