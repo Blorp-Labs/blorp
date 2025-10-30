@@ -60,15 +60,19 @@ export function useIsInAppBrowserOpen() {
   return isOpen;
 }
 
+type AndSet<V> = (fn: SetUrlSearchParam<V>, val: V) => { and: AndSet<V> };
+
 type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
   config?: { replace?: boolean; search?: string },
-) => void;
+) => {
+  and: AndSet<V>;
+};
 
-type And = (fn: RemoveUrlSearchParam) => { and: And };
+type AndRemove = (fn: RemoveUrlSearchParam) => { and: AndRemove };
 
 type RemoveUrlSearchParam = (opts?: { replace?: boolean; search?: string }) => {
-  and: And;
+  and: AndRemove;
 };
 
 /**
@@ -118,7 +122,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
-    (next, { replace = true } = {}) => {
+    (next, config) => {
       const newVal =
         typeof next === "function"
           ? (next as (p: z.infer<S>) => z.infer<S>)(value)
@@ -129,7 +133,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         schema.parse(newVal);
       }
 
-      const params = new URLSearchParams(search);
+      const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
       const newSearch = params.toString();
       const to = {
@@ -139,7 +143,15 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         ...frozenLocation.current,
         search: newSearch ? `?${newSearch}` : "",
       };
-      replace ? history.replace(to) : history.push(to);
+      const id = setTimeout(() => {
+        config?.replace ? history.replace(to) : history.push(to);
+      }, 5);
+      return {
+        and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
+          clearTimeout(id);
+          return setValue(val, { ...config, search: newSearch });
+        },
+      };
     },
     [history, key, schema, value, search],
   );
@@ -149,7 +161,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       replace?: boolean;
       search?: string;
     }): {
-      and: And;
+      and: AndRemove;
     } => {
       currentValueRef.current = defaultValue;
       const params = new URLSearchParams(config?.search ?? search);
