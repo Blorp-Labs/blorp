@@ -36,7 +36,6 @@ import { isTauri } from "../lib/device";
 import { ChevronLeft, ChevronRight } from "../components/icons";
 import { useMedia } from "../lib/hooks";
 import { usePathname } from "./hooks";
-import NumberFlow from "@number-flow/react";
 import { Skeleton } from "../components/ui/skeleton";
 
 function useMainSidebarCollapsed() {
@@ -105,6 +104,8 @@ function SiteTitle() {
   const titleTranslationPct = accountIndex / accounts.length;
   const siteTitle = sites[accountIndex]?.title;
 
+  const mainSidebarCollapsed = useMainSidebarCollapsed();
+
   if (!siteTitle) {
     return (
       <div className="flex flex-row items-center gap-1.5 w-full">
@@ -116,7 +117,10 @@ function SiteTitle() {
 
   return (
     <div
-      className="flex flex-row gap-1.5"
+      className={cn(
+        "flex flex-row gap-1.5 w-full",
+        mainSidebarCollapsed && "justify-center",
+      )}
       key={accounts.length}
       aria-label={siteTitle}
     >
@@ -139,20 +143,25 @@ function SiteTitle() {
           ))}
         </div>
       </div>
-      <div className="h-9 overflow-hidden" aria-hidden>
-        <div
-          className="flex flex-col transition-transform duration-500 ease-in-out"
-          style={{
-            transform: `translateY(${titleTranslationPct * -100}%)`,
-          }}
-        >
-          {sites.map((site, index) => (
-            <div key={index} className="h-9 flex flex-row items-center gap-1.5">
-              <span className="font-jersey text-3xl">{site?.title}</span>
-            </div>
-          ))}
+      {!mainSidebarCollapsed && (
+        <div className="h-9 overflow-hidden" aria-hidden>
+          <div
+            className="flex flex-col transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateY(${titleTranslationPct * -100}%)`,
+            }}
+          >
+            {sites.map((site, index) => (
+              <div
+                key={index}
+                className="h-9 flex flex-row items-center gap-1.5"
+              >
+                <span className="font-jersey text-3xl">{site?.title}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
