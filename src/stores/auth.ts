@@ -309,3 +309,10 @@ export function useIsCommunityBlocked(slug?: string | null) {
     return !!communityBlocks.find((c) => c === slug);
   });
 }
+
+export function useIsAdmin(apId?: string) {
+  const adminApIds = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.admins,
+  );
+  return apId ? (adminApIds?.includes(apId) ?? false) : false;
+}

@@ -28,6 +28,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { DateTime } from "../datetime";
 import { useIsPersonBlocked } from "@/src/stores/auth";
+import { PersonBadge } from "./person-badge";
 
 dayjs.extend(localizedFormat);
 
@@ -69,7 +70,9 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
               Posts: person?.postCount,
               Comments: person?.commentCount,
             }}
-          />
+          >
+            <PersonBadge person={person} />
+          </AggregateBadges>
         </div>
 
         <div className="flex-1" />
@@ -151,7 +154,7 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
           <span className="flex items-center text-ellipsis overflow-hidden">
             <b>{name}</b>
             {tag ? (
-              <Badge size="sm" variant="brand" className="ml-2">
+              <Badge size="sm" variant="brand-secondary" className="ml-2">
                 {tag}
               </Badge>
             ) : (
@@ -177,7 +180,9 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
               Posts: person?.postCount,
               Comments: person?.commentCount,
             }}
-          />
+          >
+            <PersonBadge person={person} />
+          </AggregateBadges>
         </div>
 
         {person?.bio && !isBlocked && (

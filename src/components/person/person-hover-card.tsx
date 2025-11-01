@@ -11,9 +11,11 @@ import {
 } from "@/src/components/ui/hover-card";
 import { useState } from "react";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { useAuth } from "@/src/stores/auth";
+import { useAuth, useIsAdmin } from "@/src/stores/auth";
 import { AggregateBadges } from "../aggregates";
 import { DateTime } from "../datetime";
+import { Badge } from "../ui/badge";
+import { PersonBadge } from "./person-badge";
 
 dayjs.extend(localizedFormat);
 
@@ -40,7 +42,7 @@ export function PersonHoverCard({
       <HoverCardTrigger asChild={asChild}>{children}</HoverCardTrigger>
       <HoverCardContent
         align="start"
-        className="flex flex-col gap-3 py-4 flex-1"
+        className="flex flex-col gap-3 py-4 flex-1 w-72"
       >
         <div className="font-bold text-sm h-5">
           {personView?.slug ?? <Skeleton className="w-2/3 h-full" />}
@@ -59,7 +61,9 @@ export function PersonHoverCard({
             Posts: personView?.postCount,
             Comments: personView?.commentCount,
           }}
-        />
+        >
+          <PersonBadge person={personView} />
+        </AggregateBadges>
       </HoverCardContent>
     </HoverCard>
   );
