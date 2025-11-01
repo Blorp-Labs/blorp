@@ -14,7 +14,7 @@ import {
   useIsPersonBlocked,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
-import { Link } from "@/src/routing/index";
+import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
@@ -172,7 +172,7 @@ export function usePostActions({
             onClick: () => {
               if (post) {
                 updateDraft(post.apId, postToDraft(post, flairs));
-                router.push(`/create?id=${encodedApId}`);
+                router.push(resolveRoute("/create_post", `?id=${encodedApId}`));
               }
             },
           },

@@ -94,8 +94,8 @@ export const routeDefs = {
   ...buildRoute("/inbox/c/:communityName/lightbox", lightBoxFeedSchema),
   ...buildRoute("/inbox/lightbox/:imgUrl", lightBoxSchema),
   // Create
-  ...buildRoute("/create"),
-  ...buildRoute("/create/*"),
+  ...buildRoute("/create_post"),
+  ...buildRoute("/create_post/*"),
   // Settings
   ...buildRoute("/settings"),
   ...buildRoute("/settings/manage-blocks/:index", manageAccountSchema),

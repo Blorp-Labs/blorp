@@ -89,7 +89,7 @@ function DraftsSidebar({
         <h2 className="font-bold">Drafts</h2>
         <Button size="sm" variant="outline" asChild>
           <Link
-            to="/create"
+            to="/create_post"
             searchParams={`?id=${uuid()}`}
             onClick={onClickDraft}
           >
@@ -104,8 +104,8 @@ function DraftsSidebar({
           return (
             <div key={key} className="relative">
               <Link
-                to="/create"
-                searchParams={`?id=${key}&test=123`}
+                to="/create_post"
+                searchParams={`?id=${key}`}
                 className={cn(
                   "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
                   createPostId === key &&
@@ -169,7 +169,7 @@ function DraftsSidebar({
 
 function useLoadRecentCommunity(draftId: string, draft: Draft) {
   const pathname = usePathname();
-  const isActive = pathname === "/create";
+  const isActive = pathname === "/create_post";
   const isEmpty = isEmptyDraft(draft);
   const mostRecentCommunity = useRecentCommunitiesStore(
     (s) => s.recentlyVisited[0],
@@ -182,6 +182,67 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
       });
     }
   }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
+}
+
+function useDraftFromUrl({
+  draft,
+  patchDraft,
+  draftId,
+}: {
+  draft: Draft;
+  patchDraft: (key: string, patch: Partial<Draft>) => void;
+  draftId: string;
+}) {
+  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
+  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
+  const [body, _3, removeBody] = useUrlSearchState("body", "", z.string());
+  const [nsfw, _4, removeNsfw] = useUrlSearchState(
+    "nsfw",
+    undefined,
+    z
+      .union([
+        z.literal("1"),
+        z.literal("0"),
+        z.literal("true"),
+        z.literal("false"),
+      ])
+      .optional(),
+  );
+
+  useEffect(() => {
+    if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
+      const updateDraft: Partial<Draft> = {};
+      if (title) {
+        updateDraft.title = title;
+      }
+      if (url) {
+        updateDraft.url = url;
+        updateDraft.type = "link";
+      }
+      if (body) {
+        updateDraft.body = body;
+      }
+      if (nsfw === "1" || nsfw === "true") {
+        updateDraft.nsfw = true;
+      }
+      patchDraft(draftId, updateDraft);
+    }
+    if (title || draft || body || nsfw) {
+      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
+    }
+  }, [
+    draft,
+    title,
+    url,
+    body,
+    nsfw,
+    patchDraft,
+    draftId,
+    removeTitle,
+    removeUrl,
+    removeBody,
+    removeNsfw,
+  ]);
 }
 
 export function CreatePost() {
@@ -202,6 +263,12 @@ export function CreatePost() {
   const isEdit = !!draft.apId;
   const patchDraft = useCreatePostStore((s) => s.updateDraft);
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
+
+  useDraftFromUrl({
+    draft,
+    draftId,
+    patchDraft,
+  });
 
   useLoadRecentCommunity(draftId, draft);
 
