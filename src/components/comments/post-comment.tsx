@@ -332,18 +332,22 @@ function Byline({
         >
           <span className="font-medium text-xs">{name}</span>
           {tag ? (
-            <Badge size="sm" variant="brand-secondary" className="mx-2">
+            <Badge size="sm" variant="brand-secondary" className="ml-2">
               {tag}
             </Badge>
           ) : (
-            <span className="italic text-xs text-muted-foreground mr-2">
+            <span className="italic text-xs text-muted-foreground">
               @{host}
             </span>
           )}
-          <CommentCreatorBadge comment={comment} isMod={isMod} />
+          <CommentCreatorBadge
+            comment={comment}
+            isMod={isMod}
+            className="ml-2"
+          />
           {profileView && (
             <CakeDay
-              className="ml-1.5 text-brand"
+              className="text-brand ml-2"
               date={profileView.createdAt}
               isNewAccount={isAdmin ? false : undefined}
             />

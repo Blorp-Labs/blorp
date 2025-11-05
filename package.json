@@ -127,6 +127,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-error-boundary": "^6.0.0",
     "react-hls-player": "^3.0.7",
     "react-icons": "^5.5.0",
     "react-player": "^3.3.1",
