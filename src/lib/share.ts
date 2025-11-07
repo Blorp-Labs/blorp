@@ -151,6 +151,15 @@ export async function downloadImage(name: string, imageUrl: string) {
       }
     } else if (isCapacitor()) {
       await downloadImageCapacitor(imageUrl, filename);
+    } else {
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename || "image.jpg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl); // cleanup
     }
 
     toast.success("Image saved", { id });
@@ -294,17 +303,13 @@ export function useShareActions(
   ] satisfies ActionMenuProps["actions"];
 }
 
-export function canShareImage() {
-  return !isWeb();
-}
-
 export function useImageShareActions({
   imageSrc,
 }: {
   imageSrc?: string;
 }): ActionMenuProps<string>["actions"] {
   return [
-    ...(imageSrc && canShareImage()
+    ...(imageSrc
       ? [
           {
             text: "Share image",
@@ -312,7 +317,7 @@ export function useImageShareActions({
           },
         ]
       : []),
-    ...(imageSrc && canShareImage()
+    ...(imageSrc
       ? [
           {
             text: "Download image",

@@ -24,7 +24,6 @@ import {
   useShareActions,
   downloadImage,
   useImageShareActions,
-  canShareImage,
 } from "@/src/lib/share";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
@@ -295,7 +294,7 @@ function usePostShareActions({
 
   return [
     ...(shareActions[0]?.actions ?? []),
-    ...(post && thumbnailUrl && embed.type === "image" && canShareImage()
+    ...(post && thumbnailUrl && embed.type === "image"
       ? [
           {
             text: "Share image",
@@ -303,7 +302,7 @@ function usePostShareActions({
           },
         ]
       : []),
-    ...(post && thumbnailUrl && embed.type === "image" && canShareImage()
+    ...(post && thumbnailUrl && embed.type === "image"
       ? [
           {
             text: "Download image",

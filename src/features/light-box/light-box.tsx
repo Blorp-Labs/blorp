@@ -28,7 +28,6 @@ import { Spinner, NoImage } from "@/src/components/icons";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { ContentGutters } from "@/src/components/gutters";
 import { ImageShareButton } from "@/src/components/posts/post-buttons";
-import { canShareImage } from "@/src/lib/share";
 
 const Controls = ({
   style,
@@ -300,28 +299,26 @@ export default function LightBox() {
           paddingT={navbar.height + navbar.inset}
           paddingB={tabbar.height + tabbar.inset}
         />
-        {canShareImage() && (
-          <div
-            className={cn(
-              "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
-              hideNav && "opacity-0",
-              !isActive && "hidden",
-            )}
-            style={{
-              // This is kinda weird, but I thought it looked
-              // better if the bottom controls height mated the
-              // toolbar height on desktop.
-              height: bottomBarHeight,
-              paddingBottom: tabbar.inset,
-            }}
-          >
-            <ContentGutters className="h-full">
-              <div className="my-auto">
-                <ImageShareButton imageSrc={src} />
-              </div>
-            </ContentGutters>
-          </div>
-        )}
+        <div
+          className={cn(
+            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
+            hideNav && "opacity-0",
+            !isActive && "hidden",
+          )}
+          style={{
+            // This is kinda weird, but I thought it looked
+            // better if the bottom controls height mated the
+            // toolbar height on desktop.
+            height: bottomBarHeight,
+            paddingBottom: tabbar.inset,
+          }}
+        >
+          <ContentGutters className="h-full">
+            <div className="my-auto">
+              <ImageShareButton imageSrc={src} />
+            </div>
+          </ContentGutters>
+        </div>
       </IonContent>
     </IonPage>
   );
