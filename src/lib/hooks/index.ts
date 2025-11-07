@@ -123,6 +123,8 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
     (next, config) => {
+      const replace = config?.replace ?? true;
+
       const newVal =
         typeof next === "function"
           ? (next as (p: z.infer<S>) => z.infer<S>)(value)
@@ -144,7 +146,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         search: newSearch ? `?${newSearch}` : "",
       };
       const id = setTimeout(() => {
-        config?.replace ? history.replace(to) : history.push(to);
+        replace ? history.replace(to) : history.push(to);
       }, 5);
       return {
         and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
@@ -163,6 +165,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
     }): {
       and: AndRemove;
     } => {
+      const replace = config?.replace ?? true;
       currentValueRef.current = defaultValue;
       const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
@@ -175,7 +178,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         search: newSearch ? `?${newSearch}` : "",
       };
       const id = setTimeout(() => {
-        config?.replace ? history.replace(to) : history.push(to);
+        replace ? history.replace(to) : history.push(to);
       }, 5);
       return {
         and: (removeParam) => {
