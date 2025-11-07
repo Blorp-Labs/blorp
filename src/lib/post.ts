@@ -23,6 +23,7 @@ export function getPostEmbed(post: Schemas.Post) {
     | "loops"
     | "text"
     | "spotify"
+    | "bandcamp"
     | "soundcloud"
     | "vimeo"
     | "generic-video"
@@ -43,6 +44,11 @@ export function getPostEmbed(post: Schemas.Post) {
     SPOTIFY_REGEX.test(post.url)
   ) {
     embedType = "spotify";
+  } else if (
+    post.embedVideoUrl?.startsWith("https://bandcamp.com/EmbeddedPlayer")
+  ) {
+    embedType = "bandcamp";
+    embedUrl = post.embedVideoUrl;
   } else if (post.url?.startsWith("https://loops.video")) {
     embedType = "loops";
   } else if (

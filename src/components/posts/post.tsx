@@ -34,6 +34,7 @@ import { ProgressiveImage } from "../progressive-image";
 import { useMedia } from "@/src/lib/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
+import { BandcampEmbed } from "./embeds/bandcamp-embed";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -487,6 +488,10 @@ function LargePostCard({
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
         <YouTubeVideoEmbed url={embed.embedUrl} />
       )}
+      {embed?.type === "bandcamp" &&
+        embed.embedUrl &&
+        !post.deleted &&
+        !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
 
       {detailView && post.body && !post.deleted && !post.removed && (
         <div className="flex-1" {...doubeTapLike}>
