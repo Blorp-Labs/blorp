@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CacheKey, CachePrefixer } from "./auth";
+import { CacheKey, CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 
 type CachedProfile = {
@@ -121,3 +121,8 @@ export const useProfilesStore = create<ProfilesStore>()(
 );
 
 sync(useProfilesStore);
+
+export function useProfileFromStore(apId: string) {
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return useProfilesStore((s) => s.profiles[getCachePrefixer()(apId)]?.data);
+}

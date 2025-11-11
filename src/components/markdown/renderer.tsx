@@ -23,6 +23,7 @@ import footnotePlugin from "markdown-it-footnote";
 import markdownitSub from "markdown-it-sub";
 // @ts-expect-error
 import markdownitSup from "markdown-it-sup";
+import { ErrorBoundary } from "react-error-boundary";
 
 const COMMUNITY_BANG =
   /^!([A-Za-z0-9_-]+)@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})$/;
@@ -43,9 +44,11 @@ function SafeRouterLink<Path extends RoutePath>(props: LinkProps<Path>) {
   return insideLink ? (
     <span {...props} />
   ) : (
-    <Link {...props}>
-      <DisableLinks>{props.children}</DisableLinks>
-    </Link>
+    <ErrorBoundary fallback={<span {...props} />}>
+      <Link {...props}>
+        <DisableLinks>{props.children}</DisableLinks>
+      </Link>
+    </ErrorBoundary>
   );
 }
 
