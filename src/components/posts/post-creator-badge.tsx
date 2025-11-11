@@ -3,7 +3,7 @@ import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMedia } from "@/src/lib/hooks";
 
-export function PostCreatorBdage({
+export function PostCreatorBadge({
   isMod,
   isBanned,
   isAdmin,

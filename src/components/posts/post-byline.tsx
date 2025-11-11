@@ -40,7 +40,7 @@ import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
-import { PostCreatorBdage } from "./post-creator-badge";
+import { PostCreatorBadge } from "./post-creator-badge";
 
 export function usePostActions({
   post,
@@ -237,6 +237,7 @@ export function PostByline({
   showActions = true,
   hideImage,
   className,
+  compactBadge,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -248,6 +249,7 @@ export function PostByline({
   showActions?: boolean;
   hideImage?: boolean;
   className?: string;
+  compactBadge?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -347,7 +349,7 @@ export function PostByline({
                 )}
               </Link>
             </PersonHoverCard>
-            <PostCreatorBdage
+            <PostCreatorBadge
               isMod={isMod}
               isAdmin={isAdmin}
               isBanned={post.isBannedFromCommunity || creator?.isBanned}
