@@ -1,9 +1,10 @@
 <p align="center">
   <a href="https://blorpblorp.xyz/" target="_blank" rel="noopener noreferrer">
-    <img width="185" height="120" src="https://github.com/user-attachments/assets/2aee1810-2d98-461a-989d-3282a2b93a2e" alt="Blorp logo">
+    <img src="https://github.com/user-attachments/assets/57ea0e62-9d91-4717-8d53-c64307993de3" alt="Blorp logo">
   </a>
-  <h1 align="center">Blorp</h1>
 </p>
+
+-----
 
 <p align="center">
 <a href="https://blorpblorp.xyz/" target="_blank" rel="noopener noreferrer">Web App</a> · <a href="https://github.com/Blorp-Labs/blorp/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=">Report Bug</a> · <a href="https://github.com/Blorp-Labs/blorp/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=">Request Feature</a> · <a href="https://github.com/Blorp-Labs/blorp/releases">Releases</a>
