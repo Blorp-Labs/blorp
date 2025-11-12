@@ -95,7 +95,7 @@ Want to ask questions, share feedback, or just chat with other Blorp users? Head
 
 ## ❤️ Special thanks to 
 
-* Voyager. I settled on a stack that is pretty similar to [Voyager](https://github.com/aeharding/voyager). There are a bunch of problems that Voyager had already solved that I was able to solve very quickly by looking at their codebase. Special thanks to [aeharding](https://github.com/aeharding) for answering many of my questions. I also regularly test Blorp against Voyager to ensure I deliver the quality of app that Blorp users deserve.
+* [Lay](https://bsky.app/profile/awfukellay.bsky.social) for designing the logo and banner art.
 * The PieFed team for their support and quickly resolving any and all feedback I brought them.
 
 ## 📄 License
