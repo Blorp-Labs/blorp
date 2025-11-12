@@ -83,6 +83,11 @@ docker run -d \
 Want to ask questions, share feedback, or just chat with other Blorp users? Head over to our community at  
 [lemmy.zip/c/blorp](https://lemmy.zip/c/blorp).
 
+## ❤️ Special thanks to 
+
+* [Lay](https://bsky.app/profile/awfukellay.bsky.social) for designing the logo and banner art.
+* The PieFed team for their support and quickly resolving any and all feedback I brought them.
+
 ## 📚 Stack
 
 * [React](https://react.dev/) – The library for web and native user interfaces
@@ -92,11 +97,6 @@ Want to ask questions, share feedback, or just chat with other Blorp users? Head
 * [Zustand](https://github.com/pmndrs/zustand/) – Bear necessities for state management in React
 * [TanStack Query](https://tanstack.com/query/docs) – Powerful asynchronous state management for TS/JS, React, Solid, Vue, Svelte and Angular
 * [TanStack Virtual](https://tanstack.com/virtual/latest) – Headless UI for Virtualizing Large Element Lists
-
-## ❤️ Special thanks to 
-
-* [Lay](https://bsky.app/profile/awfukellay.bsky.social) for designing the logo and banner art.
-* The PieFed team for their support and quickly resolving any and all feedback I brought them.
 
 ## 📄 License
 
