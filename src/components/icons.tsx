@@ -7,6 +7,7 @@ export {
   IoChatbubbleOutline as MessageOutline,
   IoPerson as Person,
   IoSend as Send,
+  IoCheckmarkDoneSharp as DoubleCheck,
 } from "react-icons/io5";
 export {
   LuScrollText as ScrollTextOutline,

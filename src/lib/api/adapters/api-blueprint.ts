@@ -674,6 +674,8 @@ export abstract class ApiBlueprint<C> {
     nextCursor: string | null;
   }>;
 
+  abstract markAllRead(): Promise<void>;
+
   abstract markReplyRead(form: Forms.MarkReplyRead): Promise<void>;
 
   abstract markMentionRead(form: Forms.MarkMentionRead): Promise<void>;
