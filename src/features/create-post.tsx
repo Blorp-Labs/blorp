@@ -227,7 +227,7 @@ function useDraftFromUrl({
       }
       patchDraft(draftId, updateDraft);
     }
-    if (title || draft || body || nsfw) {
+    if (title || url || body || nsfw) {
       removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
     }
   }, [
