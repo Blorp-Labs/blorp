@@ -250,6 +250,7 @@ export const resolveObjectResponseSchema = z.object({
   post: postSchema.nullable(),
   community: communitySchema.nullable(),
   user: personSchema.nullable(),
+  comment: commentSchema.nullable(),
 });
 
 export namespace Schemas {

@@ -1115,16 +1115,18 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
-    const { post, community, person } = await this.client.resolveObject(
-      {
-        q: form.q,
-      },
-      options,
-    );
+    const { post, community, person, comment } =
+      await this.client.resolveObject(
+        {
+          q: form.q,
+        },
+        options,
+      );
     return {
       post: post ? convertPost(post) : null,
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
+      comment: comment ? convertComment(comment) : null,
     };
   }
 

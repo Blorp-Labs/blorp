@@ -1922,11 +1922,12 @@ export class PieFedApi implements ApiBlueprint<null> {
     );
 
     try {
-      const { post, community, person } = z
+      const { post, community, person, comment } = z
         .object({
-          post: pieFedPostViewSchema.nullable().optional(),
-          community: pieFedCommentViewSchema.nullable().optional(),
-          person: pieFedPersonViewSchema.nullable().optional(),
+          post: pieFedPostViewSchema.nullish(),
+          community: pieFedCommentViewSchema.nullish(),
+          person: pieFedPersonViewSchema.nullish(),
+          comment: pieFedCommentViewSchema.nullish(),
         })
         .parse(json);
 
@@ -1934,6 +1935,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
+        comment: comment ? convertComment(comment) : null,
       };
     } catch (err) {
       console.error(err);
