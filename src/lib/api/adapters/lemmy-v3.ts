@@ -272,6 +272,7 @@ function convertReply(replyView: lemmyV3.CommentReplyView): Schemas.Reply {
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -296,6 +297,7 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
     createdAt: replyView.person_mention.published,
     id: replyView.person_mention.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,

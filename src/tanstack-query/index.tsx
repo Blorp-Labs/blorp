@@ -12,7 +12,7 @@ import { queryClient } from "./query-client";
 
 // List the last reason for bumping the key:
 // Caching creator profiles when fetching comments
-const REACT_QUERY_CACHE_VERSON = 9;
+const REACT_QUERY_CACHE_VERSON = 10;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;

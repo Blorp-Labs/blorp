@@ -606,6 +606,7 @@ function convertReply(
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -656,6 +657,7 @@ function convertMention(
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,

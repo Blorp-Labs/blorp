@@ -152,7 +152,15 @@ function CommentSortBar() {
   );
 }
 
-function useResolveComment(pathOrApId: string | undefined) {
+/**
+ * For backwards compatibility, comments have to be resolvable via
+ * ../comment/[comment.child], but moving fowards, they will be resolve
+ * via ../comment/[commentApId]
+ */
+function useResolveComment(pathOrApId: string | undefined): {
+  commentId: string | undefined;
+  highlightCommentId: string | undefined;
+} {
   const decoded = pathOrApId ? decodeURIComponent(pathOrApId) : undefined;
 
   const { apId, commentId, highlightCommentId } = useMemo(() => {
@@ -197,7 +205,8 @@ function useResolveComment(pathOrApId: string | undefined) {
     if (highlightCommentId) {
       return {
         highlightCommentId,
-        commentId: commentId ?? highlightCommentId,
+        commentId:
+          commentId && commentId !== "0" ? commentId : highlightCommentId,
       };
     }
     return {

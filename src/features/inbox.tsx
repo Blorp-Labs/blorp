@@ -43,6 +43,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../components/ui/tooltip";
+import { encodeApId } from "../lib/api/utils";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -78,11 +79,6 @@ function Mention({
   noBorder?: boolean;
 }) {
   const markRead = useMarkPersonMentionRead();
-  const path = mention.path.split(".");
-  const parent = path.at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, mention.commentId]
-    .filter(Boolean)
-    .join(".");
   return (
     <ContentGutters className="px-0">
       <div className={cn("flex-1 max-md:px-3.5", !noBorder && "border-b")}>
@@ -102,8 +98,8 @@ function Mention({
               to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
               params={{
                 communityName: mention.communitySlug,
-                post: encodeURIComponent(mention.postApId),
-                comment: newPath,
+                post: encodeApId(mention.postApId),
+                comment: encodeApId(mention.commentApId),
               }}
               onClickCapture={() => {
                 markRead.mutate({
@@ -161,9 +157,6 @@ function Reply({
   const markRead = useMarkReplyRead();
   const path = replyView.path.split(".");
   const parent = path.at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, replyView.commentId]
-    .filter(Boolean)
-    .join(".");
   const hasParent = parent && parent !== "0";
   return (
     <ContentGutters className="px-0">
@@ -184,8 +177,8 @@ function Reply({
               to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
               params={{
                 communityName: replyView.communitySlug,
-                post: encodeURIComponent(replyView.postApId),
-                comment: newPath,
+                post: encodeApId(replyView.postApId),
+                comment: encodeApId(replyView.commentApId),
               }}
               onClickCapture={() => {
                 markRead.mutate({

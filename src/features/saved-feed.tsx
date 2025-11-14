@@ -55,11 +55,6 @@ function Comment({ path }: { path: string }) {
     return null;
   }
 
-  const parent = path.split(".").at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, commentView.id]
-    .filter(Boolean)
-    .join(".");
-
   return (
     <Link
       className="border-b pb-4 mt-4"
@@ -67,7 +62,7 @@ function Comment({ path }: { path: string }) {
       params={{
         communityName: commentView.communitySlug,
         post: encodeApId(commentView.postApId),
-        comment: newPath,
+        comment: encodeApId(commentView.apId),
       }}
     >
       <MarkdownRenderer markdown={commentView.body} disableLinks />
