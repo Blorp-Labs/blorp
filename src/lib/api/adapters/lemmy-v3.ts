@@ -8,6 +8,7 @@ import {
   INIT_PAGE_TOKEN,
   Errors,
   Software,
+  resolveObjectResponseSchema,
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
@@ -1124,12 +1125,12 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         },
         options,
       );
-    return {
+    return resolveObjectResponseSchema.parse({
       post: post ? convertPost(post) : null,
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
       comment: comment ? convertComment(comment) : null,
-    };
+    });
   }
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {

@@ -249,10 +249,29 @@ export const slugSchema = z.custom<`${string}@${string}`>((val) => {
 });
 
 export const resolveObjectResponseSchema = z.object({
-  post: postSchema.nullable(),
-  community: communitySchema.nullable(),
-  user: personSchema.nullable(),
-  comment: commentSchema.nullable(),
+  post: postSchema
+    .pick({
+      apId: true,
+      communitySlug: true,
+    })
+    .nullable(),
+  community: communitySchema
+    .pick({
+      slug: true,
+    })
+    .nullable(),
+  user: personSchema
+    .pick({
+      apId: true,
+    })
+    .nullable(),
+  comment: commentSchema
+    .pick({
+      id: true,
+      apId: true,
+      path: true,
+    })
+    .nullable(),
 });
 
 export namespace Schemas {

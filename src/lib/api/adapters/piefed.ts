@@ -5,6 +5,7 @@ import {
   Forms,
   INIT_PAGE_TOKEN,
   RequestOptions,
+  resolveObjectResponseSchema,
   Schemas,
   Software,
 } from "./api-blueprint";
@@ -1933,12 +1934,12 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return {
+      return resolveObjectResponseSchema.parse({
         post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
         comment: comment ? convertComment(comment) : null,
-      };
+      });
     } catch (err) {
       console.error(err);
       throw err;
