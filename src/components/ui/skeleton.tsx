@@ -7,7 +7,7 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     >
       {/* Shimmer overlay */}
-      <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-black/5 to-transparent" />
+      <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-muted via-neutral-300/60 dark:via-neutral-700/50 to-muted" />
     </div>
   );
 }
