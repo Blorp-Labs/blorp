@@ -125,8 +125,8 @@ function useCommentActions({
         `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
         {
           communityName,
-          post: encodeURIComponent(postApId),
-          comment: String(commentView.id),
+          post: encodeApId(postApId),
+          comment: encodeApId(commentView.apId),
         },
       )
     : null;
@@ -438,15 +438,15 @@ export function PostComment({
       break;
   }
 
-  const parentLink = useMemo(() => {
+  const hasParent = useMemo(() => {
     if (level > 0 || !comment || !singleCommentThread) {
-      return undefined;
+      return false;
     }
     const parent = comment.path.split(".").slice(-2);
     if (parent.length < 1 || parent?.includes("0")) {
-      return undefined;
+      return false;
     }
-    return parent.join(".");
+    return true;
   }, [level, comment, singleCommentThread]);
 
   const open =
@@ -495,7 +495,7 @@ export function PostComment({
     >
       {singleCommentThread && level === 0 && (
         <div className="flex flex-row gap-2 items-center mb-6">
-          {parentLink && (
+          {hasParent && commentView && (
             <Button
               size="sm"
               variant="ghost"
@@ -507,7 +507,7 @@ export function PostComment({
                 params={{
                   communityName,
                   post: encodeApId(postApId),
-                  comment: parentLink,
+                  comment: encodeApId(commentView.apId),
                 }}
                 replace
               >
@@ -533,7 +533,7 @@ export function PostComment({
               View all comments
             </Link>
           </Button>
-          {!parentLink && <div className="h-px flex-1 bg-border" />}
+          {!hasParent && <div className="h-px flex-1 bg-border" />}
         </div>
       )}
       <Collapsible
@@ -667,13 +667,13 @@ export function PostComment({
                 />
               ))}
 
-              {comment && sorted.length < rest.imediateChildren ? (
+              {commentView && sorted.length < rest.imediateChildren ? (
                 <Link
                   to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
                   params={{
-                    communityName: comment.communitySlug,
-                    post: encodeURIComponent(comment.postApId),
-                    comment: String(comment.id),
+                    communityName: commentView.communitySlug,
+                    post: encodeURIComponent(commentView.postApId),
+                    comment: commentView?.apId,
                   }}
                   className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
                 >

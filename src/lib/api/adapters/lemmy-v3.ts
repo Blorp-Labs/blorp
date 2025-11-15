@@ -8,6 +8,7 @@ import {
   INIT_PAGE_TOKEN,
   Errors,
   Software,
+  resolveObjectResponseSchema,
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
@@ -272,6 +273,7 @@ function convertReply(replyView: lemmyV3.CommentReplyView): Schemas.Reply {
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -296,6 +298,7 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
     createdAt: replyView.person_mention.published,
     id: replyView.person_mention.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -1115,17 +1118,19 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
-    const { post, community, person } = await this.client.resolveObject(
-      {
-        q: form.q,
-      },
-      options,
-    );
-    return {
+    const { post, community, person, comment } =
+      await this.client.resolveObject(
+        {
+          q: form.q,
+        },
+        options,
+      );
+    return resolveObjectResponseSchema.parse({
       post: post ? convertPost(post) : null,
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
-    };
+      comment: comment ? convertComment(comment) : null,
+    });
   }
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {

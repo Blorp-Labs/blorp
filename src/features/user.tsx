@@ -61,11 +61,6 @@ const Comment = memo(function Comment({ path }: { path: string }) {
 
   const postTitle = commentView.postTitle ?? postView?.title;
 
-  const parent = path.split(".").at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, commentView.id]
-    .filter(Boolean)
-    .join(".");
-
   return (
     <ContentGutters>
       <Link
@@ -73,7 +68,7 @@ const Comment = memo(function Comment({ path }: { path: string }) {
         params={{
           communityName: commentView.communitySlug,
           post: encodeApId(commentView.postApId),
-          comment: newPath,
+          comment: encodeApId(commentView.apId),
         }}
         className="py-2 border-b flex-1 overflow-hidden text-sm flex flex-col gap-1.5"
       >

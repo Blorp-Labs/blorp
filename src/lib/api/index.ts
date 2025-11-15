@@ -2477,12 +2477,17 @@ export function useAvailableSorts() {
   });
 }
 
-export function useResolveObject(query: string) {
+export function useResolveObject(query: string | undefined) {
   const { api, queryKeyPrefix } = useApiClients();
   return useQuery({
     queryKey: [queryKeyPrefix, "resolveObject" + query],
-    queryFn: async ({ signal }) =>
-      await (await api).resolveObject({ q: query }, { signal }),
+    queryFn: async ({ signal }) => {
+      if (!query) {
+        throw new Error("This shouldn't happen");
+      }
+      return await (await api).resolveObject({ q: query }, { signal });
+    },
+    enabled: !!query,
   });
 }
 

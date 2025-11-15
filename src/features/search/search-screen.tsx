@@ -45,6 +45,7 @@ import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
+import { encodeApId } from "@/src/lib/api/utils";
 
 const EMPTY_ARR: never[] = [];
 
@@ -97,11 +98,6 @@ function Comment({ commentPath }: { commentPath: string }) {
     return null;
   }
 
-  const path = comment.path.split(".");
-  const parent = path.at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, comment.id]
-    .filter(Boolean)
-    .join(".");
   return (
     <ContentGutters className="px-0">
       <div className="flex-1">
@@ -116,8 +112,8 @@ function Comment({ commentPath }: { commentPath: string }) {
               to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
               params={{
                 communityName: comment.communitySlug,
-                post: encodeURIComponent(comment.postApId),
-                comment: newPath,
+                post: encodeApId(comment.postApId),
+                comment: encodeApId(comment.apId),
               }}
             >
               <div className="flex flex-row flex-wrap">

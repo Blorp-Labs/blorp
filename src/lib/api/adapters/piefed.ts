@@ -5,6 +5,7 @@ import {
   Forms,
   INIT_PAGE_TOKEN,
   RequestOptions,
+  resolveObjectResponseSchema,
   Schemas,
   Software,
 } from "./api-blueprint";
@@ -606,6 +607,7 @@ function convertReply(
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -656,6 +658,7 @@ function convertMention(
     createdAt: replyView.comment_reply.published,
     id: replyView.comment_reply.id,
     commentId: replyView.comment.id,
+    commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
     communitySlug: createSlug({
       apId: community.actor_id,
@@ -1922,19 +1925,21 @@ export class PieFedApi implements ApiBlueprint<null> {
     );
 
     try {
-      const { post, community, person } = z
+      const { post, community, person, comment } = z
         .object({
-          post: pieFedPostViewSchema.nullable().optional(),
-          community: pieFedCommentViewSchema.nullable().optional(),
-          person: pieFedPersonViewSchema.nullable().optional(),
+          post: pieFedPostViewSchema.nullish(),
+          community: pieFedCommentViewSchema.nullish(),
+          person: pieFedPersonViewSchema.nullish(),
+          comment: pieFedCommentViewSchema.nullish(),
         })
         .parse(json);
 
-      return {
+      return resolveObjectResponseSchema.parse({
         post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
-      };
+        comment: comment ? convertComment(comment) : null,
+      });
     } catch (err) {
       console.error(err);
       throw err;
