@@ -11,14 +11,20 @@ import {
   usePersonMentions,
   useReplies,
 } from "@/src/lib/api/index";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonToolbar,
+} from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
 import { useMemo } from "react";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
-import { useMedia } from "../lib/hooks";
+import { useConfirmationAlert, useMedia } from "../lib/hooks";
 import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
 import { ActionMenu } from "../components/adaptable/action-menu";
@@ -32,6 +38,11 @@ import LoginRequired from "./login-required";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Button } from "../components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -293,6 +304,8 @@ export default function Inbox() {
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
+  const confirmationAlrt = useConfirmationAlert();
+
   if (!isLoggedIn) {
     return <LoginRequired />;
   }
@@ -307,6 +320,16 @@ export default function Inbox() {
             <ToolbarTitle numRightIcons={1}>Inbox</ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
+            <IonButton
+              onClick={() =>
+                confirmationAlrt({
+                  message: "Mark all replies and mentions as read",
+                }).then(() => markAllRead.mutate())
+              }
+              className="md:hidden"
+            >
+              <DoubleCheck className="text-2xl" />
+            </IonButton>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
@@ -353,13 +376,20 @@ export default function Inbox() {
                   <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
                   <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
                 </ToggleGroup>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => markAllRead.mutate()}
-                >
-                  <DoubleCheck />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => markAllRead.mutate()}
+                    >
+                      <DoubleCheck />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end">
+                    Mark all replies and mentions as read
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <></>
             </ContentGutters>,
