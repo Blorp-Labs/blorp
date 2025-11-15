@@ -1753,7 +1753,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async markAllRead() {
-    await this.post("/comment/mark_all_as_read", {});
+    await this.post("/user/mark_all_as_read", {});
   }
 
   async markReplyRead(form: Forms.MarkReplyRead) {
