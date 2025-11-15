@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://blorpblorp.xyz/" target="_blank" rel="noopener noreferrer">
-    <img src="https://github.com/user-attachments/assets/ce807ce1-4095-40df-8033-1f67099a2321" alt="Blorp logo">
+    <img src="https://github.com/user-attachments/assets/1367e75e-0436-4d6a-8658-8057bb33d841" alt="Blorp logo">
   </a>
 </p>
 
