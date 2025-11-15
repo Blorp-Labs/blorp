@@ -29,13 +29,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 const EMPTY_ARR: never[] = [];
 
 const NO_ITEMS = "NO_ITEMS";
-type Item =
-  | string
-  | {
-      path: string;
-      postId: number;
-      creatorId: number;
-    };
+type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -106,8 +100,6 @@ export default function SavedFeed() {
         return postIds;
       case "comments":
         return commentViews;
-      default:
-        return [...postIds, ...commentViews];
     }
   }, [posts.data?.pages, comments.data?.pages, type]);
 
@@ -187,13 +179,13 @@ export default function SavedFeed() {
                 );
               }
 
-              if (_.isString(item)) {
+              if (type === "posts") {
                 return <Post apId={item} />;
               }
 
               return (
                 <ContentGutters>
-                  <Comment path={item.path} />
+                  <Comment path={item} />
                   <></>
                 </ContentGutters>
               );
