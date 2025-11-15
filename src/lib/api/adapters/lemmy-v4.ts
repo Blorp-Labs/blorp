@@ -687,6 +687,10 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return {} as any;
   }
 
+  async markAllRead() {
+    await this.client.markAllNotificationsAsRead();
+  }
+
   async markReplyRead(form: Forms.MarkReplyRead) {
     await this.client.markCommentReplyAsRead({
       comment_reply_id: form.id,
