@@ -672,8 +672,8 @@ export function PostComment({
                   to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
                   params={{
                     communityName: commentView.communitySlug,
-                    post: encodeURIComponent(commentView.postApId),
-                    comment: commentView?.apId,
+                    post: encodeApId(commentView.postApId),
+                    comment: encodeApId(commentView?.apId),
                   }}
                   className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
                 >
