@@ -35,6 +35,8 @@ import { useMedia } from "@/src/lib/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
+import { applyFilters } from "@/src/lib/filters/filter";
+import { useContentFiltersStore } from "@/src/stores/content-filters";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -834,6 +836,27 @@ export function PostCard(props: PostProps) {
         : false;
 
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+
+  const filterFiles = useContentFiltersStore((s) => s.filters).map(
+    (f) => f.file,
+  );
+
+  if (post) {
+    for (const file of filterFiles) {
+      const rule = applyFilters(
+        {
+          title: post.title,
+          body: post.body ?? "",
+          communityName: post.communitySlug,
+          userName: post.creatorSlug,
+        },
+        file,
+      );
+      if (rule) {
+        return <Notice>{rule.name ?? "Hidden"}</Notice>;
+      }
+    }
+  }
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
