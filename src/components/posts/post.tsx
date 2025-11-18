@@ -35,6 +35,8 @@ import { useMedia } from "@/src/lib/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
+import { Badge } from "../ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -439,6 +441,26 @@ function LargePostCard({
             <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
               NSFW
             </div>
+          )}
+          {post.altText && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  className="absolute bottom-1.5 right-1.5 z-10"
+                  variant="outline"
+                >
+                  Alt
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                align="end"
+                className="max-w-sm flex flex-col gap-1"
+              >
+                <span className="font-bold">Alt Text</span>
+                <p>{post.altText}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
         </Link>
       )}
