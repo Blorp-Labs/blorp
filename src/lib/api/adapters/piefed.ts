@@ -142,6 +142,21 @@ const pieFedPersonViewSchema = z.object({
   }),
 });
 
+export const piefedPostPoll = z.object({
+  choices: z.array(
+    z.object({
+      choice_text: z.string(),
+      id: z.number(),
+      num_votes: z.number(),
+      sort_order: z.number(),
+    }),
+  ),
+  end_poll: z.string(),
+  local_only: z.boolean(),
+  mode: z.enum(["single", "multiple"]),
+  my_votes: z.array(z.number()).nullish(),
+});
+
 export const pieFedPostSchema = z.object({
   alt_text: z.string().nullable().optional(),
   ap_id: z.string(),
@@ -163,6 +178,7 @@ export const pieFedPostSchema = z.object({
   url: z.string().nullable().optional(),
   //user_id: z.number(),
   locked: z.boolean().nullish(),
+  poll: piefedPostPoll.nullish(),
 });
 
 export const pieFedPostViewSchema = z.object({
@@ -417,6 +433,22 @@ export const pieFedCrosspostSchema = z.object({
   //unread_comments: z.number(),
 });
 
+function convertPoll(
+  poll: z.infer<typeof piefedPostPoll>,
+): Schemas.Post["poll"] {
+  return {
+    choices: poll.choices.map((choise) => ({
+      text: choise.choice_text,
+      id: choise.id,
+      numVotes: choise.num_votes,
+    })),
+    endDate: poll.end_poll,
+    localOnly: poll.local_only,
+    mode: poll.mode,
+    myVotes: poll.my_votes ?? undefined,
+  };
+}
+
 function convertFlair(flair: z.infer<typeof pieFedFlairSchema>): Schemas.Flair {
   return {
     id: flair.id,
@@ -480,6 +512,7 @@ function convertPost({
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
     flairs: postView.flair_list?.map((flair) => ({ id: flair.id })) ?? null,
+    poll: postView.post.poll ? convertPoll(postView.post.poll) : undefined,
   };
 }
 
@@ -1155,6 +1188,20 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
       return convertPost({ postView: data.post_view });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async votePostPoll(form: Forms.PostPollVote) {
+    const json = await this.post("/post/poll_vote", {
+      post_id: form.postId,
+      choice_id: form.choiceId,
+    });
+    try {
+      const data = pieFedPostViewSchema.parse(json);
+      return convertPost({ postView: data });
     } catch (err) {
       console.log(err);
       throw err;

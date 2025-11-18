@@ -585,6 +585,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     };
   }
 
+  async votePostPoll() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async savePost(form: Forms.SavePost) {
     const { post_view } = await this.client.savePost({
       post_id: form.postId,
