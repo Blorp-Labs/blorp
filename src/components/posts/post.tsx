@@ -37,6 +37,7 @@ import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { PostPollEmbed } from "./embeds/post-poll-embed";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -464,6 +465,8 @@ function LargePostCard({
           )}
         </Link>
       )}
+
+      {post.poll && <PostPollEmbed post={post} />}
 
       {showArticle && (
         <PostArticleEmbed

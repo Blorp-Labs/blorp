@@ -39,6 +39,21 @@ const personSchema = z.object({
   postCount: z.number().nullable().optional(),
   isBanned: z.boolean(),
 });
+
+export const postPollSchema = z.object({
+  choices: z.array(
+    z.object({
+      text: z.string(),
+      id: z.number(),
+      numVotes: z.number(),
+    }),
+  ),
+  endDate: z.string(),
+  localOnly: z.boolean(),
+  mode: z.enum(["single", "multiple"]),
+  myVotes: z.array(z.number()).optional(),
+});
+
 export const postSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
@@ -90,6 +105,7 @@ export const postSchema = z.object({
   optimisticRead: z.boolean().optional(),
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
+  poll: postPollSchema.optional(),
 });
 const communitySchema = z.object({
   createdAt: z.string(),
@@ -351,6 +367,11 @@ export namespace Forms {
     featureType: PostFeatureType;
   };
 
+  export type PostPollVote = {
+    postId: number;
+    choiceId: number[];
+  };
+
   export type SavePost = {
     postId: number;
     save: boolean;
@@ -579,6 +600,8 @@ export abstract class ApiBlueprint<C> {
       }[];
     }
   >;
+
+  abstract votePostPoll(form: Forms.PostPollVote): Promise<Schemas.Post>;
 
   abstract savePost(form: Forms.SavePost): Promise<Schemas.Post>;
 

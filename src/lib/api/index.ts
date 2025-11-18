@@ -14,7 +14,7 @@ import {
 } from "../../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostsStore } from "../../stores/posts";
+import { usePostFromStore, usePostsStore } from "../../stores/posts";
 import { useSettingsStore } from "../../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../../stores/comments";
@@ -2198,6 +2198,57 @@ export function useBlockCommunity(options?: {
         queryClient.invalidateQueries({
           queryKey: postsQueryKey,
         });
+      }
+    },
+  });
+}
+
+export function useVotePostPoll(apId: string) {
+  const queryClient = useQueryClient();
+  const { api } = useApiClients();
+  const post = usePostFromStore(apId);
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  const postsQueryKey = usePostsKey({
+    savedOnly: true,
+  });
+
+  return useMutation({
+    mutationFn: async (form: Forms.PostPollVote) =>
+      (await api).votePostPoll(form),
+    onMutate: ({ choiceId }) => {
+      if (post?.poll) {
+        patchPost(apId, getCachePrefixer(), {
+          ...post,
+          poll: {
+            ...post.poll,
+            myVotes: choiceId,
+          },
+        });
+      }
+    },
+    onSuccess: (post) => {
+      patchPost(apId, getCachePrefixer(), {
+        ...post,
+      });
+      queryClient.invalidateQueries({
+        queryKey: postsQueryKey,
+      });
+    },
+    onError: (err) => {
+      if (post?.poll) {
+        patchPost(apId, getCachePrefixer(), {
+          poll: {
+            ...post.poll,
+            myVotes: undefined,
+          },
+        });
+      }
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error("Couldn't cast poll vote");
       }
     },
   });
