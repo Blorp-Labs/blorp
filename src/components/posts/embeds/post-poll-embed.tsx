@@ -8,6 +8,7 @@ import { Button } from "../../ui/button";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useVotePostPoll } from "@/src/lib/api/post-mutations";
+import { useRequireAuth } from "../../auth-context";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {
@@ -18,28 +19,36 @@ function PollItem({
   mostVotedOption,
   pct,
   text,
+  showResults,
 }: {
   mostVotedOption: boolean;
   pct: number;
   text: string;
+  showResults: boolean;
 }) {
   return (
     <>
-      <div
-        className={cn(
-          "rounded-md absolute -z-10 left-0 inset-y-0 bg-secondary transition-[width]",
-          mostVotedOption && "bg-brand-secondary",
-        )}
-        style={{ width: `${pct * 100}%` }}
-      />
+      {showResults && (
+        <div
+          className={cn(
+            "absolute -z-10 left-0 inset-y-0 bg-secondary transition-[width]",
+            mostVotedOption && "bg-brand-secondary",
+          )}
+          style={{ width: `${pct * 100}%` }}
+        />
+      )}
       <span className="relative">{text}</span>
-      <span className="relative">{formatPercent(pct)}%</span>
+      {showResults && <span className="relative">{formatPercent(pct)}%</span>}
     </>
   );
 }
 
 export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const vote = useVotePostPoll(post.apId);
+  const [myChoices, setMyChoises] = useState<number[]>([]);
+  const id = useId();
+  const requireAuth = useRequireAuth();
+
   if (!post.poll) {
     return null;
   }
@@ -47,14 +56,18 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const totalVotes = _.sum(numVotesArr);
   const mosteVotedOption = Math.max(...numVotesArr);
 
-  const [myChoices, setMyChoises] = useState<number[]>([]);
-  const id = useId();
+  const ended = dayjs(post.poll.endDate).isBefore(dayjs());
+
+  const myVotes = post.poll.myVotes;
+  const showResults = ended || Boolean(myVotes && myVotes.length);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        vote.mutate({ postId: post.id, choiceId: myChoices });
+        requireAuth().then(() =>
+          vote.mutate({ postId: post.id, choiceId: myChoices }),
+        );
       }}
       className="p-2 border rounded-md flex flex-col gap-1"
     >
@@ -65,10 +78,11 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
             return (
               <div
                 key={choice.id}
-                className="flex flex-row items-center border pl-1 pr-3 py-1.5 rounded-md relative"
+                className="flex flex-row items-center border px-3 py-1.5 rounded-md relative overflow-hidden"
               >
-                {!post.poll?.myVotes && (
+                {!myVotes && !ended && (
                   <Checkbox
+                    className="mr-2"
                     id={id + choice.id}
                     checked={myChoices.includes(choice.id)}
                     onCheckedChange={(val) =>
@@ -84,9 +98,10 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                 )}
                 <label
                   htmlFor={id + choice.id}
-                  className="flex flex-row flex-1 justify-between pl-2"
+                  className="flex flex-row flex-1 justify-between"
                 >
                   <PollItem
+                    showResults={showResults}
                     mostVotedOption={
                       !!mosteVotedOption && mosteVotedOption === choice.numVotes
                     }
@@ -102,6 +117,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
 
       {post.poll.mode === "single" && (
         <RadioGroup
+          disabled={ended}
           className="flex flex-col gap-2"
           value={myChoices[0] ? String(myChoices[0]) : null}
           onValueChange={(val) => setMyChoises([_.toNumber(val)])}
@@ -111,9 +127,9 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
             return (
               <div
                 key={choice.id}
-                className="flex flex-row items-center gap-2 border px-3 py-1.5 rounded-md relative"
+                className="flex flex-row items-center gap-2 border px-2.5 py-1.5 rounded-md relative overflow-hidden"
               >
-                {!post.poll?.myVotes && (
+                {!myVotes && !ended && (
                   <RadioGroupItem
                     value={String(choice.id)}
                     className="rounded-md flex relative"
@@ -125,6 +141,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                   className="flex flex-row flex-1 justify-between"
                 >
                   <PollItem
+                    showResults={showResults}
                     mostVotedOption={
                       !!mosteVotedOption && mosteVotedOption === choice.numVotes
                     }
@@ -143,7 +160,8 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
       )}
 
       <span className="text-sm text-muted-foreground">
-        {totalVotes} votes / {dayjs(post.poll.endDate).format("lll")}
+        {totalVotes} votes / {ended ? "Ended " : "Ends "}
+        {dayjs(post.poll.endDate).format("lll")}
       </span>
     </form>
   );
