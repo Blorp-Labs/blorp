@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CacheKey, CachePrefixer } from "./auth";
+import { CacheKey, CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 
@@ -143,3 +143,10 @@ export const usePostsStore = create<SortsStore>()(
 );
 
 sync(usePostsStore);
+
+export function usePostFromStore(apId?: string) {
+  const cachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return usePostsStore((s) =>
+    apId ? s.posts[cachePrefixer()(apId)]?.data : undefined,
+  );
+}
