@@ -24,13 +24,30 @@ const queries = {
   xxl: "(min-width: 96rem)",
 } as const;
 
+const NO_MATCH = {
+  matches: false,
+};
+
 // 2) create the MediaQueryList objects once
-const mqls: Record<keyof typeof queries, MediaQueryList> = {
-  sm: window.matchMedia(queries.sm),
-  md: window.matchMedia(queries.md),
-  lg: window.matchMedia(queries.lg),
-  xl: window.matchMedia(queries.xl),
-  xxl: window.matchMedia(queries.xxl),
+const mqls: Record<
+  keyof typeof queries,
+  Partial<MediaQueryList> & { matches: boolean }
+> = {
+  sm: _.isFunction(window.matchMedia)
+    ? window.matchMedia(queries.sm)
+    : NO_MATCH,
+  md: _.isFunction(window.matchMedia)
+    ? window.matchMedia(queries.md)
+    : NO_MATCH,
+  lg: _.isFunction(window.matchMedia)
+    ? window.matchMedia(queries.lg)
+    : NO_MATCH,
+  xl: _.isFunction(window.matchMedia)
+    ? window.matchMedia(queries.xl)
+    : NO_MATCH,
+  xxl: _.isFunction(window.matchMedia)
+    ? window.matchMedia(queries.xxl)
+    : NO_MATCH,
 };
 
 // 3) compute the full snapshot
@@ -68,8 +85,11 @@ for (const mql of Object.values(mqls)) {
       listeners.forEach((cb) => cb());
     }
   };
-  if (mql.addEventListener) mql.addEventListener("change", onChange);
-  else mql.addListener(onChange);
+  if (mql.addEventListener) {
+    mql.addEventListener("change", onChange);
+  } else if (_.isFunction(mql.addListener)) {
+    mql.addListener(onChange);
+  }
 }
 
 // 8) export subscribe & snapshot

@@ -4,6 +4,8 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
+import { useIsActiveRoute } from "../lib/hooks";
+import { useEffect } from "react";
 
 type RecentCommunityStore = {
   recentlyVisited: Schemas.Community[];
@@ -64,3 +66,13 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
 );
 
 sync(useRecentCommunitiesStore);
+
+export function useUpdateRecentCommunity(communityView?: Schemas.Community) {
+  const isActive = useIsActiveRoute();
+  const updateRecent = useRecentCommunitiesStore((s) => s.update);
+  useEffect(() => {
+    if (isActive && communityView) {
+      updateRecent(communityView);
+    }
+  }, [isActive, updateRecent, communityView]);
+}
