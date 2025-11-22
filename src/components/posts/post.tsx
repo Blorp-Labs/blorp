@@ -22,7 +22,6 @@ import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import _ from "lodash";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
-import removeMd from "remove-markdown";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -37,6 +36,7 @@ import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { removeMd } from "../markdown/remove-md";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (

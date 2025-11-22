@@ -7729,7 +7729,6 @@ __metadata:
     react-textarea-autosize: "npm:^8.5.9"
     react-zoom-pan-pinch: "npm:^3.7.0"
     remove-focus-outline: "npm:^1.2.1"
-    remove-markdown: "npm:^0.6.2"
     sonner: "npm:^2.0.3"
     storybook: "npm:^9.0.12"
     tailwind-merge: "npm:^3.3.1"
@@ -14493,13 +14492,6 @@ __metadata:
   version: 1.2.1
   resolution: "remove-focus-outline@npm:1.2.1"
   checksum: 10c0/907da859d3fc49672a46f4d931e6964eb445a21ec43247b3f510d7572c28fa7f8a3080d20f94dd662b7340e4497486965589956357d0a109b564eb9b5d0162a6
-  languageName: node
-  linkType: hard
-
-"remove-markdown@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "remove-markdown@npm:0.6.2"
-  checksum: 10c0/d26fb020b202f227877a29701fcbc96980af3c17001ae46f3253ba21307babcfa424006a207161f83ed04efe19fc9be6b084bd1308ef0b2217c59139e6ef6eb4
   languageName: node
   linkType: hard
 

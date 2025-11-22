@@ -14,9 +14,9 @@ import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import _ from "lodash";
 import { useMemo } from "react";
-import removeMd from "remove-markdown";
 import LoginRequired from "../login-required";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
+import { removeMd } from "@/src/components/markdown/remove-md";
 
 const EMPTY_ARR: never[] = [];
 
