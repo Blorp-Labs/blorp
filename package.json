@@ -189,7 +189,7 @@
     "jsdom": "^26.1.0",
     "license-checker": "^25.0.1",
     "lint-staged": "^15.3.0",
-    "oxlint": "^1.11.1",
+    "oxlint": "^1.29.0",
     "prettier": "3.4.1",
     "storybook": "^9.0.12",
     "terser": "^5.39.0",
