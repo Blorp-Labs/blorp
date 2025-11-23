@@ -327,7 +327,14 @@ function useCommentsKey() {
   };
 }
 
-export function useComments(form: Forms.GetComments) {
+export function useComments(
+  form: Forms.GetComments,
+  options?: {
+    enabled?: boolean;
+  },
+) {
+  const enabled = options?.enabled ?? true;
+
   const commentSort = useFiltersStore((s) => s.commentSort);
   const sort = form.sort ?? commentSort;
   const { api } = useApiClients();
@@ -368,7 +375,7 @@ export function useComments(form: Forms.GetComments) {
         nextCursor,
       };
     },
-    enabled: !_.isNil(form.postApId) || !_.isNil(form.savedOnly),
+    enabled: enabled && (!_.isNil(form.postApId) || !_.isNil(form.savedOnly)),
     getNextPageParam: (data) => data.nextCursor,
     initialPageParam: INIT_PAGE_TOKEN,
     refetchOnMount: "always",

@@ -55,6 +55,8 @@ import { cn } from "../lib/utils";
 import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
+import { toast } from "sonner";
+import { useQueryToast } from "../tanstack-query/hooks";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -160,6 +162,7 @@ function CommentSortBar() {
 function useResolveComment(pathOrApId: string | undefined): {
   commentId: string | undefined;
   highlightCommentId: string | undefined;
+  status: "pending" | "error" | "success";
 } {
   const decoded = pathOrApId ? decodeURIComponent(pathOrApId) : undefined;
 
@@ -197,6 +200,9 @@ function useResolveComment(pathOrApId: string | undefined): {
   }, [decoded]);
 
   const object = useResolveObject(apId);
+  useQueryToast(object, {
+    error: "Couldn't resolve comment",
+  });
 
   if (apId) {
     const comment = object.data?.comment;
@@ -207,17 +213,20 @@ function useResolveComment(pathOrApId: string | undefined): {
         highlightCommentId,
         commentId:
           commentId && commentId !== "0" ? commentId : highlightCommentId,
+        status: object.status,
       };
     }
     return {
       commentId: undefined,
       highlightCommentId: undefined,
+      status: object.status,
     };
   }
 
   return {
     commentId,
     highlightCommentId,
+    status: "success",
   };
 }
 
@@ -238,9 +247,7 @@ export default function Post() {
 
   const decodedApId = apId ? decodeURIComponent(apId) : undefined;
 
-  const { commentId, highlightCommentId } = useResolveComment(commentPath);
-
-  const commentPathArr = commentPath?.split(".") ?? [];
+  const parentComment = useResolveComment(commentPath);
 
   const myUserId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.id;
@@ -262,21 +269,30 @@ export default function Post() {
     decodedApId ? s.posts[getCachePrefixer()(decodedApId)]?.data : null,
   );
 
-  const parentId = commentId ? +commentId : undefined;
+  const parentId = parentComment.commentId
+    ? +parentComment.commentId
+    : undefined;
 
-  const comments = useComments({
-    postApId: decodedApId,
-    parentId: parentId,
-  });
+  const comments = useComments(
+    {
+      postApId: decodedApId,
+      parentId: parentId,
+    },
+    {
+      enabled: parentComment.status === "success",
+    },
+  );
+
+  const isPending = comments.isPending || parentComment.status === "pending";
 
   const isReady = useDelayedReady(500);
 
   const allCommentPaths = useMemo(
     () =>
-      comments.data?.pages && isReady
+      comments.data?.pages && parentComment.status === "success" && isReady
         ? comments.data.pages.map((p) => p.comments).flat()
         : EMPTY_ARR,
-    [comments.data?.pages, isReady],
+    [comments.data?.pages, parentComment.status, isReady],
   );
 
   const allComments = useCommentsByPaths(allCommentPaths);
@@ -285,12 +301,12 @@ export default function Post() {
     if (!isReady) {
       return null;
     }
-    const map = buildCommentTree(allComments, commentId);
+    const map = buildCommentTree(allComments, parentComment.commentId);
     const topLevelItems = _.entries(map).sort(
       ([_id1, a], [_id2, b]) => a.sort - b.sort,
     );
     return { map, topLevelItems };
-  }, [allComments, isReady, commentId]);
+  }, [allComments, isReady, parentComment.commentId]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
@@ -427,7 +443,7 @@ export default function Post() {
               renderItem={({ item }) => (
                 <>
                   <MemoedPostComment
-                    highlightCommentId={highlightCommentId}
+                    highlightCommentId={parentComment.highlightCommentId}
                     postApId={decodedApId}
                     queryKeyParentId={parentId}
                     commentTree={item[1]}
@@ -443,7 +459,7 @@ export default function Post() {
                 </>
               )}
               placeholder={
-                comments.isPending || !isReady ? (
+                isPending || !isReady ? (
                   <ContentGutters className="px-0">
                     <CommentSkeleton />
                     <></>
