@@ -283,7 +283,10 @@ export default function Post() {
     },
   );
 
-  const isPending = comments.isPending || parentComment.status === "pending";
+  const isPending =
+    parentComment.status === "error"
+      ? false
+      : parentComment.status === "pending" || comments.isPending;
 
   const isReady = useDelayedReady(500);
 
