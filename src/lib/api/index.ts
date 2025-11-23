@@ -1562,10 +1562,15 @@ export function useMarkPriavteMessageRead() {
   });
 }
 
+function useRepliesQueryKey(form: Forms.GetReplies) {
+  const { queryKeyPrefix } = useApiClients();
+  return [...queryKeyPrefix, "getReplies", form];
+}
+
 export function useReplies(form: Forms.GetReplies) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const { api, queryKeyPrefix } = useApiClients();
-  const queryKey = [...queryKeyPrefix, "getReplies", form];
+  const { api } = useApiClients();
+  const queryKey = useRepliesQueryKey(form);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   return useThrottledInfiniteQuery({
@@ -1595,10 +1600,15 @@ export function useReplies(form: Forms.GetReplies) {
   });
 }
 
+function usePersonMentionsKey(form: Forms.GetMentions) {
+  const { queryKeyPrefix } = useApiClients();
+  return [...queryKeyPrefix, "getPersonMentions", form];
+}
+
 export function usePersonMentions(form: Forms.GetMentions) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const { api, queryKeyPrefix } = useApiClients();
-  const queryKey = [...queryKeyPrefix, "getPersonMentions", form];
+  const { api } = useApiClients();
+  const queryKey = usePersonMentionsKey(form);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   return useThrottledInfiniteQuery({
@@ -1858,15 +1868,100 @@ export function useFollowCommunity() {
   });
 }
 
+export function useMarkAllRead() {
+  const { api, queryKeyPrefix } = useApiClients();
+  const queryClient = useQueryClient();
+
+  const readMentionsKey = usePersonMentionsKey({ unreadOnly: false });
+  const unreadMentionsKey = usePersonMentionsKey({ unreadOnly: true });
+  const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
+  const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
+  const notificationCountQueryKey = useNotificationCountQueryKey();
+
+  return useMutation({
+    mutationFn: async () => (await api).markAllRead(),
+    onMutate: () => {
+      for (const key of [readRepliesKey, unreadRepliesKey]) {
+        const replies =
+          queryClient.getQueryData<
+            InfiniteData<{ replies: Schemas.Reply[] }, unknown>
+          >(key);
+        if (replies) {
+          const update = produce(replies, (prev) => {
+            for (const page of prev?.pages ?? []) {
+              for (const reply of page.replies) {
+                reply.read = true;
+              }
+            }
+          });
+          queryClient.setQueryData(key, update);
+        }
+      }
+      for (const key of [readMentionsKey, unreadMentionsKey]) {
+        const mentions =
+          queryClient.getQueryData<
+            InfiniteData<{ mentions: Schemas.Mention[] }, unknown>
+          >(key);
+        if (mentions) {
+          const update = produce(mentions, (prev) => {
+            for (const page of prev?.pages ?? []) {
+              for (const mention of page.mentions) {
+                mention.read = true;
+              }
+            }
+          });
+          queryClient.setQueryData(key, update);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationCountQueryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeyPrefix, "getReplies"],
+      });
+    },
+    onError: (err) => {
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error("Couldn't mark all read");
+      }
+    },
+  });
+}
+
 export function useMarkReplyRead() {
   const { api, queryKeyPrefix } = useApiClients();
   const queryClient = useQueryClient();
 
+  const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
+  const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
 
   return useMutation({
     mutationFn: async (form: Forms.MarkReplyRead) =>
       (await api).markReplyRead(form),
+    onMutate: ({ id, read }) => {
+      for (const key of [readRepliesKey, unreadRepliesKey]) {
+        const replies =
+          queryClient.getQueryData<
+            InfiniteData<{ replies: Schemas.Reply[] }, unknown>
+          >(key);
+        if (replies) {
+          const update = produce(replies, (prev) => {
+            for (const page of prev?.pages ?? []) {
+              const reply = page.replies.find((reply) => reply.id === id);
+              if (reply) {
+                reply.read = read;
+              }
+            }
+          });
+          queryClient.setQueryData(key, update);
+        }
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: notificationCountQueryKey,
@@ -1889,11 +1984,34 @@ export function useMarkPersonMentionRead() {
   const { api, queryKeyPrefix } = useApiClients();
   const queryClient = useQueryClient();
 
+  const readMentionsKey = usePersonMentionsKey({ unreadOnly: false });
+  const unreadMentionsKey = usePersonMentionsKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
 
   return useMutation({
     mutationFn: async (form: Forms.MarkMentionRead) =>
       await (await api).markMentionRead(form),
+    onMutate: ({ read, id }) => {
+      for (const key of [readMentionsKey, unreadMentionsKey]) {
+        const mentions =
+          queryClient.getQueryData<
+            InfiniteData<{ mentions: Schemas.Mention[] }, unknown>
+          >(key);
+        if (mentions) {
+          const update = produce(mentions, (prev) => {
+            for (const page of prev?.pages ?? []) {
+              const mention = page.mentions.find(
+                (mention) => mention.id === id,
+              );
+              if (mention) {
+                mention.read = read;
+              }
+            }
+          });
+          queryClient.setQueryData(key, update);
+        }
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: notificationCountQueryKey,
@@ -2359,12 +2477,17 @@ export function useAvailableSorts() {
   });
 }
 
-export function useResolveObject(query: string) {
+export function useResolveObject(query: string | undefined) {
   const { api, queryKeyPrefix } = useApiClients();
   return useQuery({
     queryKey: [queryKeyPrefix, "resolveObject" + query],
-    queryFn: async ({ signal }) =>
-      await (await api).resolveObject({ q: query }, { signal }),
+    queryFn: async ({ signal }) => {
+      if (!query) {
+        throw new Error("This shouldn't happen");
+      }
+      return await (await api).resolveObject({ q: query }, { signal });
+    },
+    enabled: !!query,
   });
 }
 

@@ -8,7 +8,7 @@ import {
   SmallScreenSidebar,
 } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
-import { Fragment, memo, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, useMemo, useState } from "react";
 import { VirtualList } from "../components/virtual-list";
 import { useCommunity, useMostRecentPost, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
@@ -22,7 +22,7 @@ import {
 } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
-import { useRecentCommunitiesStore } from "../stores/recent-communities";
+import { useUpdateRecentCommunity } from "../stores/recent-communities";
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
@@ -91,15 +91,9 @@ export default function CommunityFeed() {
   const community = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
 
-  const updateRecent = useRecentCommunitiesStore((s) => s.update);
+  useUpdateRecentCommunity(community?.communityView);
 
   const modApIds = community?.mods?.map((m) => m.apId);
-
-  useEffect(() => {
-    if (community?.communityView) {
-      updateRecent(community.communityView);
-    }
-  }, [community?.communityView, updateRecent]);
 
   const {
     hasNextPage,

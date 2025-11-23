@@ -19,7 +19,6 @@ import { cn } from "../../lib/utils";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { ContentGutters } from "@/src/components/gutters";
 import { ImageShareButton } from "@/src/components/posts/post-buttons";
-import { canShareImage } from "@/src/lib/share";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Zoom } from "swiper/modules";
 import "swiper/css";
@@ -107,7 +106,7 @@ export default function LightBox() {
               className="h-full relative"
               style={{
                 paddingTop: navbar.height + navbar.inset,
-                paddingBottom: canShareImage() ? bottomBarHeight : 0,
+                paddingBottom: bottomBarHeight,
               }}
             >
               <div className="swiper-zoom-container">
@@ -117,28 +116,26 @@ export default function LightBox() {
           </SwiperSlide>
         </Swiper>
 
-        {canShareImage() && (
-          <div
-            className={cn(
-              "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
-              hideNav && "opacity-0",
-              !isActive && "hidden",
-            )}
-            style={{
-              // This is kinda weird, but I thought it looked
-              // better if the bottom controls height mated the
-              // toolbar height on desktop.
-              height: bottomBarHeight,
-              paddingBottom: tabbar.inset,
-            }}
-          >
-            <ContentGutters className="h-full">
-              <div className="my-auto">
-                <ImageShareButton imageSrc={src} />
-              </div>
-            </ContentGutters>
-          </div>
-        )}
+        <div
+          className={cn(
+            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
+            hideNav && "opacity-0",
+            !isActive && "hidden",
+          )}
+          style={{
+            // This is kinda weird, but I thought it looked
+            // better if the bottom controls height mated the
+            // toolbar height on desktop.
+            height: bottomBarHeight,
+            paddingBottom: tabbar.inset,
+          }}
+        >
+          <ContentGutters className="h-full">
+            <div className="my-auto">
+              <ImageShareButton imageSrc={src} />
+            </div>
+          </ContentGutters>
+        </div>
       </IonContent>
     </IonPage>
   );

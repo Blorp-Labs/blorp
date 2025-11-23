@@ -7,6 +7,7 @@ export {
   IoChatbubbleOutline as MessageOutline,
   IoPerson as Person,
   IoSend as Send,
+  IoCheckmarkDoneSharp as DoubleCheck,
 } from "react-icons/io5";
 export {
   LuScrollText as ScrollTextOutline,
@@ -18,6 +19,7 @@ export { FiLogOut as LogOut } from "react-icons/fi";
 export {
   FaChevronRight as ChevronRight,
   FaChevronLeft as ChevronLeft,
+  FaRobot as Robot,
 } from "react-icons/fa6";
 export { PiShareFat as Share } from "react-icons/pi";
 export { CgSearch as Search, CgSpinner as Spinner } from "react-icons/cg";

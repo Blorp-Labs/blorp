@@ -29,13 +29,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 const EMPTY_ARR: never[] = [];
 
 const NO_ITEMS = "NO_ITEMS";
-type Item =
-  | string
-  | {
-      path: string;
-      postId: number;
-      creatorId: number;
-    };
+type Item = string;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -55,11 +49,6 @@ function Comment({ path }: { path: string }) {
     return null;
   }
 
-  const parent = path.split(".").at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, commentView.id]
-    .filter(Boolean)
-    .join(".");
-
   return (
     <Link
       className="border-b pb-4 mt-4"
@@ -67,7 +56,7 @@ function Comment({ path }: { path: string }) {
       params={{
         communityName: commentView.communitySlug,
         post: encodeApId(commentView.postApId),
-        comment: newPath,
+        comment: encodeApId(commentView.apId),
       }}
     >
       <MarkdownRenderer markdown={commentView.body} disableLinks />
@@ -111,8 +100,6 @@ export default function SavedFeed() {
         return postIds;
       case "comments":
         return commentViews;
-      default:
-        return [...postIds, ...commentViews];
     }
   }, [posts.data?.pages, comments.data?.pages, type]);
 
@@ -192,13 +179,13 @@ export default function SavedFeed() {
                 );
               }
 
-              if (_.isString(item)) {
+              if (type === "posts") {
                 return <Post apId={item} />;
               }
 
               return (
                 <ContentGutters>
-                  <Comment path={item.path} />
+                  <Comment path={item} />
                   <></>
                 </ContentGutters>
               );

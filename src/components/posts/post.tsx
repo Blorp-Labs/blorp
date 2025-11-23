@@ -22,7 +22,6 @@ import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import _ from "lodash";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
-import removeMd from "remove-markdown";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -34,6 +33,10 @@ import { ProgressiveImage } from "../progressive-image";
 import { useMedia } from "@/src/lib/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
+import { BandcampEmbed } from "./embeds/bandcamp-embed";
+import { Badge } from "../ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { removeMd } from "../markdown/remove-md";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -439,6 +442,26 @@ function LargePostCard({
               NSFW
             </div>
           )}
+          {post.altText && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  className="absolute bottom-1.5 right-1.5 z-10"
+                  variant="outline"
+                >
+                  Alt
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                align="end"
+                className="max-w-sm flex flex-col gap-1"
+              >
+                <span className="font-bold">Alt Text</span>
+                <p>{post.altText}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </Link>
       )}
 
@@ -487,6 +510,10 @@ function LargePostCard({
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
         <YouTubeVideoEmbed url={embed.embedUrl} />
       )}
+      {embed?.type === "bandcamp" &&
+        embed.embedUrl &&
+        !post.deleted &&
+        !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
 
       {detailView && post.body && !post.deleted && !post.removed && (
         <div className="flex-1" {...doubeTapLike}>

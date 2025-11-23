@@ -60,10 +60,20 @@ export function useIsInAppBrowserOpen() {
   return isOpen;
 }
 
+type AndSet<V> = (fn: SetUrlSearchParam<V>, val: V) => { and: AndSet<V> };
+
 type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
-  opts?: { replace?: boolean },
-) => void;
+  config?: { replace?: boolean; search?: string },
+) => {
+  and: AndSet<V>;
+};
+
+type AndRemove = (fn: RemoveUrlSearchParam) => { and: AndRemove };
+
+type RemoveUrlSearchParam = (opts?: { replace?: boolean; search?: string }) => {
+  and: AndRemove;
+};
 
 /**
  * Similar to useState but stores it's state in the url.
@@ -76,7 +86,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   key: string,
   defaultValue: z.infer<S>,
   schema: S,
-): [z.infer<S>, SetUrlSearchParam<z.infer<S>>] {
+): [z.infer<S>, SetUrlSearchParam<z.infer<S>>, RemoveUrlSearchParam] {
   const history = useHistory();
   const location = useLocation();
   const search = location.search;
@@ -112,7 +122,9 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
-    (next, { replace = true } = {}) => {
+    (next, config) => {
+      const replace = config?.replace ?? true;
+
       const newVal =
         typeof next === "function"
           ? (next as (p: z.infer<S>) => z.infer<S>)(value)
@@ -123,7 +135,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         schema.parse(newVal);
       }
 
-      const params = new URLSearchParams(search);
+      const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
       const newSearch = params.toString();
       const to = {
@@ -133,12 +145,52 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         ...frozenLocation.current,
         search: newSearch ? `?${newSearch}` : "",
       };
-      replace ? history.replace(to) : history.push(to);
+      const id = setTimeout(() => {
+        replace ? history.replace(to) : history.push(to);
+      }, 5);
+      return {
+        and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
+          clearTimeout(id);
+          return setValue(val, { ...config, search: newSearch });
+        },
+      };
     },
     [history, key, schema, value, search],
   );
 
-  return [value, setValue];
+  const removeParam = useCallback(
+    (config?: {
+      replace?: boolean;
+      search?: string;
+    }): {
+      and: AndRemove;
+    } => {
+      const replace = config?.replace ?? true;
+      currentValueRef.current = defaultValue;
+      const params = new URLSearchParams(config?.search ?? search);
+      params.delete(key);
+      const newSearch = params.toString();
+      const to = {
+        // Idk why but location is getting out of sync with
+        // browser location. So we just freeze the intial value
+        // and that seems to work.
+        ...frozenLocation.current,
+        search: newSearch ? `?${newSearch}` : "",
+      };
+      const id = setTimeout(() => {
+        replace ? history.replace(to) : history.push(to);
+      }, 5);
+      return {
+        and: (removeParam) => {
+          clearTimeout(id);
+          return removeParam({ ...config, search: newSearch });
+        },
+      };
+    },
+    [history, key, search, defaultValue],
+  );
+
+  return [value, setValue, removeParam];
 }
 
 export function useConfirmationAlert() {

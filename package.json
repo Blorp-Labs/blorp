@@ -1,6 +1,6 @@
 {
   "name": "blorp",
-  "version": "1.9.26",
+  "version": "1.10.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -127,6 +127,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-error-boundary": "^6.0.0",
     "react-hls-player": "^3.0.7",
     "react-icons": "^5.5.0",
     "react-player": "^3.3.1",
@@ -135,7 +136,6 @@
     "react-router-dom": "^5.3.4",
     "react-textarea-autosize": "^8.5.9",
     "remove-focus-outline": "^1.2.1",
-    "remove-markdown": "^0.6.2",
     "sonner": "^2.0.3",
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.3.1",

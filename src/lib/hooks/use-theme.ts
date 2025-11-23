@@ -1,10 +1,15 @@
 import { useSyncExternalStore } from "react";
+import _ from "lodash";
 
 // themeStore.ts
 type Theme = "light" | "dark";
 
 // create the MQL once
-const mql = window.matchMedia("(prefers-color-scheme: dark)");
+const mql: Partial<MediaQueryList> & { matches: boolean } = _.isFunction(
+  window.matchMedia,
+)
+  ? window.matchMedia("(prefers-color-scheme: dark)")
+  : { matches: false };
 
 // current value
 let currentTheme: Theme = mql.matches ? "dark" : "light";
@@ -20,9 +25,9 @@ const handler = () => {
     listeners.forEach((cb) => cb());
   }
 };
-if (mql.addEventListener) {
+if (_.isFunction(mql.addEventListener)) {
   mql.addEventListener("change", handler);
-} else {
+} else if (_.isFunction(mql.addListener)) {
   mql.addListener(handler);
 }
 

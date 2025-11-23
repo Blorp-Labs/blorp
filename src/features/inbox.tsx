@@ -4,32 +4,46 @@ import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { RelativeTime } from "@/src/components/relative-time";
 import {
+  useMarkAllRead,
   useMarkPersonMentionRead,
   useMarkReplyRead,
   useNotificationCount,
   usePersonMentions,
   useReplies,
 } from "@/src/lib/api/index";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonToolbar,
+} from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
 import { useMemo } from "react";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
-import { useMedia } from "../lib/hooks";
+import { useConfirmationAlert, useMedia } from "../lib/hooks";
 import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
 import { ActionMenu } from "../components/adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
-import { Message, Person } from "../components/icons";
+import { DoubleCheck, Message, Person } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth } from "../stores/auth";
 import LoginRequired from "./login-required";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { Button } from "../components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
+import { encodeApId } from "../lib/api/utils";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -65,11 +79,6 @@ function Mention({
   noBorder?: boolean;
 }) {
   const markRead = useMarkPersonMentionRead();
-  const path = mention.path.split(".");
-  const parent = path.at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, mention.commentId]
-    .filter(Boolean)
-    .join(".");
   return (
     <ContentGutters className="px-0">
       <div className={cn("flex-1 max-md:px-3.5", !noBorder && "border-b")}>
@@ -89,8 +98,8 @@ function Mention({
               to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
               params={{
                 communityName: mention.communitySlug,
-                post: encodeURIComponent(mention.postApId),
-                comment: newPath,
+                post: encodeApId(mention.postApId),
+                comment: encodeApId(mention.commentApId),
               }}
               onClickCapture={() => {
                 markRead.mutate({
@@ -148,9 +157,6 @@ function Reply({
   const markRead = useMarkReplyRead();
   const path = replyView.path.split(".");
   const parent = path.at(-2);
-  const newPath = [parent !== "0" ? parent : undefined, replyView.commentId]
-    .filter(Boolean)
-    .join(".");
   const hasParent = parent && parent !== "0";
   return (
     <ContentGutters className="px-0">
@@ -171,8 +177,8 @@ function Reply({
               to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
               params={{
                 communityName: replyView.communitySlug,
-                post: encodeURIComponent(replyView.postApId),
-                comment: newPath,
+                post: encodeApId(replyView.postApId),
+                comment: encodeApId(replyView.commentApId),
               }}
               onClickCapture={() => {
                 markRead.mutate({
@@ -238,11 +244,13 @@ export default function Inbox() {
   const isRefetching = replies.isRefetching || mentions.isRefetching;
   const isPending = replies.isPending || mentions.isPending;
 
-  // This updates in the backgroudn,
+  // This updates in the background,
   // but calling it here ensures the
   // count is updated when the user visits
   // the inbox page.
   useNotificationCount();
+
+  const markAllRead = useMarkAllRead();
 
   const data = useMemo(() => {
     const data: (
@@ -289,6 +297,8 @@ export default function Inbox() {
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
+  const confirmationAlrt = useConfirmationAlert();
+
   if (!isLoggedIn) {
     return <LoginRequired />;
   }
@@ -303,6 +313,16 @@ export default function Inbox() {
             <ToolbarTitle numRightIcons={1}>Inbox</ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
+            <IonButton
+              onClick={() =>
+                confirmationAlrt({
+                  message: "Mark all replies and mentions as read",
+                }).then(() => markAllRead.mutate())
+              }
+              className="md:hidden"
+            >
+              <DoubleCheck className="text-2xl" />
+            </IonButton>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
@@ -333,7 +353,7 @@ export default function Inbox() {
           key={type}
           header={[
             <ContentGutters className="max-md:hidden" key="type-select-header">
-              <div className="py-2 bg-background border-b-[.5px]">
+              <div className="py-1.5 flex flex-row justify-between bg-background border-b-[.5px]">
                 <ToggleGroup
                   type="single"
                   variant="outline"
@@ -349,6 +369,20 @@ export default function Inbox() {
                   <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
                   <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
                 </ToggleGroup>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => markAllRead.mutate()}
+                    >
+                      <DoubleCheck />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end">
+                    Mark all replies and mentions as read
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <></>
             </ContentGutters>,

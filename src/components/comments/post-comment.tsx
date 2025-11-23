@@ -4,12 +4,12 @@ import {
   CommentReplyButton,
   CommentVoting,
   useDoubleTapLike,
-} from "../comments/comment-buttons";
+} from "./comment-buttons";
 import {
   InlineCommentReply,
   useCommentEditingState,
   useLoadCommentIntoEditor,
-} from "../comments/comment-reply-modal";
+} from "./comment-reply-modal";
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
@@ -18,7 +18,7 @@ import {
   useSaveComment,
 } from "@/src/lib/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
-import { useShowCommentReportModal } from "./post-report";
+import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
 import { useLinkContext } from "../../routing/link-context";
 import { encodeApId } from "@/src/lib/api/utils";
@@ -34,31 +34,28 @@ import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { useAuth, useIsPersonBlocked } from "@/src/stores/auth";
+import { useAuth, useIsAdmin, useIsPersonBlocked } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
 import { copyRouteToClipboard, shareRoute } from "@/src/lib/share";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { Shield, ShieldCheckmark } from "../icons";
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
 } from "../ui/collapsible";
 import { create } from "zustand";
-import { COMMENT_COLLAPSE_EVENT } from "./config";
+import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
 import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
 import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import {
-  useShowCommentRemoveModal,
-  useShowPostRemoveModal,
-} from "./post-remove";
+import { useShowCommentRemoveModal } from "../posts/post-remove";
+import { CommentCreatorBadge } from "./comment-creator-badge";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -124,8 +121,8 @@ function useCommentActions({
         `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
         {
           communityName,
-          post: encodeURIComponent(postApId),
-          comment: String(commentView.id),
+          post: encodeApId(postApId),
+          comment: encodeApId(commentView.apId),
         },
       )
     : null;
@@ -282,28 +279,31 @@ function useCommentActions({
 }
 
 function Byline({
+  comment,
   actorId,
   actorSlug,
   publishedDate,
-  authorType,
+  isMod,
   className,
+  opId,
 }: {
+  comment: Schemas.Comment;
   actorId: string;
   actorSlug: string;
   publishedDate: string;
-  authorType?: "OP" | "ME" | "MOD" | "ADMIN" | "BANNED";
+  isMod?: boolean;
   className?: string;
+  opId?: number;
 }) {
   const linkCtx = useLinkContext();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const profileView = useProfilesStore(
     (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
   );
-  if (profileView?.isBanned) {
-    authorType = "BANNED";
-  }
 
   const tag = useTagUserStore((s) => s.userTags[actorSlug]);
+
+  const isAdmin = useIsAdmin(comment.creatorApId);
 
   const [name, host] = profileView?.slug.split("@") ?? [];
 
@@ -330,7 +330,7 @@ function Byline({
         >
           <span className="font-medium text-xs">{name}</span>
           {tag ? (
-            <Badge size="sm" variant="brand" className="ml-2">
+            <Badge size="sm" variant="brand-secondary" className="ml-2">
               {tag}
             </Badge>
           ) : (
@@ -338,38 +338,17 @@ function Byline({
               @{host}
             </span>
           )}
-          {authorType === "ADMIN" && (
-            <>
-              <ShieldCheckmark className="text-brand ml-2" />
-              <span className="text-xs ml-1 text-brand">ADMIN</span>
-            </>
-          )}
-          {authorType === "OP" && (
-            <Badge variant="brand" size="sm" className="ml-1.5">
-              OP
-            </Badge>
-          )}
-          {authorType === "MOD" && (
-            <>
-              <Shield className="text-green-500 ml-2" />
-              <span className="text-xs ml-1 text-green-500">MOD</span>
-            </>
-          )}
-          {authorType === "ME" && (
-            <Badge variant="brand" size="sm" className="ml-1.5">
-              Me
-            </Badge>
-          )}
-          {authorType === "BANNED" && (
-            <Badge variant="destructive" size="sm" className="ml-1.5">
-              Banned
-            </Badge>
-          )}
+          <CommentCreatorBadge
+            opId={opId}
+            comment={comment}
+            isMod={isMod}
+            className="ml-2"
+          />
           {profileView && (
             <CakeDay
-              className="ml-1.5 text-brand"
+              className="text-brand ml-2"
               date={profileView.createdAt}
-              isNewAccount={authorType === "ADMIN" ? false : undefined}
+              isNewAccount={isAdmin ? false : undefined}
             />
           )}
         </Link>
@@ -392,7 +371,6 @@ export function PostComment({
   myUserId,
   communityName,
   modApIds,
-  adminApIds,
   singleCommentThread,
   highlightCommentId,
   canMod,
@@ -405,7 +383,6 @@ export function PostComment({
   myUserId: number | undefined;
   communityName: string;
   modApIds?: string[];
-  adminApIds?: string[];
   singleCommentThread?: boolean;
   highlightCommentId?: string;
   canMod?: boolean;
@@ -421,7 +398,6 @@ export function PostComment({
   const commentView = useCommentsStore((s) =>
     comment ? s.comments[getCachePrefixer()(comment.path)]?.data : undefined,
   );
-  const isAdmin = commentView && adminApIds?.includes(commentView?.creatorApId);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(
@@ -461,15 +437,15 @@ export function PostComment({
       break;
   }
 
-  const parentLink = useMemo(() => {
+  const hasParent = useMemo(() => {
     if (level > 0 || !comment || !singleCommentThread) {
-      return undefined;
+      return false;
     }
     const parent = comment.path.split(".").slice(-2);
     if (parent.length < 1 || parent?.includes("0")) {
-      return undefined;
+      return false;
     }
-    return parent.join(".");
+    return true;
   }, [level, comment, singleCommentThread]);
 
   const open =
@@ -518,7 +494,7 @@ export function PostComment({
     >
       {singleCommentThread && level === 0 && (
         <div className="flex flex-row gap-2 items-center mb-6">
-          {parentLink && (
+          {hasParent && commentView && (
             <Button
               size="sm"
               variant="ghost"
@@ -530,7 +506,7 @@ export function PostComment({
                 params={{
                   communityName,
                   post: encodeApId(postApId),
-                  comment: parentLink,
+                  comment: encodeApId(commentView.apId),
                 }}
                 replace
               >
@@ -556,7 +532,7 @@ export function PostComment({
               View all comments
             </Link>
           </Button>
-          {!parentLink && <div className="h-px flex-1 bg-border" />}
+          {!hasParent && <div className="h-px flex-1 bg-border" />}
         </div>
       )}
       <Collapsible
@@ -583,19 +559,9 @@ export function PostComment({
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
             publishedDate={commentView.createdAt}
-            authorType={
-              commentView.isBannedFromCommunity
-                ? "BANNED"
-                : isAdmin
-                  ? "ADMIN"
-                  : isMod
-                    ? "MOD"
-                    : commentView.creatorId === opId
-                      ? "OP"
-                      : commentView.creatorId === myUserId
-                        ? "ME"
-                        : undefined
-            }
+            isMod={isMod}
+            comment={commentView}
+            opId={opId}
           />
         )}
 
@@ -697,18 +663,17 @@ export function PostComment({
                   communityName={communityName}
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
-                  adminApIds={adminApIds}
                   canMod={canMod}
                 />
               ))}
 
-              {comment && sorted.length < rest.imediateChildren ? (
+              {commentView && sorted.length < rest.imediateChildren ? (
                 <Link
                   to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
                   params={{
-                    communityName: comment.communitySlug,
-                    post: encodeURIComponent(comment.postApId),
-                    comment: String(comment.id),
+                    communityName: commentView.communitySlug,
+                    post: encodeApId(commentView.postApId),
+                    comment: encodeApId(commentView?.apId),
                   }}
                   className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
                 >

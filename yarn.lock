@@ -7719,6 +7719,7 @@ __metadata:
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     react-dropzone: "npm:^14.3.8"
+    react-error-boundary: "npm:^6.0.0"
     react-hls-player: "npm:^3.0.7"
     react-icons: "npm:^5.5.0"
     react-player: "npm:^3.3.1"
@@ -7727,7 +7728,6 @@ __metadata:
     react-router-dom: "npm:^5.3.4"
     react-textarea-autosize: "npm:^8.5.9"
     remove-focus-outline: "npm:^1.2.1"
-    remove-markdown: "npm:^0.6.2"
     sonner: "npm:^2.0.3"
     storybook: "npm:^9.0.12"
     swiper: "npm:^12.0.3"
@@ -14041,6 +14041,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-error-boundary@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "react-error-boundary@npm:6.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.12.5"
+  peerDependencies:
+    react: ">=16.13.1"
+  checksum: 10c0/1914d600dee95a14f14af4afe9867b0d35c26c4f7826d23208800ba2a99728659029aad60a6ef95e13430b4d79c2c4c9b3585f50bf508450478760d2e4e732d8
+  languageName: node
+  linkType: hard
+
 "react-hls-player@npm:^3.0.7":
   version: 3.0.7
   resolution: "react-hls-player@npm:3.0.7"
@@ -14471,13 +14482,6 @@ __metadata:
   version: 1.2.1
   resolution: "remove-focus-outline@npm:1.2.1"
   checksum: 10c0/907da859d3fc49672a46f4d931e6964eb445a21ec43247b3f510d7572c28fa7f8a3080d20f94dd662b7340e4497486965589956357d0a109b564eb9b5d0162a6
-  languageName: node
-  linkType: hard
-
-"remove-markdown@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "remove-markdown@npm:0.6.2"
-  checksum: 10c0/d26fb020b202f227877a29701fcbc96980af3c17001ae46f3253ba21307babcfa424006a207161f83ed04efe19fc9be6b084bd1308ef0b2217c59139e6ef6eb4
   languageName: node
   linkType: hard
 

@@ -10,11 +10,11 @@ import { useShowPostReportModal } from "./post-report";
 import {
   useAuth,
   getAccountActorId,
-  getAccountSite,
   useIsPersonBlocked,
+  useIsAdmin,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
-import { Link } from "@/src/routing/index";
+import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
@@ -31,16 +31,16 @@ import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { FaBookmark } from "react-icons/fa";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
-import { Shield, ShieldCheckmark } from "../icons";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
+import { PostCreatorBadge } from "./post-creator-badge";
 
 export function usePostActions({
   post,
@@ -172,7 +172,7 @@ export function usePostActions({
             onClick: () => {
               if (post) {
                 updateDraft(post.apId, postToDraft(post, flairs));
-                router.push(`/create?id=${encodedApId}`);
+                router.push(resolveRoute("/create_post", `?id=${encodedApId}`));
               }
             },
           },
@@ -237,6 +237,7 @@ export function PostByline({
   showActions = true,
   hideImage,
   className,
+  compactBadge,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -248,23 +249,19 @@ export function PostByline({
   showActions?: boolean;
   hideImage?: boolean;
   className?: string;
+  compactBadge?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
   const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const creator = useProfilesStore(
-    (s) => s.profiles[getCachePrefixer()(post.creatorApId)]?.data,
-  );
+  const creator = useProfileFromStore(post.creatorApId);
   const community = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(post.communitySlug)]?.data,
   );
 
-  const adminApIds = useAuth(
-    (s) => getAccountSite(s.getSelectedAccount())?.admins,
-  );
-  const isAdmin = adminApIds?.includes(post.creatorApId) ?? false;
+  const isAdmin = useIsAdmin(post.creatorApId);
 
   const encodedCreatorApId = encodeApId(post.creatorApId);
 
@@ -344,7 +341,7 @@ export function PostByline({
                 <span className="sr-only">u/</span>
                 {creatorName}
                 {tag ? (
-                  <Badge size="sm" variant="brand" className="ml-2">
+                  <Badge size="sm" variant="brand-secondary" className="ml-2">
                     {tag}
                   </Badge>
                 ) : (
@@ -352,23 +349,12 @@ export function PostByline({
                 )}
               </Link>
             </PersonHoverCard>
-            {isMod && !isAdmin && (
-              <div className="flex gap-0.5">
-                <Shield className="text-green-500 text-base" />
-                <span className="text-xs text-green-500">MOD</span>
-              </div>
-            )}
-            {isAdmin && (
-              <div className="flex gap-0.5">
-                <ShieldCheckmark className="text-brand text-base" />
-                <span className="text-xs text-brand">ADMIN</span>
-              </div>
-            )}
-            {(post.isBannedFromCommunity || creator?.isBanned) && (
-              <Badge size="sm" variant="destructive">
-                Banned
-              </Badge>
-            )}
+            <PostCreatorBadge
+              isMod={isMod}
+              isAdmin={isAdmin}
+              isBanned={post.isBannedFromCommunity || creator?.isBanned}
+              isBot={creator?.isBot}
+            />
             {creator && (
               <CakeDay
                 date={creator.createdAt}

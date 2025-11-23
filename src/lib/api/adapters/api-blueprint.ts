@@ -192,6 +192,7 @@ export const replySchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   commentId: z.number(),
+  commentApId: z.string(),
   body: z.string(),
   path: z.string(),
   creatorId: z.number(),
@@ -208,6 +209,7 @@ export const mentionSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   commentId: z.number(),
+  commentApId: z.string(),
   body: z.string(),
   path: z.string(),
   creatorId: z.number(),
@@ -247,9 +249,29 @@ export const slugSchema = z.custom<`${string}@${string}`>((val) => {
 });
 
 export const resolveObjectResponseSchema = z.object({
-  post: postSchema.nullable(),
-  community: communitySchema.nullable(),
-  user: personSchema.nullable(),
+  post: postSchema
+    .pick({
+      apId: true,
+      communitySlug: true,
+    })
+    .nullable(),
+  community: communitySchema
+    .pick({
+      slug: true,
+    })
+    .nullable(),
+  user: personSchema
+    .pick({
+      apId: true,
+    })
+    .nullable(),
+  comment: commentSchema
+    .pick({
+      id: true,
+      apId: true,
+      path: true,
+    })
+    .nullable(),
 });
 
 export namespace Schemas {
@@ -673,6 +695,8 @@ export abstract class ApiBlueprint<C> {
     profiles: Schemas.Person[];
     nextCursor: string | null;
   }>;
+
+  abstract markAllRead(): Promise<void>;
 
   abstract markReplyRead(form: Forms.MarkReplyRead): Promise<void>;
 

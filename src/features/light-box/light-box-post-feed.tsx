@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommunity, usePost, usePosts } from "@/src/lib/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
-import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { useUpdateRecentCommunity } from "@/src/stores/recent-communities";
 import { BiHelpCircle } from "react-icons/bi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
@@ -266,13 +266,7 @@ export default function LightBoxPostFeed() {
   });
   const community = useCommunityFromStore(communityName);
 
-  const updateRecent = useRecentCommunitiesStore((s) => s.update);
-
-  useEffect(() => {
-    if (community?.communityView) {
-      updateRecent(community.communityView);
-    }
-  }, [community?.communityView, updateRecent]);
+  useUpdateRecentCommunity(community?.communityView);
 
   const voting = usePostVoting(postApId);
   const { vote, isUpvoted, isDownvoted } = voting ?? {};

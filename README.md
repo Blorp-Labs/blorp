@@ -1,9 +1,10 @@
 <p align="center">
   <a href="https://blorpblorp.xyz/" target="_blank" rel="noopener noreferrer">
-    <img width="185" height="120" src="https://github.com/user-attachments/assets/2aee1810-2d98-461a-989d-3282a2b93a2e" alt="Blorp logo">
+    <img src="https://github.com/user-attachments/assets/1367e75e-0436-4d6a-8658-8057bb33d841" alt="Blorp logo">
   </a>
-  <h1 align="center">Blorp</h1>
 </p>
+
+-----
 
 <p align="center">
 <a href="https://blorpblorp.xyz/" target="_blank" rel="noopener noreferrer">Web App</a> · <a href="https://github.com/Blorp-Labs/blorp/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=">Report Bug</a> · <a href="https://github.com/Blorp-Labs/blorp/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=">Request Feature</a> · <a href="https://github.com/Blorp-Labs/blorp/releases">Releases</a>
@@ -82,6 +83,11 @@ docker run -d \
 Want to ask questions, share feedback, or just chat with other Blorp users? Head over to our community at  
 [lemmy.zip/c/blorp](https://lemmy.zip/c/blorp).
 
+## ❤️ Special thanks to 
+
+* [Lay](https://bsky.app/profile/awfukellay.bsky.social) for designing the logo and banner art.
+* The PieFed team for their support and quickly resolving any and all feedback I brought them.
+
 ## 📚 Stack
 
 * [React](https://react.dev/) – The library for web and native user interfaces
@@ -91,11 +97,6 @@ Want to ask questions, share feedback, or just chat with other Blorp users? Head
 * [Zustand](https://github.com/pmndrs/zustand/) – Bear necessities for state management in React
 * [TanStack Query](https://tanstack.com/query/docs) – Powerful asynchronous state management for TS/JS, React, Solid, Vue, Svelte and Angular
 * [TanStack Virtual](https://tanstack.com/virtual/latest) – Headless UI for Virtualizing Large Element Lists
-
-## ❤️ Special thanks to 
-
-* Voyager. I settled on a stack that is pretty similar to [Voyager](https://github.com/aeharding/voyager). There are a bunch of problems that Voyager had already solved that I was able to solve very quickly by looking at their codebase. Special thanks to [aeharding](https://github.com/aeharding) for answering many of my questions. I also regularly test Blorp against Voyager to ensure I deliver the quality of app that Blorp users deserve.
-* The PieFed team for their support and quickly resolving any and all feedback I brought them.
 
 ## 📄 License
 

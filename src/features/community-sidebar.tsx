@@ -1,5 +1,5 @@
 import { SmallScreenSidebar } from "@/src/components/communities/community-sidebar";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useCommunity } from "../lib/api";
 import _ from "lodash";
 import {
@@ -11,7 +11,7 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
-import { useRecentCommunitiesStore } from "../stores/recent-communities";
+import { useUpdateRecentCommunity } from "../stores/recent-communities";
 
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
@@ -41,13 +41,7 @@ export default function CommunityFeed() {
   });
   const community = useCommunityFromStore(communityName)?.communityView;
 
-  const updateRecent = useRecentCommunitiesStore((s) => s.update);
-
-  useEffect(() => {
-    if (community) {
-      updateRecent(community);
-    }
-  }, [community, updateRecent]);
+  useUpdateRecentCommunity(community);
 
   return (
     <IonPage>

@@ -1,7 +1,12 @@
-import { PostComment } from "@/src/components/posts/post-comment";
+import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
-import { usePost, useComments, useCommunity } from "@/src/lib/api/index";
+import {
+  usePost,
+  useComments,
+  useCommunity,
+  useResolveObject,
+} from "@/src/lib/api/index";
 import {
   StickyPostHeader,
   PostCard,
@@ -147,6 +152,75 @@ function CommentSortBar() {
   );
 }
 
+/**
+ * For backwards compatibility, comments have to be resolvable via
+ * ../comment/[comment.child], but moving fowards, they will be resolve
+ * via ../comment/[commentApId]
+ */
+function useResolveComment(pathOrApId: string | undefined): {
+  commentId: string | undefined;
+  highlightCommentId: string | undefined;
+} {
+  const decoded = pathOrApId ? decodeURIComponent(pathOrApId) : undefined;
+
+  const { apId, commentId, highlightCommentId } = useMemo(() => {
+    const noResult = {
+      apId: undefined,
+      commentId: undefined,
+      highlightCommentId: undefined,
+    };
+
+    if (!decoded) {
+      return noResult;
+    }
+
+    try {
+      new URL(decoded);
+      return {
+        ...noResult,
+        apId: decoded,
+      };
+    } catch {}
+
+    try {
+      const commentPathArr = decoded?.split(".") ?? [];
+      const [commentId] = commentPathArr;
+      const highlightCommentId = commentPathArr.at(-1);
+      return {
+        ...noResult,
+        commentId,
+        highlightCommentId,
+      };
+    } catch {}
+
+    return noResult;
+  }, [decoded]);
+
+  const object = useResolveObject(apId);
+
+  if (apId) {
+    const comment = object.data?.comment;
+    const highlightCommentId = comment ? String(comment.id) : null;
+    const commentId = comment?.path.split(".").at(-2);
+    if (highlightCommentId) {
+      return {
+        highlightCommentId,
+        commentId:
+          commentId && commentId !== "0" ? commentId : highlightCommentId,
+      };
+    }
+    return {
+      commentId: undefined,
+      highlightCommentId: undefined,
+    };
+  }
+
+  return {
+    commentId,
+    highlightCommentId,
+  };
+}
+
 export default function Post() {
   useHideTabBarOnMount();
 
@@ -164,9 +238,9 @@ export default function Post() {
 
   const decodedApId = apId ? decodeURIComponent(apId) : undefined;
 
+  const { commentId, highlightCommentId } = useResolveComment(commentPath);
+
   const commentPathArr = commentPath?.split(".") ?? [];
-  const [commentId] = commentPathArr;
-  const highlightCommentId = commentPathArr.at(-1);
 
   const myUserId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.id;
@@ -182,10 +256,6 @@ export default function Post() {
   const postQuery = usePost({
     ap_id: decodedApId,
   });
-
-  const adminApIds = useAuth(
-    (s) => getAccountSite(s.getSelectedAccount())?.admins,
-  );
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore((s) =>
@@ -366,7 +436,6 @@ export default function Post() {
                     myUserId={myUserId}
                     communityName={communityName}
                     modApIds={modApIds}
-                    adminApIds={adminApIds ?? undefined}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}
                   />

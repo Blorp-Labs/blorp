@@ -151,15 +151,30 @@ export default function Messages() {
                       {!isMe && (
                         <PersonAvatar actorId={item.creatorApId} size="sm" />
                       )}
-                      <MarkdownRenderer
-                        markdown={item.body}
+                      <div
                         className={cn(
-                          "p-2.5 rounded-xl max-w-2/3",
+                          "flex flex-col p-2.5 rounded-xl max-w-2/3",
                           isMe
-                            ? "bg-brand-secondary text-white ml-auto [&_*]:text-white! [&_a]:underline"
+                            ? "bg-violet-600 ml-auto"
                             : "rounded-tl-none bg-secondary",
                         )}
-                      />
+                      >
+                        <MarkdownRenderer
+                          className={cn(
+                            isMe &&
+                              "text-white [&_*]:text-white! [&_a]:underline",
+                          )}
+                          markdown={item.body}
+                        />
+                        <span
+                          className={cn(
+                            "self-end text-xs text-secondary-foreground/50 mt-1",
+                            isMe && "text-white/85",
+                          )}
+                        >
+                          {dayjs(item.createdAt).format("h:mma")}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </ContentGutters>
