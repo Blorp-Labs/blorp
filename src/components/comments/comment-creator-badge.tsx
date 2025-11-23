@@ -6,14 +6,17 @@ import { useMedia } from "@/src/lib/hooks";
 import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { cn } from "@/src/lib/utils";
+import _ from "lodash";
 
 export function CommentCreatorBadge({
   comment,
   isMod,
+  opId,
   className,
 }: {
   comment: Schemas.Comment;
   isMod: boolean | undefined;
+  opId?: number;
   className?: string;
 }) {
   const media = useMedia();
@@ -23,14 +26,6 @@ export function CommentCreatorBadge({
   const creator = useProfileFromStore(comment.creatorApId);
 
   const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me?.apId);
-
-  if (comment.creatorApId === me) {
-    return (
-      <Badge size="sm" variant="brand" className={className}>
-        Me
-      </Badge>
-    );
-  }
 
   if (comment.isBannedFromCommunity || creator?.isBanned) {
     return (
@@ -85,6 +80,22 @@ export function CommentCreatorBadge({
         <Shield className="text-green-500 text-base" />
         <span className="text-xs text-green-500">MOD</span>
       </div>
+    );
+  }
+
+  if (_.isNumber(opId) && comment.creatorId === opId) {
+    return (
+      <Badge size="sm" variant="brand" className={className}>
+        OP
+      </Badge>
+    );
+  }
+
+  if (comment.creatorApId === me) {
+    return (
+      <Badge size="sm" variant="brand" className={className}>
+        Me
+      </Badge>
     );
   }
 }

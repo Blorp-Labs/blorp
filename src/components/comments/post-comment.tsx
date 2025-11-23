@@ -41,7 +41,6 @@ import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
 import { copyRouteToClipboard, shareRoute } from "@/src/lib/share";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { Shield, ShieldCheckmark } from "../icons";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -55,10 +54,7 @@ import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
 import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import {
-  useShowCommentRemoveModal,
-  useShowPostRemoveModal,
-} from "../posts/post-remove";
+import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 
 type StoreState = {
@@ -289,6 +285,7 @@ function Byline({
   publishedDate,
   isMod,
   className,
+  opId,
 }: {
   comment: Schemas.Comment;
   actorId: string;
@@ -296,6 +293,7 @@ function Byline({
   publishedDate: string;
   isMod?: boolean;
   className?: string;
+  opId?: number;
 }) {
   const linkCtx = useLinkContext();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -341,6 +339,7 @@ function Byline({
             </span>
           )}
           <CommentCreatorBadge
+            opId={opId}
             comment={comment}
             isMod={isMod}
             className="ml-2"
@@ -562,6 +561,7 @@ export function PostComment({
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}
+            opId={opId}
           />
         )}
 
