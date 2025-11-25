@@ -289,6 +289,8 @@ function convertReply(replyView: lemmyV3.CommentReplyView): Schemas.Reply {
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
     postName: replyView.post.name,
+    deleted: replyView.comment.deleted,
+    removed: replyView.comment.removed,
   };
 }
 
@@ -314,6 +316,8 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
     postName: replyView.post.name,
+    deleted: replyView.comment.deleted,
+    removed: replyView.comment.removed,
   };
 }
 
@@ -445,7 +449,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   async getPost(form: { apId: string }, options: RequestOptions) {
     const { post_id } = await this.resolveObjectId(form.apId);
     if (_.isNil(post_id)) {
-      throw new Error("post not found");
+      throw Errors.OBJECT_NOT_FOUND;
     }
     const fullPost = await this.client.getPost(
       {
@@ -1118,19 +1122,27 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
-    const { post, community, person, comment } =
-      await this.client.resolveObject(
-        {
-          q: form.q,
-        },
-        options,
-      );
-    return resolveObjectResponseSchema.parse({
-      post: post ? convertPost(post) : null,
-      community: community ? convertCommunity(community) : null,
-      user: person ? convertPerson(person) : null,
-      comment: comment ? convertComment(comment) : null,
-    });
+    try {
+      const { post, community, person, comment } =
+        await this.client.resolveObject(
+          {
+            q: form.q,
+          },
+          options,
+        );
+      return resolveObjectResponseSchema.parse({
+        post: post ? convertPost(post) : null,
+        community: community ? convertCommunity(community) : null,
+        user: person ? convertPerson(person) : null,
+        comment: comment ? convertComment(comment) : null,
+      });
+    } catch (err) {
+      if (isErrorLike(err) && err.name === "couldnt_find_object") {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+      console.log(err);
+      throw err;
+    }
   }
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {

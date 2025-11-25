@@ -33,6 +33,7 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
+  compareErrors,
   Errors,
   Forms,
   INIT_PAGE_TOKEN,
@@ -48,10 +49,6 @@ import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
-
-enum Errors2 {
-  OBJECT_NOT_FOUND = "couldnt_find_object",
-}
 
 function extractErrorContent(err: Error) {
   const content = err.message || err.name;
@@ -290,7 +287,7 @@ export function usePost({
       return {};
     },
     retry: (count, err) => {
-      const notFound = err.message === Errors2.OBJECT_NOT_FOUND;
+      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
       if (notFound) {
         return false;
       }
@@ -2495,6 +2492,13 @@ export function useResolveObject(query: string | undefined) {
       return await (await api).resolveObject({ q: query }, { signal });
     },
     enabled: !!query,
+    retry: (count, err) => {
+      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
+      if (notFound) {
+        return false;
+      }
+      return count <= 3;
+    },
   });
 }
 
