@@ -55,7 +55,6 @@ import { cn } from "../lib/utils";
 import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
-import { toast } from "sonner";
 import { useQueryToast } from "../tanstack-query/hooks";
 
 function SafeAreaBottom() {

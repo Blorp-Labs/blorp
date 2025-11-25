@@ -1918,7 +1918,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     return {} as any;
   }
 
-  async register(form: Forms.Register) {
+  async register() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }
