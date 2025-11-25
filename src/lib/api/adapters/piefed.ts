@@ -623,6 +623,8 @@ function convertReply(
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
     postName: replyView.post.title,
+    deleted: replyView.comment.deleted,
+    removed: replyView.comment.removed,
   };
 }
 
@@ -674,6 +676,8 @@ function convertMention(
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
     postName: replyView.post.title,
+    deleted: replyView.comment.deleted,
+    removed: replyView.comment.removed,
   };
 }
 
@@ -718,10 +722,14 @@ export class PieFedApi implements ApiBlueprint<null> {
   private async parseResponse(res: Response) {
     const json = await res.json();
     if (res.status < 200 || res.status >= 300) {
-      const { data } = errorResponseSchema.safeParse(json);
-      throw new Error(
-        data?.error ?? `unexpected error, status code ${res.status}`,
-      );
+      if (res.status === 400 || res.status === 404) {
+        throw Errors.OBJECT_NOT_FOUND;
+      } else {
+        const { data } = errorResponseSchema.safeParse(json);
+        throw new Error(
+          data?.error ?? `unexpected error, status code ${res.status}`,
+        );
+      }
     } else {
       return json;
     }
@@ -1089,7 +1097,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   async getPost(form: { apId: string }, options: RequestOptions) {
     const { post_id } = await this.resolveObjectId(form.apId);
     if (_.isNil(post_id)) {
-      throw new Error("post not found for apId");
+      throw Errors.OBJECT_NOT_FOUND;
     }
     const json = await this.get(
       "/post",
@@ -1910,21 +1918,21 @@ export class PieFedApi implements ApiBlueprint<null> {
     return {} as any;
   }
 
-  async register(form: Forms.Register) {
+  async register() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
-    const json = await this.get(
-      "/resolve_object",
-      {
-        q: form.q,
-      },
-      options,
-    );
-
     try {
+      const json = await this.get(
+        "/resolve_object",
+        {
+          q: form.q,
+        },
+        options,
+      );
+
       const { post, community, person, comment } = z
         .object({
           post: pieFedPostViewSchema.nullish(),
