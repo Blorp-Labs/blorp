@@ -26,6 +26,17 @@ for (const { name, base } of tabs) {
     });
 
     test("loads search results", async ({ page }) => {
+      await page.route("**/api/v3/search*", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(SEARCH_RES),
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json",
+          },
+        });
+      });
       await page.goto(`${base}s?q=linux+phone`);
       const postCard = page
         .getByTestId(base === "/communities/" ? "community-card" : "post-card")
@@ -36,7 +47,7 @@ for (const { name, base } of tabs) {
     });
 
     test("loads community search results", async ({ page }) => {
-      await page.route("**/api/v3/search", async (route) => {
+      await page.route("**/api/v3/search*", async (route) => {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -308,6 +319,119 @@ const SEARCH_RES = {
       unread_comments: 152,
     },
   ],
-  communities: [],
+  communities: [
+    {
+      community: {
+        id: 37,
+        name: "linux",
+        title: "Linux",
+        description:
+          'From Wikipedia, the free encyclopedia\n\nLinux is a family of open source Unix-like operating systems based on the Linux kernel, an operating system kernel first released on September 17, 1991 by Linus Torvalds. Linux is typically packaged in a Linux distribution (or distro for short).\n\nDistributions include the Linux kernel and supporting system software and libraries, many of which are provided by the GNU Project. Many Linux distributions use the word "Linux" in their name, but the Free Software Foundation uses the name GNU/Linux to emphasize the importance of GNU software, causing some controversy.\n\n\n### Rules\n* Posts must be relevant to operating systems running the Linux kernel. GNU/Linux or otherwise.\n* No misinformation\n* No NSFW content\n* No hate speech, bigotry, etc \n\n### Related Communities\n* [!opensource@lemmy.ml](https://lemmy.ml/c/opensource)\n* [!libre_culture@lemmy.ml](https://lemmy.ml/c/libre_culture) \n* [!technology@lemmy.ml](https://lemmy.ml/c/technology) \n* [!libre_hardware@lemmy.ml](https://lemmy.ml/c/libre_hardware) \n\nCommunity icon by [Alpár-Etele Méder](https://www.iconfinder.com/pocike), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)',
+        removed: false,
+        published: "2019-06-01T15:07:36.179766Z",
+        updated: "2022-06-18T17:36:20.924834Z",
+        deleted: false,
+        nsfw: false,
+        actor_id: "https://lemmy.ml/c/linux",
+        local: false,
+        icon: "https://lemmy.ml/pictrs/image/q98XK4sKtw.png",
+        hidden: false,
+        posting_restricted_to_mods: false,
+        instance_id: 3,
+        visibility: "Public",
+      },
+      subscribed: "NotSubscribed",
+      blocked: false,
+      counts: {
+        community_id: 37,
+        subscribers: 59769,
+        posts: 8237,
+        comments: 212073,
+        published: "2019-06-01T15:07:36.179766Z",
+        users_active_day: 599,
+        users_active_week: 2349,
+        users_active_month: 5710,
+        users_active_half_year: 15169,
+        subscribers_local: 14413,
+      },
+      banned_from_community: false,
+    },
+    {
+      community: {
+        id: 11684,
+        name: "linuxmemes",
+        title: "linuxmemes",
+        description:
+          "Hint: `:q!`\n\n----\n\n\n::: spoiler Sister communities:\n* !tech_memes@lemmy.world\n* !memes@lemmy.world\n* !lemmyshitpost@lemmy.world\n* !risa@startrek.website\n:::\n\n---\n\nCommunity rules (click to expand)\n:::spoiler 1. Follow the site-wide rules\n- Instance-wide TOS: https://legal.lemmy.world/tos/\n- Lemmy code of conduct: https://join-lemmy.org/docs/code_of_conduct.html\n:::\n:::spoiler 2. Be civil\n- Understand the difference between a joke and an insult.\n- Do not harrass or attack users *for any reason*. This includes using blanket terms, like \"every user of *thing*\".\n- Don't get baited into back-and-forth insults. We are not animals.\n- Leave remarks of \"peasantry\" to the PCMR community. If you dislike an OS/service/application, attack the *thing* you dislike, not the individuals who use it. Some people may not have a choice.\n- Bigotry will not be tolerated.\n:::\n::: spoiler 3. Post Linux-related content\n- Including Unix and BSD.\n- Non-Linux content is acceptable as long as it makes a reference to Linux. For example, the poorly made mockery of `sudo` in Windows.\n- No porn, no politics, no trolling or ragebaiting.\n:::\n:::spoiler 4. No recent reposts\n- Everybody uses Arch btw, can't quit Vim, <loves/tolerates/hates> systemd, and wants to interject for a moment. You can stop now.\n:::\n:::spoiler 5. 🇬🇧 Language/язык/Sprache\n- **This is primarily an English-speaking community.** 🇬🇧🇦🇺🇺🇸\n- Comments written in other languages are allowed.\n- The substance of a post should be comprehensible for people who only speak English.\n- Titles and post bodies written in other languages will be allowed, but only as long as the above rule is observed.\n:::\n:::spoiler 6. (NEW!) Regarding public figures\nWe all have our opinions, and certain public figures can be divisive. Keep in mind that **this is a community for memes and light-hearted fun**, not for airing grievances or leveling accusations.\n- Keep discussions polite and free of disparagement.\n- We are never in possession of all of the facts. Defamatory comments will not be tolerated.\n- Discussions that get too heated will be locked and offending comments removed.\n:::\n&nbsp;\n\nPlease report posts and comments that break these rules!\n\n---\n**Important: never execute code or follow advice that you don't understand or can't verify**, especially here. The word of the day is *credibility*. This is a meme community -- even the most helpful comments might just be shitposts that can damage your system. Be aware, be smart, don't remove France.",
+        removed: false,
+        published: "2023-06-15T20:22:32.340233Z",
+        updated: "2025-04-01T03:50:19.256683Z",
+        deleted: false,
+        nsfw: false,
+        actor_id: "https://lemmy.world/c/linuxmemes",
+        local: true,
+        icon: "https://lemmy.world/pictrs/image/4271bdc6-5114-4749-a5a9-afbc82a99c78.png",
+        banner:
+          "https://lemmy.world/pictrs/image/4701d6d0-a080-461e-8a33-5927dd1809e6.png",
+        hidden: false,
+        posting_restricted_to_mods: false,
+        instance_id: 1,
+        visibility: "Public",
+      },
+      subscribed: "NotSubscribed",
+      blocked: false,
+      counts: {
+        community_id: 11684,
+        subscribers: 28100,
+        posts: 1905,
+        comments: 111439,
+        published: "2023-06-15T20:22:32.340233Z",
+        users_active_day: 558,
+        users_active_week: 3355,
+        users_active_month: 7347,
+        users_active_half_year: 17458,
+        subscribers_local: 11650,
+      },
+      banned_from_community: false,
+    },
+    {
+      community: {
+        id: 8259,
+        name: "linux_gaming",
+        title: "Linux Gaming",
+        description:
+          "Discussions and news about gaming on the GNU/Linux family of operating systems (including the Steam Deck). Potentially a `$HOME` away from home for disgruntled /r/linux_gaming denizens of the redditarian demesne.\n\nThis page can be subscribed to via RSS.\n\nOriginal /r/linux_gaming pengwing by uoou.\n\nNo memes/shitposts/low-effort posts, please.\n\n# Resources\n\n**WWW:**\n\n* [Linux Gaming wiki](https://linux-gaming.kwindu.eu/index.php)\n* [Gaming on Linux](https://www.gamingonlinux.com/)\n* [ProtonDB](https://www.protondb.com/)\n* [Lutris](https://lutris.net/)\n* [PCGamingWiki](http://pcgamingwiki.com/wiki/Home)\n* [LibreGameWiki](https://libregamewiki.org/Main_Page)\n* [Boiling Steam](https://boilingsteam.com/)\n* [Phoronix](https://www.phoronix.com/)\n* [Linux VR Adventures](https://lvra.gitlab.io/)\n\n**Discord:**\n\n* [Gaming on Linux](https://discord.gg/xAPJFX54Ex)\n* [Linux Gamers Group](https://discord.gg/BaWqd4r)\n* [Linux Gaming](https://discord.gg/UqenWumc9p)\n* [Lutris](https://discord.gg/8mzUKZepG9)\n\n**IRC:**\n\n* [Gaming on Linux](https://www.gamingonlinux.com/irc/)\n\n**Matrix:**\n\n* [Linux Gamers Group (space)](https://matrix.to/#/!yTNaIjgcibeYZIpsQi:matrix.org) \n* [Linux Gamers Group (“home” room)](https://matrix.to/#/!cZCRCLmQmHAGnBqmIE:matrix.org)\n* [Linux Gaming](https://matrix.to/#/#linux_gaming:matrix.org)\n\n**Telegram:**\n\n* [Gaming on Linux](https://t.me/linux_gaming)",
+        removed: false,
+        published: "2023-06-14T10:26:22.867411Z",
+        updated: "2025-11-15T05:16:00.861705Z",
+        deleted: false,
+        nsfw: false,
+        actor_id: "https://lemmy.world/c/linux_gaming",
+        local: true,
+        icon: "https://lemmy.world/pictrs/image/1f477879-f269-4fc2-805c-3cb0fe552f40.png",
+        banner:
+          "https://lemmy.world/pictrs/image/4d8b58ac-814f-425c-afd1-9e3573a35718.png",
+        hidden: false,
+        posting_restricted_to_mods: false,
+        instance_id: 1,
+        visibility: "Public",
+      },
+      subscribed: "NotSubscribed",
+      blocked: false,
+      counts: {
+        community_id: 8259,
+        subscribers: 22252,
+        posts: 2143,
+        comments: 27891,
+        published: "2023-06-14T10:26:22.867411Z",
+        users_active_day: 478,
+        users_active_week: 2013,
+        users_active_month: 5122,
+        users_active_half_year: 10199,
+        subscribers_local: 10013,
+      },
+      banned_from_community: false,
+    },
+  ],
   users: [],
 };

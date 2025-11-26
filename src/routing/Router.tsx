@@ -106,15 +106,18 @@ function useMenuSwipeEnabled(side: "from-right" | "from-left") {
 }
 
 const HOME_STACK = [
-  <Route key="/home/*" path="/home/*" component={NotFound} />,
-  <Route key="/home" exact path="/home" component={HomeFeed} />,
-  <Route key="/home/s" exact path="/home/s" component={Search} />,
-  <Route
-    key="/home/c/:communityName"
-    exact
-    path="/home/c/:communityName"
-    component={CommunityFeed}
-  />,
+  <Route key="/home/*" path="/home/*">
+    <NotFound />
+  </Route>,
+  <Route key="/home" exact path="/home">
+    <HomeFeed />
+  </Route>,
+  <Route key="/home/s" exact path="/home/s">
+    <Search />
+  </Route>,
+  <Route key="/home/c/:communityName" exact path="/home/c/:communityName">
+    <CommunityFeed />
+  </Route>,
   <Route key="/home/c/:communityName/s" exact path="/home/c/:communityName/s">
     <Search scope="community" />
   </Route>,
@@ -128,55 +131,58 @@ const HOME_STACK = [
     key="/home/c/:communityName/sidebar"
     exact
     path="/home/c/:communityName/sidebar"
-    component={CommunitySidebar}
-  />,
+  >
+    <CommunitySidebar />
+  </Route>,
   <Route
     key="/home/c/:communityName/posts/:post"
     exact
     path="/home/c/:communityName/posts/:post"
-    component={Post}
-  />,
+  >
+    <Post />
+  </Route>,
   <Route
     key="/home/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/home/c/:communityName/posts/:post/comments/:comment"
-    component={Post}
-  />,
-  <Route key="/home/u/:userId" exact path="/home/u/:userId" component={User} />,
-  <Route key="/home/saved" exact path="/home/saved" component={SavedFeed} />,
-  <Route
-    key="/home/lightbox"
-    exact
-    path="/home/lightbox"
-    component={LightBoxPostFeed}
-  />,
+  >
+    <Post />
+  </Route>,
+  <Route key="/home/u/:userId" exact path="/home/u/:userId">
+    <User />
+  </Route>,
+  <Route key="/home/saved" exact path="/home/saved">
+    <SavedFeed />
+  </Route>,
+  <Route key="/home/lightbox" exact path="/home/lightbox">
+    <LightBoxPostFeed />
+  </Route>,
   <Route
     key="/home/lightbox/c/:communityName"
     exact
     path="/home/c/:communityName/lightbox"
-    component={LightBoxPostFeed}
-  />,
-  <Route
-    key="/home/lightbox/:imgUrl"
-    exact
-    path="/home/lightbox/:imgUrl"
-    component={LightBox}
-  />,
+  >
+    <LightBoxPostFeed />
+  </Route>,
+  <Route key="/home/lightbox/:imgUrl" exact path="/home/lightbox/:imgUrl">
+    <LightBox />
+  </Route>,
 ];
 
 const CREATE_POST_STACK = [
-  <Route key="/create/*" path="/create_post/*" component={NotFound} />,
+  <Route key="/create/*" path="/create_post/*">
+    <NotFound />
+  </Route>,
   <Route key="/create" exact path="/create_post" component={CreatePost} />,
 ];
 
 const COMMUNITIES_STACK = [
-  <Route key="/communities/*" path="/communities/*" component={NotFound} />,
-  <Route
-    key="/communities"
-    exact
-    path="/communities"
-    component={CommunitiesFeed}
-  />,
+  <Route key="/communities/*" path="/communities/*">
+    <NotFound />
+  </Route>,
+  <Route key="/communities" exact path="/communities">
+    <CommunitiesFeed />
+  </Route>,
   <Route key="/communities/s" exact path="/communities/s">
     <Search defaultType="communities" />
   </Route>,
@@ -190,8 +196,9 @@ const COMMUNITIES_STACK = [
     key="/communities/c/:communityName"
     exact
     path="/communities/c/:communityName"
-    component={CommunityFeed}
-  />,
+  >
+    <CommunityFeed />
+  </Route>,
   <Route
     key="/communities/c/:communityName/s"
     exact
@@ -203,50 +210,55 @@ const COMMUNITIES_STACK = [
     key="/communities/c/:communityName/sidebar"
     exact
     path="/communities/c/:communityName/sidebar"
-    component={CommunitySidebar}
-  />,
+  >
+    <CommunitySidebar />
+  </Route>,
   <Route
     key="/communities/c/:communityName/posts/:post"
     exact
     path="/communities/c/:communityName/posts/:post"
-    component={Post}
-  />,
+  >
+    <Post />
+  </Route>,
   <Route
     key="/communities/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/communities/c/:communityName/posts/:post/comments/:comment"
-    component={Post}
-  />,
-  <Route
-    key="/communities/u/:userId"
-    exact
-    path="/communities/u/:userId"
-    component={User}
-  />,
+  >
+    <Post />
+  </Route>,
+  <Route key="/communities/u/:userId" exact path="/communities/u/:userId">
+    <User />
+  </Route>,
   <Route
     key="/communities/lightbox/c/:communityName"
     exact
     path="/communities/c/:communityName/lightbox"
-    component={LightBoxPostFeed}
-  />,
+  >
+    <LightBoxPostFeed />
+  </Route>,
   <Route
     key="/communities/lightbox/:imgUrl"
     exact
     path="/communities/lightbox/:imgUrl"
-    component={LightBox}
-  />,
+  >
+    <LightBox />
+  </Route>,
 ];
 
 const INBOX_STACK = [
-  <Route key="/inbox/*" path="/inbox/*" component={NotFound} />,
-  <Route key="/inbox" exact path="/inbox" component={Inbox} />,
-  <Route key="/inbox/s" exact path="/inbox/s" component={Search} />,
-  <Route
-    key="/inbox/c/:communityName"
-    exact
-    path="/inbox/c/:communityName"
-    component={CommunityFeed}
-  />,
+  <Route key="/inbox/*" path="/inbox/*">
+    <NotFound />
+  </Route>,
+  <Route key="/inbox" exact path="/inbox">
+    <Inbox />
+  </Route>,
+  <Route key="/inbox/s" exact path="/inbox/s">
+    <Search />
+  </Route>,
+  <Route key="/inbox/c/:communityName" exact path="/inbox/c/:communityName">
+    <CommunityFeed />
+  </Route>,
   <Route key="/inbox/c/:communityName/s" exact path="/inbox/c/:communityName/s">
     <Search scope="community" />
   </Route>,
@@ -260,66 +272,71 @@ const INBOX_STACK = [
     key="/inbox/c/:communityName/sidebar"
     exact
     path="/inbox/c/:communityName/sidebar"
-    component={CommunitySidebar}
-  />,
+  >
+    <CommunitySidebar />
+  </Route>,
   <Route
     key="/inbox/c/:communityName/posts/:post"
     exact
     path="/inbox/c/:communityName/posts/:post"
-    component={Post}
-  />,
+  >
+    <Post />
+  </Route>,
   <Route
     key="/inbox/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/inbox/c/:communityName/posts/:post/comments/:comment"
-    component={Post}
-  />,
-  <Route
-    key="/inbox/u/:userId"
-    exact
-    path="/inbox/u/:userId"
-    component={User}
-  />,
+  >
+    <Post />
+  </Route>,
+  <Route key="/inbox/u/:userId" exact path="/inbox/u/:userId">
+    <User />
+  </Route>,
   <Route
     key="/inbox/lightbox/c/:communityName"
     exact
     path="/inbox/c/:communityName/lightbox"
-    component={LightBoxPostFeed}
-  />,
-  <Route
-    key="/inbox/lightbox"
-    exact
-    path="/inbox/lightbox/:imgUrl"
-    component={LightBox}
-  />,
+  >
+    <LightBoxPostFeed />
+  </Route>,
+  <Route key="/inbox/lightbox" exact path="/inbox/lightbox/:imgUrl">
+    <LightBox />
+  </Route>,
 ];
 
 const MESSAGES_STACK = [
-  <Route key="/messages/*" path="/messages/*" component={NotFound} />,
-  <Route key="/message" exact path="/messages" component={Messages} />,
-  <Route
-    key="/message/chat/:userId"
-    exact
-    path="/messages/chat/:userId"
-    component={MessagesChat}
-  />,
+  <Route key="/messages/*" path="/messages/*">
+    <NotFound />
+  </Route>,
+  <Route key="/message" exact path="/messages">
+    <Messages />
+  </Route>,
+  <Route key="/message/chat/:userId" exact path="/messages/chat/:userId">
+    <MessagesChat />
+  </Route>,
 ];
 
 const SETTINGS = [
-  <Route key="/settings/*" path="/settings/*" component={NotFound} />,
-  <Route key="/settings" exact path="/settings" component={SettingsPage} />,
+  <Route key="/settings/*" path="/settings/*">
+    <NotFound />
+  </Route>,
+  <Route key="/settings" exact path="/settings">
+    <SettingsPage />
+  </Route>,
   <Route
     key="/settings/manage-blocks/:index"
     exact
     path="/settings/manage-blocks/:index"
-    component={ManageBlocks}
-  />,
+  >
+    <ManageBlocks />
+  </Route>,
   <Route
     key="/settings/UpdateProfile/:index"
     exact
     path="/settings/update-profile/:index"
-    component={UpdateProfile}
-  />,
+  >
+    <UpdateProfile />
+  </Route>,
 ];
 
 function Tabs() {
@@ -397,16 +414,36 @@ function Tabs() {
                 to="/home/u/:userId"
               />
 
-              <Route exact path="/instance" component={Instance} />
-              <Route exact path="/post/:id" component={ApResolver} />
-              <Route exact path="/user/:id" component={ApResolver} />
-              <Route exact path="/c/:id" component={ApResolver} />
-              <Route exact path="/download" component={Download} />
-              <Route exact path="/support" component={Support} />
-              <Route exact path="/privacy" component={Privacy} />
-              <Route exact path="/licenses" component={OSLicenses} />
-              <Route exact path="/terms" component={Terms} />
-              <Route exact path="/csae" component={CSAE} />
+              <Route exact path="/instance">
+                <Instance />
+              </Route>
+              <Route exact path="/post/:id">
+                <ApResolver />
+              </Route>
+              <Route exact path="/user/:id">
+                <ApResolver />
+              </Route>
+              <Route exact path="/c/:id">
+                <ApResolver />
+              </Route>
+              <Route exact path="/download">
+                <Download />
+              </Route>
+              <Route exact path="/support">
+                <Support />
+              </Route>
+              <Route exact path="/privacy">
+                <Privacy />
+              </Route>
+              <Route exact path="/licenses">
+                <OSLicenses />
+              </Route>
+              <Route exact path="/terms">
+                <Terms />
+              </Route>
+              <Route exact path="/csae">
+                <CSAE />
+              </Route>
               <Redirect exact from="/" to="/home" />
             </IonRouterOutlet>
 
