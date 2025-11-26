@@ -84,7 +84,7 @@ export function Link<Path extends RoutePath>({
   ...rest
 }: LinkProps<Path>) {
   if (disable) {
-    return <span {...rest} />;
+    return <span {...(rest as any)} />;
   }
   try {
     const toString = compile(to, { encode: false })(params);

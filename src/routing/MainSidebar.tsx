@@ -421,7 +421,9 @@ function SidebarLink<T extends RoutePath>({
         params={params as any}
         className="px-4 text-muted-foreground flex flex-row items-center gap-2"
       >
-        {icon} {children}
+        <>
+          {icon} {children}
+        </>
       </Link>
     </IonMenuToggle>
   );
