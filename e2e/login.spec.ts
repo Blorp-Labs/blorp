@@ -6,21 +6,15 @@ const USERNAME = faker.internet.username();
 const JWT = "sdfkhsdkfjhsdfkjshdfksjdhfskjdhfskjhsfsdfsdkjfhs";
 
 test("login", async ({ page }, testInfo) => {
-  await page.route("**/data/instance.full.json", async (route) => {
+  await page.route("**/v1/instances.json", async (route) => {
     const mockPayload = [
       {
-        name: "Lemmy.World",
-        baseurl: "lemmy.world",
-        url: "https://lemmy.world/",
-        score: 1,
-        open: true,
-        private: false,
-        counts: {
-          users_active_month: 20000,
-          posts: 100000,
-        },
-        tags: [],
-        nsfw: false,
+        url: "https://lemmy.world",
+        host: "lemmy.world",
+        description: "A generic Lemmy server for everyone to use.",
+        icon: "https://lemmy.world/pictrs/image/0fd47927-ca3a-4d2c-b2e4-a25353786671.png",
+        software: "lemmy",
+        registrationMode: "RequireApplication",
       },
     ];
     await route.fulfill({
