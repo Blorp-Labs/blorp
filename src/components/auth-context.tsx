@@ -296,7 +296,7 @@ function InstanceSelectionPage({
     >
       <div className="bg-background py-3 border-b-[.5px] sticky top-0 z-10">
         <Input
-          placeholder="Search for your instance OR enter one thats not in the list"
+          placeholder="Search for your instance OR enter a url thats not in the list"
           defaultValue={search}
           onChange={(e) => setSearch(e.target.value)}
           autoCapitalize="none"
