@@ -3,6 +3,7 @@ import {
   InfiniteData,
   useQueryClient,
   useMutation,
+  UseQueryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -49,6 +50,8 @@ import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
+
+type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
 function extractErrorContent(err: Error) {
   const content = err.message || err.name;
@@ -652,13 +655,17 @@ function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
 }
 
-export function useSite({ instance }: { instance: string }) {
+export function useSite(
+  { instance }: { instance: string },
+  options?: QueryOverwriteOptions,
+) {
   return useQuery({
     queryKey: ["getSite", instance],
     queryFn: async ({ signal }) => {
       const api = await apiClient({ instance });
       return await api.getSite({ signal });
     },
+    ...options,
   });
 }
 
