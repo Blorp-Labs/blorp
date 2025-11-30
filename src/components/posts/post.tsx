@@ -35,7 +35,6 @@ import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 
@@ -50,7 +49,7 @@ function Notice({ children }: { children: React.ReactNode }) {
 export interface PostProps {
   apId: string;
   detailView?: boolean;
-  featuredContext?: "community" | "home" | "user" | "search";
+  featuredContext?: "community" | "home" | "user" | "search" | "feed";
   modApIds?: string[];
 }
 
@@ -342,6 +341,7 @@ function LargePostCard({
         }
         showCommunity={
           featuredContext === "home" ||
+          featuredContext === "feed" ||
           featuredContext === "user" ||
           featuredContext === "search"
             ? true
