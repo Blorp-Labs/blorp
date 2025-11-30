@@ -4,6 +4,13 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 
+type CommunityListingType =
+  | "All"
+  | "Local"
+  | "Subscribed"
+  | "ModeratorView"
+  | "Feeds";
+
 type SortsStore = {
   communitySort: string;
   setCommunitySort: (sort: string) => void;
@@ -13,8 +20,8 @@ type SortsStore = {
   setPostSort: (sort: string) => void;
   listingType: ListingType;
   setListingType: (type: ListingType) => void;
-  communitiesListingType: ListingType;
-  setCommunitiesListingType: (type: ListingType) => void;
+  communitiesListingType: CommunityListingType;
+  setCommunitiesListingType: (type: CommunityListingType) => void;
   reset: () => void;
 };
 

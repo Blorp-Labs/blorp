@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
+  queryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -611,6 +612,21 @@ export function useListCommunities(
         : true),
   });
 }
+
+export function useListFeeds(options?: QueryOverwriteOptions) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const queryKey = [...queryKeyPrefix, "getFeeds"];
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async (form: Forms.GetFeeds) => {
+      return await (await api).getFeeds(form);
+    },
+    getNextPageParam: () => null,
+    initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
 export function useCommunity({
   enabled = true,
   ...form
