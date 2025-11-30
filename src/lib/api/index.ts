@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
+  queryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -554,7 +555,10 @@ function useListCommunitiesKey() {
   return [...queryKeyPrefix, "listCommunities"];
 }
 
-export function useListCommunities(form: Forms.GetCommunities) {
+export function useListCommunities(
+  form: Forms.GetCommunities,
+  options?: QueryOverwriteOptions,
+) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -569,6 +573,8 @@ export function useListCommunities(form: Forms.GetCommunities) {
   }
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+
+  const enabled = options?.enabled ?? true;
 
   return useThrottledInfiniteQuery({
     queryKey,
@@ -596,9 +602,25 @@ export function useListCommunities(form: Forms.GetCommunities) {
     },
     getNextPageParam: (data) => data.nextPage,
     initialPageParam: INIT_PAGE_TOKEN,
-    enabled: form.type === "Subscribed" ? isLoggedIn : true,
+    ...options,
+    enabled: enabled && form.type === "Subscribed" ? isLoggedIn : true,
   });
 }
+
+export function useListFeeds(options?: QueryOverwriteOptions) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const queryKey = [...queryKeyPrefix, "getFeeds"];
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async (form: Forms.GetFeeds) => {
+      return await (await api).getFeeds(form);
+    },
+    getNextPageParam: () => null,
+    initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
 export function useCommunity({
   enabled = true,
   ...form

@@ -20,7 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { useAvailableSorts } from "../lib/api";
+import { useAvailableSorts, useSite, useSoftware } from "../lib/api";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
@@ -470,6 +470,8 @@ export function CommunityFilter() {
     instanceHost = url.host;
   } catch {}
 
+  const software = useSoftware();
+
   const LISTING_TYPE_OPTIONS = useMemo(
     () =>
       [
@@ -487,10 +489,17 @@ export function CommunityFilter() {
                 label: "Subscribed",
                 value: "Subscribed",
               },
-
               {
                 label: "Moderating",
                 value: "ModeratorView",
+              },
+            ] as const)
+          : []),
+        ...(software === "piefed"
+          ? ([
+              {
+                label: "Feeds",
+                value: "Feeds",
               },
             ] as const)
           : []),
@@ -499,7 +508,7 @@ export function CommunityFilter() {
         value: opt.value,
         onClick: () => setListingType(opt.value),
       })),
-    [isLoggedIn, instanceHost, setListingType],
+    [isLoggedIn, instanceHost, setListingType, software],
   );
 
   return (
