@@ -4,6 +4,7 @@ import {
   useModeratingCommunities,
   useSubscribedCommunities,
 } from "@/src/lib/api/index";
+import { useListFeeds } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -27,6 +28,40 @@ import { Link, resolveRoute } from "@/src/routing/index";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
+import { Schemas } from "../lib/api/adapters/api-blueprint";
+import _ from "lodash";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { cn } from "../lib/utils";
+import { abbriviateNumber } from "../lib/format";
+
+function FeedItem({ icon, name, communityCount, slug }: Schemas.Feed) {
+  const host = slug?.split("@")?.[1];
+  return (
+    <div className="flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground">
+      <Avatar className="h-9 w-9">
+        <AvatarImage
+          src={icon ?? undefined}
+          className="object-cover absolute inset-0"
+        />
+        <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+      </Avatar>
+
+      <div
+        className={cn("flex flex-col gap-0.5 flex-1 overflow-hidden text-left")}
+      >
+        <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
+          {name}
+          <span className="text-muted-foreground italic">@{host}</span>
+        </span>
+        {_.isNumber(communityCount) && (
+          <span className="text-xs text-muted-foreground">
+            {abbriviateNumber(communityCount)} communities
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const NO_ITEMS = "NO_ITEMS";
 
@@ -54,13 +89,29 @@ export default function Communities() {
 
   const communitiesQuery = useListCommunities(
     {
-      type: listingType,
       sort: communitySort,
+      type: listingType === "Feeds" ? undefined : listingType,
     },
     {
       enabled: listingType !== "ModeratorView",
     },
+    // {
+    //   enabled: listingType !== "Feeds",
+    // },
   );
+
+  const feeds = useListFeeds({
+    enabled: listingType === "Feeds",
+  });
+
+  // const [communities, feedsData] = useMemo(
+  //   () =>
+  //     [
+  //       data?.pages.map((p) => p.communities).flat(),
+  //       feeds.data?.pages.flatMap((p) => p.feeds),
+  //     ] as const,
+  //   [data?.pages, feeds.data?.pages],
+  // );
 
   const { communities } = useMemo(() => {
     const communities = communitiesQuery.data?.pages
@@ -102,7 +153,7 @@ export default function Communities() {
   }
 
   const vlist = (
-    <VirtualList<string>
+    <VirtualList<string | Schemas.Feed>
       key={communitySort + listingType}
       fullscreen
       scrollHost
@@ -117,7 +168,11 @@ export default function Communities() {
           );
         }
 
-        return <MemoedListItem communitySlug={item} />;
+        if (_.isString(item)) {
+          return <MemoedListItem communitySlug={item} />;
+        }
+
+        return <FeedItem {...item} />;
       }}
       onEndReached={() => {
         if (

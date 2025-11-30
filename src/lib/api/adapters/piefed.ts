@@ -107,6 +107,19 @@ export const pieFedCommunitySchema = z.object({
   //updated: z.string().optional(),
 });
 
+export const pieFedFeedSchema = z.object({
+  actor_id: z.string(),
+  banner: z.string().nullish(),
+  communities_count: z.number(),
+  subscriptions_count: z.number(),
+  description: z.string(),
+  description_html: z.string(),
+  icon: z.string().nullish(),
+  id: z.number(),
+  name: z.string(),
+  nsfw: z.boolean(),
+});
+
 export const pieFedPostCountsSchema = z.object({
   comments: z.number(),
   downvotes: z.number(),
@@ -1048,6 +1061,35 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
         communities: communities.map((c) => convertCommunity(c, "partial")),
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async getFeeds(form: Forms.GetFeeds, options?: RequestOptions) {
+    const json = await this.get("/feed/list", {}, options);
+    try {
+      const { feeds } = z
+        .object({
+          feeds: z.array(pieFedFeedSchema),
+        })
+        .parse(json);
+
+      return {
+        feeds: feeds.map((feed) => ({
+          id: feed.id,
+          apId: feed.actor_id,
+          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+          name: feed.name,
+          icon: feed.icon ?? null,
+          banner: feed.banner ?? null,
+          nsfw: feed.nsfw,
+          communityCount: feed.communities_count,
+          subscriberCount: feed.subscriptions_count,
+        })),
+        nextCursor: null,
       };
     } catch (err) {
       console.log(err);
