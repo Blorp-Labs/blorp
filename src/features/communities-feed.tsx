@@ -33,33 +33,45 @@ import _ from "lodash";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { cn } from "../lib/utils";
 import { abbriviateNumber } from "../lib/format";
+import { useLinkContext } from "../routing/link-context";
 
-function FeedItem({ icon, name, communityCount, slug }: Schemas.Feed) {
+function FeedCard({ icon, name, communityCount, slug, id }: Schemas.Feed) {
+  const ctx = useLinkContext();
   const host = slug?.split("@")?.[1];
   return (
-    <div className="flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground">
-      <Avatar className="h-9 w-9">
-        <AvatarImage
-          src={icon ?? undefined}
-          className="object-cover absolute inset-0"
-        />
-        <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
-      </Avatar>
-
-      <div
-        className={cn("flex flex-col gap-0.5 flex-1 overflow-hidden text-left")}
+    <ContentGutters className="md:contents">
+      <Link
+        className="mt-1 flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground"
+        to={`${ctx.root}f/:apId`}
+        params={{
+          apId: String(id),
+        }}
       >
-        <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
-          {name}
-          <span className="text-muted-foreground italic">@{host}</span>
-        </span>
-        {_.isNumber(communityCount) && (
-          <span className="text-xs text-muted-foreground">
-            {abbriviateNumber(communityCount)} communities
+        <Avatar className="h-9 w-9">
+          <AvatarImage
+            src={icon ?? undefined}
+            className="object-cover absolute inset-0"
+          />
+          <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+        </Avatar>
+
+        <div
+          className={cn(
+            "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
+          )}
+        >
+          <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
+            {name}
+            <span className="text-muted-foreground italic">@{host}</span>
           </span>
-        )}
-      </div>
-    </div>
+          {_.isNumber(communityCount) && (
+            <span className="text-xs text-muted-foreground">
+              {abbriviateNumber(communityCount)} communities
+            </span>
+          )}
+        </div>
+      </Link>
+    </ContentGutters>
   );
 }
 
@@ -172,7 +184,7 @@ export default function Communities() {
           return <MemoedListItem communitySlug={item} />;
         }
 
-        return <FeedItem {...item} />;
+        return <FeedCard {...item} />;
       }}
       onEndReached={() => {
         if (

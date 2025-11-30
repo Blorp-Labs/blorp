@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { buildRoute } from "./utils";
 
+const feedApIdSchema = z.object({
+  apId: z.string(),
+});
+
 const communityNameSchema = z.object({
   communityName: z.string(),
 });
@@ -43,6 +47,8 @@ export const routeDefs = {
   ...buildRoute("/home/*"),
   ...buildRoute("/home/s"),
   ...buildRoute("/home/sidebar"),
+  ...buildRoute("/home/f/:apId", feedApIdSchema),
+  ...buildRoute("/home/f/:apId/sidebar", feedApIdSchema),
   ...buildRoute("/home/c/:communityName", communityNameSchema),
   ...buildRoute("/home/c/:communityName/s", searchSchema),
   ...buildRoute("/home/c/:communityName/sidebar", communityNameSchema),
@@ -61,6 +67,8 @@ export const routeDefs = {
   ...buildRoute("/communities/*"),
   ...buildRoute("/communities/s"),
   ...buildRoute("/communities/sidebar"),
+  ...buildRoute("/communities/f/:apId", feedApIdSchema),
+  ...buildRoute("/communities/f/:apId/sidebar", feedApIdSchema),
   ...buildRoute("/communities/c/:communityName", communityNameSchema),
   ...buildRoute("/communities/c/:communityName/s", searchSchema),
   ...buildRoute("/communities/c/:communityName/sidebar", communityNameSchema),
@@ -82,6 +90,8 @@ export const routeDefs = {
   ...buildRoute("/inbox/*"),
   ...buildRoute("/inbox/s"),
   ...buildRoute("/inbox/sidebar"),
+  ...buildRoute("/inbox/f/:apId", feedApIdSchema),
+  ...buildRoute("/inbox/f/:apId/sidebar", feedApIdSchema),
   ...buildRoute("/inbox/c/:communityName", communityNameSchema),
   ...buildRoute("/inbox/c/:communityName/s", searchSchema),
   ...buildRoute("/inbox/c/:communityName/sidebar", communityNameSchema),
