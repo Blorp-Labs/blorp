@@ -143,6 +143,7 @@ const communitySchema = z.object({
     .optional(),
 });
 const feedSchema = z.object({
+  createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
   slug: z.string(),
@@ -152,6 +153,8 @@ const feedSchema = z.object({
   nsfw: z.boolean(),
   communityCount: z.number(),
   subscriberCount: z.number(),
+  description: z.string().nullable(),
+  communitySlugs: z.array(z.string()),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -416,6 +419,7 @@ export namespace Forms {
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
+    feedId?: number;
     savedOnly?: boolean;
   };
 
@@ -752,6 +756,7 @@ export abstract class ApiBlueprint<C> {
     options?: RequestOptions,
   ): Promise<{
     feeds: Schemas.Feed[];
+    communities: Schemas.Community[];
     nextCursor: null;
   }>;
 

@@ -53,7 +53,7 @@ function Notice({ children }: { children: React.ReactNode }) {
 export interface PostProps {
   apId: string;
   detailView?: boolean;
-  featuredContext?: "community" | "home" | "user" | "search";
+  featuredContext?: "community" | "home" | "user" | "search" | "feed";
   modApIds?: string[];
 }
 
@@ -345,6 +345,7 @@ function LargePostCard({
         }
         showCommunity={
           featuredContext === "home" ||
+          featuredContext === "feed" ||
           featuredContext === "user" ||
           featuredContext === "search"
             ? true

@@ -108,6 +108,7 @@ export const pieFedCommunitySchema = z.object({
 });
 
 export const pieFedFeedSchema = z.object({
+  published: z.string(),
   actor_id: z.string(),
   banner: z.string().nullish(),
   communities_count: z.number(),
@@ -118,6 +119,7 @@ export const pieFedFeedSchema = z.object({
   id: z.number(),
   name: z.string(),
   nsfw: z.boolean(),
+  communities: z.array(pieFedCommunitySchema),
 });
 
 export const pieFedPostCountsSchema = z.object({
@@ -1010,6 +1012,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         sort,
         type_: form.type,
         saved_only: form.savedOnly,
+        feed_id: form.feedId,
       },
       options,
     );
@@ -1077,8 +1080,20 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
+      const communities = feeds.flatMap(({ communities }) =>
+        communities.map((community) =>
+          convertCommunity(
+            {
+              community,
+            },
+            "partial",
+          ),
+        ),
+      );
+
       return {
         feeds: feeds.map((feed) => ({
+          createdAt: feed.published,
           id: feed.id,
           apId: feed.actor_id,
           slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
@@ -1088,7 +1103,14 @@ export class PieFedApi implements ApiBlueprint<null> {
           nsfw: feed.nsfw,
           communityCount: feed.communities_count,
           subscriberCount: feed.subscriptions_count,
+          description: feed.description ?? null,
+          communitySlugs: feed.communities.map(
+            (community) =>
+              createSlug({ apId: community.actor_id, name: community.name })
+                .slug,
+          ),
         })),
+        communities,
         nextCursor: null,
       };
     } catch (err) {
