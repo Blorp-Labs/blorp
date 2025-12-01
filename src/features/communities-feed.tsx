@@ -102,18 +102,15 @@ export default function Communities() {
   const communitiesQuery = useListCommunities(
     {
       sort: communitySort,
-      type: listingType === "Feeds" ? undefined : listingType,
+      type: listingType === "All Feeds" ? undefined : listingType,
     },
     {
-      enabled: listingType !== "ModeratorView",
+      enabled: listingType !== "All Feeds",
     },
-    // {
-    //   enabled: listingType !== "Feeds",
-    // },
   );
 
   const feeds = useListFeeds({
-    enabled: listingType === "Feeds",
+    enabled: listingType === "All Feeds",
   });
 
   // const [communities, feedsData] = useMemo(
