@@ -9,7 +9,7 @@ type CommunityListingType =
   | "Local"
   | "Subscribed"
   | "ModeratorView"
-  | "Feeds";
+  | "All Feeds";
 
 type SortsStore = {
   communitySort: string;
