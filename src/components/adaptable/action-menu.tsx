@@ -27,6 +27,7 @@ export interface ActionMenuProps<V = string>
     "buttons" | "trigger"
   > {
   actions: (
+    | "DIVIDER"
     | {
         text: string;
         value?: V;
@@ -80,16 +81,18 @@ export function ActionMenu<V extends string>({
   const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
     useMemo(
       () => [
-        ...actions.map((a, index) => ({
-          text: a.text,
-          data: index,
-          cssClass: a.actions ? "detail" : undefined,
-          role: a.danger
-            ? "destructive"
-            : _.isString(a.value) && a.value === selectedValue
-              ? "selected"
-              : undefined,
-        })),
+        ...actions
+          .filter((a) => _.isObject(a))
+          .map((a, index) => ({
+            text: a.text,
+            data: index,
+            cssClass: a.actions ? "detail" : undefined,
+            role: a.danger
+              ? "destructive"
+              : _.isString(a.value) && a.value === selectedValue
+                ? "selected"
+                : undefined,
+          })),
         ...(showCancel
           ? [
               {
@@ -146,7 +149,9 @@ export function ActionMenu<V extends string>({
             </>
           )}
           {actions.map((a, index) =>
-            a.actions ? (
+            _.isString(a) ? (
+              <DropdownMenuSeparator key={index} />
+            ) : a.actions ? (
               <DropdownMenuSub key={a.text + index}>
                 <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
@@ -235,9 +240,9 @@ export function ActionMenu<V extends string>({
           const index = _.isNumber(detail.data) ? detail.data : null;
           if (index !== null && actions[index]) {
             const action = actions[index];
-            if (action.onClick) {
+            if (_.isObject(action) && action.onClick) {
               action.onClick();
-            } else {
+            } else if (_.isObject(action)) {
               if (!disableHaptics) {
                 Haptics.impact({ style: ImpactStyle.Medium });
               }
