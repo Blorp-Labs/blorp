@@ -42,9 +42,9 @@ function DisableLinks({ children }: { children: React.ReactNode }) {
 function SafeRouterLink<Path extends RoutePath>(props: LinkProps<Path>) {
   const { insideLink } = useContext(Context);
   return insideLink ? (
-    <span {...props} />
+    <span {...(props as any)} />
   ) : (
-    <ErrorBoundary fallback={<span {...props} />}>
+    <ErrorBoundary fallback={<span {...(props as any)} />}>
       <Link {...props}>
         <DisableLinks>{props.children}</DisableLinks>
       </Link>

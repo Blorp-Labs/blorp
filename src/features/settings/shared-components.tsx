@@ -52,7 +52,7 @@ export function SectionItem({
         !unstyled && "flex items-center justify-between",
       )}
     >
-      {children}
+      <>{children}</>
     </Comp>
   );
 }

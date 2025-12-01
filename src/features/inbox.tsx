@@ -198,11 +198,15 @@ function Reply({
                   <span className="font-bold">{replyView.postName}</span>
                 </span>
               </div>
-              <MarkdownRenderer
-                markdown={replyView.body}
-                className="pb-2"
-                disableLinks
-              />
+              {!replyView.deleted && !replyView.removed && (
+                <MarkdownRenderer
+                  markdown={replyView.body}
+                  className="pb-2"
+                  disableLinks
+                />
+              )}
+              {replyView.deleted && <span className="italic">deleted</span>}
+              {replyView.removed && <span className="italic">removed</span>}
             </Link>
             <div className="flex flex-row justify-end gap-2 text-muted-foreground">
               <RelativeTime time={replyView.createdAt} />

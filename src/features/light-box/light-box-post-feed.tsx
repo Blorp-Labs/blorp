@@ -40,20 +40,17 @@ import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
 import { Virtual, Zoom } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
-import { Controls } from "./controls";
-import {
-  useScrollNextSlide,
-  useSwiperPinchZoom,
-  useSwiperZoomScale,
-} from "./hooks";
+import { Controls, useControls } from "./controls";
+import { useScrollNextSlide, useSwiperZoomScale } from "./hooks";
 import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
+import Panzoom, { PanzoomOptions } from "@panzoom/panzoom";
 
 const EMPTY_ARR: never[] = [];
 
@@ -109,11 +106,17 @@ const Post = memo(
     apId,
     paddingT,
     paddingB,
+    onZoom,
+    active,
   }: {
     apId: string;
     paddingT: number;
     paddingB: number;
+    onZoom: (scale: number) => void;
+    active: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
+
     const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
     const postView = usePostsStore(
       (s) => s.posts[getCachePrefixer()(apId)]?.data,
@@ -126,9 +129,89 @@ const Post = memo(
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;
 
+    const controls = useControls();
+    const controlsListen = controls.listen;
+
+    const [ar, setAr] = useState(2);
+
+    useEffect(() => {
+      const elm = ref.current;
+      if (elm && active) {
+        const panzoom = Panzoom(elm, {
+          minScale: 1,
+          maxScale: 5,
+          panOnlyWhenZoomed: true,
+          pinchAndPan: true,
+          step: 0.8,
+          handleStartEvent: (event) => {
+            event.preventDefault();
+          },
+          contain: "outside",
+        } satisfies PanzoomOptions);
+        const handleZoom = () => {
+          const scale = panzoom.getScale();
+          if (Math.round(scale) <= 1) {
+            panzoom.reset({
+              animate: true,
+            });
+          }
+          onZoom(scale);
+        };
+        elm.addEventListener("panzoomzoom", handleZoom);
+        const handlePan = _.debounce(() => {
+          const scale = panzoom.getScale();
+          const pan = panzoom.getPan();
+          let panX = pan.x;
+          let panY = pan.y;
+
+          const isLandscape = ar > 1;
+
+          const imgHeight = !isLandscape
+            ? elm.clientHeight
+            : elm.clientWidth / ar;
+          const scaledHeight = imgHeight * scale;
+          const maxY = (scaledHeight - imgHeight) / scale / 2;
+
+          const imgWidth = isLandscape
+            ? elm.clientWidth
+            : (elm.clientHeight - paddingT - paddingB) * ar;
+          const scaledWidth = imgWidth * scale;
+          const maxX = (scaledWidth - imgWidth) / scale / 2;
+
+          console.log(maxX, pan.x);
+
+          panY = _.clamp(panY, -maxY + paddingB, maxY - paddingT);
+          panX = _.clamp(panX, -maxX, maxX);
+
+          if (panX !== pan.x || panY !== pan.y) {
+            panzoom.pan(panX, panY, {
+              animate: true,
+            });
+          }
+        }, 50);
+        elm.addEventListener("panzoompan", handlePan);
+        controlsListen((event) => {
+          switch (event) {
+            case "zoom-in":
+              panzoom.zoomIn();
+              break;
+            case "zoom-out":
+              panzoom.zoomOut();
+              break;
+          }
+        });
+        return () => {
+          onZoom(1);
+          elm.removeEventListener("panzoompan", handlePan);
+          elm.removeEventListener("panzoomzoom", handleZoom);
+          panzoom.destroy();
+        };
+      }
+    }, [controlsListen, onZoom, active, paddingT, paddingB, ar]);
+
     return img ? (
       <div className="h-full w-full relative">
-        <div className="swiper-zoom-container transition-all">
+        <div ref={ref} className="h-full w-full">
           <ProgressiveImage
             lowSrc={img}
             highSrc={embed?.fullResThumbnail}
@@ -138,6 +221,7 @@ const Post = memo(
               blurImg && "blur-3xl",
             )}
             imgClassName="object-contain"
+            onAspectRatio={(ratio) => setAr(ratio)}
           />
         </div>
       </div>
@@ -330,9 +414,15 @@ export default function LightBoxPostFeed() {
   );
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);
-  const zoom = useSwiperZoomScale(swiperRef.current);
-  useSwiperPinchZoom(swiperRef.current);
-  const hideNav = zoom > 1;
+  const [hideNav, setHideNav] = useState(false);
+  const onZoom = useCallback((scale: number) => {
+    setHideNav(scale > 1);
+    if (scale > 1) {
+      swiperRef.current?.disable();
+    } else {
+      swiperRef.current?.enable();
+    }
+  }, []);
 
   useKeyboardShortcut(
     useCallback(
@@ -360,6 +450,8 @@ export default function LightBoxPostFeed() {
       [isActive],
     ),
   );
+
+  const ref = useRef<SwiperRef>(null);
 
   return (
     <IonPage className="dark">
@@ -398,39 +490,44 @@ export default function LightBoxPostFeed() {
           onClose={() => setKeyboardHelpModal(false)}
         />
 
-        <Swiper
-          key={isPending ? "pending" : "loaded"}
-          allowTouchMove={!hideNav && !media.md}
-          allowSlideNext={!hideNav}
-          allowSlidePrev={!hideNav}
-          onSwiper={(s) => (swiperRef.current = s)}
-          initialSlide={activeIndex}
-          onSlideChange={(s) => onIndexChange(s.activeIndex)}
-          modules={[Virtual, Zoom]}
-          zoom={{
-            maxRatio: MAX_ZOOM_SCALE,
-            minRatio: MIN_ZOOM_SCALE,
-          }}
-          virtual
-          slidesPerView={1}
-          className="h-full"
-          onReachEnd={() => {
-            if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) {
-              postsQuery.fetchNextPage();
-            }
-          }}
-        >
-          <Controls />
-          {data.map((item, i) => (
-            <SwiperSlide key={i} virtualIndex={i} className="relative !h-auto">
-              <Post
-                apId={item}
-                paddingT={navbar.height + navbar.inset}
-                paddingB={bottomBarHeight}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <Controls>
+          <Swiper
+            ref={ref}
+            key={isPending ? "pending" : "loaded"}
+            allowTouchMove={!hideNav && !media.md}
+            allowSlideNext={!hideNav}
+            allowSlidePrev={!hideNav}
+            onSwiper={(s) => (swiperRef.current = s)}
+            initialSlide={activeIndex}
+            onSlideChange={(s) => onIndexChange(s.activeIndex)}
+            modules={[Virtual]}
+            virtual
+            slidesPerView={1}
+            className="h-full"
+            onReachEnd={() => {
+              if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) {
+                postsQuery.fetchNextPage();
+              }
+            }}
+          >
+            {data.map((item, i) => (
+              <SwiperSlide
+                key={i}
+                virtualIndex={i}
+                className="relative !h-auto"
+              >
+                <Post
+                  key={item}
+                  apId={item}
+                  paddingT={navbar.height + navbar.inset}
+                  paddingB={bottomBarHeight}
+                  active={i === activeIndex}
+                  onZoom={onZoom}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </Controls>
 
         {data.length === 0 && isPending && (
           <Spinner className="absolute top-1/2 left-1/2 text-4xl -translate-1/2 text-white animate-spin" />

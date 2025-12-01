@@ -76,10 +76,16 @@ const Comment = memo(function Comment({ path }: { path: string }) {
           Replied to <b>{postTitle}</b> in <b>{commentView.communitySlug}</b>
         </span>
 
-        {commentView.deleted ? (
-          <span className="text-muted-foreground italic">deleted</span>
-        ) : (
+        {!commentView.deleted && !commentView.removed && (
           <MarkdownRenderer markdown={commentView.body} disableLinks />
+        )}
+
+        {commentView.deleted && (
+          <span className="text-muted-foreground italic">deleted</span>
+        )}
+
+        {commentView.removed && (
+          <span className="text-muted-foreground italic">removed</span>
         )}
 
         <CommentVoting commentView={commentView} className="self-end" />

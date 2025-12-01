@@ -27,7 +27,7 @@ import "swiper/css/zoom";
 import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
 import { Controls } from "./controls";
 import { Swiper as SwiperType } from "swiper/types";
-import { useSwiperPinchZoom, useSwiperZoomScale } from "./hooks";
+import { useSwiperZoomScale } from "./hooks";
 
 export default function LightBox() {
   useHideTabBarOnMount();
@@ -41,7 +41,6 @@ export default function LightBox() {
 
   const swiperRef = useRef<SwiperType>(null);
   const zoom = useSwiperZoomScale(swiperRef.current);
-  useSwiperPinchZoom(swiperRef.current);
   const hideNav = zoom > 1;
 
   const media = useMedia();
@@ -100,7 +99,7 @@ export default function LightBox() {
           slidesPerView={1}
           className="h-full"
         >
-          <Controls />
+          {/* <Controls /> */}
           <SwiperSlide className="relative !h-auto">
             <div
               className="h-full relative"

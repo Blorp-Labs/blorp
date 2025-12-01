@@ -37,6 +37,7 @@ import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { removeMd } from "../markdown/remove-md";
+import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -398,71 +399,68 @@ function LargePostCard({
       </Link>
 
       {showImage && embed.thumbnail && (
-        <Link
-          to={
-            featuredContext === "home"
-              ? "/home/lightbox"
-              : `${linkCtx.root}c/:communityName/lightbox`
-          }
-          params={{
-            communityName: post.communitySlug,
-          }}
-          searchParams={`?apId=${encodeApId(apId)}`}
-          className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
-          onClick={() => {
-            if (!removeBlur && detailView) {
-              setRemoveBlur(true);
+        <div className="relative">
+          <Link
+            to={
+              featuredContext === "home"
+                ? "/home/lightbox"
+                : `${linkCtx.root}c/:communityName/lightbox`
             }
-          }}
-        >
-          {imageStatus === "loading" && (
-            <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
-          )}
-          <ProgressiveImage
-            lowSrc={embed.thumbnail}
-            highSrc={embed.fullResThumbnail}
-            className={cn(
-              "md:rounded-lg object-cover relative",
-              blurImg && "blur-3xl",
-            )}
-            onAspectRatio={(thumbnailAspectRatio) => {
-              setImageStatus("success");
-              if (!post.thumbnailAspectRatio) {
-                patchPost(apId, getCachePrefixer(), {
-                  thumbnailAspectRatio,
-                });
+            params={{
+              communityName: post.communitySlug,
+            }}
+            searchParams={`?apId=${encodeApId(apId)}`}
+            className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
+            onClick={() => {
+              if (!removeBlur && detailView) {
+                setRemoveBlur(true);
               }
             }}
-            onError={() => setImageStatus("error")}
-            aspectRatio={post.thumbnailAspectRatio ?? undefined}
-            alt={post.altText}
-          />
-          {blurImg && !removeBlur && (
-            <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
-              NSFW
-            </div>
-          )}
+          >
+            {imageStatus === "loading" && (
+              <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
+            )}
+            <ProgressiveImage
+              lowSrc={embed.thumbnail}
+              highSrc={embed.fullResThumbnail}
+              className={cn(
+                "md:rounded-lg object-cover relative",
+                blurImg && "blur-3xl",
+              )}
+              onAspectRatio={(thumbnailAspectRatio) => {
+                setImageStatus("success");
+                if (!post.thumbnailAspectRatio) {
+                  patchPost(apId, getCachePrefixer(), {
+                    thumbnailAspectRatio,
+                  });
+                }
+              }}
+              onError={() => setImageStatus("error")}
+              aspectRatio={post.thumbnailAspectRatio ?? undefined}
+              alt={post.altText}
+            />
+            {blurImg && !removeBlur && (
+              <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
+                NSFW
+              </div>
+            )}
+          </Link>
+
           {post.altText && (
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <ResponsiveTooltip
+              className="absolute bottom-1.5 md:right-1.5 -right-1 z-10"
+              trigger={
                 <Badge
-                  className="absolute bottom-1.5 right-1.5 z-10"
                   variant="outline"
+                  aria-label="Show alt text for post image"
                 >
                   Alt
                 </Badge>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                align="end"
-                className="max-w-sm flex flex-col gap-1"
-              >
-                <span className="font-bold">Alt Text</span>
-                <p>{post.altText}</p>
-              </TooltipContent>
-            </Tooltip>
+              }
+              content={post.altText}
+            />
           )}
-        </Link>
+        </div>
       )}
 
       {showArticle && (

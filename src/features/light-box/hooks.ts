@@ -6,31 +6,6 @@ import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
 import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
 
-export function useSwiperPinchZoom(swiper?: SwiperType | null) {
-  useEffect(() => {
-    if (!swiper) return;
-    const el = swiper.el;
-
-    const onWheel = (e: WheelEvent) => {
-      const absY = Math.abs(e.deltaY);
-      const scale = swiper.zoom.scale;
-      if ((absY > 10 || scale > 1) && absY > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        const factor = Math.exp(-e.deltaY * 0.02);
-        const next = _.clamp(
-          swiper.zoom.scale * factor,
-          MIN_ZOOM_SCALE,
-          MAX_ZOOM_SCALE,
-        );
-        swiper.zoom.in(next);
-      }
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [swiper]);
-}
-
 export function useSwiperZoomScale(swiper?: SwiperType | null) {
   const [zoom, setZoom] = useState(1);
   useEffect(() => {

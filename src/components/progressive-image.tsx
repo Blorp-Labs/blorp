@@ -27,6 +27,8 @@ export type ProgressiveImageProps = {
   aspectRatio?: number;
 
   onError?: () => void;
+
+  onLoad?: () => void;
 };
 
 /**
@@ -49,6 +51,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   aspectRatio,
   onAspectRatio,
   onError,
+  onLoad,
 }) => {
   const [hiVisible, setHiVisible] = useState<boolean>(priority);
 
@@ -62,6 +65,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     const img = e.currentTarget;
     if (img.naturalWidth && img.naturalHeight) {
       const ratio = img.naturalWidth / img.naturalHeight;
+      console.log("ratio", ratio);
       onAspectRatio(ratio);
     }
   };
@@ -82,6 +86,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
           onLoad={(e) => {
             setHiVisible(true);
             handleAspectRatio(e);
+            onLoad?.();
           }}
           className={cn(
             "absolute inset-0 w-full h-full opacity-0 object-cover",
@@ -100,7 +105,10 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         height={height}
         decoding="async"
         fetchPriority="high"
-        onLoad={handleAspectRatio}
+        onLoad={(e) => {
+          handleAspectRatio(e);
+          onLoad?.();
+        }}
         onError={() => onError?.()}
         className={cn(
           "w-full h-full transition-opacity duration-300",

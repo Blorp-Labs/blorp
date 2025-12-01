@@ -53,7 +53,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Software } from "../lib/api/adapters/api-blueprint";
 import { ToolbarTitle } from "./toolbar/toolbar-title";
-import { ChevronLeft, X } from "@/src/components/icons";
+import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
@@ -244,9 +244,14 @@ function InstanceSelectionPage({
 
   const instances = useInstances();
 
-  const site = useSite({
-    instance: searchUrl ?? instance.baseurl,
-  });
+  const site = useSite(
+    {
+      instance: searchUrl ?? instance.baseurl,
+    },
+    {
+      retry: false,
+    },
+  );
 
   const data = useMemo(() => {
     const output = [...(instances.data ?? [])];
@@ -295,14 +300,18 @@ function InstanceSelectionPage({
       key={software}
     >
       <div className="bg-background py-3 border-b-[.5px] sticky top-0 z-10">
-        <Input
-          placeholder="Search for your instance OR enter one thats not in the list"
-          defaultValue={search}
-          onChange={(e) => setSearch(e.target.value)}
-          autoCapitalize="none"
-          autoCorrect="off"
-          className="mb-3"
-        />
+        <div className="relative mb-3">
+          <Input
+            placeholder="Search for your instance OR enter a url thats not in the list"
+            defaultValue={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            endAdornment={
+              site.isPending && <Spinner className="text-2xl animate-spin" />
+            }
+          />
+        </div>
         <ToggleGroup
           type="single"
           variant="outline"

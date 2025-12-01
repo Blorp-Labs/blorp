@@ -3,6 +3,7 @@ import {
   InfiniteData,
   useQueryClient,
   useMutation,
+  UseQueryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -33,6 +34,7 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
+  compareErrors,
   Errors,
   Forms,
   INIT_PAGE_TOKEN,
@@ -49,9 +51,7 @@ import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
 
-enum Errors2 {
-  OBJECT_NOT_FOUND = "couldnt_find_object",
-}
+type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
 function extractErrorContent(err: Error) {
   const content = err.message || err.name;
@@ -290,7 +290,7 @@ export function usePost({
       return {};
     },
     retry: (count, err) => {
-      const notFound = err.message === Errors2.OBJECT_NOT_FOUND;
+      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
       if (notFound) {
         return false;
       }
@@ -327,7 +327,14 @@ function useCommentsKey() {
   };
 }
 
-export function useComments(form: Forms.GetComments) {
+export function useComments(
+  form: Forms.GetComments,
+  options?: {
+    enabled?: boolean;
+  },
+) {
+  const enabled = options?.enabled ?? true;
+
   const commentSort = useFiltersStore((s) => s.commentSort);
   const sort = form.sort ?? commentSort;
   const { api } = useApiClients();
@@ -368,7 +375,7 @@ export function useComments(form: Forms.GetComments) {
         nextCursor,
       };
     },
-    enabled: !_.isNil(form.postApId) || !_.isNil(form.savedOnly),
+    enabled: enabled && (!_.isNil(form.postApId) || !_.isNil(form.savedOnly)),
     getNextPageParam: (data) => data.nextCursor,
     initialPageParam: INIT_PAGE_TOKEN,
     refetchOnMount: "always",
@@ -648,13 +655,17 @@ function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
 }
 
-export function useSite({ instance }: { instance: string }) {
+export function useSite(
+  { instance }: { instance: string },
+  options?: QueryOverwriteOptions,
+) {
   return useQuery({
     queryKey: ["getSite", instance],
     queryFn: async ({ signal }) => {
       const api = await apiClient({ instance });
       return await api.getSite({ signal });
     },
+    ...options,
   });
 }
 
@@ -2488,6 +2499,13 @@ export function useResolveObject(query: string | undefined) {
       return await (await api).resolveObject({ q: query }, { signal });
     },
     enabled: !!query,
+    retry: (count, err) => {
+      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
+      if (notFound) {
+        return false;
+      }
+      return count <= 3;
+    },
   });
 }
 
