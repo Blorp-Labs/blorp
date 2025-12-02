@@ -385,7 +385,7 @@ export default function Post() {
                   {
                     communityName,
                   },
-                  `?s=${newVal ?? search}`,
+                  `?q=${newVal ?? search}`,
                 ),
               );
             }}

@@ -18,7 +18,7 @@ import {
 import { MenuButton, UserDropdown } from "../components/nav";
 import { CommunityFilter, CommunitySortSelect } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
-import { Link } from "@/src/routing/index";
+import { Link, resolveRoute } from "@/src/routing/index";
 import { getAccountSite, useAuth } from "../stores/auth";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -114,7 +114,9 @@ export default function Communities() {
             value={search}
             onValueChange={setSearch}
             onSubmit={(newVal) => {
-              router.push(`/communities/s?q=${newVal ?? search}`);
+              router.push(
+                resolveRoute("/communities/s", `?q=${newVal ?? search}`),
+              );
             }}
             type="Communities"
             className="max-md:hidden"
