@@ -41,16 +41,14 @@ import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
-import { Virtual, Zoom } from "swiper/modules";
+import { Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
-import { Controls, useControls } from "./controls";
-import { useScrollNextSlide, useSwiperZoomScale } from "./hooks";
-import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
-import Panzoom, { PanzoomOptions } from "@panzoom/panzoom";
+import { PanzoomProvider, usePanZoom } from "./panzoom";
+import { useScrollNextSlide } from "./hooks";
 
 const EMPTY_ARR: never[] = [];
 
@@ -101,34 +99,6 @@ function KeyboardShortcutHelpModal({
   );
 }
 
-/**
- * Calculates the rendered size of an image using object-fit: contain.
- *
- * @param containerWidth  - Width of the container
- * @param containerHeight - Height of the container
- * @param imageAspect     - Aspect ratio of the image (width / height)
- * @returns { width, height } - Rendered image dimensions
- */
-export function fitContain(
-  containerWidth: number,
-  containerHeight: number,
-  imageAspect: number,
-): { width: number; height: number } {
-  const containerAspect = containerWidth / containerHeight;
-
-  // Image is relatively wider → width limits
-  if (imageAspect > containerAspect) {
-    const width = containerWidth;
-    const height = width / imageAspect;
-    return { width, height };
-  }
-
-  // Image is relatively taller → height limits
-  const height = containerHeight;
-  const width = height * imageAspect;
-  return { width, height };
-}
-
 const Post = memo(
   ({
     apId,
@@ -157,86 +127,16 @@ const Post = memo(
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;
 
-    const controls = useControls();
-    const controlsListen = controls.listen;
-
     const [ar, setAr] = useState(2);
 
-    useEffect(() => {
-      const elm = ref.current;
-      if (elm && active) {
-        const panzoom = Panzoom(elm, {
-          minScale: 1,
-          maxScale: 5,
-          panOnlyWhenZoomed: true,
-          pinchAndPan: true,
-          step: 0.8,
-          handleStartEvent: (event) => {
-            event.preventDefault();
-          },
-        } satisfies PanzoomOptions);
-        const handleZoom = () => {
-          const scale = panzoom.getScale();
-          if (Math.round(scale) <= 1) {
-            panzoom.reset({
-              animate: true,
-            });
-          }
-          onZoom(scale);
-        };
-        elm.addEventListener("panzoomzoom", handleZoom);
-        const handlePan = _.debounce(() => {
-          const scale = panzoom.getScale();
-          const pan = panzoom.getPan();
-
-          const clientWidth = elm.clientWidth;
-          const clientHeight = elm.clientHeight;
-
-          const imgDimensions = fitContain(
-            clientWidth,
-            clientHeight - paddingT - paddingB,
-            ar,
-          );
-
-          // Max Y offset is the diff between the height of the container,
-          // and the scaled (zoomed in) height of the image, divided by scale
-          // and then halfed.
-          const scaledHeight = imgDimensions.height * scale;
-          const maxY = (scaledHeight - clientHeight) / scale / 2;
-
-          // Same as Y, but with X
-          const scaledWidth = imgDimensions.width * scale;
-          const maxX = (scaledWidth - clientWidth) / scale / 2;
-
-          const panY = _.clamp(pan.y, -maxY, maxY);
-          const panX = _.clamp(pan.x, -maxX, maxX);
-
-          if (panX !== pan.x || panY !== pan.y) {
-            panzoom.pan(panX, panY, {
-              animate: true,
-            });
-          }
-        }, 50);
-        elm.addEventListener("panzoompan", handlePan);
-        const unsubscribe = controlsListen((event) => {
-          switch (event) {
-            case "zoom-in":
-              panzoom.zoomIn();
-              break;
-            case "zoom-out":
-              panzoom.zoomOut();
-              break;
-          }
-        });
-        return () => {
-          unsubscribe();
-          onZoom(1);
-          elm.removeEventListener("panzoompan", handlePan);
-          elm.removeEventListener("panzoomzoom", handleZoom);
-          panzoom.destroy();
-        };
-      }
-    }, [controlsListen, onZoom, active, paddingT, paddingB, ar]);
+    usePanZoom({
+      container: ref.current,
+      active,
+      onZoom,
+      imageAspectRatio: ar,
+      paddingTop: paddingT,
+      paddingBottom: paddingB,
+    });
 
     return img ? (
       <div className="h-full w-full relative">
@@ -523,7 +423,7 @@ export default function LightBoxPostFeed() {
           onClose={() => setKeyboardHelpModal(false)}
         />
 
-        <Controls>
+        <PanzoomProvider>
           <Swiper
             ref={ref}
             key={isPending ? "pending" : "loaded"}
@@ -560,7 +460,7 @@ export default function LightBoxPostFeed() {
               </SwiperSlide>
             ))}
           </Swiper>
-        </Controls>
+        </PanzoomProvider>
 
         {data.length === 0 && isPending && (
           <Spinner className="absolute top-1/2 left-1/2 text-4xl -translate-1/2 text-white animate-spin" />

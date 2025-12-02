@@ -2,7 +2,7 @@ import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "../../routing";
 import { useLinkContext } from "@/src/routing/link-context";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
 import { UserDropdown } from "../../components/nav";
 import {
@@ -19,15 +19,56 @@ import { cn } from "../../lib/utils";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { ContentGutters } from "@/src/components/gutters";
 import { ImageShareButton } from "@/src/components/posts/post-buttons";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Zoom } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
-import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
-import { Controls } from "./controls";
-import { Swiper as SwiperType } from "swiper/types";
-import { useSwiperZoomScale } from "./hooks";
+import { PanzoomProvider, usePanZoom } from "./panzoom";
+
+function Image({
+  src,
+  bottomBarHeight,
+  onZoom,
+}: {
+  src: string;
+  bottomBarHeight: number;
+  onZoom: (scale: number) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [aspectRatio, setAspectRatio] = useState(1);
+  const navbar = useNavbarHeight();
+  const paddingTop = navbar.height + navbar.inset;
+  const paddingBottom = bottomBarHeight;
+  usePanZoom({
+    container: ref.current,
+    imageAspectRatio: aspectRatio,
+    paddingTop,
+    paddingBottom,
+    onZoom,
+  });
+  return (
+    <div
+      ref={ref}
+      className="h-full relative"
+      style={{
+        paddingTop,
+        paddingBottom,
+      }}
+    >
+      <div className="swiper-zoom-container">
+        <img
+          src={src}
+          className="h-full w-full object-contain"
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            if (img.naturalWidth && img.naturalHeight) {
+              setAspectRatio(img.naturalWidth / img.naturalHeight);
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function LightBox() {
   useHideTabBarOnMount();
@@ -39,9 +80,10 @@ export default function LightBox() {
   const navbar = useNavbarHeight();
   const isActive = useIsActiveRoute();
 
-  const swiperRef = useRef<SwiperType>(null);
-  const zoom = useSwiperZoomScale(swiperRef.current);
-  const hideNav = zoom > 1;
+  const [hideNav, setHideNav] = useState(false);
+  const onZoom = useCallback((scale: number) => {
+    setHideNav(scale > 1);
+  }, []);
 
   const media = useMedia();
   const insets = useSafeAreaInsets();
@@ -89,31 +131,9 @@ export default function LightBox() {
         scrollY={false}
         className="absolute inset-0"
       >
-        <Swiper
-          onSwiper={(s) => (swiperRef.current = s)}
-          modules={[Zoom]}
-          zoom={{
-            maxRatio: MAX_ZOOM_SCALE,
-            minRatio: MIN_ZOOM_SCALE,
-          }}
-          slidesPerView={1}
-          className="h-full"
-        >
-          {/* <Controls /> */}
-          <SwiperSlide className="relative !h-auto">
-            <div
-              className="h-full relative"
-              style={{
-                paddingTop: navbar.height + navbar.inset,
-                paddingBottom: bottomBarHeight,
-              }}
-            >
-              <div className="swiper-zoom-container">
-                <img src={src} className="h-full w-full object-contain" />
-              </div>
-            </div>
-          </SwiperSlide>
-        </Swiper>
+        <PanzoomProvider>
+          <Image src={src} bottomBarHeight={bottomBarHeight} onZoom={onZoom} />
+        </PanzoomProvider>
 
         <div
           className={cn(

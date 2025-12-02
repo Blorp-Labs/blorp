@@ -4,7 +4,6 @@ import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { Swiper as SwiperType } from "swiper/types";
-import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
 
 export function useSwiperZoomScale(swiper?: SwiperType | null) {
   const [zoom, setZoom] = useState(1);
