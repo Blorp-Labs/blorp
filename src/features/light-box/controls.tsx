@@ -16,9 +16,9 @@ import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE } from "./config";
 type Fn = (event: "zoom-in" | "zoom-out") => void;
 
 const Context = createContext<{
-  listen: (fn: Fn) => void;
+  listen: (fn: Fn) => () => void;
 }>({
-  listen: _.noop,
+  listen: () => _.noop,
 });
 
 export function useControls() {
@@ -43,6 +43,7 @@ export const Controls = ({
 
   const listen = useCallback((fn: Fn) => {
     setListeners((prev) => [...prev, fn]);
+    return () => setListeners((prev) => prev.filter((item) => item !== fn));
   }, []);
 
   return (

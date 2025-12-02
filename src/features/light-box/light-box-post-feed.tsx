@@ -101,6 +101,34 @@ function KeyboardShortcutHelpModal({
   );
 }
 
+/**
+ * Calculates the rendered size of an image using object-fit: contain.
+ *
+ * @param containerWidth  - Width of the container
+ * @param containerHeight - Height of the container
+ * @param imageAspect     - Aspect ratio of the image (width / height)
+ * @returns { width, height } - Rendered image dimensions
+ */
+export function fitContain(
+  containerWidth: number,
+  containerHeight: number,
+  imageAspect: number,
+): { width: number; height: number } {
+  const containerAspect = containerWidth / containerHeight;
+
+  // Image is relatively wider → width limits
+  if (imageAspect > containerAspect) {
+    const width = containerWidth;
+    const height = width / imageAspect;
+    return { width, height };
+  }
+
+  // Image is relatively taller → height limits
+  const height = containerHeight;
+  const width = height * imageAspect;
+  return { width, height };
+}
+
 const Post = memo(
   ({
     apId,
@@ -146,7 +174,6 @@ const Post = memo(
           handleStartEvent: (event) => {
             event.preventDefault();
           },
-          contain: "outside",
         } satisfies PanzoomOptions);
         const handleZoom = () => {
           const scale = panzoom.getScale();
@@ -161,27 +188,28 @@ const Post = memo(
         const handlePan = _.debounce(() => {
           const scale = panzoom.getScale();
           const pan = panzoom.getPan();
-          let panX = pan.x;
-          let panY = pan.y;
 
-          const isLandscape = ar > 1;
+          const clientWidth = elm.clientWidth;
+          const clientHeight = elm.clientHeight;
 
-          const imgHeight = !isLandscape
-            ? elm.clientHeight
-            : elm.clientWidth / ar;
-          const scaledHeight = imgHeight * scale;
-          const maxY = (scaledHeight - imgHeight) / scale / 2;
+          const imgDimensions = fitContain(
+            clientWidth,
+            clientHeight - paddingT - paddingB,
+            ar,
+          );
 
-          const imgWidth = isLandscape
-            ? elm.clientWidth
-            : (elm.clientHeight - paddingT - paddingB) * ar;
-          const scaledWidth = imgWidth * scale;
-          const maxX = (scaledWidth - imgWidth) / scale / 2;
+          // Max Y offset is the diff between the height of the container,
+          // and the scaled (zoomed in) height of the image, divided by scale
+          // and then halfed.
+          const scaledHeight = imgDimensions.height * scale;
+          const maxY = (scaledHeight - clientHeight) / scale / 2;
 
-          console.log(maxX, pan.x);
+          // Same as Y, but with X
+          const scaledWidth = imgDimensions.width * scale;
+          const maxX = (scaledWidth - clientWidth) / scale / 2;
 
-          panY = _.clamp(panY, -maxY + paddingB, maxY - paddingT);
-          panX = _.clamp(panX, -maxX, maxX);
+          const panY = _.clamp(pan.y, -maxY, maxY);
+          const panX = _.clamp(pan.x, -maxX, maxX);
 
           if (panX !== pan.x || panY !== pan.y) {
             panzoom.pan(panX, panY, {
@@ -190,7 +218,7 @@ const Post = memo(
           }
         }, 50);
         elm.addEventListener("panzoompan", handlePan);
-        controlsListen((event) => {
+        const unsubscribe = controlsListen((event) => {
           switch (event) {
             case "zoom-in":
               panzoom.zoomIn();
@@ -201,6 +229,7 @@ const Post = memo(
           }
         });
         return () => {
+          unsubscribe();
           onZoom(1);
           elm.removeEventListener("panzoompan", handlePan);
           elm.removeEventListener("panzoomzoom", handleZoom);
@@ -417,10 +446,14 @@ export default function LightBoxPostFeed() {
   const [hideNav, setHideNav] = useState(false);
   const onZoom = useCallback((scale: number) => {
     setHideNav(scale > 1);
-    if (scale > 1) {
-      swiperRef.current?.disable();
-    } else {
-      swiperRef.current?.enable();
+    try {
+      if (scale > 1) {
+        swiperRef.current?.disable();
+      } else {
+        swiperRef.current?.enable();
+      }
+    } catch (err) {
+      console.error(err);
     }
   }, []);
 

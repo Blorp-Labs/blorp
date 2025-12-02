@@ -65,7 +65,6 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     const img = e.currentTarget;
     if (img.naturalWidth && img.naturalHeight) {
       const ratio = img.naturalWidth / img.naturalHeight;
-      console.log("ratio", ratio);
       onAspectRatio(ratio);
     }
   };
