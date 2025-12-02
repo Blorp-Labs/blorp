@@ -176,7 +176,13 @@ export function usePanZoom(
         const scaledWidth = imgDimensions.width * scale;
         const maxX = (scaledWidth - clientWidth) / scale / 2;
 
-        const panY = _.clamp(pan.y, -maxY, maxY);
+        const adjustForVertialPadding = (paddingBottom - paddingTop) / 2;
+
+        const panY = _.clamp(
+          pan.y,
+          -maxY + adjustForVertialPadding,
+          maxY + adjustForVertialPadding,
+        );
         const panX = _.clamp(pan.x, -maxX, maxX);
 
         if (panX !== pan.x || panY !== pan.y) {
