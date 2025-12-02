@@ -368,6 +368,7 @@ function Byline({
 
 export function PostComment({
   postApId,
+  postLocked,
   queryKeyParentId,
   commentTree,
   level,
@@ -380,6 +381,7 @@ export function PostComment({
   canMod,
 }: {
   postApId: string;
+  postLocked: boolean;
   queryKeyParentId?: number;
   commentTree: CommentTree;
   level: number;
@@ -627,16 +629,18 @@ export function PostComment({
                 triggerAsChild
               />
 
-              <CommentReplyButton
-                onClick={() =>
-                  loadCommentIntoEditor({
-                    postApId: commentView.postApId,
-                    queryKeyParentId: queryKeyParentId,
-                    parent: commentView,
-                  })
-                }
-                className="z-10"
-              />
+              {!commentView.locked && !postLocked && (
+                <CommentReplyButton
+                  onClick={() =>
+                    loadCommentIntoEditor({
+                      postApId: commentView.postApId,
+                      queryKeyParentId: queryKeyParentId,
+                      parent: commentView,
+                    })
+                  }
+                  className="z-10"
+                />
+              )}
               <CommentVoting
                 commentView={commentView}
                 className={cn("z-10", leftHandedMode ? "-ml-2.5" : "-mr-2.5")}
@@ -658,6 +662,7 @@ export function PostComment({
               {sorted.map(([id, map]) => (
                 <PostComment
                   postApId={postApId}
+                  postLocked={postLocked}
                   queryKeyParentId={queryKeyParentId}
                   key={id}
                   commentTree={map}

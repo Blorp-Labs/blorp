@@ -437,7 +437,7 @@ export default function Post() {
                     commentCount={post.commentsCount}
                   />
                 ),
-                post && !commentPath && media.md && (
+                post && !post.locked && !commentPath && media.md && (
                   <ReplyToPost key="reply-to-post" postApId={post.apId} />
                 ),
                 <CommentSortBar key="comment-sort-bar" />,
@@ -447,6 +447,7 @@ export default function Post() {
                   <MemoedPostComment
                     highlightCommentId={parentComment.highlightCommentId}
                     postApId={decodedApId}
+                    postLocked={post?.locked ?? false}
                     queryKeyParentId={parentId}
                     commentTree={item[1]}
                     level={0}
@@ -478,7 +479,7 @@ export default function Post() {
               stickyIndicies={[1]}
               refresh={refresh}
             />
-            {showMobileReply && (
+            {showMobileReply && !post.locked && (
               <div className="z-20 absolute bottom-0 inset-x-0">
                 <ReplyToPost postApId={post.apId} className="border-t" />
                 <SafeAreaBottom />
