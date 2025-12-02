@@ -161,6 +161,7 @@ export const pieFedPostSchema = z.object({
   title: z.string(),
   url: z.string().nullable().optional(),
   //user_id: z.number(),
+  locked: z.boolean().nullish(),
 });
 
 export const pieFedPostViewSchema = z.object({
@@ -297,6 +298,7 @@ export const pieFedCommentSchema = z.object({
   published: z.string(),
   removed: z.boolean(),
   //user_id: z.number(),
+  locked: z.boolean().nullish(),
 });
 
 export const pieFedCommentCountsSchema = z.object({
@@ -431,6 +433,7 @@ function convertPost({
 }): Schemas.Post {
   const { post, counts, community, creator } = postView;
   return {
+    locked: post.locked ?? false,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
     url: post.url ?? null,
@@ -571,6 +574,7 @@ function convertComment(
 ): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
+    locked: comment.locked ?? false,
     createdAt: comment.published,
     id: comment.id,
     apId: comment.ap_id,

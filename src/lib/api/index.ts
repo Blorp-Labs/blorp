@@ -1210,6 +1210,7 @@ export function useCreateComment() {
       const isoDate = date.toISOString();
       const commentId = _.random(1, 1000000) * -1;
       const newComment: Schemas.Comment = {
+        locked: false,
         apId: "",
         id: commentId,
         createdAt: isoDate,

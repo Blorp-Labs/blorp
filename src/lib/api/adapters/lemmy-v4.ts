@@ -140,6 +140,7 @@ function convertPost({
 >): Schemas.Post {
   const ar = image_details ? image_details.width / image_details.height : null;
   return {
+    locked: post.locked,
     id: post.id,
     createdAt: post.published_at,
     apId: post.ap_id,
@@ -175,6 +176,7 @@ function convertPost({
 function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
   const { post, creator, comment, community } = commentView;
   return {
+    locked: false,
     createdAt: comment.published_at,
     id: comment.id,
     apId: comment.ap_id,

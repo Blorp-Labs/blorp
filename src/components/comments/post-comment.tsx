@@ -56,6 +56,7 @@ import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
+import { Lock } from "../icons";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -358,6 +359,9 @@ function Byline({
         time={publishedDate}
         className="text-xs text-muted-foreground"
       />
+      {comment.locked && (
+        <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />
+      )}
     </CollapsibleTrigger>
   );
 }

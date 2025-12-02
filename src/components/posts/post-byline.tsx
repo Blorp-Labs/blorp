@@ -41,6 +41,7 @@ import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
+import { Lock } from "../icons";
 
 export function usePostActions({
   post,
@@ -237,7 +238,6 @@ export function PostByline({
   showActions = true,
   hideImage,
   className,
-  compactBadge,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -249,7 +249,6 @@ export function PostByline({
   showActions?: boolean;
   hideImage?: boolean;
   className?: string;
-  compactBadge?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -376,6 +375,7 @@ export function PostByline({
 
       {saved && <FaBookmark className="text-lg text-brand" />}
       {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
+      {post.locked && <Lock className="text-xl text-yellow-500" />}
 
       {showActions && <PostActionButtion post={post} canMod={canMod} />}
     </div>

@@ -173,6 +173,7 @@ function convertPost(
     ? postView.image_details.width / postView.image_details.height
     : null;
   return {
+    locked: post.locked,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
       .slug,
     url: post.url ?? null,
@@ -219,6 +220,7 @@ function convertPost(
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
+    locked: false,
     createdAt: comment.published,
     id: comment.id,
     apId: comment.ap_id,

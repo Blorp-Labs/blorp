@@ -46,6 +46,7 @@ const personSchema = z.object({
   isBanned: z.boolean(),
 });
 export const postSchema = z.object({
+  locked: z.boolean(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -156,6 +157,7 @@ export const siteSchema = z.object({
   software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
+  locked: z.boolean(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),

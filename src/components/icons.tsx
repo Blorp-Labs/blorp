@@ -20,6 +20,7 @@ export {
   FaChevronRight as ChevronRight,
   FaChevronLeft as ChevronLeft,
   FaRobot as Robot,
+  FaLock as Lock,
 } from "react-icons/fa6";
 export { PiShareFat as Share } from "react-icons/pi";
 export { CgSearch as Search, CgSpinner as Spinner } from "react-icons/cg";
