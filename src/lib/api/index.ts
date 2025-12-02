@@ -2383,6 +2383,37 @@ export function useRemovePost() {
   });
 }
 
+export function useLockPost(apId: string) {
+  const { api } = useApiClients();
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.LockPost) => (await api).lockPost(form),
+    onMutate: ({ locked }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticLocked: locked,
+      });
+    },
+    onSuccess: (postView) => {
+      patchPost(postView.apId, getCachePrefixer(), {
+        optimisticLocked: undefined,
+        ...postView,
+      });
+    },
+    onError: (err, { locked }) => {
+      patchPost(apId, getCachePrefixer(), {
+        optimisticLocked: undefined,
+      });
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${locked ? "lock" : "unlock"} post`);
+      }
+    },
+  });
+}
+
 export function useRemoveComment() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);

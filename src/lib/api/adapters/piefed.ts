@@ -1807,6 +1807,21 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
   }
 
+  async lockPost(form: Forms.LockPost) {
+    const json = await this.post("/post/lock", {
+      post_id: form.postId,
+      locked: form.locked,
+    });
+    const { post_view } = z
+      .object({
+        post_view: pieFedPostViewSchema,
+      })
+      .parse(json);
+    return convertPost({
+      postView: post_view,
+    });
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.post("/comment/report", {
       comment_id: form.commentId,

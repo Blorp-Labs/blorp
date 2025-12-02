@@ -268,6 +268,8 @@ export default function Post() {
     decodedApId ? s.posts[getCachePrefixer()(decodedApId)]?.data : null,
   );
 
+  const locked = post?.optimisticLocked ?? post?.locked ?? false;
+
   const parentId = parentComment.commentId
     ? +parentComment.commentId
     : undefined;
@@ -437,7 +439,7 @@ export default function Post() {
                     commentCount={post.commentsCount}
                   />
                 ),
-                post && !post.locked && !commentPath && media.md && (
+                post && !locked && !commentPath && media.md && (
                   <ReplyToPost key="reply-to-post" postApId={post.apId} />
                 ),
                 <CommentSortBar key="comment-sort-bar" />,
@@ -447,7 +449,7 @@ export default function Post() {
                   <MemoedPostComment
                     highlightCommentId={parentComment.highlightCommentId}
                     postApId={decodedApId}
-                    postLocked={post?.locked ?? false}
+                    postLocked={locked}
                     queryKeyParentId={parentId}
                     commentTree={item[1]}
                     level={0}
@@ -479,7 +481,7 @@ export default function Post() {
               stickyIndicies={[1]}
               refresh={refresh}
             />
-            {showMobileReply && !post.locked && (
+            {showMobileReply && !locked && (
               <div className="z-20 absolute bottom-0 inset-x-0">
                 <ReplyToPost postApId={post.apId} className="border-t" />
                 <SafeAreaBottom />

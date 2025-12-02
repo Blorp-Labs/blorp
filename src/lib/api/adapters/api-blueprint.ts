@@ -47,6 +47,7 @@ const personSchema = z.object({
 });
 export const postSchema = z.object({
   locked: z.boolean(),
+  optimisticLocked: z.boolean().optional(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -500,6 +501,11 @@ export namespace Forms {
     removed: boolean;
   };
 
+  export type LockPost = {
+    postId: number;
+    locked: boolean;
+  };
+
   export type CreateCommentReport = {
     commentId: number;
     reason: string;
@@ -719,6 +725,8 @@ export abstract class ApiBlueprint<C> {
   abstract createPostReport(form: Forms.CreatePostReport): Promise<void>;
 
   abstract removePost(form: Forms.RemovePost): Promise<Schemas.Post>;
+
+  abstract lockPost(form: Forms.LockPost): Promise<Schemas.Post>;
 
   abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
 

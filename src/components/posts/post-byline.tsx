@@ -2,6 +2,7 @@ import {
   useBlockPerson,
   useDeletePost,
   useFeaturePost,
+  useLockPost,
   useSavePost,
 } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
@@ -59,6 +60,7 @@ export function usePostActions({
   const blockPerson = useBlockPerson();
   const deletePost = useDeletePost(post.apId);
   const featurePost = useFeaturePost(post.apId);
+  const lockPost = useLockPost(post.apId);
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost(post.apId);
 
@@ -75,6 +77,8 @@ export function usePostActions({
   const saved = post.optimisticSaved ?? post.saved;
 
   const flairs = useFlairs(post.flairs?.map((f) => f.id));
+
+  const locked = post.optimisticLocked ?? post.locked;
 
   return [
     ...(canMod
@@ -96,6 +100,11 @@ export function usePostActions({
               {
                 text: post.removed ? "Restore post" : "Remove post",
                 onClick: () => showPostRemoveModal(post.apId),
+              },
+              {
+                text: locked ? "Unlock post" : "Lock post",
+                onClick: () =>
+                  lockPost.mutate({ postId: post.id, locked: !locked }),
               },
             ],
           },
@@ -265,6 +274,7 @@ export function PostByline({
   const encodedCreatorApId = encodeApId(post.creatorApId);
 
   const saved = post.optimisticSaved ?? post.saved;
+  const locked = post.optimisticLocked ?? post.locked;
 
   const [communityName, communityHost] = post.communitySlug.split("@");
   const [creatorName, creatorHost] = post.creatorSlug.split("@");
@@ -375,7 +385,7 @@ export function PostByline({
 
       {saved && <FaBookmark className="text-lg text-brand" />}
       {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
-      {post.locked && <Lock className="text-xl text-yellow-500" />}
+      {locked && <Lock className="text-xl text-yellow-500" />}
 
       {showActions && <PostActionButtion post={post} canMod={canMod} />}
     </div>

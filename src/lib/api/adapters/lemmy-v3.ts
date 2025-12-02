@@ -1016,6 +1016,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     return convertPost(post_view);
   }
 
+  async lockPost(form: Forms.LockPost) {
+    const { post_view } = await this.client.lockPost({
+      post_id: form.postId,
+      locked: form.locked,
+    });
+    return convertPost(post_view);
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.client.createCommentReport({
       comment_id: form.commentId,
