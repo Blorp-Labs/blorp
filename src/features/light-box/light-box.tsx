@@ -38,13 +38,16 @@ function Image({
   const navbar = useNavbarHeight();
   const paddingTop = navbar.height + navbar.inset;
   const paddingBottom = bottomBarHeight;
-  usePanZoom({
-    container: ref.current,
-    imageAspectRatio: aspectRatio,
-    paddingTop,
-    paddingBottom,
-    onZoom,
-  });
+  usePanZoom(
+    {
+      container: ref.current,
+      imageAspectRatio: aspectRatio,
+      paddingTop,
+      paddingBottom,
+      onZoom,
+    },
+    [src],
+  );
   return (
     <div
       ref={ref}

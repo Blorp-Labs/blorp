@@ -109,14 +109,17 @@ export function fitContain(
   return { width, height };
 }
 
-export function usePanZoom(opts: {
-  container?: HTMLDivElement | null;
-  active?: boolean;
-  onZoom?: (scale: number) => void;
-  paddingTop?: number;
-  paddingBottom?: number;
-  imageAspectRatio: number;
-}) {
+export function usePanZoom(
+  opts: {
+    container?: HTMLDivElement | null;
+    active?: boolean;
+    onZoom?: (scale: number) => void;
+    paddingTop?: number;
+    paddingBottom?: number;
+    imageAspectRatio: number;
+  },
+  deps?: (string | null | undefined)[],
+) {
   const {
     container,
     active = true,
@@ -209,5 +212,6 @@ export function usePanZoom(opts: {
     paddingTop,
     paddingBottom,
     imageAspectRatio,
+    ...(deps ?? []),
   ]);
 }

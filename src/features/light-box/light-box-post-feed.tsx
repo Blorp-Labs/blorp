@@ -129,14 +129,17 @@ const Post = memo(
 
     const [ar, setAr] = useState(2);
 
-    usePanZoom({
-      container: ref.current,
-      active,
-      onZoom,
-      imageAspectRatio: ar,
-      paddingTop: paddingT,
-      paddingBottom: paddingB,
-    });
+    usePanZoom(
+      {
+        container: ref.current,
+        active,
+        onZoom,
+        imageAspectRatio: ar,
+        paddingTop: paddingT,
+        paddingBottom: paddingB,
+      },
+      [embed?.fullResThumbnail, img],
+    );
 
     return img ? (
       <div className="h-full w-full relative">
@@ -195,20 +198,24 @@ function useLightboxPostFeedData({
     enabled: missingPost,
   });
 
-  const data = useMemo(() => {
+  const [data, dataKey] = useMemo(() => {
     if (missingPost && initPostQuery.isPending) {
-      return [];
+      return [[], Math.random()] as const;
     }
 
     if (missingPost) {
-      return [...(initPostApId ? [initPostApId] : []), ...posts];
+      return [
+        [...(initPostApId ? [initPostApId] : []), ...posts],
+        Math.random(),
+      ] as const;
     }
 
-    return posts;
+    return [posts, Math.random()] as const;
   }, [missingPost, initPostApId, initPostQuery.isPending, posts]);
 
   return {
     data,
+    dataKey,
     initPostQuery,
     postsQuery,
   };
@@ -250,7 +257,7 @@ export default function LightBoxPostFeed() {
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
-  const { data, initPostQuery, postsQuery } = useLightboxPostFeedData({
+  const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostFeedData({
     communityName,
     listingType,
     activePostApId: decodedApId,
@@ -426,7 +433,7 @@ export default function LightBoxPostFeed() {
         <PanzoomProvider>
           <Swiper
             ref={ref}
-            key={isPending ? "pending" : "loaded"}
+            key={dataKey}
             allowTouchMove={!hideNav && !media.md}
             allowSlideNext={!hideNav}
             allowSlidePrev={!hideNav}
