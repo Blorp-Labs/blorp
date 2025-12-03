@@ -2445,6 +2445,37 @@ export function useRemoveComment() {
   });
 }
 
+export function useLockComment() {
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.LockComment & { path: string }) =>
+      (await api).lockComment(form),
+    onMutate: ({ locked, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticLocked: locked,
+      }));
+    },
+    onSuccess: (commentView) =>
+      patchComment(commentView.path, getCachePrefixer(), () => ({
+        optimisticLocked: undefined,
+        ...commentView,
+      })),
+    onError: (err, { locked, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticLocked: undefined,
+      }));
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${locked ? "lock" : "unlock"} comment`);
+      }
+    },
+  });
+}
+
 export function useUploadImage() {
   const { api } = useApiClients();
   return useMutation({

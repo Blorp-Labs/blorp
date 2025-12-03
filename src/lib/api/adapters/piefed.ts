@@ -1843,6 +1843,19 @@ export class PieFedApi implements ApiBlueprint<null> {
     return convertComment(comment_view);
   }
 
+  async lockComment(form: Forms.LockComment) {
+    const json = await this.post("/comment/lock", {
+      comment_id: form.commentId,
+      locked: form.locked,
+    });
+    const { comment_view } = z
+      .object({
+        comment_view: pieFedCommentViewSchema,
+      })
+      .parse(json);
+    return convertComment(comment_view);
+  }
+
   async blockPerson(form: Forms.BlockPerson) {
     await this.post("/user/block", {
       person_id: form.personId,

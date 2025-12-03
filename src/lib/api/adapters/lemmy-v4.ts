@@ -763,6 +763,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return convertComment(comment_view);
   }
 
+  async lockComment() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async blockPerson(form: Forms.BlockPerson): Promise<void> {
     await this.client.blockPerson({
       person_id: form.personId,

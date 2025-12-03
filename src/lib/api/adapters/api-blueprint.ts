@@ -159,6 +159,7 @@ export const siteSchema = z.object({
 });
 export const commentSchema = z.object({
   locked: z.boolean(),
+  optimisticLocked: z.boolean().optional(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -517,6 +518,11 @@ export namespace Forms {
     removed: boolean;
   };
 
+  export type LockComment = {
+    commentId: number;
+    locked: boolean;
+  };
+
   export type BlockPerson = {
     personId: number;
     block: boolean;
@@ -729,6 +735,8 @@ export abstract class ApiBlueprint<C> {
   abstract lockPost(form: Forms.LockPost): Promise<Schemas.Post>;
 
   abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
+
+  abstract lockComment(form: Forms.LockComment): Promise<Schemas.Comment>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

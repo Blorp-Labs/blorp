@@ -15,7 +15,9 @@ import { RelativeTime } from "../relative-time";
 import {
   useBlockPerson,
   useDeleteComment,
+  useLockComment,
   useSaveComment,
+  useSoftware,
 } from "@/src/lib/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
@@ -107,6 +109,7 @@ function useCommentActions({
   const blockPerson = useBlockPerson();
 
   const deleteComment = useDeleteComment();
+  const lockComment = useLockComment();
 
   const tagUser = useTagUser();
   const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
@@ -129,8 +132,11 @@ function useCommentActions({
     : null;
 
   const saved = commentView?.optimisticSaved ?? commentView?.saved;
+  const locked = commentView?.optimisticLocked ?? commentView?.locked;
 
   const showCommentRemoveModal = useShowCommentRemoveModal();
+
+  const software = useSoftware();
 
   if (!commentView) {
     return [];
@@ -148,6 +154,19 @@ function useCommentActions({
                   : "Remove comment",
                 onClick: () => showCommentRemoveModal(commentView.path),
               },
+              ...(software === "piefed"
+                ? [
+                    {
+                      text: locked ? "Unlock comment" : "Lock comment",
+                      onClick: () =>
+                        lockComment.mutate({
+                          path: commentView.path,
+                          commentId: commentView.id,
+                          locked: !locked,
+                        }),
+                    },
+                  ]
+                : []),
             ],
           },
         ]
@@ -302,6 +321,8 @@ function Byline({
     (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
   );
 
+  const locked = comment.optimisticLocked ?? comment.locked;
+
   const tag = useTagUserStore((s) => s.userTags[actorSlug]);
 
   const isAdmin = useIsAdmin(comment.creatorApId);
@@ -359,9 +380,7 @@ function Byline({
         time={publishedDate}
         className="text-xs text-muted-foreground"
       />
-      {comment.locked && (
-        <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />
-      )}
+      {locked && <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />}
     </CollapsibleTrigger>
   );
 }
