@@ -46,6 +46,8 @@ const personSchema = z.object({
   isBanned: z.boolean(),
 });
 export const postSchema = z.object({
+  locked: z.boolean(),
+  optimisticLocked: z.boolean().optional(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -156,6 +158,8 @@ export const siteSchema = z.object({
   software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
+  locked: z.boolean(),
+  optimisticLocked: z.boolean().optional(),
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -498,6 +502,11 @@ export namespace Forms {
     removed: boolean;
   };
 
+  export type LockPost = {
+    postId: number;
+    locked: boolean;
+  };
+
   export type CreateCommentReport = {
     commentId: number;
     reason: string;
@@ -507,6 +516,11 @@ export namespace Forms {
     commentId: number;
     reason: string;
     removed: boolean;
+  };
+
+  export type LockComment = {
+    commentId: number;
+    locked: boolean;
   };
 
   export type BlockPerson = {
@@ -718,7 +732,11 @@ export abstract class ApiBlueprint<C> {
 
   abstract removePost(form: Forms.RemovePost): Promise<Schemas.Post>;
 
+  abstract lockPost(form: Forms.LockPost): Promise<Schemas.Post>;
+
   abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
+
+  abstract lockComment(form: Forms.LockComment): Promise<Schemas.Comment>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

@@ -15,7 +15,9 @@ import { RelativeTime } from "../relative-time";
 import {
   useBlockPerson,
   useDeleteComment,
+  useLockComment,
   useSaveComment,
+  useSoftware,
 } from "@/src/lib/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
@@ -56,6 +58,7 @@ import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
+import { Lock } from "../icons";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -106,6 +109,7 @@ function useCommentActions({
   const blockPerson = useBlockPerson();
 
   const deleteComment = useDeleteComment();
+  const lockComment = useLockComment();
 
   const tagUser = useTagUser();
   const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
@@ -128,8 +132,11 @@ function useCommentActions({
     : null;
 
   const saved = commentView?.optimisticSaved ?? commentView?.saved;
+  const locked = commentView?.optimisticLocked ?? commentView?.locked;
 
   const showCommentRemoveModal = useShowCommentRemoveModal();
+
+  const software = useSoftware();
 
   if (!commentView) {
     return [];
@@ -147,6 +154,19 @@ function useCommentActions({
                   : "Remove comment",
                 onClick: () => showCommentRemoveModal(commentView.path),
               },
+              ...(software === "piefed"
+                ? [
+                    {
+                      text: locked ? "Unlock comment" : "Lock comment",
+                      onClick: () =>
+                        lockComment.mutate({
+                          path: commentView.path,
+                          commentId: commentView.id,
+                          locked: !locked,
+                        }),
+                    },
+                  ]
+                : []),
             ],
           },
         ]
@@ -301,6 +321,8 @@ function Byline({
     (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
   );
 
+  const locked = comment.optimisticLocked ?? comment.locked;
+
   const tag = useTagUserStore((s) => s.userTags[actorSlug]);
 
   const isAdmin = useIsAdmin(comment.creatorApId);
@@ -358,12 +380,14 @@ function Byline({
         time={publishedDate}
         className="text-xs text-muted-foreground"
       />
+      {locked && <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />}
     </CollapsibleTrigger>
   );
 }
 
 export function PostComment({
   postApId,
+  postLocked,
   queryKeyParentId,
   commentTree,
   level,
@@ -376,6 +400,7 @@ export function PostComment({
   canMod,
 }: {
   postApId: string;
+  postLocked: boolean;
   queryKeyParentId?: number;
   commentTree: CommentTree;
   level: number;
@@ -623,16 +648,18 @@ export function PostComment({
                 triggerAsChild
               />
 
-              <CommentReplyButton
-                onClick={() =>
-                  loadCommentIntoEditor({
-                    postApId: commentView.postApId,
-                    queryKeyParentId: queryKeyParentId,
-                    parent: commentView,
-                  })
-                }
-                className="z-10"
-              />
+              {!commentView.locked && !postLocked && (
+                <CommentReplyButton
+                  onClick={() =>
+                    loadCommentIntoEditor({
+                      postApId: commentView.postApId,
+                      queryKeyParentId: queryKeyParentId,
+                      parent: commentView,
+                    })
+                  }
+                  className="z-10"
+                />
+              )}
               <CommentVoting
                 commentView={commentView}
                 className={cn("z-10", leftHandedMode ? "-ml-2.5" : "-mr-2.5")}
@@ -654,6 +681,7 @@ export function PostComment({
               {sorted.map(([id, map]) => (
                 <PostComment
                   postApId={postApId}
+                  postLocked={postLocked}
                   queryKeyParentId={queryKeyParentId}
                   key={id}
                   commentTree={map}

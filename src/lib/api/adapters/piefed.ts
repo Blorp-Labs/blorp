@@ -161,6 +161,7 @@ export const pieFedPostSchema = z.object({
   title: z.string(),
   url: z.string().nullable().optional(),
   //user_id: z.number(),
+  locked: z.boolean().nullish(),
 });
 
 export const pieFedPostViewSchema = z.object({
@@ -297,6 +298,7 @@ export const pieFedCommentSchema = z.object({
   published: z.string(),
   removed: z.boolean(),
   //user_id: z.number(),
+  locked: z.boolean().nullish(),
 });
 
 export const pieFedCommentCountsSchema = z.object({
@@ -431,6 +433,7 @@ function convertPost({
 }): Schemas.Post {
   const { post, counts, community, creator } = postView;
   return {
+    locked: post.locked ?? false,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
     url: post.url ?? null,
@@ -571,6 +574,7 @@ function convertComment(
 ): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
+    locked: comment.locked ?? false,
     createdAt: comment.published,
     id: comment.id,
     apId: comment.ap_id,
@@ -1683,7 +1687,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async featurePost(form: Forms.FeaturePost) {
-    const res = this.post("/post/feature", {
+    const res = await this.post("/post/feature", {
       post_id: form.postId,
       featured: form.featured,
       feature_type: form.featureType,
@@ -1803,6 +1807,21 @@ export class PieFedApi implements ApiBlueprint<null> {
     });
   }
 
+  async lockPost(form: Forms.LockPost) {
+    const json = await this.post("/post/lock", {
+      post_id: form.postId,
+      locked: form.locked,
+    });
+    const { post_view } = z
+      .object({
+        post_view: pieFedPostViewSchema,
+      })
+      .parse(json);
+    return convertPost({
+      postView: post_view,
+    });
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.post("/comment/report", {
       comment_id: form.commentId,
@@ -1815,6 +1834,19 @@ export class PieFedApi implements ApiBlueprint<null> {
       comment_id: form.commentId,
       removed: form.removed,
       reason: form.reason,
+    });
+    const { comment_view } = z
+      .object({
+        comment_view: pieFedCommentViewSchema,
+      })
+      .parse(json);
+    return convertComment(comment_view);
+  }
+
+  async lockComment(form: Forms.LockComment) {
+    const json = await this.post("/comment/lock", {
+      comment_id: form.commentId,
+      locked: form.locked,
     });
     const { comment_view } = z
       .object({

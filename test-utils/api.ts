@@ -75,6 +75,7 @@ export function getPost(config?: {
   const community = getCommunity();
 
   const post: Schemas.Post = {
+    locked: false,
     createdAt: relativeTime(),
     id: postId,
     apId: `${API_ROOT}/post/${postId}`,

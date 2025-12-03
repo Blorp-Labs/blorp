@@ -1,4 +1,3 @@
-import { useLikePost } from "@/src/lib/api/index";
 import { voteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import NumberFlow from "@number-flow/react";
@@ -32,6 +31,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useMedia } from "@/src/lib/hooks";
+import { useLikePost } from "@/src/lib/api/post-mutations";
 
 export function usePostVoting(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -44,7 +44,7 @@ export function usePostVoting(apId?: string) {
       (s) => getAccountSite(s.getSelectedAccount())?.enablePostDownvotes,
     ) ?? true;
 
-  const { mutate: mutateVote } = useLikePost(apId);
+  const { mutate: mutateVote } = useLikePost();
 
   const requireAuth = useRequireAuth();
 

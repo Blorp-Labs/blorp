@@ -140,6 +140,7 @@ function convertPost({
 >): Schemas.Post {
   const ar = image_details ? image_details.width / image_details.height : null;
   return {
+    locked: post.locked,
     id: post.id,
     createdAt: post.published_at,
     apId: post.ap_id,
@@ -175,6 +176,7 @@ function convertPost({
 function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
   const { post, creator, comment, community } = commentView;
   return {
+    locked: false,
     createdAt: comment.published_at,
     id: comment.id,
     apId: comment.ap_id,
@@ -737,6 +739,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return convertPost(post_view);
   }
 
+  async lockPost(form: Forms.LockPost) {
+    const { post_view } = await this.client.lockPost({
+      post_id: form.postId,
+      locked: form.locked,
+    });
+    return convertPost(post_view);
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.client.createCommentReport({
       comment_id: form.commentId,
@@ -751,6 +761,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       reason: form.reason,
     });
     return convertComment(comment_view);
+  }
+
+  async lockComment() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {

@@ -1,9 +1,4 @@
-import {
-  useBlockPerson,
-  useDeletePost,
-  useFeaturePost,
-  useSavePost,
-} from "@/src/lib/api/index";
+import { useBlockPerson } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -41,6 +36,13 @@ import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
+import { Lock } from "../icons";
+import {
+  useDeletePost,
+  useFeaturePost,
+  useLockPost,
+  useSavePost,
+} from "@/src/lib/api/post-mutations";
 
 export function usePostActions({
   post,
@@ -56,10 +58,11 @@ export function usePostActions({
   const showReportModal = useShowPostReportModal();
   const requireAuth = useRequireAuth();
   const blockPerson = useBlockPerson();
-  const deletePost = useDeletePost(post.apId);
-  const featurePost = useFeaturePost(post.apId);
+  const deletePost = useDeletePost();
+  const featurePost = useFeaturePost();
+  const lockPost = useLockPost();
   const showPostRemoveModal = useShowPostRemoveModal();
-  const savePost = useSavePost(post.apId);
+  const savePost = useSavePost();
 
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
@@ -74,6 +77,8 @@ export function usePostActions({
   const saved = post.optimisticSaved ?? post.saved;
 
   const flairs = useFlairs(post.flairs?.map((f) => f.id));
+
+  const locked = post.optimisticLocked ?? post.locked;
 
   return [
     ...(canMod
@@ -90,11 +95,21 @@ export function usePostActions({
                     featureType: "Community",
                     postId: post.id,
                     featured: !post.featuredCommunity,
+                    postApId: post.apId,
                   }),
               },
               {
                 text: post.removed ? "Restore post" : "Remove post",
                 onClick: () => showPostRemoveModal(post.apId),
+              },
+              {
+                text: locked ? "Unlock post" : "Lock post",
+                onClick: () =>
+                  lockPost.mutate({
+                    postId: post.id,
+                    locked: !locked,
+                    postApId: post.apId,
+                  }),
               },
             ],
           },
@@ -150,6 +165,7 @@ export function usePostActions({
       onClick: () =>
         requireAuth().then(() => {
           savePost.mutateAsync({
+            postApId: post.apId,
             postId: post.id,
             save: !saved,
           });
@@ -180,6 +196,7 @@ export function usePostActions({
             text: post.deleted ? "Restore post" : "Delete post",
             onClick: () =>
               deletePost.mutate({
+                postApId: post.apId,
                 postId: post.id,
                 deleted: !post.deleted,
               }),
@@ -237,7 +254,6 @@ export function PostByline({
   showActions = true,
   hideImage,
   className,
-  compactBadge,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -249,7 +265,6 @@ export function PostByline({
   showActions?: boolean;
   hideImage?: boolean;
   className?: string;
-  compactBadge?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -266,6 +281,7 @@ export function PostByline({
   const encodedCreatorApId = encodeApId(post.creatorApId);
 
   const saved = post.optimisticSaved ?? post.saved;
+  const locked = post.optimisticLocked ?? post.locked;
 
   const [communityName, communityHost] = post.communitySlug.split("@");
   const [creatorName, creatorHost] = post.creatorSlug.split("@");
@@ -376,6 +392,7 @@ export function PostByline({
 
       {saved && <FaBookmark className="text-lg text-brand" />}
       {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
+      {locked && <Lock className="text-xl text-yellow-500" />}
 
       {showActions && <PostActionButtion post={post} canMod={canMod} />}
     </div>

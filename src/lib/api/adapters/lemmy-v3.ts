@@ -173,6 +173,7 @@ function convertPost(
     ? postView.image_details.width / postView.image_details.height
     : null;
   return {
+    locked: post.locked,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
       .slug,
     url: post.url ?? null,
@@ -219,6 +220,7 @@ function convertPost(
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
+    locked: false,
     createdAt: comment.published,
     id: comment.id,
     apId: comment.ap_id,
@@ -1014,6 +1016,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     return convertPost(post_view);
   }
 
+  async lockPost(form: Forms.LockPost) {
+    const { post_view } = await this.client.lockPost({
+      post_id: form.postId,
+      locked: form.locked,
+    });
+    return convertPost(post_view);
+  }
+
   async createCommentReport(form: Forms.CreateCommentReport) {
     await this.client.createCommentReport({
       comment_id: form.commentId,
@@ -1028,6 +1038,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       reason: form.reason,
     });
     return convertComment(comment_view);
+  }
+
+  async lockComment() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {
