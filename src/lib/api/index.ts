@@ -34,6 +34,7 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
+  ApiBlueprint,
   compareErrors,
   Errors,
   Forms,
@@ -2383,36 +2384,84 @@ export function useRemovePost() {
   });
 }
 
-export function useLockPost(apId: string) {
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  return useMutation({
-    mutationFn: async (form: Forms.LockPost) => (await api).lockPost(form),
-    onMutate: ({ locked }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticLocked: locked,
-      });
-    },
-    onSuccess: (postView) => {
-      patchPost(postView.apId, getCachePrefixer(), {
-        optimisticLocked: undefined,
-        ...postView,
-      });
-    },
-    onError: (err, { locked }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticLocked: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't ${locked ? "lock" : "unlock"} post`);
-      }
-    },
-  });
+function createPostMutation<
+  ApiFn extends keyof ApiBlueprint<any>,
+  Form extends Parameters<ApiBlueprint<any>[ApiFn]>[0],
+>(
+  apiFn: ApiFn,
+  key: keyof Form & string,
+  optimisticKey: keyof Schemas.Post,
+  formatError: (form: Form) => string,
+) {
+  return () => {
+    const { api } = useApiClients();
+    const patchPost = usePostsStore((s) => s.patchPost);
+    const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+    return useMutation({
+      mutationFn: async (form: Form & { apId: string }) =>
+        (await api)[apiFn](form),
+      onMutate: ({ [key]: field, apId }) => {
+        patchPost(apId, getCachePrefixer(), {
+          [optimisticKey]: field,
+        });
+      },
+      onSuccess: (postView) => {
+        patchPost(postView.apId, getCachePrefixer(), {
+          [optimisticKey]: undefined,
+          ...postView,
+        });
+      },
+      onError: (err, form) => {
+        patchPost(form.apId, getCachePrefixer(), {
+          [optimisticKey]: undefined,
+        });
+        if (isErrorLike(err)) {
+          toast.error(extractErrorContent(err));
+        } else {
+          toast.error(formatError(form));
+        }
+      },
+    });
+  };
 }
+
+export const useLockPost = createPostMutation(
+  "lockPost",
+  "locked",
+  "optimisticLocked",
+  ({ locked }) => `Couldn't ${locked ? "lock" : "unlock"} post`,
+);
+
+// export function useLockPost(apId: string) {
+//   const { api } = useApiClients();
+//   const patchPost = usePostsStore((s) => s.patchPost);
+//   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+//
+//   return useMutation({
+//     mutationFn: async (form: Forms.LockPost) => (await api).lockPost(form),
+//     onMutate: ({ locked }) => {
+//       patchPost(apId, getCachePrefixer(), {
+//         optimisticLocked: locked,
+//       });
+//     },
+//     onSuccess: (postView) => {
+//       patchPost(postView.apId, getCachePrefixer(), {
+//         optimisticLocked: undefined,
+//         ...postView,
+//       });
+//     },
+//     onError: (err, { locked }) => {
+//       patchPost(apId, getCachePrefixer(), {
+//         optimisticLocked: undefined,
+//       });
+//       if (isErrorLike(err)) {
+//         toast.error(extractErrorContent(err));
+//       } else {
+//         toast.error(`Couldn't ${locked ? "lock" : "unlock"} post`);
+//       }
+//     },
+//   });
+// }
 
 export function useRemoveComment() {
   const { api } = useApiClients();

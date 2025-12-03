@@ -60,7 +60,7 @@ export function usePostActions({
   const blockPerson = useBlockPerson();
   const deletePost = useDeletePost(post.apId);
   const featurePost = useFeaturePost(post.apId);
-  const lockPost = useLockPost(post.apId);
+  const lockPost = useLockPost();
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost(post.apId);
 
@@ -104,7 +104,11 @@ export function usePostActions({
               {
                 text: locked ? "Unlock post" : "Lock post",
                 onClick: () =>
-                  lockPost.mutate({ postId: post.id, locked: !locked }),
+                  lockPost.mutate({
+                    postId: post.id,
+                    locked: !locked,
+                    apId: post.apId,
+                  }),
               },
             ],
           },
