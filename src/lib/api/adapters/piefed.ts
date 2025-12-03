@@ -1687,7 +1687,7 @@ export class PieFedApi implements ApiBlueprint<null> {
   }
 
   async featurePost(form: Forms.FeaturePost) {
-    const res = this.post("/post/feature", {
+    const res = await this.post("/post/feature", {
       post_id: form.postId,
       featured: form.featured,
       feature_type: form.featureType,
