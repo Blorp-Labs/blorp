@@ -34,3 +34,8 @@ export function decodeApId(encodedUrl: string) {
 }
 
 export const lemmyTimestamp = () => new Date().toISOString();
+
+export function extractErrorContent(err: Error) {
+  const content = err.message || err.name;
+  return content ? _.capitalize(content.replaceAll("_", " ")) : "Unknown error";
+}

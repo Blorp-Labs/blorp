@@ -20,7 +20,7 @@ import { useSettingsStore } from "../../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../../stores/comments";
 import { useCommunitiesStore } from "../../stores/communities";
-import { lemmyTimestamp } from "./utils";
+import { extractErrorContent, lemmyTimestamp } from "./utils";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { toast } from "sonner";
 import {
@@ -34,7 +34,6 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
-  ApiBlueprint,
   compareErrors,
   Errors,
   Forms,
@@ -53,11 +52,6 @@ import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
-
-function extractErrorContent(err: Error) {
-  const content = err.message || err.name;
-  return content ? _.capitalize(content.replaceAll("_", " ")) : "Unknown error";
-}
 
 export function useApiClients(config?: { instance?: string; jwt?: string }) {
   const accountIndex = useAuth((s) => s.accountIndex);
@@ -383,7 +377,7 @@ export function useComments(
   });
 }
 
-function usePostsKey(config?: Forms.GetPosts) {
+export function usePostsKey(config?: Forms.GetPosts) {
   const { queryKeyPrefix } = useApiClients();
   const { communitySlug, ...form } = config ?? {};
 
@@ -960,60 +954,6 @@ export function useRemoveUserAvatar() {
         toast.error("An unexpected error occured");
       }
       console.error(err);
-    },
-  });
-}
-
-export function useLikePost(apId?: string) {
-  const { api } = useApiClients();
-
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const patchPost = usePostsStore((s) => s.patchPost);
-
-  return useMutation({
-    mutationKey: ["likePost", apId],
-    mutationFn: async ({
-      postId,
-      score,
-    }: {
-      postApId: string;
-      postId: number;
-      score: -1 | 0 | 1;
-    }) => {
-      return (await api).likePost({
-        postId,
-        score,
-      });
-    },
-    onMutate: ({ postApId, score }) => {
-      patchPost(postApId, getCachePrefixer(), {
-        optimisticMyVote: score,
-      });
-    },
-    onSuccess: (data) => {
-      patchPost(data.apId, getCachePrefixer(), {
-        optimisticMyVote: undefined,
-        ...data,
-      });
-    },
-    onError: (err, { postApId, score }) => {
-      patchPost(postApId, getCachePrefixer(), {
-        optimisticMyVote: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        let verb = "";
-        switch (score) {
-          case 0:
-            verb = "upvote";
-          case 1:
-            verb = "unvote";
-          case -1:
-            verb = "downvote";
-        }
-        toast.error(`Couldn't ${verb} post`);
-      }
     },
   });
 }
@@ -2215,253 +2155,6 @@ export function useBlockCommunity(options?: {
     },
   });
 }
-
-export function useSavePost(apId: string) {
-  const queryClient = useQueryClient();
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  const postsQueryKey = usePostsKey({
-    savedOnly: true,
-  });
-
-  return useMutation({
-    mutationFn: async (form: { postId: number; save: boolean }) =>
-      (await api).savePost(form),
-    onMutate: ({ save }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticSaved: save,
-      });
-    },
-    onSuccess: (post) => {
-      patchPost(apId, getCachePrefixer(), {
-        ...post,
-        optimisticSaved: undefined,
-      });
-      queryClient.invalidateQueries({
-        queryKey: postsQueryKey,
-      });
-    },
-    onError: (err, { save }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticSaved: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't ${save ? "save" : "unsave"} post`);
-      }
-    },
-  });
-}
-
-export function useDeletePost(apId: string) {
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  return useMutation({
-    mutationFn: async (form: Forms.DeletePost) => (await api).deletePost(form),
-    onMutate: ({ deleted }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticDeleted: deleted,
-      });
-    },
-    onSuccess: (data) => {
-      patchPost(apId, getCachePrefixer(), {
-        ...data,
-        optimisticDeleted: undefined,
-      });
-    },
-    onError: (err, { deleted }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticDeleted: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't ${deleted ? "delete" : "restore"} post`);
-      }
-    },
-  });
-}
-
-export function useMarkPostRead(apId: string) {
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  return useMutation({
-    mutationFn: async (form: Forms.MarkPostRead) => {
-      return (await api).markPostRead(form);
-    },
-    onMutate: ({ read }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticRead: read,
-      });
-    },
-    onSuccess: (_, { read }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticRead: undefined,
-        read,
-      });
-    },
-    onError: (err, { read }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticRead: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't mark post ${read ? "read" : "unread"}`);
-      }
-    },
-  });
-}
-
-export function useFeaturePost(apId: string) {
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  return useMutation({
-    mutationFn: async (form: Forms.FeaturePost) =>
-      (await api).featurePost(form),
-    onMutate: ({ featured }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticFeaturedCommunity: featured,
-      });
-    },
-    onSuccess: (post) => {
-      patchPost(apId, getCachePrefixer(), {
-        ...post,
-        optimisticFeaturedCommunity: undefined,
-      });
-    },
-    onError: (err, { featured }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticFeaturedCommunity: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't ${featured ? "pin" : "unpin"} post`);
-      }
-    },
-  });
-}
-
-export function useRemovePost() {
-  const { api } = useApiClients();
-  const patchPost = usePostsStore((s) => s.patchPost);
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  return useMutation({
-    mutationFn: async (form: Forms.RemovePost & { apId: string }) =>
-      (await api).removePost(form),
-    onMutate: ({ removed, apId }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticRemoved: removed,
-      });
-    },
-    onSuccess: (postView) => {
-      patchPost(postView.apId, getCachePrefixer(), {
-        optimisticRemoved: undefined,
-        ...postView,
-      });
-    },
-    onError: (err, { removed, apId }) => {
-      patchPost(apId, getCachePrefixer(), {
-        optimisticRemoved: undefined,
-      });
-      if (isErrorLike(err)) {
-        toast.error(extractErrorContent(err));
-      } else {
-        toast.error(`Couldn't ${removed ? "remove" : "restore"} post`);
-      }
-    },
-  });
-}
-
-function createPostMutation<
-  ApiFn extends keyof ApiBlueprint<any>,
-  Form extends Parameters<ApiBlueprint<any>[ApiFn]>[0],
->(
-  apiFn: ApiFn,
-  key: keyof Form & string,
-  optimisticKey: keyof Schemas.Post,
-  formatError: (form: Form) => string,
-) {
-  return () => {
-    const { api } = useApiClients();
-    const patchPost = usePostsStore((s) => s.patchPost);
-    const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-    return useMutation({
-      mutationFn: async (form: Form & { apId: string }) =>
-        (await api)[apiFn](form),
-      onMutate: ({ [key]: field, apId }) => {
-        patchPost(apId, getCachePrefixer(), {
-          [optimisticKey]: field,
-        });
-      },
-      onSuccess: (postView) => {
-        patchPost(postView.apId, getCachePrefixer(), {
-          [optimisticKey]: undefined,
-          ...postView,
-        });
-      },
-      onError: (err, form) => {
-        patchPost(form.apId, getCachePrefixer(), {
-          [optimisticKey]: undefined,
-        });
-        if (isErrorLike(err)) {
-          toast.error(extractErrorContent(err));
-        } else {
-          toast.error(formatError(form));
-        }
-      },
-    });
-  };
-}
-
-export const useLockPost = createPostMutation(
-  "lockPost",
-  "locked",
-  "optimisticLocked",
-  ({ locked }) => `Couldn't ${locked ? "lock" : "unlock"} post`,
-);
-
-// export function useLockPost(apId: string) {
-//   const { api } = useApiClients();
-//   const patchPost = usePostsStore((s) => s.patchPost);
-//   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-//
-//   return useMutation({
-//     mutationFn: async (form: Forms.LockPost) => (await api).lockPost(form),
-//     onMutate: ({ locked }) => {
-//       patchPost(apId, getCachePrefixer(), {
-//         optimisticLocked: locked,
-//       });
-//     },
-//     onSuccess: (postView) => {
-//       patchPost(postView.apId, getCachePrefixer(), {
-//         optimisticLocked: undefined,
-//         ...postView,
-//       });
-//     },
-//     onError: (err, { locked }) => {
-//       patchPost(apId, getCachePrefixer(), {
-//         optimisticLocked: undefined,
-//       });
-//       if (isErrorLike(err)) {
-//         toast.error(extractErrorContent(err));
-//       } else {
-//         toast.error(`Couldn't ${locked ? "lock" : "unlock"} post`);
-//       }
-//     },
-//   });
-// }
 
 export function useRemoveComment() {
   const { api } = useApiClients();

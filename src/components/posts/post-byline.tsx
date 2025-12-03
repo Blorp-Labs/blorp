@@ -1,10 +1,4 @@
-import {
-  useBlockPerson,
-  useDeletePost,
-  useFeaturePost,
-  useLockPost,
-  useSavePost,
-} from "@/src/lib/api/index";
+import { useBlockPerson } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -43,6 +37,12 @@ import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
 import { Lock } from "../icons";
+import {
+  useDeletePost,
+  useFeaturePost,
+  useLockPost,
+  useSavePost,
+} from "@/src/lib/api/post-mutations";
 
 export function usePostActions({
   post,
@@ -58,11 +58,11 @@ export function usePostActions({
   const showReportModal = useShowPostReportModal();
   const requireAuth = useRequireAuth();
   const blockPerson = useBlockPerson();
-  const deletePost = useDeletePost(post.apId);
-  const featurePost = useFeaturePost(post.apId);
+  const deletePost = useDeletePost();
+  const featurePost = useFeaturePost();
   const lockPost = useLockPost();
   const showPostRemoveModal = useShowPostRemoveModal();
-  const savePost = useSavePost(post.apId);
+  const savePost = useSavePost();
 
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
@@ -95,6 +95,7 @@ export function usePostActions({
                     featureType: "Community",
                     postId: post.id,
                     featured: !post.featuredCommunity,
+                    postApId: post.apId,
                   }),
               },
               {
@@ -107,7 +108,7 @@ export function usePostActions({
                   lockPost.mutate({
                     postId: post.id,
                     locked: !locked,
-                    apId: post.apId,
+                    postApId: post.apId,
                   }),
               },
             ],
@@ -164,6 +165,7 @@ export function usePostActions({
       onClick: () =>
         requireAuth().then(() => {
           savePost.mutateAsync({
+            postApId: post.apId,
             postId: post.id,
             save: !saved,
           });
@@ -194,6 +196,7 @@ export function usePostActions({
             text: post.deleted ? "Restore post" : "Delete post",
             onClick: () =>
               deletePost.mutate({
+                postApId: post.apId,
                 postId: post.id,
                 deleted: !post.deleted,
               }),

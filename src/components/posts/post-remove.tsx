@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostsStore } from "@/src/stores/posts";
-import { useRemoveComment, useRemovePost } from "@/src/lib/api";
+import { useRemoveComment } from "@/src/lib/api";
 import { useCommentsStore } from "@/src/stores/comments";
 import {
   IonButton,
@@ -16,6 +16,7 @@ import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
 import { useAuth } from "@/src/stores/auth";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
+import { useRemovePost } from "@/src/lib/api/post-mutations";
 
 const Context = createContext<{
   apId?: string;
@@ -61,7 +62,7 @@ export function PostRemoveProvider({
     if (post) {
       removePost
         .mutateAsync({
-          apId: post.apId,
+          postApId: post.apId,
           postId: post.id,
           reason,
           removed: !post.removed,
