@@ -135,10 +135,11 @@ export default function SavedFeed() {
           </IonToolbar>
         )}
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
           <VirtualList<Item>
             key={type === "comments" ? "comments" : type + postSort}
+            fullscreen
             scrollHost
             data={
               data.length === 0 && !posts.isRefetching && !posts.isPending

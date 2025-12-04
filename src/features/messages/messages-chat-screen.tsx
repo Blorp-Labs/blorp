@@ -22,7 +22,7 @@ import {
 } from "react";
 import { VirtualizerHandle, Virtualizer } from "virtua";
 import dayjs from "dayjs";
-import updateLocale from "dayjs/plugin/updateLocale";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import TextareaAutosize from "react-textarea-autosize";
@@ -36,8 +36,9 @@ import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";
+import { getPreferedTimeFormat } from "@/src/lib/format";
 
-dayjs.extend(updateLocale);
+dayjs.extend(localizedFormat);
 
 export default function Messages() {
   const media = useMedia();
@@ -154,7 +155,6 @@ export default function Messages() {
               scrollbarGutter: media.xxl ? "stable" : undefined,
             }}
           >
-            <div className="grow" />
             <Virtualizer
               key={signal}
               shift
@@ -209,7 +209,9 @@ export default function Messages() {
                               isMe && "text-white/85",
                             )}
                           >
-                            {dayjs(item.createdAt).format("h:mma")}
+                            {dayjs(item.createdAt).format(
+                              getPreferedTimeFormat(),
+                            )}
                           </span>
                         </div>
                       </div>
@@ -218,6 +220,7 @@ export default function Messages() {
                 );
               }}
             </Virtualizer>
+            <div className="grow" />
           </div>
           {person && (
             <ComposeMessage
@@ -265,6 +268,7 @@ function ComposeMessage({
           className="pl-3 py-1 flex-1 outline-none resize-none min-h-8"
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          maxRows={6}
         />
         <Button
           size="icon"

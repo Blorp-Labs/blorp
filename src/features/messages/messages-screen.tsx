@@ -19,6 +19,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { removeMd } from "@/src/components/markdown/remove-md";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { useMedia } from "@/src/lib/hooks";
 
 const NO_ITEMS = "NO_ITEMS";
 const EMPTY_ARR: never[] = [];
@@ -73,6 +74,7 @@ function useChats() {
 }
 
 export default function Messages() {
+  const media = useMedia();
   const chats = useChats();
   const account = useAuth((s) => s.getSelectedAccount());
   const { person: me } = parseAccountInfo(account);
@@ -109,8 +111,9 @@ export default function Messages() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen={media.maxMd}>
         <VirtualList<ChatItem | typeof NO_ITEMS>
+          fullscreen
           scrollHost
           refresh={chats.refetch}
           estimatedItemSize={50}
@@ -138,7 +141,7 @@ export default function Messages() {
                 params={{ userId: encodeApId(getOtherPerson(item).apId) }}
               >
                 <ContentGutters className="px-0">
-                  <div className="overflow-hidden">
+                  <div>
                     <div
                       className={cn(
                         "flex gap-3 my-4 max-md:px-3.5",
@@ -150,7 +153,7 @@ export default function Messages() {
                         actorId={getOtherPerson(item).apId}
                         size="sm"
                       />
-                      <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex flex-col gap-2 flex-1 overflow-hidden">
                         <div className="flex justify-between text-sm flex-1">
                           <span className="font-medium">
                             {getOtherPerson(item).slug}
@@ -173,7 +176,6 @@ export default function Messages() {
             );
           }}
           onEndReached={() => {
-            /* console.log({ ...chats }); */
             if (
               !chats.isFetching &&
               !chats.isFetchingNextPage &&
