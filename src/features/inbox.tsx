@@ -44,6 +44,13 @@ import {
   TooltipTrigger,
 } from "../components/ui/tooltip";
 import { encodeApId } from "../lib/api/utils";
+import {
+  CommentButtonBar,
+  CommentVoting,
+} from "../components/comments/comment-buttons";
+import { useCommentsByPaths } from "../stores/comments";
+import { useCommentActions } from "../components/comments/post-comment";
+import { useSettingsStore } from "../stores/settings";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -78,11 +85,21 @@ function Mention({
   mention: Schemas.Mention;
   noBorder?: boolean;
 }) {
+  const [commentView] = useCommentsByPaths([mention.path]);
+  const actions = useCommentActions({
+    commentView,
+  });
   const markRead = useMarkPersonMentionRead();
   return (
-    <ContentGutters className="px-0">
-      <div className={cn("flex-1 max-md:px-3.5", !noBorder && "border-b")}>
-        <div className="flex my-2.5 gap-3 items-start">
+    <ContentGutters noMobilePadding>
+      <div
+        className={cn(
+          "flex-1",
+          !noBorder && "border-b",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        <div className="flex mt-2.5 mb-1 gap-3 items-start">
           <BadgeIcon
             icon={<Person className="h-full w-full text-muted-foreground" />}
           >
@@ -118,12 +135,14 @@ function Mention({
               </div>
               <MarkdownRenderer
                 markdown={mention.body}
-                className="pb-2"
+                className="pb-1"
                 disableLinks
               />
             </Link>
-            <div className="flex flex-row justify-end gap-2 text-muted-foreground">
+            <CommentButtonBar>
               <RelativeTime time={mention.createdAt} />
+              <div className="flex-1" />
+              {commentView && <CommentVoting commentView={commentView} />}
               <ActionMenu
                 align="end"
                 actions={[
@@ -135,10 +154,11 @@ function Mention({
                         read: !mention.read,
                       }),
                   },
+                  ...actions,
                 ]}
                 trigger={<IoEllipsisHorizontal />}
               />
-            </div>
+            </CommentButtonBar>
           </div>
         </div>
       </div>
@@ -158,10 +178,20 @@ function Reply({
   const path = replyView.path.split(".");
   const parent = path.at(-2);
   const hasParent = parent && parent !== "0";
+  const [commentView] = useCommentsByPaths([replyView.path]);
+  const actions = useCommentActions({
+    commentView,
+  });
   return (
-    <ContentGutters className="px-0">
-      <div className={cn("flex-1 max-md:px-3.5", !noBorder && "border-b")}>
-        <div className="flex my-2.5 gap-3 items-start">
+    <ContentGutters noMobilePadding>
+      <div
+        className={cn(
+          "flex-1",
+          !noBorder && "border-b",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        <div className="flex mt-2.5 mb-1 gap-3 items-start">
           <BadgeIcon
             icon={<Message className="h-full w-full text-muted-foreground" />}
           >
@@ -201,15 +231,17 @@ function Reply({
               {!replyView.deleted && !replyView.removed && (
                 <MarkdownRenderer
                   markdown={replyView.body}
-                  className="pb-2"
+                  className="pb-1"
                   disableLinks
                 />
               )}
               {replyView.deleted && <span className="italic">deleted</span>}
               {replyView.removed && <span className="italic">removed</span>}
             </Link>
-            <div className="flex flex-row justify-end gap-2 text-muted-foreground">
+            <CommentButtonBar>
               <RelativeTime time={replyView.createdAt} />
+              <div className="flex-1" />
+              {commentView && <CommentVoting commentView={commentView} />}
               <ActionMenu
                 align="end"
                 actions={[
@@ -221,10 +253,11 @@ function Reply({
                         read: !replyView.read,
                       }),
                   },
+                  ...actions,
                 ]}
                 trigger={<IoEllipsisHorizontal />}
               />
-            </div>
+            </CommentButtonBar>
           </div>
         </div>
       </div>

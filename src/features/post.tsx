@@ -248,8 +248,6 @@ export default function Post() {
 
   const parentComment = useResolveComment(commentPath);
 
-  const myUserId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
-    ?.id;
   const myUserApId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.apId;
 
@@ -454,7 +452,6 @@ export default function Post() {
                     commentTree={item[1]}
                     level={0}
                     opId={opId}
-                    myUserId={myUserId}
                     communityName={communityName}
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}

@@ -927,6 +927,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
     return {
       replies: replies.map(convertReply),
+      comments: replies.map(convertComment),
       profiles: _.unionBy(
         replies.map((r) => convertPerson({ person: r.creator })),
         (p) => p.apId,
@@ -956,6 +957,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
     return {
       mentions: mentions.map(convertMention),
+      comments: mentions.map(convertComment),
       profiles: _.unionBy(
         mentions.map((r) => convertPerson({ person: r.creator })),
         (p) => p.apId,

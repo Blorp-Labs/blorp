@@ -1526,10 +1526,11 @@ export function useReplies(form: Forms.GetReplies) {
   const queryKey = useRepliesQueryKey(form);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
   return useThrottledInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam, signal }) => {
-      const { replies, profiles, nextCursor } = await (
+      const { replies, comments, profiles, nextCursor } = await (
         await api
       ).getReplies(
         {
@@ -1540,6 +1541,7 @@ export function useReplies(form: Forms.GetReplies) {
           signal,
         },
       );
+      cacheComments(getCachePrefixer(), comments);
       cacheProfiles(getCachePrefixer(), profiles);
       return {
         replies,
@@ -1564,10 +1566,11 @@ export function usePersonMentions(form: Forms.GetMentions) {
   const queryKey = usePersonMentionsKey(form);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
   return useThrottledInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam, signal }) => {
-      const { mentions, profiles, nextCursor } = await (
+      const { mentions, comments, profiles, nextCursor } = await (
         await api
       ).getMentions(
         {
@@ -1579,6 +1582,7 @@ export function usePersonMentions(form: Forms.GetMentions) {
         },
       );
       cacheProfiles(getCachePrefixer(), profiles);
+      cacheComments(getCachePrefixer(), comments);
       return {
         mentions,
         nextCursor,
