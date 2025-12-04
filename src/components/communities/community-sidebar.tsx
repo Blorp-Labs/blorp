@@ -85,14 +85,22 @@ export function SmallScreenSidebar({
     </div>
   );
 
+  const banner = data?.communityView.banner;
+
   return (
     <div>
       <div
         className={cn(
-          "flex flex-col gap-3.5 pt-1.5 pb-2 flex-1 px-3.5",
-          !expanded && "md:hidden",
+          "flex flex-col gap-3.5 pb-2 flex-1 px-3.5",
+          !expanded && "md:hidden pt-1.5",
         )}
       >
+        {expanded && banner && (
+          <div className="max-md:-mx-3.5">
+            <img src={banner} className="aspect-[4] object-cover" />
+          </div>
+        )}
+
         <AggregateBadges
           aggregates={{
             ...(expanded
