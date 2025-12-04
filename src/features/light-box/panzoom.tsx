@@ -143,6 +143,9 @@ export function usePanZoom(
           event.preventDefault();
         },
       } satisfies PanzoomOptions);
+      const handleReset = () => {
+        onZoom?.(0);
+      };
       const handleZoom = () => {
         const scale = panzoom.getScale();
         if (Math.round(scale) <= 1) {
@@ -152,7 +155,7 @@ export function usePanZoom(
         }
         onZoom?.(scale);
       };
-      container.addEventListener("panzoomzoom", handleZoom);
+
       const handlePan = _.debounce(() => {
         const scale = panzoom.getScale();
         const pan = panzoom.getPan();
@@ -170,11 +173,11 @@ export function usePanZoom(
         // and the scaled (zoomed in) height of the image, divided by scale
         // and then halfed.
         const scaledHeight = imgDimensions.height * scale;
-        const maxY = (scaledHeight - clientHeight) / scale / 2;
+        const maxY = Math.abs(scaledHeight - clientHeight) / scale / 2;
 
         // Same as Y, but with X
         const scaledWidth = imgDimensions.width * scale;
-        const maxX = (scaledWidth - clientWidth) / scale / 2;
+        const maxX = Math.abs(scaledWidth - clientWidth) / scale / 2;
 
         const adjustForVertialPadding = (paddingBottom - paddingTop) / 2;
 
@@ -191,7 +194,7 @@ export function usePanZoom(
           });
         }
       }, 50);
-      container.addEventListener("panzoompan", handlePan);
+
       const unsubscribe = controlsListen((event) => {
         switch (event) {
           case "zoom-in":
@@ -202,11 +205,26 @@ export function usePanZoom(
             break;
         }
       });
+
+      const handleDbclick = (e: MouseEvent) => {
+        if (panzoom.getScale() > 1) {
+          panzoom.reset({ animate: true });
+        } else {
+          panzoom.zoomToPoint(2, e, { animate: true });
+        }
+      };
+
+      container.addEventListener("panzoompan", handlePan);
+      container.addEventListener("panzoomreset", handleReset);
+      container.addEventListener("panzoomzoom", handleZoom);
+      container.addEventListener("dblclick", handleDbclick);
       return () => {
         unsubscribe();
         onZoom?.(1);
         container.removeEventListener("panzoompan", handlePan);
+        container.removeEventListener("panzoomreset", handleReset);
         container.removeEventListener("panzoomzoom", handleZoom);
+        container.removeEventListener("dblclick", handleDbclick);
         panzoom.destroy();
       };
     }
