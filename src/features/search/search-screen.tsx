@@ -46,6 +46,13 @@ import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import { encodeApId } from "@/src/lib/api/utils";
+import {
+  CommentButtonBar,
+  CommentVoting,
+} from "@/src/components/comments/comment-buttons";
+import { useCommentActions } from "@/src/components/comments/post-comment";
+import { ActionMenu } from "@/src/components/adaptable/action-menu";
+import { IoEllipsisHorizontal } from "react-icons/io5";
 
 const EMPTY_ARR: never[] = [];
 
@@ -94,20 +101,29 @@ function Comment({ commentPath }: { commentPath: string }) {
   const [comment] = useCommentsByPaths([commentPath]);
   const linkCtx = useLinkContext();
 
+  const actions = useCommentActions({
+    commentView: comment,
+  });
+
   if (!comment) {
     return null;
   }
 
   return (
-    <ContentGutters className="px-0">
+    <ContentGutters noMobilePadding>
       <div className="flex-1">
-        <div className="flex my-2.5 gap-3 items-start max-md:px-3.5">
+        <div
+          className={cn(
+            "flex mt-2.5 mb-1 gap-3 items-start",
+            ContentGutters.mobilePadding,
+          )}
+        >
           <BadgeIcon
             icon={<Message className="h-full w-full text-muted-foreground" />}
           >
             <PersonAvatar actorId={comment.creatorApId} size="sm" />
           </BadgeIcon>
-          <div className={"flex-1 text-sm leading-6 block overflow-x-hidden"}>
+          <div className="flex-1 text-sm leading-6 block">
             <Link
               to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
               params={{
@@ -125,13 +141,30 @@ function Comment({ commentPath }: { commentPath: string }) {
               </div>
               <MarkdownRenderer
                 markdown={comment.body}
-                className="pb-2"
+                className="pb-1"
                 disableLinks
               />
             </Link>
-            <div className="flex flex-row justify-end gap-2 text-muted-foreground">
+            <CommentButtonBar>
               <RelativeTime time={comment.createdAt} />
-            </div>
+              <div className="flex-1" />
+              <CommentVoting commentView={comment} />
+              <ActionMenu
+                actions={actions}
+                align="end"
+                trigger={
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="z-10 md:-mr-2"
+                    aria-label="Comment actions"
+                  >
+                    <IoEllipsisHorizontal size={16} />
+                  </Button>
+                }
+                triggerAsChild
+              />
+            </CommentButtonBar>
           </div>
         </div>
         <Separator />

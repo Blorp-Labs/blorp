@@ -36,7 +36,12 @@ import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { useAuth, useIsAdmin, useIsPersonBlocked } from "@/src/stores/auth";
+import {
+  getAccountSite,
+  useAuth,
+  useIsAdmin,
+  useIsPersonBlocked,
+} from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
@@ -77,21 +82,19 @@ const useDetailsStore = create<StoreState>((set) => ({
   },
 }));
 
-function useCommentActions({
+export function useCommentActions({
   commentView,
-  myUserId,
   queryKeyParentId,
-  communityName,
-  postApId,
   canMod,
 }: {
   commentView?: Schemas.Comment;
-  myUserId?: number;
   queryKeyParentId?: number;
-  communityName: string;
-  postApId: string;
   canMod?: boolean;
 }) {
+  const myUserId = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
+  );
+
   const actorSlug = commentView?.creatorApId;
   const tag = useTagUserStore((s) =>
     actorSlug ? s.userTags[actorSlug] : null,
@@ -124,8 +127,8 @@ function useCommentActions({
     ? resolveRoute(
         `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
         {
-          communityName,
-          post: encodeApId(postApId),
+          communityName: commentView.communitySlug,
+          post: encodeApId(commentView.postApId),
           comment: encodeApId(commentView.apId),
         },
       )
@@ -392,7 +395,6 @@ export function PostComment({
   commentTree,
   level,
   opId,
-  myUserId,
   communityName,
   modApIds,
   singleCommentThread,
@@ -405,7 +407,6 @@ export function PostComment({
   commentTree: CommentTree;
   level: number;
   opId: number | undefined;
-  myUserId: number | undefined;
   communityName: string;
   modApIds?: string[];
   singleCommentThread?: boolean;
@@ -501,10 +502,7 @@ export function PostComment({
 
   const actions = useCommentActions({
     commentView,
-    myUserId,
     queryKeyParentId,
-    communityName,
-    postApId,
     canMod,
   });
 
@@ -687,7 +685,6 @@ export function PostComment({
                   commentTree={map}
                   level={level + 1}
                   opId={opId}
-                  myUserId={myUserId}
                   communityName={communityName}
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}

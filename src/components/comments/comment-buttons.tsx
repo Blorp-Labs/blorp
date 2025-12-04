@@ -20,6 +20,7 @@ import NumberFlow from "@number-flow/react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
+import { useSettingsStore } from "@/src/stores/settings";
 
 type Vote = {
   postId: number;
@@ -198,5 +199,26 @@ export function CommentReplyButton(
         <span>Reply</span>
       </Button>
     </>
+  );
+}
+
+export function CommentButtonBar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+  return (
+    <div
+      className={cn(
+        "flex flex-row items-center justify-end gap-2.5",
+        leftHandedMode && "flex-row-reverse",
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }

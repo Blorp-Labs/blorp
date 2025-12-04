@@ -32,7 +32,16 @@ import { useHistory } from "react-router";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { CommentVoting } from "../components/comments/comment-buttons";
+import {
+  CommentButtonBar,
+  CommentVoting,
+} from "../components/comments/comment-buttons";
+import { useCommentActions } from "../components/comments/post-comment";
+import { ActionMenu } from "../components/adaptable/action-menu";
+import { IoEllipsisHorizontal } from "react-icons/io5";
+import { RelativeTime } from "../components/relative-time";
+import { Separator } from "../components/ui/separator";
+import { cn } from "../lib/utils";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item = string;
@@ -55,6 +64,8 @@ const Comment = memo(function Comment({ path }: { path: string }) {
   });
   const linkCtx = useLinkContext();
 
+  const actions = useCommentActions({ commentView });
+
   if (!commentView) {
     return null;
   }
@@ -62,34 +73,48 @@ const Comment = memo(function Comment({ path }: { path: string }) {
   const postTitle = commentView.postTitle ?? postView?.title;
 
   return (
-    <ContentGutters>
-      <Link
-        to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
-        params={{
-          communityName: commentView.communitySlug,
-          post: encodeApId(commentView.postApId),
-          comment: encodeApId(commentView.apId),
-        }}
-        className="py-2 border-b flex-1 overflow-hidden text-sm flex flex-col gap-1.5"
-      >
-        <span>
-          Replied to <b>{postTitle}</b> in <b>{commentView.communitySlug}</b>
-        </span>
+    <ContentGutters noMobilePadding>
+      <div>
+        <Link
+          to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
+          params={{
+            communityName: commentView.communitySlug,
+            post: encodeApId(commentView.postApId),
+            comment: encodeApId(commentView.apId),
+          }}
+          className={cn(
+            "py-2.5 flex-1 overflow-hidden text-sm flex flex-col gap-1",
+            ContentGutters.mobilePadding,
+          )}
+        >
+          <span>
+            Replied to <b>{postTitle}</b> in <b>{commentView.communitySlug}</b>
+          </span>
 
-        {!commentView.deleted && !commentView.removed && (
-          <MarkdownRenderer markdown={commentView.body} disableLinks />
-        )}
+          {!commentView.deleted && !commentView.removed && (
+            <MarkdownRenderer markdown={commentView.body} disableLinks />
+          )}
 
-        {commentView.deleted && (
-          <span className="text-muted-foreground italic">deleted</span>
-        )}
+          {commentView.deleted && (
+            <span className="text-muted-foreground italic">deleted</span>
+          )}
 
-        {commentView.removed && (
-          <span className="text-muted-foreground italic">removed</span>
-        )}
-
-        <CommentVoting commentView={commentView} className="self-end" />
-      </Link>
+          {commentView.removed && (
+            <span className="text-muted-foreground italic">removed</span>
+          )}
+        </Link>
+        <CommentButtonBar className={cn("pb-1", ContentGutters.mobilePadding)}>
+          <RelativeTime time={commentView.createdAt} />
+          <div className="flex-1" />
+          <CommentVoting commentView={commentView} />
+          <ActionMenu
+            align="end"
+            actions={actions}
+            trigger={<IoEllipsisHorizontal />}
+          />
+        </CommentButtonBar>
+        <Separator />
+      </div>
       <></>
     </ContentGutters>
   );

@@ -707,6 +707,7 @@ export abstract class ApiBlueprint<C> {
     option: RequestOptions,
   ): Promise<{
     replies: Schemas.Reply[];
+    comments: Schemas.Comment[];
     profiles: Schemas.Person[];
     nextCursor: string | null;
   }>;
@@ -716,6 +717,7 @@ export abstract class ApiBlueprint<C> {
     options: RequestOptions,
   ): Promise<{
     mentions: Schemas.Mention[];
+    comments: Schemas.Comment[];
     profiles: Schemas.Person[];
     nextCursor: string | null;
   }>;

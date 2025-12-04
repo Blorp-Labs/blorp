@@ -326,6 +326,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     my_vote: z.number(),
     replies: z.array(pieFedCommentChildSchema),
     creator_banned_from_community: z.boolean().nullish(),
+    saved: z.boolean().nullable().optional(),
   }),
 );
 
@@ -363,14 +364,14 @@ export const pieFedReplyViewSchema = z.object({
   post: pieFedPostSchema,
   community: pieFedCommunitySchema,
   //recipient: pieFedPersonSchema,
-  //counts: pieFedCommentCountsSchema,
+  counts: pieFedCommentCountsSchema,
   //creator_banned_from_community: z.boolean(),
   //creator_is_moderator: z.boolean(),
   //creator_is_admin: z.boolean(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
   //saved: z.boolean(),
   //creator_blocked: z.boolean(),
-  //my_vote: z.number(),
+  my_vote: z.number(),
 });
 
 export const pieFedPrivateMessageSchema = z.object({
@@ -1732,6 +1733,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         replies: replies.map(convertReply),
+        comments: replies.map(convertComment),
         profiles: replies.map((r) =>
           convertPerson({ person: r.creator }, "partial"),
         ),
@@ -1764,6 +1766,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         mentions: replies.map(convertMention),
+        comments: replies.map(convertComment),
         profiles: _.unionBy(
           replies.map((r) => convertPerson({ person: r.creator }, "partial")),
           (p) => p.apId,
