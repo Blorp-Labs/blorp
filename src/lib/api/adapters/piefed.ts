@@ -1988,15 +1988,39 @@ export class PieFedApi implements ApiBlueprint<null> {
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {
     try {
-      const res = await fetch(form.url);
-      const text = await res.text();
-      const og = parseOgData(text);
+      const json = await this.get("/post/site_metadata", {
+        url: form.url,
+      });
+      const { metadata } = z
+        .object({
+          metadata: z.object({
+            title: z.string().nullish(),
+            description: z.string().nullish(),
+            content_type: z.string().nullish(),
+            image: z.string().nullish(),
+            embed_video_url: z.string().nullish(),
+          }),
+        })
+        .parse(json);
       return {
-        imageUrl: og.imageUrl,
-        title: og.title,
+        title: metadata.title,
+        description: metadata.title,
+        contentType: metadata.content_type,
+        imageUrl: metadata.image,
+        embedVideoUrl: metadata.embed_video_url,
       };
     } catch {
-      return {};
+      try {
+        const res = await fetch(form.url);
+        const text = await res.text();
+        const og = parseOgData(text);
+        return {
+          imageUrl: og.imageUrl,
+          title: og.title,
+        };
+      } catch {
+        return {};
+      }
     }
   }
 

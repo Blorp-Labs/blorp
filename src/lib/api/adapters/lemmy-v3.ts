@@ -1167,7 +1167,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
     return {
       title: metadata.title,
-      description: metadata.title,
+      description: metadata.description,
       contentType: metadata.content_type,
       imageUrl: metadata.image,
       embedVideoUrl: metadata.embed_video_url,
