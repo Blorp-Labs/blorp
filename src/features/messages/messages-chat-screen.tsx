@@ -10,7 +10,7 @@ import { decodeApId } from "@/src/lib/api/utils";
 import { cn } from "@/src/lib/utils";
 import { useParams } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import _ from "lodash";
 import {
   useCallback,
@@ -31,12 +31,12 @@ import { Button } from "@/src/components/ui/button";
 import { useIsActiveRoute, useMedia } from "@/src/lib/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { PageTitle } from "@/src/components/page-title";
-import LoginRequired from "../login-required";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";
 import { getPreferedTimeFormat } from "@/src/lib/format";
+import { Page } from "@/src/components/page";
 
 dayjs.extend(localizedFormat);
 
@@ -114,8 +114,6 @@ export default function Messages() {
     });
   }, [chat.isPending, signal]);
 
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-
   const active = useIsActiveRoute();
   useScrollToTopEvents({
     scrollToTop: useCallback(() => {
@@ -127,12 +125,8 @@ export default function Messages() {
     focused: active,
   });
 
-  if (!isLoggedIn) {
-    return <LoginRequired />;
-  }
-
   return (
-    <IonPage>
+    <Page>
       <PageTitle>{person ? person.slug : null}</PageTitle>
       <IonHeader>
         <IonToolbar>
@@ -234,7 +228,7 @@ export default function Messages() {
           )}
         </div>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }
 

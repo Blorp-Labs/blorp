@@ -11,15 +11,15 @@ import { encodeApId } from "@/src/lib/api/utils";
 import { cn, isNotNil } from "@/src/lib/utils";
 import { Link } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import _ from "lodash";
 import { useMemo } from "react";
-import LoginRequired from "../login-required";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { removeMd } from "@/src/components/markdown/remove-md";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useMedia } from "@/src/lib/hooks";
+import { Page } from "@/src/components/page";
 
 const NO_ITEMS = "NO_ITEMS";
 const EMPTY_ARR: never[] = [];
@@ -91,14 +91,8 @@ export default function Messages() {
         };
   };
 
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-
-  if (!isLoggedIn) {
-    return <LoginRequired />;
-  }
-
   return (
-    <IonPage>
+    <Page requireLogin>
       <PageTitle>Chats</PageTitle>
       <IonHeader>
         <IonToolbar>
@@ -186,6 +180,6 @@ export default function Messages() {
           }}
         />
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

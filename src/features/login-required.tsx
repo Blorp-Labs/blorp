@@ -9,6 +9,9 @@ import { Button } from "../components/ui/button";
 import { useRequireAuth } from "../components/auth-context";
 import { ContentGutters } from "../components/gutters";
 
+/**
+ * @deprecated don't use
+ */
 export default function LoginRequired() {
   const requireAuth = useRequireAuth();
   return (
