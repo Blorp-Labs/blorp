@@ -1346,10 +1346,13 @@ export class PieFedApi implements ApiBlueprint<null> {
     );
 
     try {
-      const { posts, communities, users } = z
+      const { posts, communities, users, comments } = z
         .object({
           posts: z.array(pieFedPostViewSchema),
           communities: z.array(pieFedCommunityViewSchema),
+          comments: z
+            .array(pieFedCommentViewSchema.omit({ replies: true }))
+            .optional(),
           users: z.array(pieFedPersonViewSchema),
         })
         .parse(json);
@@ -1373,16 +1376,22 @@ export class PieFedApi implements ApiBlueprint<null> {
             ...posts.map((p) =>
               convertCommunity({ community: p.community }, "partial"),
             ),
+            ...(comments?.map((c) =>
+              convertCommunity({ community: c.community }, "partial"),
+            ) ?? []),
           ],
           (c) => c.apId,
         ),
-        comments: [],
+        comments: comments?.map(convertComment) ?? [],
         users: _.uniqBy(
           [
             ...users.map((p) => convertPerson(p, "partial")),
             ...posts.map((p) =>
               convertPerson({ person: p.creator }, "partial"),
             ),
+            ...(comments?.map((c) =>
+              convertPerson({ person: c.creator }, "partial"),
+            ) ?? []),
           ],
           (p) => p.apId,
         ),
