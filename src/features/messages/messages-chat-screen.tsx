@@ -12,24 +12,33 @@ import { useParams } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import _ from "lodash";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { VList, VListHandle } from "virtua";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { VirtualizerHandle, Virtualizer } from "virtua";
 import dayjs from "dayjs";
-import updateLocale from "dayjs/plugin/updateLocale";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import TextareaAutosize from "react-textarea-autosize";
 import { Send } from "@/src/components/icons";
 import { Button } from "@/src/components/ui/button";
-import { useMedia } from "@/src/lib/hooks";
+import { useIsActiveRoute, useMedia } from "@/src/lib/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { PageTitle } from "@/src/components/page-title";
 import LoginRequired from "../login-required";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
+import { useScrollToTopEvents } from "@/src/components/virtual-list";
+import { getPreferedTimeFormat } from "@/src/lib/format";
 
-dayjs.extend(updateLocale);
+dayjs.extend(localizedFormat);
 
 export default function Messages() {
   const media = useMedia();
@@ -90,14 +99,33 @@ export default function Messages() {
     fn();
   }, [data, me, markMessageRead]);
 
-  const ref = useRef<VListHandle>(null);
-  useEffect(() => {
-    if (data) {
-      ref.current?.scrollToIndex(data.length);
+  const ref = useRef<VirtualizerHandle>(null);
+
+  const scrollToBottom = useEffectEvent((smooth = true) => {
+    const vList = ref.current;
+    if (vList && data) {
+      vList.scrollToIndex(data.length, { align: "end", smooth, offset: 100 });
     }
+  });
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      scrollToBottom(false);
+    });
   }, [chat.isPending, signal]);
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+
+  const active = useIsActiveRoute();
+  useScrollToTopEvents({
+    scrollToTop: useCallback(() => {
+      const vList = ref.current;
+      if (vList) {
+        vList.scrollToIndex(0, { align: "start", smooth: true });
+      }
+    }, []),
+    focused: active,
+  });
 
   if (!isLoggedIn) {
     return <LoginRequired />;
@@ -121,66 +149,79 @@ export default function Messages() {
       </IonHeader>
       <IonContent scrollY={false}>
         <div className="h-full flex flex-col">
-          <VList
-            key={signal}
-            className="pt-5 ion-content-scroll-host"
+          <div
+            className="flex-1 flex flex-col overflow-y-auto ion-content-scroll-host pt-5"
             style={{
               scrollbarGutter: media.xxl ? "stable" : undefined,
             }}
-            shift
-            ref={ref}
-            onScroll={() => {
-              if (ref.current?.findStartIndex() === 0) {
-                if (!chat.isFetchingNextPage && chat.hasNextPage) {
-                  chat.fetchNextPage();
-                }
-              }
-            }}
           >
-            {data?.map((item) => {
-              const isMe = item.creatorId === me?.id;
-              return (
-                <ContentGutters key={item.id}>
-                  <div className="flex-row pb-4 w-full">
-                    {item.topOfDay && (
-                      <span className="block pb-4 text-center text-xs text-muted-foreground">
-                        {dayjs(item.createdAt).format("ll")}
-                      </span>
-                    )}
-                    <div className="flex gap-2">
-                      {!isMe && (
-                        <PersonAvatar actorId={item.creatorApId} size="sm" />
+            <Virtualizer
+              key={signal}
+              shift
+              ref={ref}
+              onScroll={() => {
+                const vList = ref.current;
+                if (vList) {
+                  const startIndex = vList.findItemIndex(vList.scrollOffset);
+                  if (
+                    startIndex === 0 &&
+                    !chat.isFetchingNextPage &&
+                    chat.hasNextPage
+                  ) {
+                    chat.fetchNextPage();
+                  }
+                }
+              }}
+              data={data}
+            >
+              {(item) => {
+                const isMe = item.creatorId === me?.id;
+                return (
+                  <ContentGutters key={item.id}>
+                    <div className="flex-row pb-4 w-full">
+                      {item.topOfDay && (
+                        <span className="block pb-4 text-center text-xs text-muted-foreground">
+                          {dayjs(item.createdAt).format("ll")}
+                        </span>
                       )}
-                      <div
-                        className={cn(
-                          "flex flex-col p-2.5 rounded-xl max-w-2/3",
-                          isMe
-                            ? "bg-violet-600 ml-auto"
-                            : "rounded-tl-none bg-secondary",
+                      <div className="flex gap-2">
+                        {!isMe && (
+                          <PersonAvatar actorId={item.creatorApId} size="sm" />
                         )}
-                      >
-                        <MarkdownRenderer
+                        <div
                           className={cn(
-                            isMe &&
-                              "text-white [&_*]:text-white! [&_a]:underline",
-                          )}
-                          markdown={item.body}
-                        />
-                        <span
-                          className={cn(
-                            "self-end text-xs text-secondary-foreground/50 mt-1",
-                            isMe && "text-white/85",
+                            "flex flex-col p-2.5 rounded-xl max-w-2/3",
+                            isMe
+                              ? "bg-violet-600 ml-auto"
+                              : "rounded-tl-none bg-secondary",
                           )}
                         >
-                          {dayjs(item.createdAt).format("h:mma")}
-                        </span>
+                          <MarkdownRenderer
+                            className={cn(
+                              isMe &&
+                                "text-white [&_*]:text-white! [&_a]:underline",
+                            )}
+                            markdown={item.body}
+                          />
+                          <span
+                            className={cn(
+                              "self-end text-xs text-secondary-foreground/50 mt-1",
+                              isMe && "text-white/85",
+                            )}
+                          >
+                            {dayjs(item.createdAt).format(
+                              getPreferedTimeFormat(),
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </ContentGutters>
-              );
-            })}
-          </VList>
+                  </ContentGutters>
+                );
+              }}
+            </Virtualizer>
+            <div className="grow" />
+          </div>
           {person && (
             <ComposeMessage
               recipient={person}
@@ -227,6 +268,7 @@ function ComposeMessage({
           className="pl-3 py-1 flex-1 outline-none resize-none min-h-8"
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          maxRows={6}
         />
         <Button
           size="icon"

@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 /**
  * Abbriviate number counts
  *
@@ -31,3 +33,11 @@ export function abbriviateNumberParts(number: number): {
 
   return { number: Math.floor(number / 100000) / 10, suffix: "m" };
 }
+
+export const getPreferedTimeFormat = _.memoize(() => {
+  const hourCycle = Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+  }).resolvedOptions().hourCycle;
+  const prefers24Hour = hourCycle === "h23" || hourCycle === "h24";
+  return prefers24Hour ? "HH:mm" : "LT";
+});
