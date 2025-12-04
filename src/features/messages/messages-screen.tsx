@@ -17,8 +17,33 @@ import { useMemo } from "react";
 import LoginRequired from "../login-required";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { removeMd } from "@/src/components/markdown/remove-md";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 
+const NO_ITEMS = "NO_ITEMS";
 const EMPTY_ARR: never[] = [];
+
+function ChatItemSkeleton() {
+  return (
+    <ContentGutters className="max-md:px-0">
+      <div className="flex-1">
+        <div className="flex gap-3 my-4 max-md:px-3.5">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="flex flex-col flex-1 gap-2">
+            <Skeleton className="h-5" />
+            <Skeleton className="h-10" />
+          </div>
+        </div>
+        <Separator />
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
+
+type ChatItem = Schemas.PrivateMessage & {
+  hasUnread: boolean;
+};
 
 function useChats() {
   const query = usePrivateMessages({});
@@ -34,7 +59,7 @@ function useChats() {
         return {
           ...item[0]!,
           hasUnread,
-        };
+        } satisfies ChatItem;
       })
       .filter(isNotNil);
     onePerRecipient.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -84,50 +109,69 @@ export default function Messages() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
-        <VirtualList
+      <IonContent scrollY={false}>
+        <VirtualList<ChatItem | typeof NO_ITEMS>
+          scrollHost
           refresh={chats.refetch}
           estimatedItemSize={50}
-          data={chats.chats ?? EMPTY_ARR}
-          renderItem={({ item }) => (
-            <Link
-              to="/messages/chat/:userId"
-              params={{ userId: encodeApId(getOtherPerson(item).apId) }}
-            >
-              <ContentGutters className="px-0">
-                <div className="overflow-hidden">
-                  <div
-                    className={cn(
-                      "flex gap-3 my-4 max-md:px-3.5",
-                      item.hasUnread &&
-                        "border-l-3 border-l-brand md:pl-2.5 max-md:ml-2.5",
-                    )}
-                  >
-                    <PersonAvatar
-                      actorId={getOtherPerson(item).apId}
-                      size="sm"
-                    />
-                    <div className="flex flex-col gap-2 flex-1">
-                      <div className="flex justify-between text-sm flex-1">
-                        <span className="font-medium">
-                          {getOtherPerson(item).slug}
-                        </span>
-                        <RelativeTime
-                          time={item.createdAt}
-                          className="text-muted-foreground"
-                        />
-                      </div>
-                      <span className="text-muted-foreground text-sm line-clamp-2">
-                        {removeMd(item.body)}
-                      </span>
-                    </div>
+          data={
+            chats.chats.length === 0 && !chats.isRefetching && !chats.isPending
+              ? [NO_ITEMS]
+              : (chats.chats ?? EMPTY_ARR)
+          }
+          placeholder={<ChatItemSkeleton />}
+          renderItem={({ item }) => {
+            if (item === NO_ITEMS) {
+              return (
+                <ContentGutters>
+                  <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                    <span>Nothing to see here</span>
                   </div>
-                  <Separator />
-                </div>
-                <></>
-              </ContentGutters>
-            </Link>
-          )}
+                  <></>
+                </ContentGutters>
+              );
+            }
+
+            return (
+              <Link
+                to="/messages/chat/:userId"
+                params={{ userId: encodeApId(getOtherPerson(item).apId) }}
+              >
+                <ContentGutters className="px-0">
+                  <div className="overflow-hidden">
+                    <div
+                      className={cn(
+                        "flex gap-3 my-4 max-md:px-3.5",
+                        item.hasUnread &&
+                          "border-l-3 border-l-brand md:pl-2.5 max-md:ml-2.5",
+                      )}
+                    >
+                      <PersonAvatar
+                        actorId={getOtherPerson(item).apId}
+                        size="sm"
+                      />
+                      <div className="flex flex-col gap-2 flex-1">
+                        <div className="flex justify-between text-sm flex-1">
+                          <span className="font-medium">
+                            {getOtherPerson(item).slug}
+                          </span>
+                          <RelativeTime
+                            time={item.createdAt}
+                            className="text-muted-foreground"
+                          />
+                        </div>
+                        <span className="text-muted-foreground text-sm line-clamp-2">
+                          {removeMd(item.body)}
+                        </span>
+                      </div>
+                    </div>
+                    <Separator />
+                  </div>
+                  <></>
+                </ContentGutters>
+              </Link>
+            );
+          }}
           onEndReached={() => {
             /* console.log({ ...chats }); */
             if (

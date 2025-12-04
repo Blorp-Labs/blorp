@@ -24,7 +24,7 @@ import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 
-function useScrollToTopEvents({
+export function useScrollToTopEvents({
   scrollToTop,
   listKey,
   focused,
