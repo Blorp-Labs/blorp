@@ -35,7 +35,6 @@ import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { CommentButtonBar } from "../comments/comment-buttons";

@@ -50,7 +50,6 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommentActions } from "../components/comments/post-comment";
-import { useSettingsStore } from "../stores/settings";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
