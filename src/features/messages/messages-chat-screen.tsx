@@ -126,7 +126,7 @@ export default function Messages() {
   });
 
   return (
-    <Page>
+    <Page requireLogin>
       <PageTitle>{person ? person.slug : null}</PageTitle>
       <IonHeader>
         <IonToolbar>

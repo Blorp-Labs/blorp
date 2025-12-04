@@ -4,6 +4,7 @@ import {
   IonContent,
   IonHeader,
   IonToolbar,
+  useIonRouter,
 } from "@ionic/react";
 import { useRequireAuth } from "./auth-context";
 import { ContentGutters } from "./gutters";
@@ -11,15 +12,20 @@ import { Button } from "./ui/button";
 import { MenuButton, UserDropdown } from "./nav";
 import { ToolbarButtons } from "./toolbar/toolbar-buttons";
 import { ToolbarTitle } from "./toolbar/toolbar-title";
+import { ToolbarBackButton } from "./toolbar/toolbar-back-button";
+import { usePathname } from "../routing/hooks";
+import { STACK_ROOT_PATHS } from "../routing/routes";
 
 function LoginRequiredPageContent() {
   const requireAuth = useRequireAuth();
+  const pathname = usePathname();
+  const isRoot = STACK_ROOT_PATHS.includes(pathname);
   return (
     <>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
           <ToolbarButtons side="left">
-            <MenuButton />
+            {isRoot ? <MenuButton /> : <ToolbarBackButton />}
             <ToolbarTitle numRightIcons={1}>Login required</ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
