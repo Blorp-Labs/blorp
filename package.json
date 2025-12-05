@@ -109,7 +109,7 @@
     "immer": "^10.1.1",
     "input-otp": "^1.4.2",
     "lemmy-v3": "npm:lemmy-js-client@0.19.13-beta.1",
-    "lemmy-v4": "npm:lemmy-js-client@1.0.0-vote-view.0",
+    "lemmy-v4": "npm:lemmy-js-client@1.0.0-rename-paged-response-data.0",
     "lite-youtube-embed": "^0.3.3",
     "lodash": "^4.17.21",
     "lots-o-nekos": "^3.0.0",

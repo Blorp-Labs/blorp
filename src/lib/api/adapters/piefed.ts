@@ -20,6 +20,7 @@ const POST_SORTS = [
   "Active",
   "Hot",
   "New",
+  "Old",
   "TopAll",
   "TopHour",
   "TopSixHour",

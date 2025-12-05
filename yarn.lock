@@ -7615,7 +7615,7 @@ __metadata:
     input-otp: "npm:^1.4.2"
     jsdom: "npm:^26.1.0"
     lemmy-v3: "npm:lemmy-js-client@0.19.13-beta.1"
-    lemmy-v4: "npm:lemmy-js-client@1.0.0-vote-view.0"
+    lemmy-v4: "npm:lemmy-js-client@1.0.0-rename-paged-response-data.0"
     license-checker: "npm:^25.0.1"
     lint-staged: "npm:^15.3.0"
     lite-youtube-embed: "npm:^0.3.3"
@@ -11441,12 +11441,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lemmy-v4@npm:lemmy-js-client@1.0.0-vote-view.0":
-  version: 1.0.0-vote-view.0
-  resolution: "lemmy-js-client@npm:1.0.0-vote-view.0"
+"lemmy-v4@npm:lemmy-js-client@1.0.0-rename-paged-response-data.0":
+  version: 1.0.0-rename-paged-response-data.0
+  resolution: "lemmy-js-client@npm:1.0.0-rename-paged-response-data.0"
   dependencies:
     "@tsoa/runtime": "npm:^6.6.0"
-  checksum: 10c0/3788defdbb18560204b6ed67e78f4dcffb7ba5ac5c1365a825affd1217096248c3a0f401d5e9d7ff7875f0d16d9f0b97d367ea6b879e6f91ffda57ec97379c7c
+  checksum: 10c0/1f1c590f7708dab19066d28ce5e480c38f79a43704523829af62f0b9d2f7e3a716318b5578fca97aeb4af78f6b0f87dcff436111ad7e07234d0f3aeb3c113303
   languageName: node
   linkType: hard
 

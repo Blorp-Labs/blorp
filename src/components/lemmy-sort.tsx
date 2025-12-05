@@ -65,12 +65,13 @@ function getIconCommunitySort(sort: string) {
   if (sort.startsWith("Top")) {
     return <LuCalendarArrowUp />;
   }
+  if (sort.startsWith("Active")) {
+    return <FaPersonRunning />;
+  }
 
   switch (sort) {
     case "Hot":
       return <PiFireSimpleBold />;
-    case "Active":
-      return <FaPersonRunning />;
     case "New":
       return <LuClock3 />;
     case "Controversial":
