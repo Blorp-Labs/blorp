@@ -1,5 +1,6 @@
 import { env } from "@/src/env";
 import * as lemmyV4 from "lemmy-v4";
+import * as lemmyV3 from "lemmy-v3";
 import {
   ApiBlueprint,
   Errors,
@@ -12,7 +13,6 @@ import {
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import z from "zod";
 import { isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 
@@ -23,50 +23,235 @@ function remapEnum<Value extends PropertyKey, Output>(
   return newEnum[value as never] as Output;
 }
 
-const POST_SORTS: lemmyV4.PostSortType[] = [
-  "hot",
-  "new",
-  "old",
-  "top",
-  "most_comments",
-  "new_comments",
-  "controversial",
-  "scaled",
+const POST_SORTS: lemmyV3.SortType[] = [
+  "Active",
+  "Hot",
+  "New",
+  "Old",
+  "TopAll",
+  "TopHour",
+  "TopSixHour",
+  "TopTwelveHour",
+  "TopDay",
+  "TopWeek",
+  "TopMonth",
+  "TopThreeMonths",
+  "TopSixMonths",
+  "TopNineMonths",
+  "TopYear",
+  "MostComments",
+  "NewComments",
+  "Controversial",
+  "Scaled",
 ];
-const postSortSchema = z.custom<lemmyV4.PostSortType>((sort) => {
-  return _.isString(sort) && POST_SORTS.includes(sort as any);
-});
 
-const COMMENT_SORTS: lemmyV4.CommentSortType[] = [
-  "hot",
-  "top",
-  "new",
-  "old",
-  "controversial",
+type PostSort = (typeof POST_SORTS)[number];
+
+function mapPostSort(sort?: string) {
+  if (!sort) {
+    return { sort: undefined, timeRangeSeconds: undefined };
+  }
+
+  const apiSort: lemmyV4.PostSortType = remapEnum<string, lemmyV4.PostSortType>(
+    sort,
+    {
+      Active: "active",
+      Hot: "hot",
+      New: "new",
+      Old: "old",
+      TopAll: "top",
+      TopHour: "top",
+      TopSixHour: "top",
+      TopTwelveHour: "top",
+      TopDay: "top",
+      TopWeek: "top",
+      TopMonth: "top",
+      TopThreeMonths: "top",
+      TopSixMonths: "top",
+      TopNineMonths: "top",
+      TopYear: "top",
+      MostComments: "most_comments",
+      NewComments: "new_comments",
+      Controversial: "controversial",
+      Scaled: "scaled",
+    } satisfies Record<PostSort, lemmyV4.PostSortType>,
+  );
+
+  let timeRangeSeconds: number | undefined = undefined;
+
+  const SEC = 1;
+  const MIN = 60 * SEC;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+  const WEEK = 7 * DAY;
+  const MONTH = 30 * DAY; // Approximate month
+  const YEAR = 365 * DAY;
+  switch (sort as lemmyV3.SortType) {
+    case "TopHour":
+      timeRangeSeconds = HOUR;
+      break;
+    case "TopSixHour":
+      timeRangeSeconds = 6 * HOUR;
+      break;
+    case "TopTwelveHour":
+      timeRangeSeconds = 12 * HOUR;
+      break;
+    case "TopDay":
+      timeRangeSeconds = DAY;
+      break;
+    case "TopWeek":
+      timeRangeSeconds = WEEK;
+      break;
+    case "TopMonth":
+      timeRangeSeconds = MONTH;
+      break;
+    case "TopThreeMonths":
+      timeRangeSeconds = 3 * MONTH;
+      break;
+    case "TopSixMonths":
+      timeRangeSeconds = 6 * MONTH;
+      break;
+    case "TopNineMonths":
+      timeRangeSeconds = 9 * MONTH;
+      break;
+    case "TopYear":
+      timeRangeSeconds = YEAR;
+      break;
+    case "TopAll":
+      timeRangeSeconds = undefined;
+  }
+
+  return { sort: apiSort, timeRangeSeconds };
+}
+
+function mapCommunitySort(sort?: string) {
+  if (!sort) {
+    return { sort: undefined, timeRangeSeconds: undefined };
+  }
+
+  const apiSort: lemmyV4.CommunitySortType = remapEnum<
+    string,
+    lemmyV4.CommunitySortType
+  >(sort, {
+    ActiveSixMonths: "active_six_months",
+    ActiveMonthly: "active_monthly",
+    ActiveWeekly: "active_weekly",
+    ActiveDaily: "active_daily",
+    Hot: "hot",
+    New: "new",
+    Old: "old",
+    NameAsc: "name_asc",
+    NameDesc: "name_desc",
+    MostComments: "comments",
+    MostPosts: "posts",
+    TopAll: "subscribers",
+    TopHour: "subscribers",
+    TopSixHour: "subscribers",
+    TopTwelveHour: "subscribers",
+    TopDay: "subscribers",
+    TopWeek: "subscribers",
+    TopMonth: "subscribers",
+    TopThreeMonths: "subscribers",
+    TopSixMonths: "subscribers",
+    TopNineMonths: "subscribers",
+    TopYear: "subscribers",
+  } satisfies Record<CommunitySort, lemmyV4.CommunitySortType>);
+
+  let timeRangeSeconds: number | undefined = undefined;
+
+  const SEC = 1;
+  const MIN = 60 * SEC;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+  const WEEK = 7 * DAY;
+  const MONTH = 30 * DAY; // Approximate month
+  const YEAR = 365 * DAY;
+  switch (sort as lemmyV3.SortType) {
+    case "TopHour":
+      timeRangeSeconds = HOUR;
+      break;
+    case "TopSixHour":
+      timeRangeSeconds = 6 * HOUR;
+      break;
+    case "TopTwelveHour":
+      timeRangeSeconds = 12 * HOUR;
+      break;
+    case "TopDay":
+      timeRangeSeconds = DAY;
+      break;
+    case "TopWeek":
+      timeRangeSeconds = WEEK;
+      break;
+    case "TopMonth":
+      timeRangeSeconds = MONTH;
+      break;
+    case "TopThreeMonths":
+      timeRangeSeconds = 3 * MONTH;
+      break;
+    case "TopSixMonths":
+      timeRangeSeconds = 6 * MONTH;
+      break;
+    case "TopNineMonths":
+      timeRangeSeconds = 9 * MONTH;
+      break;
+    case "TopYear":
+      timeRangeSeconds = YEAR;
+      break;
+    case "TopAll":
+      timeRangeSeconds = undefined;
+  }
+
+  return { sort: apiSort, timeRangeSeconds };
+}
+
+const COMMENT_SORTS: lemmyV3.CommentSortType[] = [
+  "Hot",
+  "Top",
+  "New",
+  "Old",
+  "Controversial",
 ];
 
-const commentSortSchema = z.custom<lemmyV4.CommentSortType>((sort) => {
-  return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
-});
+type CommentSort = (typeof COMMENT_SORTS)[number];
 
-const COMMUNITY_SORTS: lemmyV4.CommunitySortType[] = [
-  "active_six_months",
-  "active_monthly",
-  "active_weekly",
-  "active_daily",
-  "hot",
-  "new",
-  "old",
-  "name_asc",
-  "name_desc",
-  "comments",
-  "posts",
-  "subscribers",
-  "subscribers_local",
+function mapCommentSort(sort?: string) {
+  if (!sort) {
+    return undefined;
+  }
+  return remapEnum<string, lemmyV4.CommentSortType>(sort, {
+    Hot: "hot",
+    Top: "top",
+    New: "new",
+    Old: "old",
+    Controversial: "controversial",
+  } satisfies Record<CommentSort, lemmyV4.CommentSortType>);
+}
+
+const COMMUNITY_SORTS = [
+  "ActiveSixMonths",
+  "ActiveMonthly",
+  "ActiveWeekly",
+  "ActiveDaily",
+  "Hot",
+  "New",
+  "Old",
+  "TopAll",
+  "TopHour",
+  "TopSixHour",
+  "TopTwelveHour",
+  "TopDay",
+  "TopWeek",
+  "TopMonth",
+  "TopThreeMonths",
+  "TopSixMonths",
+  "TopNineMonths",
+  "TopYear",
+  "MostComments",
+  "MostPosts",
+  "NameAsc",
+  "NameDesc",
 ] as const;
-const communitySortSchema = z.custom<lemmyV4.CommunitySortType>((sort) => {
-  return _.isString(sort) && COMMUNITY_SORTS.includes(sort as any);
-});
+type CommunitySort = (typeof COMMUNITY_SORTS)[number];
 
 function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
@@ -490,11 +675,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
-    const { data: sort } = postSortSchema.safeParse(form.sort);
+    const sort = mapPostSort(form.sort);
     const posts = await this.client.getPosts(
       {
         show_read: form.showRead,
-        sort,
+        sort: sort?.sort,
+        time_range_seconds: sort?.timeRangeSeconds,
         type_: _.isNil(form.type)
           ? form.type
           : remapEnum(form.type, {
@@ -586,10 +772,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getCommunities(form: Forms.GetCommunities, options: RequestOptions) {
-    const { data: sort } = communitySortSchema.safeParse(form.sort);
+    const sort = mapCommunitySort(form.sort);
     const { items, next_page } = await this.client.listCommunities(
       {
-        sort,
+        sort: sort.sort,
+        time_range_seconds: sort.timeRangeSeconds,
         type_: _.isNil(form.type)
           ? form.type
           : remapEnum(form.type, {
@@ -655,7 +842,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       }
     }
 
-    const { data: sort } = commentSortSchema.safeParse(form.sort);
+    const sort = mapCommentSort(form.sort);
 
     const { items, next_page } = await this.client.getComments(
       {
