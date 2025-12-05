@@ -37,7 +37,6 @@ import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
-import { CommentButtonBar } from "../comments/comment-buttons";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -280,6 +279,8 @@ function LargePostCard({
 
   const linkCtx = useLinkContext();
 
+  const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
+
   const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const patchPost = usePostsStore((s) => s.patchPost);
@@ -516,12 +517,17 @@ function LargePostCard({
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
-      <CommentButtonBar className="pt-1">
+      <div
+        className={cn(
+          "flex flex-row items-center justify-end gap-2.5 pt-1",
+          leftHandedMode && "flex-row-reverse",
+        )}
+      >
         <PostShareButton postApId={apId} />
         <div className="flex-1" />
         <PostCommentsButton postApId={apId} />
         <PostVoting apId={apId} />
-      </CommentButtonBar>
+      </div>
     </article>
   );
 }
