@@ -11,13 +11,7 @@ import {
   usePersonMentions,
   useReplies,
 } from "@/src/lib/api/index";
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-} from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
@@ -33,8 +27,6 @@ import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
 import { DoubleCheck, Message, Person } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { useAuth } from "../stores/auth";
-import LoginRequired from "./login-required";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Button } from "../components/ui/button";
@@ -50,6 +42,7 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommentActions } from "../components/comments/post-comment";
+import { Page } from "../components/page";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -331,16 +324,10 @@ export default function Inbox() {
     return _.uniqBy(data, "id");
   }, [type, replies.data, mentions.data]);
 
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-
   const confirmationAlrt = useConfirmationAlert();
 
-  if (!isLoggedIn) {
-    return <LoginRequired />;
-  }
-
   return (
-    <IonPage>
+    <Page requireLogin>
       <PageTitle>Inbox</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -473,6 +460,6 @@ export default function Inbox() {
           placeholder={<Placeholder />}
         />
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

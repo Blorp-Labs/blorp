@@ -6,6 +6,6 @@ export function usePathname() {
     const pathname = useIonRouter().routeInfo.pathname;
     return pathname as RoutePath;
   } catch {
-    return "";
+    return "" as RoutePath;
   }
 }

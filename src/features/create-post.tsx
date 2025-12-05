@@ -26,7 +26,6 @@ import {
   IonHeader,
   IonIcon,
   IonModal,
-  IonPage,
   IonTitle,
   IonToolbar,
   useIonAlert,
@@ -62,12 +61,12 @@ import {
   useCommunitiesStore,
   useCommunityFromStore,
 } from "../stores/communities";
-import LoginRequired from "./login-required";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { MultiSelect } from "../components/ui/multi-select";
 import { Flair } from "../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { useFlairs } from "../stores/flairs";
+import { Page } from "../components/page";
 
 dayjs.extend(localizedFormat);
 
@@ -333,12 +332,6 @@ export function CreatePost() {
     }
   };
 
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-
-  if (!isLoggedIn) {
-    return <LoginRequired />;
-  }
-
   const getPostButton = (className: string) => (
     <Button
       size="sm"
@@ -364,7 +357,7 @@ export function CreatePost() {
   );
 
   return (
-    <IonPage>
+    <Page requireLogin>
       <IonHeader>
         <IonToolbar>
           <ToolbarButtons side="left">
@@ -575,7 +568,7 @@ export function CreatePost() {
           </Sidebar>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }
 

@@ -112,3 +112,11 @@ export const routeDefs = {
 
 export type RouteDefs = typeof routeDefs;
 export type RoutePath = RouteDefs[keyof RouteDefs]["path"];
+
+export const STACK_ROOT_PATHS: RoutePath[] = [
+  "/home",
+  "/communities",
+  "/inbox",
+  "/create_post",
+  "/messages",
+];
