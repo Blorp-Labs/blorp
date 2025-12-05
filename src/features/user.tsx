@@ -37,7 +37,10 @@ import {
   CommentVoting,
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
-import { ActionMenu } from "../components/adaptable/action-menu";
+import {
+  ActionMenu,
+  EllipsisActionMenu,
+} from "../components/adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
@@ -106,12 +109,8 @@ const Comment = memo(function Comment({ path }: { path: string }) {
         <CommentButtonBar className={cn("pb-1", ContentGutters.mobilePadding)}>
           <RelativeTime time={commentView.createdAt} />
           <div className="flex-1" />
-          <CommentVoting commentView={commentView} />
-          <ActionMenu
-            align="end"
-            actions={actions}
-            trigger={<IoEllipsisHorizontal />}
-          />
+          <EllipsisActionMenu actions={actions} />
+          <CommentVoting commentView={commentView} fixRightAlignment />
         </CommentButtonBar>
         <Separator />
       </div>

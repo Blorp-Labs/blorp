@@ -34,7 +34,7 @@ export function RecentSearchesSidebar({
             {searchHistory.map((item) => (
               <div className="flex flex-row items-center" key={item}>
                 <button
-                  className="text-start flex-1 overflow-hidden text-ellipsis"
+                  className="text-start flex-1 overflow-hidden text-ellipsis text-nowrap"
                   onClick={() => onSelect(item)}
                 >
                   {item}

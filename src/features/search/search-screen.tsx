@@ -123,7 +123,7 @@ function Comment({ commentPath }: { commentPath: string }) {
           >
             <PersonAvatar actorId={comment.creatorApId} size="sm" />
           </BadgeIcon>
-          <div className="flex-1 text-sm leading-6 block">
+          <div className="flex-1 text-sm leading-6 block min-w-0">
             <Link
               to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
               params={{

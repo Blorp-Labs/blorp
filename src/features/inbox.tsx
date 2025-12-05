@@ -21,7 +21,10 @@ import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { useConfirmationAlert, useMedia } from "../lib/hooks";
 import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
-import { ActionMenu } from "../components/adaptable/action-menu";
+import {
+  ActionMenu,
+  EllipsisActionMenu,
+} from "../components/adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
@@ -99,7 +102,7 @@ function Mention({
           </BadgeIcon>
           <div
             className={cn(
-              "flex-1 text-sm leading-6 block overflow-x-hidden",
+              "flex-1 text-sm leading-6 block min-w-0",
               !mention.read && "border-l-3 border-l-brand pl-2",
             )}
           >
@@ -134,9 +137,7 @@ function Mention({
             <CommentButtonBar>
               <RelativeTime time={mention.createdAt} />
               <div className="flex-1" />
-              {commentView && <CommentVoting commentView={commentView} />}
-              <ActionMenu
-                align="end"
+              <EllipsisActionMenu
                 actions={[
                   {
                     text: mention.read ? "Mark unread" : "Mark read",
@@ -148,8 +149,10 @@ function Mention({
                   },
                   ...actions,
                 ]}
-                trigger={<IoEllipsisHorizontal />}
               />
+              {commentView && (
+                <CommentVoting commentView={commentView} fixRightAlignment />
+              )}
             </CommentButtonBar>
           </div>
         </div>
@@ -191,7 +194,7 @@ function Reply({
           </BadgeIcon>
           <div
             className={cn(
-              "flex-1 text-sm leading-6 block overflow-x-hidden",
+              "flex-1 text-sm leading-6 block min-w-0",
               !replyView.read && "border-l-3 border-l-brand pl-2",
             )}
           >
@@ -233,9 +236,7 @@ function Reply({
             <CommentButtonBar>
               <RelativeTime time={replyView.createdAt} />
               <div className="flex-1" />
-              {commentView && <CommentVoting commentView={commentView} />}
-              <ActionMenu
-                align="end"
+              <EllipsisActionMenu
                 actions={[
                   {
                     text: replyView.read ? "Mark unread" : "Mark read",
@@ -247,8 +248,10 @@ function Reply({
                   },
                   ...actions,
                 ]}
-                trigger={<IoEllipsisHorizontal />}
               />
+              {commentView && (
+                <CommentVoting commentView={commentView} fixRightAlignment />
+              )}
             </CommentButtonBar>
           </div>
         </div>

@@ -17,6 +17,8 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { useMedia } from "../../lib/hooks";
 import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
+import { IoEllipsisHorizontal } from "react-icons/io5";
 
 export interface ActionMenuProps<V = string>
   extends Omit<
@@ -241,5 +243,29 @@ export function ActionMenu<V extends string>({
         }}
       />
     </>
+  );
+}
+
+export function EllipsisActionMenu({
+  fixRightAlignment,
+  ...props
+}: Omit<ActionMenuProps, "trigger" | "triggerAsChild"> & {
+  fixRightAlignment?: boolean;
+}) {
+  return (
+    <ActionMenu
+      {...props}
+      trigger={
+        <Button
+          size="icon"
+          variant="ghost"
+          className={cn(fixRightAlignment && "-mr-2")}
+          aria-label="Comment actions"
+        >
+          <IoEllipsisHorizontal size={16} />
+        </Button>
+      }
+      triggerAsChild
+    />
   );
 }

@@ -53,9 +53,11 @@ export function useDoubleTapLike(config?: Vote) {
 export function CommentVoting({
   commentView,
   className,
+  fixRightAlignment,
 }: {
   commentView: Schemas.Comment;
   className?: string;
+  fixRightAlignment?: boolean;
 }) {
   const enableDownvotes =
     useAuth(
@@ -93,7 +95,11 @@ export function CommentVoting({
             path: commentView.path,
           });
         }}
-        className={cn("text-md font-normal -mr-2", isUpvoted && "text-brand")}
+        className={cn(
+          "text-md font-normal -mr-2",
+          isUpvoted && "text-brand",
+          fixRightAlignment && "-mr-2",
+        )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
         {abbriviateNumber(score)}
@@ -102,7 +108,13 @@ export function CommentVoting({
   }
 
   return (
-    <div className={cn("flex flex-row items-center", className)}>
+    <div
+      className={cn(
+        "flex flex-row items-center",
+        fixRightAlignment && "-mr-2",
+        className,
+      )}
+    >
       <Button
         id={id}
         size="icon"
@@ -213,7 +225,7 @@ export function CommentButtonBar({
   return (
     <div
       className={cn(
-        "flex flex-row items-center justify-end gap-2.5",
+        "flex flex-row items-center justify-end gap-1",
         leftHandedMode && "flex-row-reverse",
         className,
       )}
