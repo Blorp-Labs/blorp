@@ -97,7 +97,7 @@ export function SmallScreenSidebar({
       >
         {expanded && banner && (
           <div className="max-md:-mx-3.5">
-            <img src={banner} className="aspect-[4] object-cover" />
+            <img src={banner} className="aspect-[4] object-cover w-full" />
           </div>
         )}
 
