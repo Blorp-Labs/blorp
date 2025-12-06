@@ -1,5 +1,5 @@
 import { ContentGutters } from "../components/gutters";
-import { usePersonDetails, usePersonFeed } from "../lib/api";
+import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../lib/api";
 import {
   PostCard,
   PostCardSkeleton,
@@ -134,7 +134,7 @@ export default function User() {
     z.enum(["Posts", "Comments"]),
   );
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const personQuery = usePersonDetails({ actorId });
   const query = usePersonFeed({ apIdOrUsername: actorId, type });
 

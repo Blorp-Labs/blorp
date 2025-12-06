@@ -1,4 +1,4 @@
-import { useListCommunities } from "@/src/lib/api/index";
+import { useAvailableSorts, useListCommunities } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -38,7 +38,7 @@ export default function Communities() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const communitySort = useFiltersStore((s) => s.communitySort);
+  const { communitySort } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const media = useMedia();
@@ -56,8 +56,8 @@ export default function Communities() {
     // isRefetching,
     refetch,
   } = useListCommunities({
-    sort: communitySort,
     type: listingType,
+    sort: communitySort,
   });
 
   const communities = useMemo(

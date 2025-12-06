@@ -6,7 +6,7 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { memo, useMemo } from "react";
 import { VirtualList } from "../components/virtual-list";
-import { useComments, usePosts } from "../lib/api";
+import { useAvailableSorts, useComments, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
@@ -79,7 +79,7 @@ export default function SavedFeed() {
     sort: "New",
   });
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const posts = usePosts({
     savedOnly: true,
     type: "All",

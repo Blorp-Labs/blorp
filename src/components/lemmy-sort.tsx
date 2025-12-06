@@ -94,14 +94,13 @@ function getIconCommunitySort(sort: string) {
 }
 
 export function CommunitySortSelect() {
-  const communitySort = useFiltersStore((s) => s.communitySort);
   const setCommunitySort = useFiltersStore((s) => s.setCommunitySort);
 
-  const data = useAvailableSorts().data;
+  const { communitySorts, communitySort } = useAvailableSorts();
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
-    if (data) {
-      return groupByFirstWord(data.communitySorts).map((item) =>
+    if (communitySorts) {
+      return groupByFirstWord(communitySorts).map((item) =>
         _.isString(item)
           ? {
               text: humanizeText(item),
@@ -121,7 +120,7 @@ export function CommunitySortSelect() {
     }
 
     return [];
-  }, [data, setCommunitySort]);
+  }, [communitySorts, setCommunitySort]);
 
   return (
     <ActionMenu
@@ -131,7 +130,7 @@ export function CommunitySortSelect() {
       selectedValue={communitySort}
       trigger={
         <div className="text-2xl text-muted-foreground">
-          {data?.communitySorts.includes(communitySort) ? (
+          {communitySorts?.includes(communitySort) ? (
             getIconCommunitySort(communitySort)
           ) : (
             <TbArrowsDownUp />
@@ -166,15 +165,14 @@ export function CommentSortSelect({
   className?: string;
   variant?: "button" | "icon";
 }) {
-  const commentSort = useFiltersStore((s) => s.commentSort);
   const setCommentSort = useFiltersStore((s) => s.setCommentSort);
 
-  const data = useAvailableSorts().data;
-  const isValidSort = data?.commentSorts.includes(commentSort);
+  const { commentSorts, commentSort } = useAvailableSorts();
+  const isValidSort = commentSorts?.includes(commentSort);
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
-    if (data) {
-      return groupByFirstWord(data.commentSorts).map((item) =>
+    if (commentSorts) {
+      return groupByFirstWord(commentSorts).map((item) =>
         _.isString(item)
           ? {
               text: humanizeText(item),
@@ -194,7 +192,7 @@ export function CommentSortSelect({
     }
 
     return [];
-  }, [data, setCommentSort]);
+  }, [commentSorts, setCommentSort]);
 
   return (
     <ActionMenu
@@ -214,7 +212,7 @@ export function CommentSortSelect({
             )}
           >
             {humanizeText(commentSort)}
-            {data?.commentSorts.includes(commentSort) &&
+            {commentSorts?.includes(commentSort) &&
               getIconCommentSort(commentSort)}
           </Button>
         ) : (
@@ -266,16 +264,15 @@ export function PostSortButton({
   variant?: "button" | "icon";
   className?: string;
 }) {
-  const postSort = useFiltersStore((s) => s.postSort);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
   const media = useMedia();
 
-  const data = useAvailableSorts().data;
+  const { postSorts, postSort } = useAvailableSorts();
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
-    if (data) {
-      return groupByFirstWord(data.postSorts).map((item) =>
+    if (postSorts) {
+      return groupByFirstWord(postSorts).map((item) =>
         _.isString(item)
           ? {
               text: humanizeText(item),
@@ -295,13 +292,13 @@ export function PostSortButton({
     }
 
     return [];
-  }, [data, setPostSort]);
+  }, [postSorts, setPostSort]);
 
   if (hideOnGtMd && media.md) {
     return null;
   }
 
-  const isValidSort = data?.postSorts.includes(postSort);
+  const isValidSort = postSorts?.includes(postSort);
 
   const sortLabel = actions.find(
     (sort) => sort.value && postSort.startsWith(sort.value),

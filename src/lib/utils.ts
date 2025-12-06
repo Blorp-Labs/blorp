@@ -89,3 +89,16 @@ export function urlStripAfterPath(url: string) {
     q === -1 ? (h === -1 ? url.length : h) : h === -1 ? q : Math.min(q, h);
   return url.slice(0, cut);
 }
+
+export function ensureValue<T>(
+  options: T[] | readonly T[] | null | undefined,
+  value: T,
+) {
+  if (options?.includes(value)) {
+    return value;
+  }
+  if (options && options[0]) {
+    return options[0];
+  }
+  return value;
+}

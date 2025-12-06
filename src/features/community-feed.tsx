@@ -10,7 +10,12 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
 import { VirtualList } from "../components/virtual-list";
-import { useCommunity, useMostRecentPost, usePosts } from "../lib/api";
+import {
+  useAvailableSorts,
+  useCommunity,
+  useMostRecentPost,
+  usePosts,
+} from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import {
@@ -72,7 +77,7 @@ export default function CommunityFeed() {
     [communityNameEncoded],
   );
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const posts = usePosts({
     communitySlug: communityName,
   });

@@ -44,7 +44,12 @@ import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
-import { isErrorLike, isNotNil, normalizeInstance } from "../utils";
+import {
+  ensureValue,
+  isErrorLike,
+  isNotNil,
+  normalizeInstance,
+} from "../utils";
 import { compressImage } from "../image";
 import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
@@ -179,7 +184,7 @@ export function usePersonFeed({
 }: SetOptional<Forms.GetPersonContent, "apIdOrUsername">) {
   const { api } = useApiClients();
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
 
   sort ??= postSort;
 
@@ -330,7 +335,7 @@ export function useComments(
 ) {
   const enabled = options?.enabled ?? true;
 
-  const commentSort = useFiltersStore((s) => s.commentSort);
+  const { commentSort } = useAvailableSorts();
   const sort = form.sort ?? commentSort;
   const { api } = useApiClients();
 
@@ -381,7 +386,7 @@ export function usePostsKey(config?: Forms.GetPosts) {
   const { queryKeyPrefix } = useApiClients();
   const { communitySlug, ...form } = config ?? {};
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const sort = form?.sort ?? postSort;
 
   const queryKey = [...queryKeyPrefix, sort];
@@ -401,7 +406,7 @@ export function useMostRecentPost(
 ) {
   const { api, queryKeyPrefix } = useApiClients();
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
@@ -446,7 +451,7 @@ export function usePosts(form: Forms.GetPosts) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
@@ -554,10 +559,10 @@ export function useListCommunities(form: Forms.GetCommunities) {
   const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const queryKey = useListCommunitiesKey();
+  const { communitySort } = useAvailableSorts();
+  const sort = form.sort ?? communitySort;
 
-  if (form.sort) {
-    queryKey.push("sort", form.sort);
-  }
+  queryKey.push("sort", sort);
 
   if (form.type) {
     queryKey.push("type", form.type);
@@ -575,6 +580,7 @@ export function useListCommunities(form: Forms.GetCommunities) {
           ...form,
           //show_nsfw: showNsfw,
           pageCursor: pageParam,
+          sort,
         },
         {
           signal,
@@ -1663,7 +1669,7 @@ const EMPTY_ARR: never[] = [];
 export function useSearch(form: Forms.Search) {
   const { api, queryKeyPrefix } = useApiClients();
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   form = {
     sort: postSort,
     ...form,
@@ -2285,7 +2291,10 @@ export function useModeratingCommunities() {
 
 export function useAvailableSorts() {
   const { api, queryKeyPrefix } = useApiClients();
-  return useQuery({
+  const communitySort = useFiltersStore((s) => s.communitySort);
+  const postSort = useFiltersStore((s) => s.postSort);
+  const commentSort = useFiltersStore((s) => s.commentSort);
+  const query = useQuery({
     queryKey: [queryKeyPrefix, "availableSorts"],
     queryFn: async () => {
       return {
@@ -2295,6 +2304,14 @@ export function useAvailableSorts() {
       };
     },
   });
+  return {
+    commentSort: ensureValue(query.data?.commentSorts, commentSort),
+    commentSorts: query.data?.commentSorts,
+    postSort: ensureValue(query.data?.postSorts, postSort),
+    postSorts: query.data?.postSorts,
+    communitySort: ensureValue(query.data?.communitySorts, communitySort),
+    communitySorts: query.data?.communitySorts,
+  };
 }
 
 export function useResolveObject(query: string | undefined) {
@@ -2325,4 +2342,8 @@ export function useLinkMetadat() {
       return await (await api).getLinkMetadata(form);
     },
   });
+}
+
+export function usePostSort() {
+  const { api } = useApiClients();
 }

@@ -1,4 +1,4 @@
-import { useCommunity, useSearch } from "@/src/lib/api";
+import { useAvailableSorts, useCommunity, useSearch } from "@/src/lib/api";
 import {
   PostCard,
   PostCardSkeleton,
@@ -12,7 +12,6 @@ import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "@/src/components/communities/community-card";
-import { useFiltersStore } from "@/src/stores/filters";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { SearchType } from "lemmy-v3";
@@ -244,7 +243,7 @@ export default function SearchFeed({
     ),
   );
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
 
   useCommunity({
     name: communityName,
