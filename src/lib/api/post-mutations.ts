@@ -1,6 +1,6 @@
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useApiClients, usePostsKey } from ".";
-import { ApiBlueprint, Schemas } from "./adapters/api-blueprint";
+import { ApiBlueprint, Forms, Schemas } from "./adapters/api-blueprint";
 import { useAuth } from "@/src/stores/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isErrorLike } from "../utils";
@@ -121,3 +121,45 @@ export const useLikePost = createPostMutation({
     return `Couldn't ${verb} post`;
   },
 });
+
+export function useVotePostPoll(apId: string) {
+  const { api } = useApiClients();
+  const post = usePostFromStore(apId);
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  return useMutation({
+    mutationFn: async (form: Forms.PostPollVote) =>
+      (await api).votePostPoll(form),
+    onMutate: ({ choiceId }) => {
+      if (post?.poll) {
+        patchPost(apId, getCachePrefixer(), {
+          ...post,
+          poll: {
+            ...post.poll,
+            myVotes: choiceId,
+          },
+        });
+      }
+    },
+    onSuccess: (post) => {
+      patchPost(apId, getCachePrefixer(), {
+        ...post,
+      });
+    },
+    onError: (err) => {
+      if (post?.poll) {
+        patchPost(apId, getCachePrefixer(), {
+          poll: {
+            ...post.poll,
+            myVotes: undefined,
+          },
+        });
+      }
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error("Couldn't cast poll vote");
+      }
+    },
+  });
+}
