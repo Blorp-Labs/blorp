@@ -20,7 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { useAvailableSorts } from "../lib/api";
+import { useAvailableSorts, useSite, useSoftware } from "../lib/api";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
@@ -302,9 +302,9 @@ export function PostSortButton({
 
   const isValidSort = data?.postSorts.includes(postSort);
 
-  const sortLabel = actions.find(
-    (sort) => sort.value && postSort.startsWith(sort.value),
-  )?.text;
+  const sortLabel = actions
+    .filter((a) => _.isObject(a))
+    .find((sort) => sort.value && postSort.startsWith(sort.value))?.text;
 
   const ariaLabel = (isValidSort ? postSort : "Invalid") + " post sort";
 
@@ -470,36 +470,54 @@ export function CommunityFilter() {
     instanceHost = url.host;
   } catch {}
 
+  const software = useSoftware();
+
   const LISTING_TYPE_OPTIONS = useMemo(
     () =>
       [
         {
-          label: "All",
+          label: "All Communities",
           value: "All",
         } as const,
         {
-          label: `Local (${instanceHost})`,
+          label: `Local Communities`,
           value: "Local",
         } as const,
         ...(isLoggedIn
           ? ([
               {
-                label: "Subscribed",
+                label: "Subscribed Communities",
                 value: "Subscribed",
               },
-
               {
-                label: "Moderating",
+                label: "Moderating Communities",
                 value: "ModeratorView",
               },
             ] as const)
           : []),
-      ].map((opt) => ({
-        text: opt.label,
-        value: opt.value,
-        onClick: () => setListingType(opt.value),
-      })),
-    [isLoggedIn, instanceHost, setListingType],
+        ...(software === "piefed"
+          ? ([
+              "DIVIDER",
+              {
+                label: "All Feeds",
+                value: "All Feeds",
+              },
+            ] as const)
+          : []),
+      ].map((opt) =>
+        _.isString(opt)
+          ? opt
+          : {
+              text: opt.label,
+              value: opt.value,
+              onClick: () => setListingType(opt.value),
+            },
+      ),
+    [isLoggedIn, setListingType, software],
+  );
+
+  const value = LISTING_TYPE_OPTIONS.filter((opt) => _.isObject(opt)).find(
+    (opt) => opt.value === listingType,
   );
 
   return (
@@ -508,10 +526,8 @@ export function CommunityFilter() {
       actions={LISTING_TYPE_OPTIONS}
       selectedValue={listingType}
       trigger={
-        <div className="flex flex-row items-center gap-0.5 text-lg">
-          <span className="font-black capitalize">
-            {listingType === "ModeratorView" ? "Moderating" : listingType}
-          </span>
+        <div className="flex flex-row items-center gap-0.5">
+          <span className="font-black capitalize">{value?.text}</span>
           <IoChevronDown className="text-muted-foreground" />
         </div>
       }

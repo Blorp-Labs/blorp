@@ -106,6 +106,21 @@ export const pieFedCommunitySchema = z.object({
   //updated: z.string().optional(),
 });
 
+export const pieFedFeedSchema = z.object({
+  published: z.string(),
+  actor_id: z.string(),
+  banner: z.string().nullish(),
+  communities_count: z.number(),
+  subscriptions_count: z.number(),
+  description: z.string(),
+  description_html: z.string(),
+  icon: z.string().nullish(),
+  id: z.number(),
+  name: z.string(),
+  nsfw: z.boolean(),
+  communities: z.array(pieFedCommunitySchema),
+});
+
 export const pieFedPostCountsSchema = z.object({
   comments: z.number(),
   downvotes: z.number(),
@@ -963,6 +978,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         sort,
         type_: form.type,
         saved_only: form.savedOnly,
+        feed_id: form.feedId,
       },
       options,
     );
@@ -1011,6 +1027,54 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
         communities: communities.map((c) => convertCommunity(c, "partial")),
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async getFeeds(form: Forms.GetFeeds, options?: RequestOptions) {
+    const json = await this.get("/feed/list", {}, options);
+    try {
+      const { feeds } = z
+        .object({
+          feeds: z.array(pieFedFeedSchema),
+        })
+        .parse(json);
+
+      const communities = feeds.flatMap(({ communities }) =>
+        communities.map((community) =>
+          convertCommunity(
+            {
+              community,
+            },
+            "partial",
+          ),
+        ),
+      );
+
+      return {
+        feeds: feeds.map((feed) => ({
+          createdAt: feed.published,
+          id: feed.id,
+          apId: feed.actor_id,
+          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+          name: feed.name,
+          icon: feed.icon ?? null,
+          banner: feed.banner ?? null,
+          nsfw: feed.nsfw,
+          communityCount: feed.communities_count,
+          subscriberCount: feed.subscriptions_count,
+          description: feed.description ?? null,
+          communitySlugs: feed.communities.map(
+            (community) =>
+              createSlug({ apId: community.actor_id, name: community.name })
+                .slug,
+          ),
+        })),
+        communities,
+        nextCursor: null,
       };
     } catch (err) {
       console.log(err);

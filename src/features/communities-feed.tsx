@@ -1,4 +1,4 @@
-import { useListCommunities } from "@/src/lib/api/index";
+import { useListCommunities, useListFeeds } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -23,6 +23,52 @@ import { getAccountSite, useAuth } from "../stores/auth";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
+import { Schemas } from "../lib/api/adapters/api-blueprint";
+import _ from "lodash";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { cn } from "../lib/utils";
+import { abbriviateNumber } from "../lib/format";
+import { useLinkContext } from "../routing/link-context";
+
+function FeedCard({ icon, name, communityCount, slug, id }: Schemas.Feed) {
+  const ctx = useLinkContext();
+  const host = slug?.split("@")?.[1];
+  return (
+    <ContentGutters className="md:contents">
+      <Link
+        className="mt-1 flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground"
+        to={`${ctx.root}f/:apId`}
+        params={{
+          apId: String(id),
+        }}
+      >
+        <Avatar className="h-9 w-9">
+          <AvatarImage
+            src={icon ?? undefined}
+            className="object-cover absolute inset-0"
+          />
+          <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+        </Avatar>
+
+        <div
+          className={cn(
+            "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
+          )}
+        >
+          <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
+            {name}
+            <span className="text-muted-foreground italic">@{host}</span>
+          </span>
+          {_.isNumber(communityCount) && (
+            <span className="text-xs text-muted-foreground">
+              {abbriviateNumber(communityCount)} communities
+            </span>
+          )}
+        </div>
+      </Link>
+    </ContentGutters>
+  );
+}
 
 const MemoedListItem = memo(function ListItem(props: {
   communitySlug: string;
@@ -55,14 +101,27 @@ export default function Communities() {
     fetchNextPage,
     // isRefetching,
     refetch,
-  } = useListCommunities({
-    sort: communitySort,
-    type: listingType,
+  } = useListCommunities(
+    {
+      sort: communitySort,
+      type: listingType === "All Feeds" ? undefined : listingType,
+    },
+    {
+      enabled: listingType !== "All Feeds",
+    },
+  );
+
+  const feeds = useListFeeds({
+    enabled: listingType === "All Feeds",
   });
 
-  const communities = useMemo(
-    () => data?.pages.map((p) => p.communities).flat(),
-    [data?.pages],
+  const [communities, feedsData] = useMemo(
+    () =>
+      [
+        data?.pages.map((p) => p.communities).flat(),
+        feeds.data?.pages.flatMap((p) => p.feeds),
+      ] as const,
+    [data?.pages, feeds.data?.pages],
   );
 
   let numCols = 1;
@@ -73,15 +132,25 @@ export default function Communities() {
   }
 
   const vlist = (
-    <VirtualList<string>
+    <VirtualList<string | Schemas.Feed>
       key={communitySort + listingType}
       fullscreen
       scrollHost
       numColumns={numCols}
       data={
-        listingType === "ModeratorView" ? moderatesCommunities : communities
+        listingType === "All Feeds"
+          ? feedsData
+          : listingType === "ModeratorView"
+            ? moderatesCommunities
+            : communities
       }
-      renderItem={({ item }) => <MemoedListItem communitySlug={item} />}
+      renderItem={({ item }) => {
+        if (_.isString(item)) {
+          return <MemoedListItem communitySlug={item} />;
+        }
+
+        return <FeedCard {...item} />;
+      }}
       onEndReached={() => {
         if (
           listingType !== "ModeratorView" &&

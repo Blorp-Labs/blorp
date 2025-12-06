@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
+  queryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -50,6 +51,7 @@ import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
+import { useFeedStore } from "@/src/stores/feeds";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -549,7 +551,10 @@ function useListCommunitiesKey() {
   return [...queryKeyPrefix, "listCommunities"];
 }
 
-export function useListCommunities(form: Forms.GetCommunities) {
+export function useListCommunities(
+  form: Forms.GetCommunities,
+  options?: QueryOverwriteOptions,
+) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -564,6 +569,8 @@ export function useListCommunities(form: Forms.GetCommunities) {
   }
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+
+  const enabled = options?.enabled ?? true;
 
   return useThrottledInfiniteQuery({
     queryKey,
@@ -591,9 +598,34 @@ export function useListCommunities(form: Forms.GetCommunities) {
     },
     getNextPageParam: (data) => data.nextPage,
     initialPageParam: INIT_PAGE_TOKEN,
-    enabled: form.type === "Subscribed" ? isLoggedIn : true,
+    ...options,
+    enabled: enabled && form.type === "Subscribed" ? isLoggedIn : true,
   });
 }
+
+export function useListFeeds(options?: QueryOverwriteOptions) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheFeeds = useFeedStore((s) => s.cacheFeeds);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const queryKey = [...queryKeyPrefix, "getFeeds"];
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async (form: Forms.GetFeeds) => {
+      const res = await (await api).getFeeds(form);
+      cacheFeeds(getCachePrefixer(), res.feeds);
+      cacheCommunities(
+        getCachePrefixer(),
+        res.communities.map((communityView) => ({ communityView })),
+      );
+      return res;
+    },
+    getNextPageParam: () => null,
+    initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
 export function useCommunity({
   enabled = true,
   ...form
