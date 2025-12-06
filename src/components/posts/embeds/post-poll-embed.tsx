@@ -9,6 +9,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useVotePostPoll } from "@/src/lib/api/post-mutations";
 import { useRequireAuth } from "../../auth-context";
+import { useAuth } from "@/src/stores/auth";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {
@@ -48,6 +49,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const [myChoices, setMyChoises] = useState<number[]>([]);
   const id = useId();
   const requireAuth = useRequireAuth();
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
   if (!post.poll) {
     return null;
@@ -156,7 +158,9 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
       )}
 
       {!post.poll.myVotes && myChoices.length > 0 && (
-        <Button className="w-full">Cast vote</Button>
+        <Button className="w-full">
+          {isLoggedIn ? "Cast vote" : "Login to vote"}
+        </Button>
       )}
 
       <span className="text-sm text-muted-foreground">

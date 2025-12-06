@@ -1200,8 +1200,10 @@ export class PieFedApi implements ApiBlueprint<null> {
       choice_id: form.choiceId,
     });
     try {
-      const data = pieFedPostViewSchema.parse(json);
-      return convertPost({ postView: data });
+      const { post_view } = z
+        .object({ post_view: pieFedPostViewSchema })
+        .parse(json);
+      return convertPost({ postView: post_view });
     } catch (err) {
       console.log(err);
       throw err;
