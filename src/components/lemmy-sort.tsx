@@ -111,7 +111,7 @@ export function CommunitySortSelect() {
               text: humanizeText(item[0]),
               value: item[0],
               actions: item[1].map((subItem) => ({
-                text: humanizeText(subItem),
+                text: humanizeText(subItem || "Communities"),
                 value: item[0] + subItem,
                 onClick: () => setCommunitySort(item[0] + subItem),
               })),
@@ -183,7 +183,7 @@ export function CommentSortSelect({
               text: humanizeText(item[0]),
               value: item[0],
               actions: item[1].map((subItem) => ({
-                text: humanizeText(subItem),
+                text: humanizeText(subItem || "Comments"),
                 value: item[0] + subItem,
                 onClick: () => setCommentSort(item[0] + subItem),
               })),
@@ -283,7 +283,7 @@ export function PostSortButton({
               text: humanizeText(item[0]),
               value: item[0],
               actions: item[1].map((subItem) => ({
-                text: humanizeText(subItem || "Post"),
+                text: humanizeText(subItem || "Posts"),
                 value: item[0] + subItem,
                 onClick: () => setPostSort(item[0] + subItem),
               })),
