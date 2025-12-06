@@ -15,7 +15,7 @@ import {
 } from "../../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostFromStore, usePostsStore } from "../../stores/posts";
+import { usePostsStore } from "../../stores/posts";
 import { useSettingsStore } from "../../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../../stores/comments";
