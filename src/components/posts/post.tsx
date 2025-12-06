@@ -37,6 +37,7 @@ import { BandcampEmbed } from "./embeds/bandcamp-embed";
 import { Badge } from "../ui/badge";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
+import { PostPollEmbed } from "./embeds/post-poll-embed";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -461,6 +462,8 @@ function LargePostCard({
           )}
         </div>
       )}
+
+      {post.poll && <PostPollEmbed post={post} />}
 
       {showArticle && (
         <PostArticleEmbed
