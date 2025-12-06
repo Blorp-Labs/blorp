@@ -10,7 +10,12 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
 import { VirtualList } from "../components/virtual-list";
-import { useCommunity, useMostRecentPost, usePosts } from "../lib/api";
+import {
+  useAvailableSorts,
+  useCommunity,
+  useMostRecentPost,
+  usePosts,
+} from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import {
@@ -28,7 +33,6 @@ import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "../routing/link-context";
 import { Link } from "@/src/routing/index";
-import { useFiltersStore } from "../stores/filters";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
@@ -72,7 +76,7 @@ export default function CommunityFeed() {
     [communityNameEncoded],
   );
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const posts = usePosts({
     communitySlug: communityName,
   });

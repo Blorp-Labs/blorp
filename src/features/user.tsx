@@ -1,5 +1,5 @@
 import { ContentGutters } from "../components/gutters";
-import { usePersonDetails, usePersonFeed } from "../lib/api";
+import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../lib/api";
 import {
   PostCard,
   PostCardSkeleton,
@@ -21,7 +21,6 @@ import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import { PostReportProvider } from "../components/posts/post-report";
-import { useFiltersStore } from "../stores/filters";
 import { useAuth, useIsPersonBlocked } from "../stores/auth";
 import z from "zod";
 import {
@@ -37,11 +36,7 @@ import {
   CommentVoting,
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
-import {
-  ActionMenu,
-  EllipsisActionMenu,
-} from "../components/adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
@@ -134,7 +129,7 @@ export default function User() {
     z.enum(["Posts", "Comments"]),
   );
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const personQuery = usePersonDetails({ actorId });
   const query = usePersonFeed({ apIdOrUsername: actorId, type });
 

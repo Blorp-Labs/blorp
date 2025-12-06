@@ -6,7 +6,7 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "../stores/filters";
-import { useMostRecentPost, usePosts } from "../lib/api";
+import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
 import _ from "lodash";
 import { LocalSererSidebar } from "../components/local-server/local-server-sidebar";
 import {
@@ -181,7 +181,7 @@ export default function HomeFeed() {
   const [search, setSearch] = useState("");
 
   const media = useMedia();
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.listingType);
 
   const posts = usePosts({

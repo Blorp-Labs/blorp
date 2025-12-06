@@ -1,4 +1,4 @@
-import { useListCommunities } from "@/src/lib/api/index";
+import { useAvailableSorts, useListCommunities } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -24,6 +24,8 @@ import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 
+const NO_ITEMS = "NO_ITEMS";
+
 const MemoedListItem = memo(function ListItem(props: {
   communitySlug: string;
 }) {
@@ -38,7 +40,7 @@ export default function Communities() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const communitySort = useFiltersStore((s) => s.communitySort);
+  const { communitySort } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const media = useMedia();
@@ -48,27 +50,25 @@ export default function Communities() {
   )?.moderates;
   const moderatesCommunities = moderates ?? undefined;
 
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    // isRefetching,
-    refetch,
-  } = useListCommunities({
-    sort: communitySort,
+  const communitiesQuery = useListCommunities({
     type: listingType,
+    sort: communitySort,
   });
 
   const communities = useMemo(
-    () => data?.pages.map((p) => p.communities).flat(),
-    [data?.pages],
+    () => communitiesQuery.data?.pages.map((p) => p.communities).flat(),
+    [communitiesQuery.data?.pages],
   );
 
+  const noItems =
+    communities?.length === 0 &&
+    !communitiesQuery.isRefetching &&
+    !communitiesQuery.isPending;
+
   let numCols = 1;
-  if (media.xl) {
+  if (media.xl && !noItems) {
     numCols = 3;
-  } else if (media.sm) {
+  } else if (media.sm && !noItems) {
     numCols = 2;
   }
 
@@ -79,20 +79,34 @@ export default function Communities() {
       scrollHost
       numColumns={numCols}
       data={
-        listingType === "ModeratorView" ? moderatesCommunities : communities
+        listingType === "ModeratorView"
+          ? moderatesCommunities
+          : noItems
+            ? [NO_ITEMS]
+            : communities
       }
-      renderItem={({ item }) => <MemoedListItem communitySlug={item} />}
+      renderItem={({ item }) => {
+        if (item === NO_ITEMS) {
+          return (
+            <div className="flex-1 italic text-muted-foreground p-6 text-center">
+              <span>Nothing to see here</span>
+            </div>
+          );
+        }
+
+        return <MemoedListItem communitySlug={item} />;
+      }}
       onEndReached={() => {
         if (
           listingType !== "ModeratorView" &&
-          hasNextPage &&
-          !isFetchingNextPage
+          communitiesQuery.hasNextPage &&
+          !communitiesQuery.isFetchingNextPage
         ) {
-          fetchNextPage();
+          communitiesQuery.fetchNextPage();
         }
       }}
       estimatedItemSize={52}
-      refresh={refetch}
+      refresh={communitiesQuery.refetch}
       placeholder={
         <ContentGutters className="md:contents">
           <CommunityCardSkeleton className="mt-1" />

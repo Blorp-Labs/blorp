@@ -6,7 +6,7 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { memo, useMemo } from "react";
 import { VirtualList } from "../components/virtual-list";
-import { useComments, usePosts } from "../lib/api";
+import { useAvailableSorts, useComments, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
@@ -18,7 +18,6 @@ import { Link } from "@/src/routing/index";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useFiltersStore } from "../stores/filters";
 import { useAuth } from "../stores/auth";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import z from "zod";
@@ -79,7 +78,7 @@ export default function SavedFeed() {
     sort: "New",
   });
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort } = useAvailableSorts();
   const posts = usePosts({
     savedOnly: true,
     type: "All",

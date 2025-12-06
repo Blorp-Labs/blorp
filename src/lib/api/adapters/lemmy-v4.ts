@@ -1,35 +1,210 @@
 import { env } from "@/src/env";
 import * as lemmyV4 from "lemmy-v4";
+import * as lemmyV3 from "lemmy-v3";
 import {
   ApiBlueprint,
   Errors,
   Forms,
   INIT_PAGE_TOKEN,
   RequestOptions,
+  resolveObjectResponseSchema,
   Schemas,
   Software,
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import z from "zod";
 import { isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 
-const POST_SORTS: lemmyV4.PostSortType[] = [
+function remapEnum<Value extends PropertyKey, Output>(
+  value: Value,
+  newEnum: Record<Value, Output>,
+) {
+  return newEnum[value as never] as Output;
+}
+
+const POST_SORTS: lemmyV3.SortType[] = [
+  "Active",
   "Hot",
   "New",
   "Old",
-  "Top",
+  "TopAll",
+  "TopHour",
+  "TopSixHour",
+  "TopTwelveHour",
+  "TopDay",
+  "TopWeek",
+  "TopMonth",
+  "TopThreeMonths",
+  "TopSixMonths",
+  "TopNineMonths",
+  "TopYear",
   "MostComments",
   "NewComments",
   "Controversial",
   "Scaled",
 ];
-const postSortSchema = z.custom<lemmyV4.PostSortType>((sort) => {
-  return _.isString(sort) && POST_SORTS.includes(sort as any);
-});
 
-const COMMENT_SORTS: lemmyV4.CommentSortType[] = [
+type PostSort = (typeof POST_SORTS)[number];
+
+function mapPostSort(sort?: string) {
+  if (!sort) {
+    return { sort: undefined, timeRangeSeconds: undefined };
+  }
+
+  const apiSort: lemmyV4.PostSortType = remapEnum<string, lemmyV4.PostSortType>(
+    sort,
+    {
+      Active: "active",
+      Hot: "hot",
+      New: "new",
+      Old: "old",
+      TopAll: "top",
+      TopHour: "top",
+      TopSixHour: "top",
+      TopTwelveHour: "top",
+      TopDay: "top",
+      TopWeek: "top",
+      TopMonth: "top",
+      TopThreeMonths: "top",
+      TopSixMonths: "top",
+      TopNineMonths: "top",
+      TopYear: "top",
+      MostComments: "most_comments",
+      NewComments: "new_comments",
+      Controversial: "controversial",
+      Scaled: "scaled",
+    } satisfies Record<PostSort, lemmyV4.PostSortType>,
+  );
+
+  let timeRangeSeconds: number | undefined = undefined;
+
+  const SEC = 1;
+  const MIN = 60 * SEC;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+  const WEEK = 7 * DAY;
+  const MONTH = 30 * DAY; // Approximate month
+  const YEAR = 365 * DAY;
+  switch (sort as lemmyV3.SortType) {
+    case "TopHour":
+      timeRangeSeconds = HOUR;
+      break;
+    case "TopSixHour":
+      timeRangeSeconds = 6 * HOUR;
+      break;
+    case "TopTwelveHour":
+      timeRangeSeconds = 12 * HOUR;
+      break;
+    case "TopDay":
+      timeRangeSeconds = DAY;
+      break;
+    case "TopWeek":
+      timeRangeSeconds = WEEK;
+      break;
+    case "TopMonth":
+      timeRangeSeconds = MONTH;
+      break;
+    case "TopThreeMonths":
+      timeRangeSeconds = 3 * MONTH;
+      break;
+    case "TopSixMonths":
+      timeRangeSeconds = 6 * MONTH;
+      break;
+    case "TopNineMonths":
+      timeRangeSeconds = 9 * MONTH;
+      break;
+    case "TopYear":
+      timeRangeSeconds = YEAR;
+      break;
+    case "TopAll":
+      timeRangeSeconds = undefined;
+  }
+
+  return { sort: apiSort, timeRangeSeconds };
+}
+
+function mapCommunitySort(sort?: string) {
+  if (!sort) {
+    return { sort: undefined, timeRangeSeconds: undefined };
+  }
+
+  const apiSort: lemmyV4.CommunitySortType = remapEnum<
+    string,
+    lemmyV4.CommunitySortType
+  >(sort, {
+    ActiveSixMonths: "active_six_months",
+    ActiveMonthly: "active_monthly",
+    ActiveWeekly: "active_weekly",
+    ActiveDaily: "active_daily",
+    Hot: "hot",
+    New: "new",
+    Old: "old",
+    NameAsc: "name_asc",
+    NameDesc: "name_desc",
+    MostComments: "comments",
+    MostPosts: "posts",
+    TopAll: "subscribers",
+    TopHour: "subscribers",
+    TopSixHour: "subscribers",
+    TopTwelveHour: "subscribers",
+    TopDay: "subscribers",
+    TopWeek: "subscribers",
+    TopMonth: "subscribers",
+    TopThreeMonths: "subscribers",
+    TopSixMonths: "subscribers",
+    TopNineMonths: "subscribers",
+    TopYear: "subscribers",
+  } satisfies Record<CommunitySort, lemmyV4.CommunitySortType>);
+
+  let timeRangeSeconds: number | undefined = undefined;
+
+  const SEC = 1;
+  const MIN = 60 * SEC;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+  const WEEK = 7 * DAY;
+  const MONTH = 30 * DAY; // Approximate month
+  const YEAR = 365 * DAY;
+  switch (sort as lemmyV3.SortType) {
+    case "TopHour":
+      timeRangeSeconds = HOUR;
+      break;
+    case "TopSixHour":
+      timeRangeSeconds = 6 * HOUR;
+      break;
+    case "TopTwelveHour":
+      timeRangeSeconds = 12 * HOUR;
+      break;
+    case "TopDay":
+      timeRangeSeconds = DAY;
+      break;
+    case "TopWeek":
+      timeRangeSeconds = WEEK;
+      break;
+    case "TopMonth":
+      timeRangeSeconds = MONTH;
+      break;
+    case "TopThreeMonths":
+      timeRangeSeconds = 3 * MONTH;
+      break;
+    case "TopSixMonths":
+      timeRangeSeconds = 6 * MONTH;
+      break;
+    case "TopNineMonths":
+      timeRangeSeconds = 9 * MONTH;
+      break;
+    case "TopYear":
+      timeRangeSeconds = YEAR;
+      break;
+    case "TopAll":
+      timeRangeSeconds = undefined;
+  }
+
+  return { sort: apiSort, timeRangeSeconds };
+}
+
+const COMMENT_SORTS: lemmyV3.CommentSortType[] = [
   "Hot",
   "Top",
   "New",
@@ -37,11 +212,22 @@ const COMMENT_SORTS: lemmyV4.CommentSortType[] = [
   "Controversial",
 ];
 
-const commentSortSchema = z.custom<lemmyV4.CommentSortType>((sort) => {
-  return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
-});
+type CommentSort = (typeof COMMENT_SORTS)[number];
 
-const COMMUNITY_SORTS: lemmyV4.CommunitySortType[] = [
+function mapCommentSort(sort?: string) {
+  if (!sort) {
+    return undefined;
+  }
+  return remapEnum<string, lemmyV4.CommentSortType>(sort, {
+    Hot: "hot",
+    Top: "top",
+    New: "new",
+    Old: "old",
+    Controversial: "controversial",
+  } satisfies Record<CommentSort, lemmyV4.CommentSortType>);
+}
+
+const COMMUNITY_SORTS = [
   "ActiveSixMonths",
   "ActiveMonthly",
   "ActiveWeekly",
@@ -49,16 +235,23 @@ const COMMUNITY_SORTS: lemmyV4.CommunitySortType[] = [
   "Hot",
   "New",
   "Old",
+  "TopAll",
+  "TopHour",
+  "TopSixHour",
+  "TopTwelveHour",
+  "TopDay",
+  "TopWeek",
+  "TopMonth",
+  "TopThreeMonths",
+  "TopSixMonths",
+  "TopNineMonths",
+  "TopYear",
+  "MostComments",
+  "MostPosts",
   "NameAsc",
   "NameDesc",
-  "Comments",
-  "Posts",
-  "Subscribers",
-  "SubscribersLocal",
 ] as const;
-const communitySortSchema = z.custom<lemmyV4.CommunitySortType>((sort) => {
-  return _.isString(sort) && COMMUNITY_SORTS.includes(sort as any);
-});
+type CommunitySort = (typeof COMMUNITY_SORTS)[number];
 
 function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
@@ -92,10 +285,10 @@ function convertCommunity(
     subscribersLocalCount: community.subscribers_local,
     subscribed: (() => {
       switch (communityView.community_actions?.follow_state) {
-        case "Pending":
-        case "ApprovalRequired":
+        case "pending":
+        case "approval_required":
           return "Pending";
-        case "Accepted":
+        case "accepted":
           return "Subscribed";
       }
       return "NotSubscribed";
@@ -171,12 +364,18 @@ function convertPost({
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
     flairs: [],
+    myVote: post_actions ? (post_actions.vote_is_upvote ? 1 : -1) : undefined,
   };
 }
 function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
-  const { post, creator, comment, community } = commentView;
+  const { post, creator, comment, community, comment_actions } = commentView;
+  const myVote = comment_actions
+    ? comment_actions.vote_is_upvote
+      ? 1
+      : -1
+    : null;
   return {
-    locked: false,
+    locked: comment.locked,
     createdAt: comment.published_at,
     id: comment.id,
     apId: comment.ap_id,
@@ -196,9 +395,63 @@ function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
       .slug,
     communityApId: community.ap_id,
     postTitle: post.name,
-    myVote: commentView.comment_actions?.like_score ?? null,
+    myVote,
     childCount: comment.child_count,
     saved: false,
+  };
+}
+
+function convertPrivateMessage(
+  pmView: lemmyV4.PrivateMessageView,
+  notification?: lemmyV4.Notification,
+): Schemas.PrivateMessage {
+  const { creator, recipient } = pmView;
+  return {
+    createdAt: pmView.private_message.published_at,
+    id: notification?.id ?? -1,
+    creatorApId: creator.ap_id,
+    creatorId: creator.id,
+    creatorSlug: createSlug({ apId: creator.ap_id, name: creator.name }).slug,
+    recipientApId: recipient.ap_id,
+    recipientId: recipient.id,
+    recipientSlug: createSlug({
+      apId: recipient.ap_id,
+      name: recipient.name,
+    }).slug,
+    body: pmView.private_message.content,
+    read: notification?.read ?? false,
+  };
+}
+
+function convertMentionReply(
+  replyView: lemmyV4.NotificationView,
+): Schemas.Reply {
+  const { data, notification } = replyView;
+  if (data.type_ !== "comment") {
+    throw new Error("this shouldn't happend");
+  }
+  const { community, comment, creator, post } = data;
+  return {
+    createdAt: notification.published_at,
+    id: notification.id,
+    commentId: comment.id,
+    commentApId: comment.ap_id,
+    communityApId: community.ap_id,
+    communitySlug: createSlug({
+      apId: community.ap_id,
+      name: community.name,
+    }).slug,
+    body: comment.content,
+    path: comment.path,
+    creatorId: creator.id,
+    creatorApId: creator.ap_id,
+    creatorSlug: createSlug({ apId: creator.ap_id, name: creator.name }).slug,
+    read: notification.read,
+    postId: post.id,
+    postApId: post.ap_id,
+    postName: post.name,
+    deleted: comment.deleted,
+    removed: comment.removed,
   };
 }
 
@@ -206,6 +459,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   software = Software.LEMMY;
 
   client: lemmyV4.LemmyHttp;
+  isLoggedIn = false;
   instance: string;
   limit = 50;
 
@@ -218,12 +472,13 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
           return local;
         }
       }
-
-      // @ts-expect-error
-      const { post, comment, community, person } =
-        await this.client.resolveObject({
-          q: apId,
-        });
+      const { resolve } = await this.client.resolveObject({
+        q: apId,
+      });
+      const post = resolve?.type_ === "post" ? resolve : undefined;
+      const community = resolve?.type_ === "community" ? resolve : undefined;
+      const person = resolve?.type_ === "person" ? resolve : undefined;
+      const comment = resolve?.type_ === "comment" ? resolve : undefined;
       return {
         post_id: post?.post.id,
         comment_id: comment?.comment.id,
@@ -249,17 +504,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         ...DEFAULT_HEADERS,
         Authorization: `Bearer ${jwt}`,
       });
+      this.isLoggedIn = true;
     }
   }
 
   async getSite(options: RequestOptions) {
-    const lemmySite = await this.client.getSite(options);
-    // TODO: figure out why lemmy types are broken here
+    const [lemmySite, myUser] = await Promise.all([
+      this.client.getSite(options),
+      this.isLoggedIn ? this.client.getMyUser(options) : null,
+    ]);
     const enableDownvotes =
       "enable_downvotes" in lemmySite.site_view.local_site &&
       lemmySite.site_view.local_site.enable_downvotes === true;
-    // TODO: uncomment once the below is implemented
-    // const account = await this.client.getAccount();
+
+    const me = myUser ? convertPerson(myUser.local_user_view) : null;
 
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
@@ -267,10 +525,9 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       description: lemmySite.site_view.site.description ?? null,
       instance: this.instance,
       admins: admins.map((a) => a.apId),
-      me: null,
       myEmail: null,
       version: lemmySite.version,
-      /* me: me ? convertPerson(me) : null, */
+      me,
       moderates: [],
       follows: [],
       communityBlocks: [],
@@ -288,7 +545,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       title: lemmySite.site_view.site.name,
       applicationQuestion:
         lemmySite.site_view.local_site.application_question ?? null,
-      registrationMode: lemmySite.site_view.local_site.registration_mode,
+      registrationMode: remapEnum(
+        lemmySite.site_view.local_site.registration_mode,
+        {
+          closed: "Closed",
+          require_application: "RequireApplication",
+          open: "Open",
+        } as const,
+      ),
       showNsfw: false,
       blurNsfw: true,
       enablePostDownvotes: enableDownvotes,
@@ -298,15 +562,17 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     return {
       site,
-      people: [...admins],
+      profiles: _.compact([...admins, me]),
     };
   }
 
   async getPost(form: { apId: string }, options: RequestOptions) {
     const { post_id } = await this.resolveObjectId(form.apId);
+    console.log("HERE", post_id);
     if (_.isNil(post_id)) {
       throw new Error("post not found");
     }
+    console.log("THERE", post_id);
     const fullPost = await this.client.getPost(
       {
         id: post_id,
@@ -330,7 +596,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   async likePost(form: Forms.LikePost) {
     const { post_view } = await this.client.likePost({
       post_id: form.postId,
-      score: form.score,
+      is_upvote: form.score === 0 ? undefined : form.score === 1,
     });
     return convertPost(post_view);
   }
@@ -346,7 +612,10 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   async featurePost(form: Forms.FeaturePost) {
     const { post_view } = await this.client.featurePost({
       post_id: form.postId,
-      feature_type: form.featureType,
+      feature_type: remapEnum(form.featureType, {
+        Local: "local",
+        Community: "community",
+      }),
       featured: form.featured,
     });
     return convertPost(post_view);
@@ -382,17 +651,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         limit: this.limit,
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        type_: form.type,
+        type_: remapEnum(form.type, {
+          Posts: "posts",
+          Comments: "comments",
+        } as const),
       },
       options,
     );
 
-    const posts = content.content
-      .filter((c) => c.type_ === "Post")
+    const posts = content.items
+      .filter((c) => c.type_ === "post")
       .map((c) => convertPost(c));
 
-    const comments = content.content
-      .filter((c) => c.type_ === "Comment")
+    const comments = content.items
+      .filter((c) => c.type_ === "comment")
       .map((c) => convertComment(c));
 
     return {
@@ -403,12 +675,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
-    const { data: sort } = postSortSchema.safeParse(form.sort);
+    const sort = mapPostSort(form.sort);
     const posts = await this.client.getPosts(
       {
         show_read: form.showRead,
-        sort,
-        type_: form.type,
+        sort: sort?.sort,
+        time_range_seconds: sort?.timeRangeSeconds,
+        type_: _.isNil(form.type)
+          ? form.type
+          : remapEnum(form.type, {
+              All: "all",
+              Local: "local",
+              Subscribed: "subscribed",
+              ModeratorView: "moderator_view",
+            }),
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
         limit: this.limit,
@@ -419,7 +699,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     return {
       nextCursor: posts.next_page ?? null,
-      posts: posts.posts.map((p) => ({
+      posts: posts.items.map((p) => ({
         post: convertPost(p),
         creator: convertPerson({ person: p.creator }),
         community: convertCommunity({
@@ -432,22 +712,29 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
   async search(form: Forms.Search, options: RequestOptions) {
     const topSort = form.type === "Communities" || form.type === "Users";
-    const { results, next_page } = await this.client.search(
+    const { search, next_page } = await this.client.search(
       {
         q: form.q,
         community_name: form.communitySlug,
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        type_: form.type,
+        type_: remapEnum(form.type, {
+          Posts: "posts",
+          Users: "users",
+          Comments: "comments",
+          Communities: "communities",
+          All: "all",
+        }),
         limit: form.limit ?? this.limit,
-        sort: topSort ? "Top" : "New",
+        sort: topSort ? "top" : "new",
+        listing_type: "all",
       },
       options,
     );
-    const posts = results.filter((r) => r.type_ === "Post");
-    const communities = results.filter((r) => r.type_ === "Community");
-    const comments = results.filter((r) => r.type_ === "Comment");
-    const users = results.filter((r) => r.type_ === "Person");
+    const posts = search.filter((r) => r.type_ === "post");
+    const communities = search.filter((r) => r.type_ === "community");
+    const comments = search.filter((r) => r.type_ === "comment");
+    const users = search.filter((r) => r.type_ === "person");
     return {
       posts: posts.map(convertPost),
       communities: _.uniqBy(
@@ -485,11 +772,19 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getCommunities(form: Forms.GetCommunities, options: RequestOptions) {
-    const { data: sort } = communitySortSchema.safeParse(form.sort);
-    const { communities, next_page } = await this.client.listCommunities(
+    const sort = mapCommunitySort(form.sort);
+    const { items, next_page } = await this.client.listCommunities(
       {
-        sort,
-        type_: form.type,
+        sort: sort.sort,
+        time_range_seconds: sort.timeRangeSeconds,
+        type_: _.isNil(form.type)
+          ? form.type
+          : remapEnum(form.type, {
+              All: "all",
+              Local: "local",
+              Subscribed: "subscribed",
+              ModeratorView: "moderator_view",
+            }),
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
       },
@@ -497,7 +792,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     );
 
     return {
-      communities: communities.map(convertCommunity),
+      communities: items.map(convertCommunity),
       nextCursor: next_page ?? null,
     };
   }
@@ -547,12 +842,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       }
     }
 
-    const { data: sort } = commentSortSchema.safeParse(form.sort);
+    const sort = mapCommentSort(form.sort);
 
-    const { comments, next_page } = await this.client.getComments(
+    const { items, next_page } = await this.client.getComments(
       {
         post_id,
-        type_: "All",
+        type_: "all",
         sort,
         limit: this.limit,
         max_depth: form.maxDepth,
@@ -563,10 +858,8 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     );
 
     return {
-      comments: comments.map(convertComment),
-      creators: comments.map(({ creator }) =>
-        convertPerson({ person: creator }),
-      ),
+      comments: items.map(convertComment),
+      creators: items.map(({ creator }) => convertPerson({ person: creator })),
       // Lemmy next cursor is broken when maxDepth is present.
       // It will page out to infinity until we get rate limited
       nextCursor: _.isNil(form.maxDepth) ? (next_page ?? null) : null,
@@ -592,7 +885,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   async likeComment({ id, score }: Forms.LikeComment) {
     const { comment_view } = await this.client.likeComment({
       comment_id: id,
-      score,
+      is_upvote: score === 0 ? undefined : score === 1,
     });
     return convertComment(comment_view);
   }
@@ -634,6 +927,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       }
       await this.client.markManyPostAsRead({
         post_ids: form.postIds,
+        read: true,
       });
     }
   }
@@ -661,32 +955,118 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     form: Forms.GetPrivateMessages,
     options: RequestOptions,
   ) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { items, next_page } = await this.client.listNotifications(
+      {
+        type_: "private_message",
+        unread_only: form.unreadOnly,
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+      },
+      options,
+    );
+    const privateMessages = items.filter(
+      (item) => item.data.type_ === "private_message",
+    );
+    const profiles = _.uniqBy(
+      privateMessages.flatMap(({ data }) =>
+        data.type_ === "private_message" ? [data.creator, data.recipient] : [],
+      ),
+      (p) => p.ap_id,
+    ).map((person) => convertPerson({ person }));
+    return {
+      privateMessages: _.compact(
+        privateMessages.map(({ data, notification }) =>
+          data.type_ === "private_message"
+            ? convertPrivateMessage(data, notification)
+            : null,
+        ),
+      ),
+      profiles,
+      nextCursor: next_page ?? null,
+    };
   }
 
   async createPrivateMessage(
     form: Forms.CreatePrivateMessage,
   ): Promise<Schemas.PrivateMessage> {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { private_message_view } = await this.client.createPrivateMessage({
+      content: form.body,
+      recipient_id: form.recipientId,
+    });
+    return convertPrivateMessage(private_message_view);
   }
 
   async markPrivateMessageRead(form: Forms.MarkPrivateMessageRead) {
-    await this.client.markPrivateMessageAsRead({
-      private_message_id: form.id,
+    await this.client.markNotificationAsRead({
+      notification_id: form.id,
       read: form.read,
     });
   }
 
   async getReplies(form: Forms.GetReplies, options: RequestOptions) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { items, next_page } = await this.client.listNotifications(
+      {
+        type_: "reply",
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+        unread_only: form.unreadOnly,
+      },
+      options,
+    );
+    const mentions = items.filter(({ data }) => data.type_ === "comment");
+
+    return {
+      replies: mentions.map(convertMentionReply),
+      comments: _.compact(
+        mentions.map(({ data }) =>
+          data.type_ === "comment" ? convertComment(data) : null,
+        ),
+      ),
+      profiles: _.unionBy(
+        _.compact(
+          mentions.map(({ data }) =>
+            data.type_ === "comment"
+              ? convertPerson({ person: data.creator })
+              : null,
+          ),
+        ),
+        (p) => p.apId,
+      ),
+      nextCursor: next_page ?? null,
+    };
   }
 
   async getMentions(form: Forms.GetReplies, options: RequestOptions) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { items, next_page } = await this.client.listNotifications(
+      {
+        type_: "mention",
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+        unread_only: form.unreadOnly,
+      },
+      options,
+    );
+    const mentions = items.filter(({ data }) => data.type_ === "comment");
+
+    return {
+      mentions: mentions.map(convertMentionReply),
+      comments: _.compact(
+        mentions.map(({ data }) =>
+          data.type_ === "comment" ? convertComment(data) : null,
+        ),
+      ),
+      profiles: _.unionBy(
+        _.compact(
+          mentions.map(({ data }) =>
+            data.type_ === "comment"
+              ? convertPerson({ person: data.creator })
+              : null,
+          ),
+        ),
+        (p) => p.apId,
+      ),
+      nextCursor: next_page ?? null,
+    };
   }
 
   async markAllRead() {
@@ -694,15 +1074,17 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async markReplyRead(form: Forms.MarkReplyRead) {
-    await this.client.markCommentReplyAsRead({
-      comment_reply_id: form.id,
+    await this.client.markNotificationAsRead({
+      notification_id: form.id,
       read: form.read,
     });
   }
 
   async markMentionRead(form: Forms.MarkMentionRead) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    await this.client.markNotificationAsRead({
+      notification_id: form.id,
+      read: form.read,
+    });
   }
 
   async createPost(form: Forms.CreatePost) {
@@ -743,6 +1125,8 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     const { post_view } = await this.client.lockPost({
       post_id: form.postId,
       locked: form.locked,
+      // TODO: add support for this
+      reason: "",
     });
     return convertPost(post_view);
   }
@@ -763,9 +1147,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return convertComment(comment_view);
   }
 
-  async lockComment() {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+  async lockComment(form: Forms.LockComment) {
+    const { comment_view } = await this.client.lockComment({
+      comment_id: form.commentId,
+      locked: form.locked,
+      // TODO: add support for this
+      reason: "",
+    });
+    return convertComment(comment_view);
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {
@@ -837,8 +1226,22 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async resolveObject(form: Forms.ResolveObject, options?: RequestOptions) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { resolve } = await this.client.resolveObject(
+      {
+        q: form.q,
+      },
+      options,
+    );
+    const post = resolve?.type_ === "post" ? resolve : undefined;
+    const community = resolve?.type_ === "community" ? resolve : undefined;
+    const person = resolve?.type_ === "person" ? resolve : undefined;
+    const comment = resolve?.type_ === "comment" ? resolve : undefined;
+    return resolveObjectResponseSchema.parse({
+      post: post ? convertPost(post) : null,
+      community: community ? convertCommunity(community) : null,
+      user: person ? convertPerson(person) : null,
+      comment: comment ? convertComment(comment) : null,
+    });
   }
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {

@@ -1,4 +1,3 @@
-import { PostFeatureType } from "lemmy-v4";
 import z from "zod";
 
 export const INIT_PAGE_TOKEN = "INIT_PAGE_TOKEN";
@@ -362,7 +361,7 @@ export namespace Forms {
   export type FeaturePost = {
     postId: number;
     featured: boolean;
-    featureType: PostFeatureType;
+    featureType: "Local" | "Community";
   };
 
   export type SavePost = {
@@ -498,7 +497,7 @@ export namespace Forms {
 
   export type RemovePost = {
     postId: number;
-    reason?: string;
+    reason: string;
     removed: boolean;
   };
 
