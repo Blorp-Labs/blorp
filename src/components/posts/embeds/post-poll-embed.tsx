@@ -51,7 +51,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const requireAuth = useRequireAuth();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
-  if (!post.poll) {
+  if (!post.poll || post.poll.choices.length === 0) {
     return null;
   }
   const numVotesArr = post.poll.choices.map((choice) => choice.numVotes);
