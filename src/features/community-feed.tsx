@@ -33,7 +33,6 @@ import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "../routing/link-context";
 import { Link } from "@/src/routing/index";
-import { useFiltersStore } from "../stores/filters";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";

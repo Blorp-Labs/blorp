@@ -2343,7 +2343,3 @@ export function useLinkMetadat() {
     },
   });
 }
-
-export function usePostSort() {
-  const { api } = useApiClients();
-}

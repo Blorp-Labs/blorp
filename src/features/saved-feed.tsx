@@ -18,7 +18,6 @@ import { Link } from "@/src/routing/index";
 import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useFiltersStore } from "../stores/filters";
 import { useAuth } from "../stores/auth";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import z from "zod";
