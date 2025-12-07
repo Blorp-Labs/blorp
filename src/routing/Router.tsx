@@ -33,6 +33,7 @@ import InstanceSidebar from "../features/instance-sidebar";
 import { useAuth } from "../stores/auth";
 import { usePathname } from "./hooks";
 
+const DebugPage = lazy(() => import("@/src/features/debug-page"));
 const CSAE = lazy(() => import("@/src/features/csae"));
 const NotFound = lazy(() => import("@/src/features/not-found"));
 const ApResolver = lazy(() => import("@/src/features/resolver"));
@@ -443,6 +444,9 @@ function Tabs() {
               </Route>
               <Route exact path="/csae">
                 <CSAE />
+              </Route>
+              <Route exact path="/debug">
+                <DebugPage />
               </Route>
               <Redirect exact from="/" to="/home" />
             </IonRouterOutlet>

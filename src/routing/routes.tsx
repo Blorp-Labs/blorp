@@ -32,6 +32,7 @@ const lightBoxFeedSchema = z.object({
 });
 
 export const routeDefs = {
+  ...buildRoute("/debug"),
   ...buildRoute("/instance"),
   // activity pub resolver
   ...buildRoute("/post/:id", idSchema),
