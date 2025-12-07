@@ -4,37 +4,65 @@ import { ContentGutters } from "../components/gutters";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { MenuButton, UserDropdown } from "../components/nav";
-import { Account } from "../stores/auth";
-import { useApiClients } from "../lib/api";
-import { useEffect, useState } from "react";
-import { ApiBlueprint } from "../lib/api/adapters/api-blueprint";
+import { useInstances } from "../lib/api";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { cn } from "../lib/utils";
+import { apiClient } from "../lib/api/adapters/client";
+import { Avatar, AvatarImage } from "../components/ui/avatar";
+import { Button } from "../components/ui/button";
+import _ from "lodash";
+
+function getSortValue(status: string) {
+  switch (status) {
+    case "success":
+      return 2;
+    case "error":
+      return 1;
+    default:
+      return 0;
+  }
+}
 
 function Instance({
-  account,
-  api,
+  host,
+  icon,
+  onSuccess,
+  onError,
 }: {
-  account: Account;
-  api: Promise<ApiBlueprint<any>>;
+  host: string;
+  icon?: string;
+  onSuccess: () => void;
+  onError: () => void;
 }) {
   const [isReachable, setIsReachable] = useState<boolean | null>(null);
   const [site, setSite] = useState<boolean | null>(null);
 
+  const onSuccessEvent = useEffectEvent(onSuccess);
+  const onErrorEvent = useEffectEvent(onError);
+
   useEffect(() => {
-    api
-      .then((api) => {
-        setIsReachable(true);
-        api
-          .getSite()
-          .then(() => {
-            setSite(true);
-          })
-          .catch(() => {
-            setSite(false);
-          });
-      })
-      .catch(() => setIsReachable(false));
-  }, [api]);
+    try {
+      apiClient({ instance: host })
+        .then((api) => {
+          setIsReachable(true);
+          api
+            .getSite()
+            .then(() => {
+              setSite(true);
+              onSuccessEvent();
+            })
+            .catch(() => {
+              setSite(false);
+              onErrorEvent();
+            });
+        })
+        .catch(() => {
+          setIsReachable(false);
+          setSite(false);
+          onErrorEvent();
+        });
+    } catch {}
+  }, [host]);
 
   return (
     <div
@@ -45,7 +73,14 @@ function Instance({
         (isReachable === null || site === null) && "animate-pulse",
       )}
     >
-      <span className="col-span-2 text-foreground">{account.instance}</span>
+      <div className="col-span-2 text-foreground flex flex-row items-center gap-2">
+        {icon && (
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={icon} className="object-cover" />
+          </Avatar>
+        )}
+        <span>{host}</span>
+      </div>
       <span className="text-muted-foreground">Rechable: </span>
       <span className="text-end">
         {isReachable === null ? "loading" : isReachable ? "success" : "error"}
@@ -59,8 +94,20 @@ function Instance({
 }
 
 export default function DebugPage() {
-  const { apis } = useApiClients();
-
+  const instances = useInstances();
+  const [run, setRun] = useState(false);
+  const [status, setStatus] = useState<Record<string, "success" | "error">>({});
+  const data = useMemo(() => {
+    if (!instances.data) {
+      return [];
+    }
+    return instances.data.map((instance) => {
+      return {
+        instance,
+        status: status[instance.host] ?? "pending",
+      };
+    });
+  }, [instances.data, status]);
   return (
     <Page>
       <IonHeader>
@@ -76,11 +123,48 @@ export default function DebugPage() {
       </IonHeader>
       <IonContent>
         <ContentGutters className="py-4">
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {apis.map(({ account, api }) => (
-              <Instance key={account.uuid} account={account} api={api} />
-            ))}
-          </div>
+          {!run ? (
+            <div>
+              <p className="mb-2">
+                Clicking run will run a quick test to check access to{" "}
+                {instances.data?.length} Lemmy and PieFed instances.
+              </p>
+              <Button variant="outline" onClick={() => setRun(true)}>
+                Run Test
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {_.entries(_.groupBy(data, "status"))
+                .sort(([a], [b]) => getSortValue(a) - getSortValue(b))
+                .map(([key, value]) => (
+                  <div key={key}>
+                    <span className="block mb-2">{_.capitalize(key)}</span>
+                    <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {value.map(({ instance }) => (
+                        <Instance
+                          key={instance.host}
+                          host={instance.host}
+                          icon={instance.icon}
+                          onSuccess={() =>
+                            setStatus((prev) => ({
+                              ...prev,
+                              [instance.host]: "success" as const,
+                            }))
+                          }
+                          onError={() =>
+                            setStatus((prev) => ({
+                              ...prev,
+                              [instance.host]: "error" as const,
+                            }))
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </ContentGutters>
       </IonContent>
     </Page>
