@@ -101,7 +101,7 @@ export default function DebugPage() {
     if (!instances.data) {
       return [];
     }
-    return instances.data.map((instance) => {
+    return _.sortBy(instances.data, "host").map((instance) => {
       return {
         instance,
         status: status[instance.host] ?? "pending",
