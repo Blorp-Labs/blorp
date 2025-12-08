@@ -1,4 +1,9 @@
-import { useAvailableSorts, useListCommunities } from "@/src/lib/api/index";
+import {
+  useAvailableSorts,
+  useListCommunities,
+  useModeratingCommunities,
+  useSubscribedCommunities,
+} from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -19,7 +24,6 @@ import { MenuButton, UserDropdown } from "../components/nav";
 import { CommunityFilter, CommunitySortSelect } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { getAccountSite, useAuth } from "../stores/auth";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
@@ -45,25 +49,54 @@ export default function Communities() {
 
   const media = useMedia();
 
-  const moderates = useAuth((s) =>
-    getAccountSite(s.getSelectedAccount()),
-  )?.moderates;
-  const moderatesCommunities = moderates ?? undefined;
+  const moderatesCommunities = useModeratingCommunities();
+  const subscribedCommunities = useSubscribedCommunities();
 
-  const communitiesQuery = useListCommunities({
-    type: listingType,
-    sort: communitySort,
-  });
-
-  const communities = useMemo(
-    () => communitiesQuery.data?.pages.map((p) => p.communities).flat(),
-    [communitiesQuery.data?.pages],
+  const communitiesQuery = useListCommunities(
+    {
+      type: listingType,
+      sort: communitySort,
+    },
+    {
+      enabled: listingType !== "ModeratorView" && listingType !== "Subscribed",
+    },
   );
 
-  const noItems =
-    communities?.length === 0 &&
-    !communitiesQuery.isRefetching &&
-    !communitiesQuery.isPending;
+  const { communities, noItems } = useMemo(() => {
+    if (listingType === "Subscribed") {
+      return {
+        communities: subscribedCommunities,
+        noItems: subscribedCommunities.length === 0,
+      };
+    }
+
+    if (listingType === "ModeratorView") {
+      return {
+        communities: moderatesCommunities,
+        noItems: moderatesCommunities.length === 0,
+      };
+    }
+
+    const communities = communitiesQuery.data?.pages
+      .map((p) => p.communities)
+      .flat();
+    const noItems =
+      communities?.length === 0 &&
+      !communitiesQuery.isRefetching &&
+      !communitiesQuery.isPending;
+
+    return {
+      communities,
+      noItems,
+    };
+  }, [
+    listingType,
+    moderatesCommunities,
+    subscribedCommunities,
+    communitiesQuery.isRefetching,
+    communitiesQuery.isPending,
+    communitiesQuery.data?.pages,
+  ]);
 
   let numCols = 1;
   if (media.xl && !noItems) {
@@ -78,13 +111,7 @@ export default function Communities() {
       fullscreen
       scrollHost
       numColumns={numCols}
-      data={
-        listingType === "ModeratorView"
-          ? moderatesCommunities
-          : noItems
-            ? [NO_ITEMS]
-            : communities
-      }
+      data={noItems ? [NO_ITEMS] : communities}
       renderItem={({ item }) => {
         if (item === NO_ITEMS) {
           return (
@@ -99,6 +126,7 @@ export default function Communities() {
       onEndReached={() => {
         if (
           listingType !== "ModeratorView" &&
+          listingType !== "Subscribed" &&
           communitiesQuery.hasNextPage &&
           !communitiesQuery.isFetchingNextPage
         ) {

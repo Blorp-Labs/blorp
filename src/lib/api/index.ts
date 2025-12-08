@@ -554,7 +554,10 @@ function useListCommunitiesKey() {
   return [...queryKeyPrefix, "listCommunities"];
 }
 
-export function useListCommunities(form: Forms.GetCommunities) {
+export function useListCommunities(
+  form: Forms.GetCommunities,
+  options?: QueryOverwriteOptions,
+) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -569,6 +572,8 @@ export function useListCommunities(form: Forms.GetCommunities) {
   }
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+
+  const enabled = options?.enabled ?? true;
 
   return useThrottledInfiniteQuery({
     queryKey,
@@ -597,7 +602,12 @@ export function useListCommunities(form: Forms.GetCommunities) {
     },
     getNextPageParam: (data) => data.nextPage,
     initialPageParam: INIT_PAGE_TOKEN,
-    enabled: form.type === "Subscribed" ? isLoggedIn : true,
+    ...options,
+    enabled:
+      enabled &&
+      (form.type === "Subscribed" || form.type === "ModeratorView"
+        ? isLoggedIn
+        : true),
   });
 }
 export function useCommunity({
