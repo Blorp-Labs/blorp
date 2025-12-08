@@ -52,51 +52,44 @@ export default function Communities() {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
-  const communitiesQuery = useListCommunities(
-    {
-      type: listingType,
-      sort: communitySort,
-    },
-    {
-      enabled: listingType !== "ModeratorView" && listingType !== "Subscribed",
-    },
-  );
+  const communitiesQuery = useListCommunities({
+    type: listingType,
+    sort: communitySort,
+  });
 
-  const { communities, noItems } = useMemo(() => {
+  const { communities } = useMemo(() => {
+    const communities = communitiesQuery.data?.pages
+      .map((p) => p.communities)
+      .flat();
+
     if (listingType === "Subscribed") {
       return {
-        communities: subscribedCommunities,
-        noItems: subscribedCommunities.length === 0,
+        communities: !communities?.length ? subscribedCommunities : communities,
       };
     }
 
     if (listingType === "ModeratorView") {
       return {
-        communities: moderatesCommunities,
-        noItems: moderatesCommunities.length === 0,
+        communities: !communities?.length
+          ? moderatesCommunities
+          : moderatesCommunities,
       };
     }
 
-    const communities = communitiesQuery.data?.pages
-      .map((p) => p.communities)
-      .flat();
-    const noItems =
-      communities?.length === 0 &&
-      !communitiesQuery.isRefetching &&
-      !communitiesQuery.isPending;
-
     return {
       communities,
-      noItems,
     };
   }, [
     listingType,
     moderatesCommunities,
     subscribedCommunities,
-    communitiesQuery.isRefetching,
-    communitiesQuery.isPending,
-    communitiesQuery.data?.pages,
+    communitiesQuery.data,
   ]);
+
+  const noItems =
+    communities?.length === 0 &&
+    !communitiesQuery.isRefetching &&
+    !communitiesQuery.isPending;
 
   let numCols = 1;
   if (media.xl && !noItems) {
@@ -126,7 +119,6 @@ export default function Communities() {
       onEndReached={() => {
         if (
           listingType !== "ModeratorView" &&
-          listingType !== "Subscribed" &&
           communitiesQuery.hasNextPage &&
           !communitiesQuery.isFetchingNextPage
         ) {
