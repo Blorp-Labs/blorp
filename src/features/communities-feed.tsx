@@ -52,10 +52,15 @@ export default function Communities() {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
-  const communitiesQuery = useListCommunities({
-    type: listingType,
-    sort: communitySort,
-  });
+  const communitiesQuery = useListCommunities(
+    {
+      type: listingType,
+      sort: communitySort,
+    },
+    {
+      enabled: listingType !== "ModeratorView",
+    },
+  );
 
   const { communities } = useMemo(() => {
     const communities = communitiesQuery.data?.pages
@@ -70,9 +75,7 @@ export default function Communities() {
 
     if (listingType === "ModeratorView") {
       return {
-        communities: !communities?.length
-          ? moderatesCommunities
-          : moderatesCommunities,
+        communities: moderatesCommunities,
       };
     }
 
