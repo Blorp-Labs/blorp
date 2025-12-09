@@ -330,16 +330,6 @@ export default function LightBoxPostFeed() {
   );
 
   const swiperRef = useRef<SwiperType>(null);
-  // useScrollNextSlide(
-  //   swiperRef.current?.el,
-  //   useCallback((delta) => {
-  //     if (delta > 0) {
-  //       swiperRef.current?.slideNext(200);
-  //     } else {
-  //       swiperRef.current?.slidePrev(200);
-  //     }
-  //   }, []),
-  // );
 
   const onIndexChange = useCallback(
     (newIndex: number) => {
@@ -376,6 +366,7 @@ export default function LightBoxPostFeed() {
           case "j":
             e.preventDefault();
             e.stopPropagation();
+            swiperRef.current?.enable();
             swiperRef.current?.slidePrev(0);
             break;
           case "d":
@@ -383,6 +374,7 @@ export default function LightBoxPostFeed() {
           case "ArrowRight":
             e.preventDefault();
             e.stopPropagation();
+            swiperRef.current?.enable();
             swiperRef.current?.slideNext(0);
             break;
           default:
@@ -440,9 +432,8 @@ export default function LightBoxPostFeed() {
               enabled: true,
               forceToAxis: true,
             }}
+            keyboard={false}
             allowTouchMove={!hideNav && !media.md}
-            allowSlideNext={!hideNav}
-            allowSlidePrev={!hideNav}
             onSwiper={(s) => (swiperRef.current = s)}
             initialSlide={activeIndex}
             onSlideChange={(s) => onIndexChange(s.activeIndex)}

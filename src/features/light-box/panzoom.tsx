@@ -32,10 +32,6 @@ export const PanzoomProvider = ({
   disabled?: boolean;
   children: React.ReactNode;
 }) => {
-  // const swiper = useSwiper();
-  // const zoom = useSwiperZoomScale(swiper);
-  // const cancelAnimation = useRef(_.noop);
-
   const [listeners, setListeners] = useState<Fn[]>([]);
 
   const listen = useCallback((fn: Fn) => {
@@ -157,8 +153,11 @@ export function usePanZoom(
         onZoom?.(scale);
         setZoom(scale);
       };
+
       const handleWheel = (e: WheelEvent) => {
-        if (!e.shiftKey) {
+        const isVertial = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+        if (isVertial) {
+          e.stopPropagation();
           panzoom.zoomWithWheel(e);
         }
       };
@@ -228,13 +227,16 @@ export function usePanZoom(
       container.addEventListener("dblclick", handleDbclick);
       return () => {
         unsubscribe();
-        onZoom?.(1);
-        setZoom(1);
         container.removeEventListener("wheel", handleWheel);
         container.removeEventListener("panzoompan", handlePan);
         container.removeEventListener("panzoomreset", handleReset);
         container.removeEventListener("panzoomzoom", handleZoom);
         container.removeEventListener("dblclick", handleDbclick);
+        panzoom.reset({
+          animate: false,
+        });
+        onZoom?.(1);
+        setZoom(1);
         panzoom.destroy();
       };
     }
