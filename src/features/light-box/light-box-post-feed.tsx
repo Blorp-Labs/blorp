@@ -41,14 +41,13 @@ import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
-import { Virtual } from "swiper/modules";
+import { Virtual, Mousewheel } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
-import "swiper/css/zoom";
+import "swiper/css/mousewheel";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
 import { PanzoomProvider, usePanZoom } from "./panzoom";
-import { useScrollNextSlide } from "./hooks";
 
 const EMPTY_ARR: never[] = [];
 
@@ -129,7 +128,7 @@ const Post = memo(
 
     const [ar, setAr] = useState(2);
 
-    usePanZoom(
+    const zoom = usePanZoom(
       {
         container: ref.current,
         active,
@@ -143,7 +142,10 @@ const Post = memo(
 
     return img ? (
       <div className="h-full w-full relative">
-        <div ref={ref} className="h-full w-full">
+        <div
+          ref={ref}
+          className={cn("h-full w-full", zoom === 1 && "cursor-default!")}
+        >
           <ProgressiveImage
             lowSrc={img}
             highSrc={embed?.fullResThumbnail}
@@ -328,16 +330,16 @@ export default function LightBoxPostFeed() {
   );
 
   const swiperRef = useRef<SwiperType>(null);
-  useScrollNextSlide(
-    swiperRef.current?.el,
-    useCallback((delta) => {
-      if (delta > 0) {
-        swiperRef.current?.slideNext(200);
-      } else {
-        swiperRef.current?.slidePrev(200);
-      }
-    }, []),
-  );
+  // useScrollNextSlide(
+  //   swiperRef.current?.el,
+  //   useCallback((delta) => {
+  //     if (delta > 0) {
+  //       swiperRef.current?.slideNext(200);
+  //     } else {
+  //       swiperRef.current?.slidePrev(200);
+  //     }
+  //   }, []),
+  // );
 
   const onIndexChange = useCallback(
     (newIndex: number) => {
@@ -434,13 +436,17 @@ export default function LightBoxPostFeed() {
           <Swiper
             ref={ref}
             key={dataKey}
+            mousewheel={{
+              enabled: true,
+              forceToAxis: true,
+            }}
             allowTouchMove={!hideNav && !media.md}
             allowSlideNext={!hideNav}
             allowSlidePrev={!hideNav}
             onSwiper={(s) => (swiperRef.current = s)}
             initialSlide={activeIndex}
             onSlideChange={(s) => onIndexChange(s.activeIndex)}
-            modules={[Virtual]}
+            modules={[Virtual, Mousewheel]}
             virtual
             slidesPerView={1}
             className="h-full"

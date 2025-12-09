@@ -130,6 +130,7 @@ export function usePanZoom(
   } = opts;
   const controls = useContext(Context);
   const controlsListen = controls.listen;
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (container && active) {
@@ -148,12 +149,18 @@ export function usePanZoom(
       };
       const handleZoom = () => {
         const scale = panzoom.getScale();
-        if (Math.round(scale) <= 1) {
+        if (scale <= 1.25) {
           panzoom.reset({
             animate: true,
           });
         }
         onZoom?.(scale);
+        setZoom(scale);
+      };
+      const handleWheel = (e: WheelEvent) => {
+        if (!e.shiftKey) {
+          panzoom.zoomWithWheel(e);
+        }
       };
 
       const handlePan = _.debounce(() => {
@@ -214,6 +221,7 @@ export function usePanZoom(
         }
       };
 
+      container.addEventListener("wheel", handleWheel);
       container.addEventListener("panzoompan", handlePan);
       container.addEventListener("panzoomreset", handleReset);
       container.addEventListener("panzoomzoom", handleZoom);
@@ -221,6 +229,8 @@ export function usePanZoom(
       return () => {
         unsubscribe();
         onZoom?.(1);
+        setZoom(1);
+        container.removeEventListener("wheel", handleWheel);
         container.removeEventListener("panzoompan", handlePan);
         container.removeEventListener("panzoomreset", handleReset);
         container.removeEventListener("panzoomzoom", handleZoom);
@@ -238,4 +248,6 @@ export function usePanZoom(
     imageAspectRatio,
     ...(deps ?? []),
   ]);
+
+  return zoom;
 }

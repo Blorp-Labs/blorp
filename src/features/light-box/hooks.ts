@@ -19,32 +19,3 @@ export function useSwiperZoomScale(swiper?: SwiperType | null) {
   }, [swiper]);
   return zoom;
 }
-
-export function useScrollNextSlide(
-  el: HTMLElement | null | undefined,
-  onChange: (delta: -1 | 1) => void,
-) {
-  useEffect(() => {
-    if (el) {
-      const throttledChange = _.throttle(
-        (delta: -1 | 1) => {
-          onChange(delta);
-        },
-        500,
-        { leading: true, trailing: false },
-      );
-      const onWheel = (e: WheelEvent) => {
-        e.preventDefault();
-        const absX = Math.abs(e.deltaX);
-        if (absX > 0 && absX > Math.abs(e.deltaY)) {
-          const delta = _.clamp(_.round(e.deltaX / 10), -1, 1);
-          if (delta === -1 || delta === 1) {
-            throttledChange(delta);
-          }
-        }
-      };
-      el.addEventListener("wheel", onWheel, { passive: false });
-      return () => el.removeEventListener("wheel", onWheel);
-    }
-  }, [el, onChange]);
-}

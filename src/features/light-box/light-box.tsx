@@ -38,7 +38,8 @@ function Image({
   const navbar = useNavbarHeight();
   const paddingTop = navbar.height + navbar.inset;
   const paddingBottom = bottomBarHeight;
-  usePanZoom(
+
+  const zoom = usePanZoom(
     {
       container: ref.current,
       imageAspectRatio: aspectRatio,
@@ -51,7 +52,7 @@ function Image({
   return (
     <div
       ref={ref}
-      className="h-full relative"
+      className={cn("h-full relative", zoom === 1 && "cursor-default!")}
       style={{
         paddingTop,
         paddingBottom,
