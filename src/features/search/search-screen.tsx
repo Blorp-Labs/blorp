@@ -50,7 +50,10 @@ import {
   CommentVoting,
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
-import { ActionMenu } from "@/src/components/adaptable/action-menu";
+import {
+  ActionMenu,
+  EllipsisActionMenu,
+} from "@/src/components/adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 
 const EMPTY_ARR: never[] = [];
@@ -147,22 +150,8 @@ function Comment({ commentPath }: { commentPath: string }) {
             <CommentButtonBar>
               <RelativeTime time={comment.createdAt} />
               <div className="flex-1" />
-              <CommentVoting commentView={comment} />
-              <ActionMenu
-                actions={actions}
-                align="end"
-                trigger={
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="z-10 md:-mr-2"
-                    aria-label="Comment actions"
-                  >
-                    <IoEllipsisHorizontal size={16} />
-                  </Button>
-                }
-                triggerAsChild
-              />
+              <EllipsisActionMenu actions={actions} />
+              <CommentVoting commentView={comment} fixRightAlignment />
             </CommentButtonBar>
           </div>
         </div>
