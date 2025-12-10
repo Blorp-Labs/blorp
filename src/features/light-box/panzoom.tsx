@@ -145,16 +145,6 @@ export function usePanZoom(
       const handleReset = () => {
         onZoom?.(0);
       };
-      const handleZoom = () => {
-        const scale = panzoom.getScale();
-        if (scale <= 1.25) {
-          panzoom.reset({
-            animate: true,
-          });
-        }
-        onZoom?.(scale);
-        setZoom(scale);
-      };
 
       const handleWheel = (e: WheelEvent) => {
         const isVertial = Math.abs(e.deltaY) > Math.abs(e.deltaX);
@@ -206,6 +196,21 @@ export function usePanZoom(
         }
       }, 50);
 
+      const handleZoom = () => {
+        const scale = panzoom.getScale();
+        if (scale <= 1.25) {
+          panzoom.reset({
+            animate: true,
+          });
+          onZoom?.(1);
+          setZoom(1);
+        } else {
+          onZoom?.(scale);
+          setZoom(scale);
+          handlePan();
+        }
+      };
+
       const unsubscribe = controlsListen((event) => {
         switch (event) {
           case "zoom-in":
@@ -255,6 +260,7 @@ export function usePanZoom(
     imageAspectRatio,
     safeArea.top,
     safeArea.bottom,
+    // eslint-disable-next-line
     ...(deps ?? []),
   ]);
 

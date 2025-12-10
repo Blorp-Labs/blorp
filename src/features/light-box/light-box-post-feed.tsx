@@ -101,14 +101,14 @@ function KeyboardShortcutHelpModal({
 const Post = memo(
   ({
     apId,
-    paddingT,
-    paddingB,
+    paddingTop,
+    paddingBottom,
     onZoom,
     active,
   }: {
     apId: string;
-    paddingT: number;
-    paddingB: number;
+    paddingTop: number;
+    paddingBottom: number;
     onZoom: (scale: number) => void;
     active: boolean;
   }) => {
@@ -126,7 +126,7 @@ const Post = memo(
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;
 
-    const [ar, setAr] = useState(2);
+    const [ar, setAr] = useState(1);
 
     const zoom = usePanZoom(
       {
@@ -134,8 +134,8 @@ const Post = memo(
         active,
         onZoom,
         imageAspectRatio: ar,
-        paddingTop: paddingT,
-        paddingBottom: paddingB,
+        paddingTop: paddingTop,
+        paddingBottom: paddingBottom,
       },
       [embed?.fullResThumbnail, img],
     );
@@ -149,7 +149,7 @@ const Post = memo(
           <ProgressiveImage
             lowSrc={img}
             highSrc={embed?.fullResThumbnail}
-            style={{ top: paddingT, bottom: paddingB }}
+            style={{ top: paddingTop, bottom: paddingBottom }}
             className={cn(
               "absolute inset-x-0 bg-transparent overflow-visible",
               blurImg && "blur-3xl",
@@ -456,8 +456,8 @@ export default function LightBoxPostFeed() {
                 <Post
                   key={item}
                   apId={item}
-                  paddingT={navbar.height + navbar.inset}
-                  paddingB={bottomBarHeight}
+                  paddingTop={navbar.height + navbar.inset}
+                  paddingBottom={bottomBarHeight}
                   active={i === activeIndex}
                   onZoom={onZoom}
                 />
