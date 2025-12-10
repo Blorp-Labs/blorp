@@ -297,26 +297,37 @@ export function useHideTabBarOnMount() {
 }
 
 export function useSafeAreaInsets() {
-  return useMemo(() => {
+  const computeInsets = () => {
+    const style = getComputedStyle(document.documentElement);
+
     const top = parseInt(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--ion-safe-area-top")
-        .trim(),
+      style.getPropertyValue("--ion-safe-area-top").trim(),
       10,
     );
-
     const bottom = parseInt(
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--ion-safe-area-bottom")
-        .trim(),
+      style.getPropertyValue("--ion-safe-area-bottom").trim(),
       10,
     );
 
-    return {
-      top,
-      bottom,
+    return { top, bottom };
+  };
+
+  const [insets, setInsets] = useState(() => computeInsets());
+
+  useEffect(() => {
+    const update = () => setInsets(computeInsets());
+
+    // Listen for orientation + resize events
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
     };
   }, []);
+
+  return insets;
 }
 
 export function useNavbarHeight() {

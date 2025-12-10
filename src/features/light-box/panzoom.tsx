@@ -13,6 +13,7 @@ import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import Panzoom, { PanzoomOptions } from "@panzoom/panzoom";
+import { useSafeAreaInsets } from "@/src/lib/hooks";
 
 type Fn = (event: "zoom-in" | "zoom-out") => void;
 
@@ -127,6 +128,7 @@ export function usePanZoom(
   const controls = useContext(Context);
   const controlsListen = controls.listen;
   const [zoom, setZoom] = useState(1);
+  const safeArea = useSafeAreaInsets();
 
   useEffect(() => {
     if (container && active) {
@@ -166,6 +168,9 @@ export function usePanZoom(
         const scale = panzoom.getScale();
         const pan = panzoom.getPan();
 
+        const scaledSafeAreaTop = safeArea.top / scale;
+        const scaledSafeAreaBottom = safeArea.bottom / scale;
+
         const clientWidth = container.clientWidth;
         const clientHeight = container.clientHeight;
 
@@ -185,12 +190,12 @@ export function usePanZoom(
         const scaledWidth = imgDimensions.width * scale;
         const maxX = Math.abs(scaledWidth - clientWidth) / scale / 2;
 
-        const adjustForVertialPadding = (paddingBottom - paddingTop) / 2;
+        const shiftForVertialPadding = (paddingBottom - paddingTop) / 2;
 
         const panY = _.clamp(
           pan.y,
-          -maxY + adjustForVertialPadding,
-          maxY + adjustForVertialPadding,
+          -maxY - scaledSafeAreaBottom + shiftForVertialPadding,
+          maxY + scaledSafeAreaTop + shiftForVertialPadding,
         );
         const panX = _.clamp(pan.x, -maxX, maxX);
 
@@ -248,6 +253,8 @@ export function usePanZoom(
     paddingTop,
     paddingBottom,
     imageAspectRatio,
+    safeArea.top,
+    safeArea.bottom,
     ...(deps ?? []),
   ]);
 
