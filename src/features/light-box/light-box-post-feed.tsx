@@ -9,7 +9,6 @@ import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
-  useElementHasFocus,
   useHideTabBarOnMount,
   useIsActiveRoute,
   useKeyboardShortcut,
@@ -22,14 +21,12 @@ import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";
-import { ResponsiveImage } from "./light-box";
 import {
   PostCommentsButton,
   PostShareButton,
   PostVoting,
   usePostVoting,
 } from "@/src/components/posts/post-buttons";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { usePostsStore } from "@/src/stores/posts";
 import z from "zod";
 import { decodeApId, encodeApId } from "@/src/lib/api/utils";
@@ -43,6 +40,14 @@ import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/lib/post";
 import { useCommunityFromStore } from "@/src/stores/communities";
+import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
+import { Virtual, Mousewheel } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/virtual";
+import "swiper/css/mousewheel";
+import { Swiper as SwiperType } from "swiper/types";
+import { ProgressiveImage } from "@/src/components/progressive-image";
+import { PanzoomProvider, usePanZoom } from "./panzoom";
 
 const EMPTY_ARR: never[] = [];
 
@@ -93,220 +98,22 @@ function KeyboardShortcutHelpModal({
   );
 }
 
-function HorizontalVirtualizer<T>({
-  data,
-  renderItem,
-  activeIndex = 0,
-  onIndexChange,
-  onEndReached,
-  className,
-}: {
-  data?: T[] | readonly T[];
-  renderItem: (params: { item: T; index: number }) => React.ReactNode;
-  activeIndex?: number;
-  onIndexChange: (index: number) => void;
-  onEndReached?: () => any;
-  className?: string;
-}) {
-  const count = data?.length ?? 0;
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const itemWidth = scrollRef.current?.clientWidth ?? window.innerWidth;
-
-  const initialOffset = activeIndex * itemWidth;
-
-  const focused = useElementHasFocus(scrollRef);
-
-  const rowVirtualizer = useVirtualizer({
-    count,
-    overscan: 3,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => itemWidth,
-    horizontal: true,
-    initialMeasurementsCache: Array.from({
-      length: count,
-    })
-      .fill(0)
-      .map((_i, index) => ({
-        key: index,
-        index: index,
-        start: index * itemWidth,
-        end: index * itemWidth + itemWidth,
-        size: itemWidth,
-        lane: 0,
-      })),
-    initialOffset: initialOffset,
-    enabled: focused,
-    initialRect: {
-      width: itemWidth,
-      height: window.innerHeight,
-    },
-  });
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const { scrollBy } = rowVirtualizer;
-
-  useEffect(() => {
-    const [lastItem] = [...virtualItems].reverse();
-    if (!lastItem || _.isNil(count)) {
-      return;
-    }
-    if (lastItem.index >= count - 1) {
-      onEndReached?.();
-    }
-  }, [count, virtualItems, onEndReached]);
-
-  const updateIndex = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const offset = rowVirtualizer.scrollOffset ?? 0;
-    const cache = rowVirtualizer.measurementsCache;
-
-    let bestIndex = -1;
-    let bestDistance = Infinity;
-
-    for (let i = 0; i < cache.length; i++) {
-      const item = cache[i];
-      if (_.isNil(item)) {
-        continue;
-      }
-      const start = item.start;
-      const distance = Math.abs(offset - start);
-
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex = i;
-      } else {
-        // Since cache is sorted by `start`, once distance grows
-        // beyond the minimum we've seen, it will only increase.
-        break;
-      }
-    }
-
-    if (bestIndex > -1 && bestIndex !== activeIndex) {
-      onIndexChange(bestIndex);
-    }
-  }, [rowVirtualizer.measurementsCache, activeIndex, onIndexChange]);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el || !focused) return;
-
-    let frame = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        updateIndex();
-      });
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, [updateIndex, focused]);
-
-  const [snap, setSnap] = useState(true);
-
-  const timerRef = useRef<number>(-1);
-  useKeyboardShortcut(
-    useCallback(
-      (e) => {
-        if (!focused || e.metaKey) return;
-        switch (e.key) {
-          case "ArrowLeft":
-          case "a":
-          case "j":
-            window.clearTimeout(timerRef.current);
-            e.preventDefault();
-            e.stopPropagation();
-            setSnap(false);
-            scrollBy(-itemWidth, {
-              behavior: "auto",
-              align: "start",
-            });
-            updateIndex();
-            timerRef.current = window.setTimeout(() => {
-              setSnap(true);
-            }, 50);
-            break;
-          case "d":
-          case "k":
-          case "ArrowRight":
-            window.clearTimeout(timerRef.current);
-            e.preventDefault();
-            e.stopPropagation();
-            setSnap(false);
-            scrollBy(itemWidth, {
-              behavior: "auto",
-              align: "start",
-            });
-            updateIndex();
-            timerRef.current = window.setTimeout(() => {
-              setSnap(true);
-            }, 50);
-            break;
-          default:
-            break;
-        }
-      },
-      [itemWidth, scrollBy, updateIndex, focused],
-    ),
-  );
-
-  return (
-    <div
-      ref={scrollRef}
-      className={cn(
-        "overflow-x-scroll overflow-y-hidden hide-scrollbars h-full w-full relative",
-        snap && "snap-x snap-mandatory",
-        className,
-      )}
-    >
-      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        const item = data?.[virtualItem.index];
-        return item ? (
-          <div
-            key={virtualItem.key}
-            data-index={virtualItem.index}
-            ref={rowVirtualizer.measureElement}
-            style={{
-              width: itemWidth,
-              minWidth: itemWidth,
-              maxWidth: itemWidth,
-              position: "absolute",
-              inset: 0,
-              transform: `translateX(${virtualItem.start}px)`,
-            }}
-            className="relative snap-start snap-always"
-          >
-            {renderItem?.({
-              item,
-              index: virtualItem.index,
-            })}
-          </div>
-        ) : null;
-      })}
-    </div>
-  );
-}
-
 const Post = memo(
   ({
     apId,
-    paddingT,
-    paddingB,
+    paddingTop,
+    paddingBottom,
     onZoom,
-    disabled,
+    active,
   }: {
     apId: string;
-    paddingT: number;
-    paddingB: number;
+    paddingTop: number;
+    paddingBottom: number;
     onZoom: (scale: number) => void;
-    disabled?: boolean;
+    active: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
+
     const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
     const postView = usePostsStore(
       (s) => s.posts[getCachePrefixer()(apId)]?.data,
@@ -317,20 +124,41 @@ const Post = memo(
     const blurImg = blurNsfw ? postView?.nsfw : false;
 
     const embed = postView ? getPostEmbed(postView) : null;
-    const img = embed?.fullResThumbnail ?? embed?.thumbnail;
+    const img = embed?.thumbnail;
+
+    const [ar, setAr] = useState(1);
+
+    const zoom = usePanZoom(
+      {
+        container: ref.current,
+        active,
+        onZoom,
+        imageAspectRatio: ar,
+        paddingTop: paddingTop,
+        paddingBottom: paddingBottom,
+      },
+      [embed?.fullResThumbnail, img],
+    );
 
     return img ? (
-      <ResponsiveImage
-        img={img}
-        fallbackImg={embed?.thumbnail}
-        onZoom={onZoom}
-        paddingT={paddingT}
-        paddingB={paddingB}
-        className="border-x border-background -mx-px"
-        disabled={disabled}
-        blurNsfw={blurImg}
-        altText={postView?.altText}
-      />
+      <div className="h-full w-full relative">
+        <div
+          ref={ref}
+          className={cn("h-full w-full", zoom === 1 && "cursor-default!")}
+        >
+          <ProgressiveImage
+            lowSrc={img}
+            highSrc={embed?.fullResThumbnail}
+            style={{ top: paddingTop, bottom: paddingBottom }}
+            className={cn(
+              "absolute inset-x-0 bg-transparent overflow-visible",
+              blurImg && "blur-3xl",
+            )}
+            imgClassName="object-contain"
+            onAspectRatio={(ratio) => setAr(ratio)}
+          />
+        </div>
+      </div>
     ) : (
       <NoImage className="absolute top-1/2 left-1/2 h-40 w-40 -translate-1/2 text-white" />
     );
@@ -372,20 +200,24 @@ function useLightboxPostFeedData({
     enabled: missingPost,
   });
 
-  const data = useMemo(() => {
+  const [data, dataKey] = useMemo(() => {
     if (missingPost && initPostQuery.isPending) {
-      return [];
+      return [[], Math.random()] as const;
     }
 
     if (missingPost) {
-      return [...(initPostApId ? [initPostApId] : []), ...posts];
+      return [
+        [...(initPostApId ? [initPostApId] : []), ...posts],
+        Math.random(),
+      ] as const;
     }
 
-    return posts;
+    return [posts, Math.random()] as const;
   }, [missingPost, initPostApId, initPostQuery.isPending, posts]);
 
   return {
     data,
+    dataKey,
     initPostQuery,
     postsQuery,
   };
@@ -414,7 +246,6 @@ export default function LightBoxPostFeed() {
   const decodedApId = encodedApId ? decodeApId(encodedApId) : null;
   const initPostApId = useRef(decodedApId).current ?? undefined;
 
-  const [hideNav, setHideNav] = useState(false);
   const media = useMedia();
   const navbar = useNavbarHeight();
   const tabbar = useTabbarHeight();
@@ -428,7 +259,7 @@ export default function LightBoxPostFeed() {
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
-  const { data, initPostQuery, postsQuery } = useLightboxPostFeedData({
+  const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostFeedData({
     communityName,
     listingType,
     activePostApId: decodedApId,
@@ -498,6 +329,8 @@ export default function LightBoxPostFeed() {
     ),
   );
 
+  const swiperRef = useRef<SwiperType>(null);
+
   const onIndexChange = useCallback(
     (newIndex: number) => {
       const newApId = data[newIndex];
@@ -509,6 +342,50 @@ export default function LightBoxPostFeed() {
   );
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);
+  const [hideNav, setHideNav] = useState(false);
+  const onZoom = useCallback((scale: number) => {
+    setHideNav(scale > 1);
+    try {
+      if (scale > 1) {
+        swiperRef.current?.disable();
+      } else {
+        swiperRef.current?.enable();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  useKeyboardShortcut(
+    useCallback(
+      (e) => {
+        if (!isActive || e.metaKey) return;
+        switch (e.key) {
+          case "ArrowLeft":
+          case "a":
+          case "j":
+            e.preventDefault();
+            e.stopPropagation();
+            swiperRef.current?.enable();
+            swiperRef.current?.slidePrev(0);
+            break;
+          case "d":
+          case "k":
+          case "ArrowRight":
+            e.preventDefault();
+            e.stopPropagation();
+            swiperRef.current?.enable();
+            swiperRef.current?.slideNext(0);
+            break;
+          default:
+            break;
+        }
+      },
+      [isActive],
+    ),
+  );
+
+  const ref = useRef<SwiperRef>(null);
 
   return (
     <IonPage className="dark">
@@ -521,7 +398,7 @@ export default function LightBoxPostFeed() {
               : "var(--shad-background)",
             "--ion-toolbar-border-color": "var(--shad-border)",
           }}
-          className={cn("dark", hideNav && "opacity-0")}
+          className={cn("dark transition-opacity", hideNav && "opacity-0")}
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
@@ -547,26 +424,47 @@ export default function LightBoxPostFeed() {
           onClose={() => setKeyboardHelpModal(false)}
         />
 
-        <HorizontalVirtualizer
-          key={isPending ? "pending" : "loaded"}
-          onIndexChange={onIndexChange}
-          activeIndex={activeIndex}
-          data={data}
-          renderItem={(item) => (
-            <Post
-              apId={item.item}
-              paddingT={navbar.height + navbar.inset}
-              paddingB={bottomBarHeight}
-              onZoom={(scale) => setHideNav(scale > 1.05)}
-              disabled={item.index !== activeIndex}
-            />
-          )}
-          onEndReached={() => {
-            if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) {
-              postsQuery.fetchNextPage();
-            }
-          }}
-        />
+        <PanzoomProvider>
+          <Swiper
+            ref={ref}
+            key={dataKey}
+            mousewheel={{
+              enabled: true,
+              forceToAxis: true,
+            }}
+            keyboard={false}
+            allowTouchMove={!hideNav && !media.md}
+            onSwiper={(s) => (swiperRef.current = s)}
+            initialSlide={activeIndex}
+            onSlideChange={(s) => onIndexChange(s.activeIndex)}
+            modules={[Virtual, Mousewheel]}
+            virtual
+            slidesPerView={1}
+            className="h-full"
+            onReachEnd={() => {
+              if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) {
+                postsQuery.fetchNextPage();
+              }
+            }}
+          >
+            {data.map((item, i) => (
+              <SwiperSlide
+                key={i}
+                virtualIndex={i}
+                className="relative !h-auto"
+              >
+                <Post
+                  key={item}
+                  apId={item}
+                  paddingTop={navbar.height + navbar.inset}
+                  paddingBottom={bottomBarHeight}
+                  active={i === activeIndex}
+                  onZoom={onZoom}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </PanzoomProvider>
 
         {data.length === 0 && isPending && (
           <Spinner className="absolute top-1/2 left-1/2 text-4xl -translate-1/2 text-white animate-spin" />
@@ -574,8 +472,9 @@ export default function LightBoxPostFeed() {
 
         <div
           className={cn(
-            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark",
-            hideNav && "opacity-0",
+            "border-t-[.5px] z-10 absolute bottom-0 inset-x-0 dark transition-opacity",
+            hideNav &&
+              "opacity-0 hover:opacity-100 hover:bg-background/75 hover:backdrop-blur-xl",
             !isActive && "hidden",
           )}
           style={{
@@ -588,7 +487,12 @@ export default function LightBoxPostFeed() {
         >
           <ContentGutters className="h-full">
             <div className="flex flex-row items-center gap-3">
-              {postApId && <PostShareButton postApId={postApId} />}
+              {postApId && (
+                <PostShareButton
+                  postApId={postApId}
+                  className="bg-transparent"
+                />
+              )}
               <div className="flex-1" />
               <Button
                 variant="ghost"
@@ -605,7 +509,12 @@ export default function LightBoxPostFeed() {
                 <BiHelpCircle />
               </Button>
               <div className="flex-1" />
-              {postApId && <PostCommentsButton postApId={postApId} />}
+              {postApId && (
+                <PostCommentsButton
+                  postApId={postApId}
+                  className="bg-transparent"
+                />
+              )}
               {postApId && <PostVoting key={postApId} apId={postApId} />}
             </div>
           </ContentGutters>

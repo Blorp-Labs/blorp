@@ -3323,6 +3323,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@panzoom/panzoom@npm:4.6.1":
+  version: 4.6.1
+  resolution: "@panzoom/panzoom@npm:4.6.1"
+  checksum: 10c0/57ef3611849e0957cf83855a8764ac5c218c5936699c79cbd7d87371c58eea0b82138f97b557f34c3ac20a05cf432379954cef2578b896164d5d3825c5946b5f
+  languageName: node
+  linkType: hard
+
+"@panzoom/panzoom@patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch":
+  version: 4.6.1
+  resolution: "@panzoom/panzoom@patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch::version=4.6.1&hash=9a55e4"
+  checksum: 10c0/cc350ba1dc04103534e6d9d0f5fa43c7eccd3ae66f50d2d174d8921ffeafc058dfd135c2dc42b8b17f7cae9d8f445e290fa69596b75561c20d2f1981eec99d25
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -7579,6 +7593,7 @@ __metadata:
     "@ionic/react": "npm:8.5.7"
     "@ionic/react-router": "npm:^8.5.7"
     "@number-flow/react": "npm:^0.5.10"
+    "@panzoom/panzoom": "patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch"
     "@playwright/test": "npm:^1.57.0"
     "@radix-ui/react-avatar": "npm:^1.1.10"
     "@radix-ui/react-checkbox": "npm:^1.3.3"
@@ -7701,10 +7716,10 @@ __metadata:
     react-router: "npm:^5.3.4"
     react-router-dom: "npm:^5.3.4"
     react-textarea-autosize: "npm:^8.5.9"
-    react-zoom-pan-pinch: "npm:^3.7.0"
     remove-focus-outline: "npm:^1.2.1"
     sonner: "npm:^2.0.3"
     storybook: "npm:^9.0.12"
+    swiper: "npm:^12.0.3"
     tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.1.11"
     terser: "npm:^5.39.0"
@@ -14235,16 +14250,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-zoom-pan-pinch@npm:^3.7.0":
-  version: 3.7.0
-  resolution: "react-zoom-pan-pinch@npm:3.7.0"
-  peerDependencies:
-    react: "*"
-    react-dom: "*"
-  checksum: 10c0/96889849800a953128fe7f9e42bed0d5cbc48d03024995b136f5e972146236688efb24d7381d8e6f09598f5512b4897d2420f62d828a665fdf24b745b7d55911
-  languageName: node
-  linkType: hard
-
 "react@npm:19.2.0":
   version: 19.2.0
   resolution: "react@npm:19.2.0"
@@ -15677,6 +15682,13 @@ __metadata:
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
   checksum: 10c0/6c4032340701a9950865f7ae8ef38578d8d7053f5e10518076e6554a9381fa91bd9c6850193695c141f32b21f979c985db07265a758867bac95de05f7d8aeb39
+  languageName: node
+  linkType: hard
+
+"swiper@npm:^12.0.3":
+  version: 12.0.3
+  resolution: "swiper@npm:12.0.3"
+  checksum: 10c0/a854531791ba45cb0f6086904a99878fd207b42024820df68fbf64e01c20d542438c023ec4765b223f4dbffabf6858d311ec749bdca4ea4b4a7b74150a010162
   languageName: node
   linkType: hard
 
