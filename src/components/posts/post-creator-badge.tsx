@@ -6,11 +6,13 @@ import { useMedia } from "@/src/lib/hooks";
 export function PostCreatorBadge({
   isMod,
   isBanned,
+  isDeleted,
   isAdmin,
   isBot,
 }: {
   isMod: boolean | undefined;
   isBanned: boolean | undefined;
+  isDeleted: boolean | undefined;
   isAdmin: boolean | undefined;
   isBot: boolean | undefined;
 }) {
@@ -21,6 +23,14 @@ export function PostCreatorBadge({
     return (
       <Badge size="sm" variant="destructive">
         Banned
+      </Badge>
+    );
+  }
+
+  if (isDeleted) {
+    return (
+      <Badge size="sm" variant="destructive">
+        Deleted
       </Badge>
     );
   }

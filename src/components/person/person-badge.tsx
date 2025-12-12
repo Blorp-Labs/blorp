@@ -11,16 +11,16 @@ export function PersonBadge({ person }: { person?: Schemas.Person }) {
   }
 
   if (person.isBanned) {
-    return (
-      <Badge size="sm" variant="destructive">
-        Banned
-      </Badge>
-    );
+    return <Badge variant="destructive">Banned</Badge>;
+  }
+
+  if (person.deleted) {
+    return <Badge variant="destructive">Deleted</Badge>;
   }
 
   if (isAdmin) {
     return (
-      <Badge size="sm" variant="brand">
+      <Badge variant="brand">
         <ShieldCheckmark />
         ADMIN
       </Badge>
@@ -29,7 +29,7 @@ export function PersonBadge({ person }: { person?: Schemas.Person }) {
 
   if (person.isBot) {
     return (
-      <Badge size="sm" variant="brand-secondary">
+      <Badge variant="brand-secondary">
         <Robot />
         Bot
       </Badge>

@@ -15,7 +15,7 @@ export function AggregateBadges({
   const entries = Object.entries(aggregates);
   const isEmpty = entries.findIndex(([_key, val]) => _.isNumber(val)) < 0;
 
-  if (isEmpty) {
+  if (isEmpty && !children) {
     return null;
   }
 

@@ -369,6 +369,7 @@ export function PostByline({
               isMod={isMod}
               isAdmin={isAdmin}
               isBanned={post.isBannedFromCommunity || creator?.isBanned}
+              isDeleted={creator?.deleted}
               isBot={creator?.isBot}
             />
             {creator && (
