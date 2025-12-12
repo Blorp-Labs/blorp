@@ -8,6 +8,7 @@ export {
   IoPerson as Person,
   IoSend as Send,
   IoCheckmarkDoneSharp as DoubleCheck,
+  IoWarning as Warning,
 } from "react-icons/io5";
 export {
   LuScrollText as ScrollTextOutline,
@@ -21,6 +22,7 @@ export {
   FaChevronLeft as ChevronLeft,
   FaRobot as Robot,
   FaLock as Lock,
+  FaCheck as Check,
 } from "react-icons/fa6";
 export { PiShareFat as Share } from "react-icons/pi";
 export { CgSearch as Search, CgSpinner as Spinner } from "react-icons/cg";
@@ -30,3 +32,4 @@ export {
   ImCheckboxChecked as CheckboxChecked,
   ImCheckboxUnchecked as CheckboxUnchecked,
 } from "react-icons/im";
+export { TbMessageReportFilled as Report } from "react-icons/tb";

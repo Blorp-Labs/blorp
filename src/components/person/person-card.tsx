@@ -24,7 +24,7 @@ export function PersonCard({
   account,
 }: {
   actorId: string;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   className?: string;
   disableLink?: boolean;
   disableHover?: boolean;
@@ -45,7 +45,13 @@ export function PersonCard({
 
   const content = (
     <>
-      <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
+      <Avatar
+        className={cn(
+          "h-9 w-9",
+          size === "sm" && "h-8 w-8",
+          size === "xs" && "h-6 w-6",
+        )}
+      >
         <AvatarImage src={p?.avatar ?? undefined} className="object-cover" />
         <AvatarFallback>{p?.slug?.substring(0, 1)}</AvatarFallback>
       </Avatar>
@@ -87,6 +93,7 @@ export function PersonCard({
         className={cn(
           "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
           size === "sm" && "h-9",
+          size === "xs" && "h-6",
           className,
         )}
       >
@@ -111,6 +118,7 @@ export function PersonCard({
       className={cn(
         "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
         size === "sm" && "h-9",
+        size === "xs" && "h-6",
         className,
       )}
     >
@@ -132,7 +140,7 @@ function PersonSkeletonCard({
   size = "md",
 }: {
   className?: string;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }) {
   return (
     <div
@@ -142,7 +150,11 @@ function PersonSkeletonCard({
       )}
     >
       <Skeleton
-        className={cn("h-9 w-9 rounded-full", size === "sm" && "h-8 w-8")}
+        className={cn(
+          "h-9 w-9 rounded-full",
+          size === "sm" && "h-8 w-8",
+          size === "xs" && "h-6 w-6",
+        )}
       />
 
       <div className="flex flex-col gap-1">

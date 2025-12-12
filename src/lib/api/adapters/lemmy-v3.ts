@@ -1153,6 +1153,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       options,
     );
     const postReports = post_reports.map((report) => ({
+      resolved: report.post_report.resolved,
       createdAt: report.post_report.published,
       id: report.post_report.id,
       postId: report.post.id,

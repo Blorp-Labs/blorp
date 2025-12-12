@@ -284,6 +284,7 @@ export const postReportSchema = z.object({
   resolverId: z.number().nullable(),
   resolverApId: z.string().nullable(),
   resolverSlug: z.string().nullable(),
+  resolved: z.boolean(),
   originalPostName: z.string(),
   originalPostBody: z.string().nullable(),
   originalPostUrl: z.string().nullable(),
