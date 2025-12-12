@@ -273,6 +273,23 @@ export const linkMetadataSchema = z.object({
   title: z.string().nullish(),
 });
 
+export const postReportSchema = z.object({
+  createdAt: z.string(),
+  id: z.number(),
+  postId: z.number(),
+  postApId: z.string(),
+  creatorId: z.number(),
+  creatorApId: z.string(),
+  creatorSlug: z.string(),
+  resolverId: z.number().nullable(),
+  resolverApId: z.string().nullable(),
+  resolverSlug: z.string().nullable(),
+  originalPostName: z.string(),
+  originalPostBody: z.string().nullable(),
+  originalPostUrl: z.string().nullable(),
+  reason: z.string(),
+});
+
 export const slugSchema = z.custom<`${string}@${string}`>((val) => {
   return /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val);
 });
@@ -326,6 +343,8 @@ export namespace Schemas {
 
   export type Flair = z.infer<typeof flairSchema>;
   export type LinkMetadata = z.infer<typeof linkMetadataSchema>;
+
+  export type PostReport = z.infer<typeof postReportSchema>;
 }
 
 export namespace Forms {
@@ -367,6 +386,10 @@ export namespace Forms {
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
     savedOnly?: boolean;
+  };
+
+  export type GetPostReports = {
+    pageCursor?: string;
   };
 
   export type MarkPostRead = {
@@ -783,6 +806,18 @@ export abstract class ApiBlueprint<C> {
   abstract saveUserSettings(form: Forms.SaveUserSettings): Promise<void>;
 
   abstract removeUserAvatar(): Promise<void>;
+
+  abstract getPostReports(
+    form: Forms.GetPostReports,
+    options?: RequestOptions,
+  ): Promise<
+    Paginated & {
+      postReports: Schemas.PostReport[];
+      users: Schemas.Person[];
+      posts: Schemas.Post[];
+      communities: Schemas.Community[];
+    }
+  >;
 
   abstract resolveObject(
     form: Forms.ResolveObject,
