@@ -1612,6 +1612,45 @@ export function usePersonMentions(form: Forms.GetMentions) {
   });
 }
 
+export function usePostReportsQuery(form: Forms.GetPostReports) {
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const { api, queryKeyPrefix } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const cachePosts = usePostsStore((s) => s.cachePosts);
+  return useThrottledInfiniteQuery({
+    queryKey: [...queryKeyPrefix, "getPostReports", form],
+    queryFn: async ({ pageParam, signal }) => {
+      const { posts, users, communities, postReports, nextCursor } = await (
+        await api
+      ).getPostReports(
+        {
+          ...form,
+          pageCursor: pageParam,
+        },
+        {
+          signal,
+        },
+      );
+      cacheProfiles(getCachePrefixer(), users);
+      cacheCommunities(
+        getCachePrefixer(),
+        communities.map((communityView) => ({ communityView })),
+      );
+      cachePosts(getCachePrefixer(), posts);
+      return {
+        postReports,
+        nextCursor,
+      };
+    },
+    initialPageParam: INIT_PAGE_TOKEN,
+    getNextPageParam: (prev) => prev.nextCursor,
+    enabled: isLoggedIn,
+    refetchOnWindowFocus: "always",
+  });
+}
+
 function useNotificationCountQueryKey() {
   const { apis } = useApiClients();
   const queryKey = [

@@ -535,20 +535,22 @@ function LargePostCard({
   );
 }
 
-function SmallPostCard({
+export function SmallPostCard({
   post,
   detailView,
   featuredContext,
   pinned,
   modApIds,
   apId,
+  className,
 }: {
   post?: Schemas.Post;
   detailView?: boolean;
-  featuredContext: PostProps["featuredContext"];
-  pinned: boolean;
+  featuredContext?: PostProps["featuredContext"];
+  pinned?: boolean;
   modApIds?: string[];
   apId: string;
+  className?: string;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -600,6 +602,7 @@ function SmallPostCard({
       className={cn(
         "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
+        className,
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
@@ -655,7 +658,7 @@ function SmallPostCard({
       >
         <PostByline
           post={post}
-          pinned={pinned}
+          pinned={pinned ?? false}
           showCreator={
             (featuredContext !== "user" &&
               featuredContext !== "search" &&

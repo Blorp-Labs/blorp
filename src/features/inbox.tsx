@@ -9,6 +9,7 @@ import {
   useMarkReplyRead,
   useNotificationCount,
   usePersonMentions,
+  usePostReportsQuery,
   useReplies,
 } from "@/src/lib/api/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
@@ -21,11 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { useConfirmationAlert, useMedia } from "../lib/hooks";
 import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
-import {
-  ActionMenu,
-  EllipsisActionMenu,
-} from "../components/adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
 import { DoubleCheck, Message, Person } from "../components/icons";
@@ -46,6 +43,9 @@ import {
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommentActions } from "../components/comments/post-comment";
 import { Page } from "../components/page";
+import { usePostFromStore } from "../stores/posts";
+import { SmallPostCard } from "../components/posts/post";
+import { getAccountSite, useAuth } from "../stores/auth";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -54,7 +54,8 @@ type Item =
   | {
       id: string;
       mention: Schemas.Mention;
-    };
+    }
+  | { id: string; postReport: Schemas.PostReport };
 
 function Placeholder() {
   return (
@@ -66,6 +67,65 @@ function Placeholder() {
           <Skeleton className="h-5.5" />
           <Skeleton className="h-6 w-12 self-end" />
           <Skeleton className="h-px mt-0.5" />
+        </div>
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
+
+function PostReport({
+  postReport,
+  noBorder = false,
+}: {
+  postReport: Schemas.PostReport;
+  noBorder?: boolean;
+}) {
+  const postView = usePostFromStore(postReport.postApId);
+  const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
+  return (
+    <ContentGutters noMobilePadding>
+      <div
+        className={cn(
+          "flex-1",
+          !noBorder && "border-b",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        <div className="flex mt-2.5 mb-1 gap-3 items-start">
+          <Link
+            to="/inbox/u/:userId"
+            params={{ userId: encodeApId(postReport.creatorApId) }}
+          >
+            <BadgeIcon
+              icon={<Person className="h-full w-full text-muted-foreground" />}
+            >
+              <PersonAvatar actorId={postReport.creatorApId} size="sm" />
+            </BadgeIcon>
+          </Link>
+          <div
+            className={cn(
+              "flex-1 text-sm leading-6 min-w-0 gap-1 flex flex-col",
+              !postReport.resolverId && "border-l-3 border-l-brand pl-2",
+            )}
+          >
+            {postView && (
+              <div className="border px-2 rounded-lg">
+                <SmallPostCard
+                  post={{
+                    ...postView,
+                    title: postReport.originalPostName,
+                    url: postReport.originalPostUrl,
+                    body: postReport.originalPostBody,
+                  }}
+                  modApIds={me ? [me.apId] : undefined}
+                  apId={postReport.postApId}
+                  className="border-b-0"
+                />
+              </div>
+            )}
+            <p>{postReport.reason}</p>
+          </div>
         </div>
       </div>
       <></>
@@ -95,11 +155,16 @@ function Mention({
         )}
       >
         <div className="flex mt-2.5 mb-1 gap-3 items-start">
-          <BadgeIcon
-            icon={<Person className="h-full w-full text-muted-foreground" />}
+          <Link
+            to="/inbox/u/:userId"
+            params={{ userId: encodeApId(mention.creatorApId) }}
           >
-            <PersonAvatar actorId={mention.creatorApId} size="sm" />
-          </BadgeIcon>
+            <BadgeIcon
+              icon={<Person className="h-full w-full text-muted-foreground" />}
+            >
+              <PersonAvatar actorId={mention.creatorApId} size="sm" />
+            </BadgeIcon>
+          </Link>
           <div
             className={cn(
               "flex-1 text-sm leading-6 block min-w-0",
@@ -187,11 +252,16 @@ function Reply({
         )}
       >
         <div className="flex mt-2.5 mb-1 gap-3 items-start">
-          <BadgeIcon
-            icon={<Message className="h-full w-full text-muted-foreground" />}
+          <Link
+            to="/inbox/u/:userId"
+            params={{ userId: encodeApId(replyView.creatorApId) }}
           >
-            <PersonAvatar actorId={replyView.creatorApId} size="sm" />
-          </BadgeIcon>
+            <BadgeIcon
+              icon={<Message className="h-full w-full text-muted-foreground" />}
+            >
+              <PersonAvatar actorId={replyView.creatorApId} size="sm" />
+            </BadgeIcon>
+          </Link>
           <div
             className={cn(
               "flex-1 text-sm leading-6 block min-w-0",
@@ -273,6 +343,7 @@ export default function Inbox() {
   const mentions = usePersonMentions({
     unreadOnly: type === "unread",
   });
+  const postReports = usePostReportsQuery({});
   const isRefetching = replies.isRefetching || mentions.isRefetching;
   const isPending = replies.isPending || mentions.isPending;
 
@@ -288,6 +359,7 @@ export default function Inbox() {
     const data: (
       | { id: string; reply: Schemas.Reply }
       | { id: string; mention: Schemas.Mention }
+      | { id: string; postReport: Schemas.PostReport }
     )[] = [];
 
     if (
@@ -318,14 +390,35 @@ export default function Inbox() {
       );
     }
 
+    if (postReports.data && type === "post-reports") {
+      data.push(
+        ...(postReports.data.pages
+          .flatMap((p) => p.postReports)
+          .map((postReport) => ({
+            postReport,
+            id: `m${postReport.id}`,
+          })) ?? []),
+      );
+    }
+
     data.sort((a, b) => {
-      const aPublished = "reply" in a ? a.reply.createdAt : a.mention.createdAt;
-      const bPublished = "reply" in b ? b.reply.createdAt : b.mention.createdAt;
+      const aPublished =
+        "reply" in a
+          ? a.reply.createdAt
+          : "mention" in a
+            ? a.mention.createdAt
+            : a.postReport.createdAt;
+      const bPublished =
+        "reply" in b
+          ? b.reply.createdAt
+          : "mention" in b
+            ? b.mention.createdAt
+            : b.postReport.createdAt;
       return bPublished.localeCompare(aPublished);
     });
 
     return _.uniqBy(data, "id");
-  }, [type, replies.data, mentions.data]);
+  }, [type, replies.data, mentions.data, postReports]);
 
   const confirmationAlrt = useConfirmationAlert();
 
@@ -353,7 +446,7 @@ export default function Inbox() {
           </ToolbarButtons>
         </IonToolbar>
         {media.maxMd && (
-          <IonToolbar>
+          <IonToolbar className="overflow-x-auto">
             <ToolbarButtons side="left">
               <ToggleGroup
                 type="single"
@@ -369,6 +462,12 @@ export default function Inbox() {
                 <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
                 <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
                 <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
+                <ToggleGroupItem value="post-reports">
+                  Post Reports
+                </ToggleGroupItem>
+                <ToggleGroupItem value="comment-reports">
+                  Comment Reports
+                </ToggleGroupItem>
               </ToggleGroup>
             </ToolbarButtons>
           </IonToolbar>
@@ -394,6 +493,12 @@ export default function Inbox() {
                   <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
                   <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
                   <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
+                  <ToggleGroupItem value="post-reports">
+                    Post Reports
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="comment-reports">
+                    Comment Reports
+                  </ToggleGroupItem>
                 </ToggleGroup>
                 <Tooltip>
                   <TooltipTrigger>
@@ -427,6 +532,11 @@ export default function Inbox() {
                   <></>
                 </ContentGutters>
               );
+            }
+
+            if ("postReport" in item) {
+              const postReport = item.postReport;
+              return <PostReport postReport={postReport} />;
             }
 
             if ("reply" in item) {
