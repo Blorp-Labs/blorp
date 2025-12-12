@@ -372,7 +372,7 @@ export function PostByline({
               isDeleted={creator?.deleted}
               isBot={creator?.isBot}
             />
-            {creator && (
+            {creator && !creator.deleted && !creator.isBanned && (
               <CakeDay
                 date={creator.createdAt}
                 className="text-brand"
