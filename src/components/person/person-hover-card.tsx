@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { LuCakeSlice } from "react-icons/lu";
 import { Skeleton } from "../ui/skeleton";
-
 import {
   HoverCard,
   HoverCardContent,
@@ -11,11 +10,11 @@ import {
 } from "@/src/components/ui/hover-card";
 import { useState } from "react";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { useAuth, useIsAdmin } from "@/src/stores/auth";
+import { useAuth } from "@/src/stores/auth";
 import { AggregateBadges } from "../aggregates";
 import { DateTime } from "../datetime";
-import { Badge } from "../ui/badge";
 import { PersonBadge } from "./person-badge";
+import { HoverCardContentProps } from "@radix-ui/react-hover-card";
 
 dayjs.extend(localizedFormat);
 
@@ -23,10 +22,12 @@ export function PersonHoverCard({
   actorId,
   children,
   asChild,
+  align = "start",
 }: {
   actorId: string;
   children: React.ReactNode;
   asChild?: boolean;
+  align?: HoverCardContentProps["align"];
 }) {
   const [enabled, setEnabled] = useState(false);
 
@@ -41,7 +42,7 @@ export function PersonHoverCard({
     <HoverCard onOpenChange={() => setEnabled(true)}>
       <HoverCardTrigger asChild={asChild}>{children}</HoverCardTrigger>
       <HoverCardContent
-        align="start"
+        align={align}
         className="flex flex-col gap-3 py-4 flex-1 w-72"
       >
         <div className="font-bold text-sm h-5">

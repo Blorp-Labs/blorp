@@ -16,7 +16,7 @@ export function PersonAvatar({
 }: {
   actorId: string;
   person?: Schemas.Person;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   className?: string;
 }) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -24,7 +24,14 @@ export function PersonAvatar({
     actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
   );
   return (
-    <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8", className)}>
+    <Avatar
+      className={cn(
+        "h-9 w-9",
+        size === "sm" && "h-8 w-8",
+        size === "xs" && "h-6 w-6",
+        className,
+      )}
+    >
       <AvatarImage
         src={(override ? override.avatar : personView?.avatar) ?? undefined}
         className="object-cover"

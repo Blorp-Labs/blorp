@@ -25,7 +25,14 @@ import { Skeleton } from "../components/ui/skeleton";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
-import { DoubleCheck, Message, Person } from "../components/icons";
+import {
+  DoubleCheck,
+  Message,
+  Person,
+  Report,
+  CheckboxChecked,
+  CheckboxUnchecked,
+} from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -46,6 +53,8 @@ import { Page } from "../components/page";
 import { usePostFromStore } from "../stores/posts";
 import { SmallPostCard } from "../components/posts/post";
 import { getAccountSite, useAuth } from "../stores/auth";
+import { Checkbox } from "../components/ui/checkbox";
+import { PersonHoverCard } from "../components/person/person-hover-card";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item =
@@ -98,15 +107,15 @@ function PostReport({
             params={{ userId: encodeApId(postReport.creatorApId) }}
           >
             <BadgeIcon
-              icon={<Person className="h-full w-full text-muted-foreground" />}
+              icon={<Report className="h-full w-full text-muted-foreground" />}
             >
               <PersonAvatar actorId={postReport.creatorApId} size="sm" />
             </BadgeIcon>
           </Link>
           <div
             className={cn(
-              "flex-1 text-sm leading-6 min-w-0 gap-1 flex flex-col",
-              !postReport.resolverId && "border-l-3 border-l-brand pl-2",
+              "flex-1 text-sm leading-6 min-w-0 gap-2 flex flex-col",
+              !postReport.resolved && "border-l-3 border-l-brand pl-2",
             )}
           >
             {postView && (
@@ -125,6 +134,22 @@ function PostReport({
               </div>
             )}
             <p>{postReport.reason}</p>
+            <div className="flex flex-row items-center gap-2">
+              <RelativeTime time={postReport.createdAt} />
+              <div className="flex-1" />
+              {postReport.resolverApId && (
+                <>
+                  <i>{postReport.resolved ? "Resolved" : "Unresolved"} by</i>
+                  <PersonHoverCard
+                    actorId={postReport.resolverApId}
+                    align="center"
+                  >
+                    <PersonAvatar actorId={postReport.resolverApId} size="xs" />
+                  </PersonHoverCard>
+                </>
+              )}
+              <Checkbox checked={postReport.resolved} />
+            </div>
           </div>
         </div>
       </div>
@@ -446,7 +471,7 @@ export default function Inbox() {
           </ToolbarButtons>
         </IonToolbar>
         {media.maxMd && (
-          <IonToolbar className="overflow-x-auto">
+          <IonToolbar className="overflow-x-auto!">
             <ToolbarButtons side="left">
               <ToggleGroup
                 type="single"
