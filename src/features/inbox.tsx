@@ -11,6 +11,7 @@ import {
   usePersonMentions,
   usePostReportsQuery,
   useReplies,
+  useResolvePostReportMutation,
 } from "@/src/lib/api/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
@@ -25,14 +26,7 @@ import { Skeleton } from "../components/ui/skeleton";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeIcon } from "../components/badge-count";
-import {
-  DoubleCheck,
-  Message,
-  Person,
-  Report,
-  CheckboxChecked,
-  CheckboxUnchecked,
-} from "../components/icons";
+import { DoubleCheck, Message, Person, Report } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -92,6 +86,7 @@ function PostReport({
 }) {
   const postView = usePostFromStore(postReport.postApId);
   const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
+  const resolvePostReport = useResolvePostReportMutation();
   return (
     <ContentGutters noMobilePadding>
       <div
@@ -119,7 +114,7 @@ function PostReport({
             )}
           >
             {postView && (
-              <div className="border px-2 rounded-lg">
+              <div className="border md:px-2 rounded-lg">
                 <SmallPostCard
                   post={{
                     ...postView,
@@ -148,7 +143,15 @@ function PostReport({
                   </PersonHoverCard>
                 </>
               )}
-              <Checkbox checked={postReport.resolved} />
+              <Checkbox
+                checked={postReport.resolved}
+                onCheckedChange={(checked) =>
+                  resolvePostReport.mutate({
+                    reportId: postReport.id,
+                    resolved: checked === true,
+                  })
+                }
+              />
             </div>
           </div>
         </div>
@@ -368,7 +371,7 @@ export default function Inbox() {
   const mentions = usePersonMentions({
     unreadOnly: type === "unread",
   });
-  const postReports = usePostReportsQuery({});
+  const postReports = usePostReportsQuery();
 
   // This updates in the background,
   // but calling it here ensures the
@@ -482,8 +485,8 @@ export default function Inbox() {
           </ToolbarButtons>
         </IonToolbar>
         {media.maxMd && (
-          <IonToolbar className="overflow-x-auto!">
-            <ToolbarButtons side="left">
+          <IonToolbar>
+            <ToolbarButtons side="left" className="overflow-x-auto!">
               <ToggleGroup
                 type="single"
                 variant="outline"

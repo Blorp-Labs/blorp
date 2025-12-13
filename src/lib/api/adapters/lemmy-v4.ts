@@ -1235,6 +1235,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return {} as any;
   }
 
+  async resolvePostReport(form: Forms.ResolvePostReport) {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async resolveObject(form: Forms.ResolveObject, options?: RequestOptions) {
     const { resolve } = await this.client.resolveObject(
       {
