@@ -25,7 +25,7 @@ import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { PersonAvatar } from "../components/person/person-avatar";
-import { BadgeIcon } from "../components/badge-count";
+import { BadgeCount, BadgeIcon } from "../components/badge-count";
 import { DoubleCheck, Message, Person, Report } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
@@ -459,6 +459,16 @@ export default function Inbox() {
     };
   }, [type, replies.data, mentions.data, postReports]);
 
+  const hasUnreadReply = !!replies.data?.pages
+    .flatMap((pages) => pages.replies)
+    .find((r) => !r.read);
+  const hasUnreadMention = !!mentions.data?.pages
+    .flatMap((pages) => pages.mentions)
+    .find((r) => !r.read);
+  const hasUnresolvedPostReport = !!postReports.data?.pages
+    .flatMap((pages) => pages.postReports)
+    .find((r) => !r.resolved);
+
   const confirmationAlrt = useConfirmationAlert();
 
   return (
@@ -499,11 +509,17 @@ export default function Inbox() {
               >
                 <ToggleGroupItem value="all">All</ToggleGroupItem>
                 <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
-                <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
-                <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
-                <ToggleGroupItem value="post-reports">
-                  Post Reports
-                </ToggleGroupItem>
+                <BadgeCount showBadge={hasUnreadReply}>
+                  <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
+                </BadgeCount>
+                <BadgeCount showBadge={hasUnreadMention}>
+                  <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
+                </BadgeCount>
+                <BadgeCount showBadge={hasUnresolvedPostReport}>
+                  <ToggleGroupItem value="post-reports">
+                    Post Reports
+                  </ToggleGroupItem>
+                </BadgeCount>
                 <ToggleGroupItem value="comment-reports">
                   Comment Reports
                 </ToggleGroupItem>
@@ -530,11 +546,17 @@ export default function Inbox() {
                 >
                   <ToggleGroupItem value="all">All</ToggleGroupItem>
                   <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
-                  <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
-                  <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
-                  <ToggleGroupItem value="post-reports">
-                    Post Reports
-                  </ToggleGroupItem>
+                  <BadgeCount showBadge={hasUnreadReply}>
+                    <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
+                  </BadgeCount>
+                  <BadgeCount showBadge={hasUnreadMention}>
+                    <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
+                  </BadgeCount>
+                  <BadgeCount showBadge={hasUnresolvedPostReport}>
+                    <ToggleGroupItem value="post-reports">
+                      Post Reports
+                    </ToggleGroupItem>
+                  </BadgeCount>
                   <ToggleGroupItem value="comment-reports">
                     Comment Reports
                   </ToggleGroupItem>

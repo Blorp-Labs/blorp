@@ -1176,6 +1176,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     const { post_reports } = await this.client.listPostReports(
       {
         page: cursor,
+        unresolved_only: form.unresolvedOnly,
         limit: this.limit,
       },
       options,
