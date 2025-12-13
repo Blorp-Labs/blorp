@@ -1532,9 +1532,9 @@ export function useMarkPriavteMessageRead() {
   });
 }
 
-function useRepliesQueryKey(form: Forms.GetReplies) {
+function useRepliesQueryKey(form?: Forms.GetReplies) {
   const { queryKeyPrefix } = useApiClients();
-  return [...queryKeyPrefix, "getReplies", form];
+  return _.compact([...queryKeyPrefix, "getReplies", form]);
 }
 
 export function useReplies(form: Forms.GetReplies) {
@@ -1659,37 +1659,25 @@ export function usePostReportsQuery() {
 export function useResolvePostReportMutation() {
   const { api } = useApiClients();
   const queryClient = useQueryClient();
-  const queryKey = usePostReportsKey();
+  const postReportsQueryKey = usePostReportsKey();
+  const notificationCountQueryKey = useNotificationCountQueryKey();
 
   return useMutation({
     mutationFn: async (form: Forms.ResolvePostReport) =>
       (await api).resolvePostReport(form),
-    onSuccess: (data, form) => {
-      const reports =
-        queryClient.getQueryData<
-          InfiniteData<{ postReports: Schemas.PostReport[] }, unknown>
-        >(queryKey);
-      if (reports) {
-        const patched = produce(reports, (prev) => {
-          for (const page of prev.pages) {
-            let i = 0;
-            for (const postReport of page.postReports) {
-              if (postReport.id === form.reportId) {
-                page.postReports[i] = data;
-                break;
-              }
-              i++;
-            }
-          }
-        });
-        queryClient.setQueryData(queryKey, patched);
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationCountQueryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: postReportsQueryKey,
+      });
     },
     onMutate: (form) => {
       const reports =
         queryClient.getQueryData<
           InfiniteData<{ postReports: Schemas.PostReport[] }, unknown>
-        >(queryKey);
+        >(postReportsQueryKey);
       if (reports) {
         const patched = produce(reports, (prev) => {
           for (const page of prev.pages) {
@@ -1701,7 +1689,7 @@ export function useResolvePostReportMutation() {
             }
           }
         });
-        queryClient.setQueryData(queryKey, patched);
+        queryClient.setQueryData(postReportsQueryKey, patched);
       }
     },
     onError: (err, { resolved }) => {
@@ -1743,7 +1731,7 @@ export function useNotificationCount() {
 
           const a = await api;
 
-          const [mentions, replies] = await Promise.allSettled([
+          const [mentions, replies, postReports] = await Promise.allSettled([
             a.getMentions(
               {
                 unreadOnly: true,
@@ -1756,6 +1744,12 @@ export function useNotificationCount() {
               },
               { signal },
             ),
+            a.getPostReports(
+              {
+                unresolvedOnly: true,
+              },
+              { signal },
+            ),
           ]);
           const mentionCount =
             mentions.status === "fulfilled"
@@ -1763,7 +1757,11 @@ export function useNotificationCount() {
               : 0;
           const repliesCount =
             replies.status === "fulfilled" ? replies.value.replies.length : 0;
-          return mentionCount + repliesCount;
+          const postReportsCount =
+            postReports.status === "fulfilled"
+              ? postReports.value.postReports.length
+              : 0;
+          return mentionCount + repliesCount + postReportsCount;
         }),
       );
 
@@ -1956,6 +1954,7 @@ export function useMarkAllRead() {
   const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
   const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const repliesQueryKey = useRepliesQueryKey();
 
   return useMutation({
     mutationFn: async () => (await api).markAllRead(),
@@ -1998,7 +1997,7 @@ export function useMarkAllRead() {
         queryKey: notificationCountQueryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: [...queryKeyPrefix, "getReplies"],
+        queryKey: repliesQueryKey,
       });
     },
     onError: (err) => {
@@ -2012,12 +2011,13 @@ export function useMarkAllRead() {
 }
 
 export function useMarkReplyRead() {
-  const { api, queryKeyPrefix } = useApiClients();
+  const { api } = useApiClients();
   const queryClient = useQueryClient();
 
   const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
   const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const repliesQueryKey = useRepliesQueryKey();
 
   return useMutation({
     mutationFn: async (form: Forms.MarkReplyRead) =>
@@ -2046,7 +2046,7 @@ export function useMarkReplyRead() {
         queryKey: notificationCountQueryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: [...queryKeyPrefix, "getReplies"],
+        queryKey: repliesQueryKey,
       });
     },
     onError: (err, { read }) => {

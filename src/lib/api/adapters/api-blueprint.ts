@@ -391,6 +391,7 @@ export namespace Forms {
 
   export type GetPostReports = {
     pageCursor?: string;
+    unresolvedOnly?: boolean;
   };
 
   export type ResolvePostReport = {
