@@ -369,8 +369,6 @@ export default function Inbox() {
     unreadOnly: type === "unread",
   });
   const postReports = usePostReportsQuery({});
-  const isRefetching = replies.isRefetching || mentions.isRefetching;
-  const isPending = replies.isPending || mentions.isPending;
 
   // This updates in the background,
   // but calling it here ensures the
@@ -380,12 +378,15 @@ export default function Inbox() {
 
   const markAllRead = useMarkAllRead();
 
-  const data = useMemo(() => {
+  const { data, isPending, isRefetching } = useMemo(() => {
     const data: (
       | { id: string; reply: Schemas.Reply }
       | { id: string; mention: Schemas.Mention }
       | { id: string; postReport: Schemas.PostReport }
     )[] = [];
+
+    let isPending = false;
+    let isRefetching = false;
 
     if (
       replies.data &&
@@ -399,6 +400,8 @@ export default function Inbox() {
             id: `r${reply.id}`,
           })),
       );
+      isPending = isPending || replies.isPending;
+      isRefetching = isRefetching || replies.isRefetching;
     }
 
     if (
@@ -413,6 +416,8 @@ export default function Inbox() {
             id: `m${mention.id}`,
           })) ?? []),
       );
+      isPending = isPending || mentions.isPending;
+      isRefetching = isRefetching || mentions.isRefetching;
     }
 
     if (postReports.data && type === "post-reports") {
@@ -424,6 +429,8 @@ export default function Inbox() {
             id: `m${postReport.id}`,
           })) ?? []),
       );
+      isPending = isPending || postReports.isPending;
+      isRefetching = isRefetching || postReports.isRefetching;
     }
 
     data.sort((a, b) => {
@@ -442,7 +449,11 @@ export default function Inbox() {
       return bPublished.localeCompare(aPublished);
     });
 
-    return _.uniqBy(data, "id");
+    return {
+      data: _.uniqBy(data, "id"),
+      isPending,
+      isRefetching,
+    };
   }, [type, replies.data, mentions.data, postReports]);
 
   const confirmationAlrt = useConfirmationAlert();
