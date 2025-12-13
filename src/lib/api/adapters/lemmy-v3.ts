@@ -323,6 +323,34 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
   };
 }
 
+function convertPostReport(report: lemmyV3.PostReportView) {
+  return {
+    resolved: report.post_report.resolved,
+    createdAt: report.post_report.published,
+    id: report.post_report.id,
+    postId: report.post.id,
+    postApId: report.post.ap_id,
+    creatorId: report.creator.id,
+    creatorApId: report.creator.actor_id,
+    creatorSlug: createSlug({
+      apId: report.creator.actor_id,
+      name: report.creator.name,
+    }).slug,
+    resolverId: report.resolver?.id ?? null,
+    resolverApId: report.resolver?.actor_id ?? null,
+    resolverSlug: report.resolver
+      ? createSlug({
+          apId: report.resolver.actor_id,
+          name: report.resolver.name,
+        }).slug
+      : null,
+    originalPostName: report.post_report.original_post_name,
+    originalPostBody: report.post_report.original_post_body ?? null,
+    originalPostUrl: report.post_report.original_post_url ?? null,
+    reason: report.post_report.reason,
+  };
+}
+
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
 
@@ -1141,6 +1169,49 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     await this.client.saveUserSettings({
       avatar: "",
     });
+  }
+
+  async getPostReports(form: Forms.GetPostReports, options: RequestOptions) {
+    const cursor = cursorToInt(form.pageCursor) ?? 1;
+    const { post_reports } = await this.client.listPostReports(
+      {
+        page: cursor,
+        unresolved_only: form.unresolvedOnly,
+        limit: this.limit,
+      },
+      options,
+    );
+    const postReports = post_reports.map(convertPostReport);
+    const hasMore = post_reports.length <= this.limit;
+    return {
+      postReports,
+      users: _.compact(
+        post_reports.flatMap(({ creator, resolver }) => [
+          convertPerson({ person: creator }),
+          resolver ? convertPerson({ person: resolver }) : null,
+        ]),
+      ),
+      posts: post_reports.flatMap((report) =>
+        convertPost({
+          ...report,
+          creator: report.post_creator,
+          // If you're the mod you're probably not banned
+          banned_from_community: false,
+        }),
+      ),
+      communities: post_reports.map((report) =>
+        convertCommunity({ community: report.community }),
+      ),
+      nextCursor: hasMore ? String(cursor) : null,
+    };
+  }
+
+  async resolvePostReport(form: Forms.ResolvePostReport) {
+    const { post_report_view } = await this.client.resolvePostReport({
+      report_id: form.reportId,
+      resolved: form.resolved,
+    });
+    return convertPostReport(post_report_view);
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {

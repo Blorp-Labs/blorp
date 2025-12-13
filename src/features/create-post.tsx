@@ -14,7 +14,7 @@ import {
   useCommunity,
   useCreatePost,
   useEditPost,
-  useLinkMetadat,
+  useLinkMetadata,
   useListCommunities,
   useSearch,
   useUploadImage,
@@ -311,7 +311,7 @@ export function CreatePost() {
   const createPost = useCreatePost();
   const editPost = useEditPost(draftId);
 
-  const linkMetadata = useLinkMetadat();
+  const linkMetadata = useLinkMetadata();
 
   const parseUrl = (url: string) => {
     if (url) {

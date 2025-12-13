@@ -1532,9 +1532,9 @@ export function useMarkPriavteMessageRead() {
   });
 }
 
-function useRepliesQueryKey(form: Forms.GetReplies) {
+function useRepliesQueryKey(form?: Forms.GetReplies) {
   const { queryKeyPrefix } = useApiClients();
-  return [...queryKeyPrefix, "getReplies", form];
+  return _.compact([...queryKeyPrefix, "getReplies", form]);
 }
 
 export function useReplies(form: Forms.GetReplies) {
@@ -1612,6 +1612,99 @@ export function usePersonMentions(form: Forms.GetMentions) {
   });
 }
 
+function usePostReportsKey() {
+  const { queryKeyPrefix } = useApiClients();
+  return [...queryKeyPrefix, "getPostReports"];
+}
+
+export function usePostReportsQuery() {
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const { api } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const cachePosts = usePostsStore((s) => s.cachePosts);
+  const queryKey = usePostReportsKey();
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam, signal }) => {
+      const { posts, users, communities, postReports, nextCursor } = await (
+        await api
+      ).getPostReports(
+        {
+          pageCursor: pageParam,
+        },
+        {
+          signal,
+        },
+      );
+      cacheProfiles(getCachePrefixer(), users);
+      cacheCommunities(
+        getCachePrefixer(),
+        communities.map((communityView) => ({ communityView })),
+      );
+      cachePosts(getCachePrefixer(), posts);
+      return {
+        postReports,
+        nextCursor,
+      };
+    },
+    initialPageParam: INIT_PAGE_TOKEN,
+    getNextPageParam: (prev) => prev.nextCursor,
+    enabled: isLoggedIn,
+    refetchOnWindowFocus: "always",
+  });
+}
+
+export function useResolvePostReportMutation() {
+  const { api } = useApiClients();
+  const queryClient = useQueryClient();
+  const postReportsQueryKey = usePostReportsKey();
+  const notificationCountQueryKey = useNotificationCountQueryKey();
+
+  return useMutation({
+    mutationFn: async (form: Forms.ResolvePostReport) =>
+      (await api).resolvePostReport(form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationCountQueryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: postReportsQueryKey,
+      });
+    },
+    onMutate: (form) => {
+      const reports =
+        queryClient.getQueryData<
+          InfiniteData<{ postReports: Schemas.PostReport[] }, unknown>
+        >(postReportsQueryKey);
+      if (reports) {
+        const patched = produce(reports, (prev) => {
+          for (const page of prev.pages) {
+            for (const postReport of page.postReports) {
+              if (postReport.id === form.reportId) {
+                postReport.resolved = form.resolved;
+                break;
+              }
+            }
+          }
+        });
+        queryClient.setQueryData(postReportsQueryKey, patched);
+      }
+    },
+    onError: (err, { resolved }) => {
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(
+          `Failed to mark post report ${resolved ? "resolved" : "unresolved"}`,
+        );
+      }
+      console.error(err);
+    },
+  });
+}
+
 function useNotificationCountQueryKey() {
   const { apis } = useApiClients();
   const queryKey = [
@@ -1638,7 +1731,7 @@ export function useNotificationCount() {
 
           const a = await api;
 
-          const [mentions, replies] = await Promise.allSettled([
+          const [mentions, replies, postReports] = await Promise.allSettled([
             a.getMentions(
               {
                 unreadOnly: true,
@@ -1651,6 +1744,12 @@ export function useNotificationCount() {
               },
               { signal },
             ),
+            a.getPostReports(
+              {
+                unresolvedOnly: true,
+              },
+              { signal },
+            ),
           ]);
           const mentionCount =
             mentions.status === "fulfilled"
@@ -1658,7 +1757,11 @@ export function useNotificationCount() {
               : 0;
           const repliesCount =
             replies.status === "fulfilled" ? replies.value.replies.length : 0;
-          return mentionCount + repliesCount;
+          const postReportsCount =
+            postReports.status === "fulfilled"
+              ? postReports.value.postReports.length
+              : 0;
+          return mentionCount + repliesCount + postReportsCount;
         }),
       );
 
@@ -1851,6 +1954,7 @@ export function useMarkAllRead() {
   const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
   const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const repliesQueryKey = useRepliesQueryKey();
 
   return useMutation({
     mutationFn: async () => (await api).markAllRead(),
@@ -1893,7 +1997,7 @@ export function useMarkAllRead() {
         queryKey: notificationCountQueryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: [...queryKeyPrefix, "getReplies"],
+        queryKey: repliesQueryKey,
       });
     },
     onError: (err) => {
@@ -1907,12 +2011,13 @@ export function useMarkAllRead() {
 }
 
 export function useMarkReplyRead() {
-  const { api, queryKeyPrefix } = useApiClients();
+  const { api } = useApiClients();
   const queryClient = useQueryClient();
 
   const readRepliesKey = useRepliesQueryKey({ unreadOnly: false });
   const unreadRepliesKey = useRepliesQueryKey({ unreadOnly: true });
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const repliesQueryKey = useRepliesQueryKey();
 
   return useMutation({
     mutationFn: async (form: Forms.MarkReplyRead) =>
@@ -1941,7 +2046,7 @@ export function useMarkReplyRead() {
         queryKey: notificationCountQueryKey,
       });
       queryClient.invalidateQueries({
-        queryKey: [...queryKeyPrefix, "getReplies"],
+        queryKey: repliesQueryKey,
       });
     },
     onError: (err, { read }) => {
@@ -2346,7 +2451,7 @@ export function useResolveObject(query: string | undefined) {
   });
 }
 
-export function useLinkMetadat() {
+export function useLinkMetadata() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async (form: Forms.GetLinkMetadata) => {
