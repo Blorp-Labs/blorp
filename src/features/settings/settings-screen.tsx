@@ -3,7 +3,7 @@ import {
   POST_CARD_STYLE_OPTIONS,
   useSettingsStore,
 } from "@/src/stores/settings";
-import { useLogout } from "@/src/lib/api/index";
+import { useLogout, useSoftware } from "@/src/lib/api/index";
 import { Account, parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { useRequireAuth } from "@/src/components/auth-context";
 import { ContentGutters } from "@/src/components/gutters";
@@ -66,6 +66,7 @@ function AccountCard({
   const logoutZustand = useAuth((s) => s.logout);
   const { person, instance } = parseAccountInfo(account);
   const isLoggedIn = Boolean(account.jwt);
+  const software = useSoftware(account);
 
   return (
     <Section title={`ACCOUNT ${accountIndex + 1}`}>
@@ -104,12 +105,10 @@ function AccountCard({
                 danger: true,
                 confirmText: "Continue",
               }).then(() => {
-                if (Capacitor.isNativePlatform()) {
-                  Browser.open({
-                    url: `${account.instance}settings`,
-                  });
-                } else {
-                  openUrl(`${account.instance}settings`);
+                if (software === "lemmy") {
+                  openUrl(`${account.instance}/settings`);
+                } else if (software === "piefed") {
+                  openUrl(`${person?.apId}/profile`);
                 }
               });
             }}

@@ -109,9 +109,9 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
   }, [accounts, accountIndex, config?.instance, config?.jwt]);
 }
 
-export function useSoftware() {
+export function useSoftware(account?: Account) {
   const [software, setSoftware] = useState<"lemmy" | "piefed">();
-  const { api } = useApiClients();
+  const { api } = useApiClients(account);
 
   useEffect(() => {
     let canceled = false;
