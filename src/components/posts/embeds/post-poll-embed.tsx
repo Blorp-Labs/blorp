@@ -38,7 +38,9 @@ function PollItem({
           style={{ width: `${pct * 100}%` }}
         />
       )}
-      <span className="relative">{text}</span>
+      <span className={cn("relative", mostVotedOption && "text-white")}>
+        {text}
+      </span>
       {showResults && <span className="relative">{formatPercent(pct)}%</span>}
     </>
   );
