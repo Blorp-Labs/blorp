@@ -2022,6 +2022,11 @@ export class PieFedApi implements ApiBlueprint<null> {
     return {} as any;
   }
 
+  async resolvePostReport(form: Forms.ResolvePostReport) {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
     try {
       const json = await this.get(

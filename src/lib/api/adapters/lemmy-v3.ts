@@ -323,6 +323,34 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
   };
 }
 
+function convertPostReport(report: lemmyV3.PostReportView) {
+  return {
+    resolved: report.post_report.resolved,
+    createdAt: report.post_report.published,
+    id: report.post_report.id,
+    postId: report.post.id,
+    postApId: report.post.ap_id,
+    creatorId: report.creator.id,
+    creatorApId: report.creator.actor_id,
+    creatorSlug: createSlug({
+      apId: report.creator.actor_id,
+      name: report.creator.name,
+    }).slug,
+    resolverId: report.resolver?.id ?? null,
+    resolverApId: report.resolver?.actor_id ?? null,
+    resolverSlug: report.resolver
+      ? createSlug({
+          apId: report.resolver.actor_id,
+          name: report.resolver.name,
+        }).slug
+      : null,
+    originalPostName: report.post_report.original_post_name,
+    originalPostBody: report.post_report.original_post_body ?? null,
+    originalPostUrl: report.post_report.original_post_url ?? null,
+    reason: report.post_report.reason,
+  };
+}
+
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
 
@@ -1152,31 +1180,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       },
       options,
     );
-    const postReports = post_reports.map((report) => ({
-      resolved: report.post_report.resolved,
-      createdAt: report.post_report.published,
-      id: report.post_report.id,
-      postId: report.post.id,
-      postApId: report.post.ap_id,
-      creatorId: report.creator.id,
-      creatorApId: report.creator.actor_id,
-      creatorSlug: createSlug({
-        apId: report.creator.actor_id,
-        name: report.creator.name,
-      }).slug,
-      resolverId: report.resolver?.id ?? null,
-      resolverApId: report.resolver?.actor_id ?? null,
-      resolverSlug: report.resolver
-        ? createSlug({
-            apId: report.resolver.actor_id,
-            name: report.resolver.name,
-          }).slug
-        : null,
-      originalPostName: report.post_report.original_post_name,
-      originalPostBody: report.post_report.original_post_body ?? null,
-      originalPostUrl: report.post_report.original_post_url ?? null,
-      reason: report.post_report.reason,
-    }));
+    const postReports = post_reports.map(convertPostReport);
     const hasMore = post_reports.length <= this.limit;
     return {
       postReports,
@@ -1199,6 +1203,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       ),
       nextCursor: hasMore ? String(cursor) : null,
     };
+  }
+
+  async resolvePostReport(form: Forms.ResolvePostReport) {
+    const { post_report_view } = await this.client.resolvePostReport({
+      report_id: form.reportId,
+      resolved: form.resolved,
+    });
+    return convertPostReport(post_report_view);
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {

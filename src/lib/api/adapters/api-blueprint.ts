@@ -393,6 +393,11 @@ export namespace Forms {
     pageCursor?: string;
   };
 
+  export type ResolvePostReport = {
+    reportId: number;
+    resolved: boolean;
+  };
+
   export type MarkPostRead = {
     postIds: number[];
     read: boolean;
@@ -819,6 +824,10 @@ export abstract class ApiBlueprint<C> {
       communities: Schemas.Community[];
     }
   >;
+
+  abstract resolvePostReport(
+    form: Forms.ResolvePostReport,
+  ): Promise<Schemas.PostReport>;
 
   abstract resolveObject(
     form: Forms.ResolveObject,

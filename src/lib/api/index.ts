@@ -1612,21 +1612,26 @@ export function usePersonMentions(form: Forms.GetMentions) {
   });
 }
 
-export function usePostReportsQuery(form: Forms.GetPostReports) {
+function usePostReportsKey() {
+  const { queryKeyPrefix } = useApiClients();
+  return [...queryKeyPrefix, "getPostReports"];
+}
+
+export function usePostReportsQuery() {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const { api, queryKeyPrefix } = useApiClients();
+  const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cachePosts = usePostsStore((s) => s.cachePosts);
+  const queryKey = usePostReportsKey();
   return useThrottledInfiniteQuery({
-    queryKey: [...queryKeyPrefix, "getPostReports", form],
+    queryKey,
     queryFn: async ({ pageParam, signal }) => {
       const { posts, users, communities, postReports, nextCursor } = await (
         await api
       ).getPostReports(
         {
-          ...form,
           pageCursor: pageParam,
         },
         {
@@ -1648,6 +1653,67 @@ export function usePostReportsQuery(form: Forms.GetPostReports) {
     getNextPageParam: (prev) => prev.nextCursor,
     enabled: isLoggedIn,
     refetchOnWindowFocus: "always",
+  });
+}
+
+export function useResolvePostReportMutation() {
+  const { api } = useApiClients();
+  const queryClient = useQueryClient();
+  const queryKey = usePostReportsKey();
+
+  return useMutation({
+    mutationFn: async (form: Forms.ResolvePostReport) =>
+      (await api).resolvePostReport(form),
+    onSuccess: (data, form) => {
+      const reports =
+        queryClient.getQueryData<
+          InfiniteData<{ postReports: Schemas.PostReport[] }, unknown>
+        >(queryKey);
+      if (reports) {
+        const patched = produce(reports, (prev) => {
+          for (const page of prev.pages) {
+            let i = 0;
+            for (const postReport of page.postReports) {
+              if (postReport.id === form.reportId) {
+                page.postReports[i] = data;
+                break;
+              }
+              i++;
+            }
+          }
+        });
+        queryClient.setQueryData(queryKey, patched);
+      }
+    },
+    onMutate: (form) => {
+      const reports =
+        queryClient.getQueryData<
+          InfiniteData<{ postReports: Schemas.PostReport[] }, unknown>
+        >(queryKey);
+      if (reports) {
+        const patched = produce(reports, (prev) => {
+          for (const page of prev.pages) {
+            for (const postReport of page.postReports) {
+              if (postReport.id === form.reportId) {
+                postReport.resolved = form.resolved;
+                break;
+              }
+            }
+          }
+        });
+        queryClient.setQueryData(queryKey, patched);
+      }
+    },
+    onError: (err, { resolved }) => {
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(
+          `Failed to mark post report ${resolved ? "resolved" : "unresolved"}`,
+        );
+      }
+      console.error(err);
+    },
   });
 }
 
@@ -2385,7 +2451,7 @@ export function useResolveObject(query: string | undefined) {
   });
 }
 
-export function useLinkMetadat() {
+export function useLinkMetadata() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async (form: Forms.GetLinkMetadata) => {
