@@ -63,20 +63,21 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
   const accounts = useAuth((s) => s.accounts);
 
   return useMemo(() => {
-    const apis = accounts.map((a) => {
-      const { instance, jwt } = a;
+    const apis = accounts.map((account) => {
+      const { instance, jwt } = account;
       const api = apiClient({ instance, jwt });
 
       const queryKeyPrefix: unknown[] = [
         `instance-${instance}`,
-        `auth-${a.jwt ? "t" : "f"}`,
-        `uuid-${a.uuid}`,
+        `auth-${account.jwt ? "t" : "f"}`,
+        `uuid-${account.uuid}`,
       ];
 
       return {
         api,
         queryKeyPrefix,
-        isLoggedIn: !!a.jwt,
+        isLoggedIn: !!account.jwt,
+        account,
       };
     });
 
