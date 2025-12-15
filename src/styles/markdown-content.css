@@ -3,7 +3,7 @@
 */
 
 .markdown-content {
-  @apply space-y-4 text-sm overflow-x-hidden;
+  @apply space-y-4 text-sm overflow-x-hidden select-text;
 }
 
 .markdown-content h1 {

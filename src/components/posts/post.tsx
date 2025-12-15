@@ -205,7 +205,7 @@ export function StickyPostHeader({
         postView.thumbnailUrl && "max-md:pr-0",
       )}
     >
-      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden">
+      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden select-text">
         {postView.deleted
           ? "deleted"
           : postView.removed
@@ -374,7 +374,7 @@ function LargePostCard({
       >
         <span
           className={twMerge(
-            "text-xl font-medium",
+            "text-xl font-medium select-text",
             !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
@@ -696,7 +696,7 @@ function SmallPostCard({
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3",
+              "line-clamp-2 md:line-clamp-3 select-text",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -788,7 +788,7 @@ function ExtraSmallPostCard({
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3",
+              "line-clamp-2 md:line-clamp-3 select-text",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
