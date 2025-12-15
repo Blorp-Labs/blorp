@@ -46,6 +46,10 @@
   @apply ps-1.5 py-2 border-s-4 font-light text-sm italic relative rounded-se-md rounded-ee-md;
 }
 
+.markdown-content blockquote > p:not(:last-child) {
+  @apply mb-4;
+}
+
 .markdown-content blockquote p,
 .markdown-content blockquote h1,
 .markdown-content blockquote h2,
