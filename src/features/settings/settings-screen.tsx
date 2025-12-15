@@ -100,8 +100,7 @@ function AccountCard({
             onClick={() => {
               getConfirmation({
                 header: `Delete Account?`,
-                message:
-                  "You’ll be taken to Lemmy’s website to confirm deletion. Continue?",
+                message: `You’ll be taken to ${_.capitalize(software)}’s website to confirm deletion. Continue?`,
                 danger: true,
                 confirmText: "Continue",
               }).then(() => {
