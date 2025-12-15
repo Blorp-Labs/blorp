@@ -386,7 +386,12 @@ function TipTapEditor({
     // If there are any issues down the road, try
     // uncommenting the line below.
     // shouldRerenderOnTransaction: true,
-    autofocus: autoFocus,
+    autofocus: false,
+    onCreate({ editor }) {
+      if (autoFocus) {
+        editor.commands.focus("end");
+      }
+    },
     content,
     extensions: [
       Placeholder.configure({

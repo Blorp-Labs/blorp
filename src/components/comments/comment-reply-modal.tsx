@@ -15,6 +15,7 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
+import { getSelectedAsMarkdownQuote } from "@/src/lib/markdown";
 
 export function useCommentEditingState({
   parent,
@@ -68,7 +69,7 @@ export function InlineCommentReply({
     >
       <div className="flex-1 border rounded-xl shadow-xs focus-within:border-ring">
         <MarkdownEditor
-          content={state.content}
+          content={state.content || getSelectedAsMarkdownQuote()}
           onChange={(val) => state.setContent(val)}
           autoFocus={autoFocus}
           placeholder="Add a comment..."
