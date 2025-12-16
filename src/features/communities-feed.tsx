@@ -56,13 +56,18 @@ function useNumCols() {
 function CommunitiesSwiper({
   communities,
   onReachEnd,
+  hasMore,
 }: {
   communities: string[];
   onReachEnd: () => void;
+  hasMore: boolean;
 }) {
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
   const grouped = useMemo(() => _.chunk(communities, 3), [communities]);
+  const [index, setIndex] = useState(0);
+  const hasPrev = index > 0;
+  const hasNext = hasMore || index < grouped.length - numCols;
   return (
     <div>
       <Swiper
@@ -70,9 +75,13 @@ function CommunitiesSwiper({
         modules={[Mousewheel, Virtual]}
         spaceBetween={10}
         slidesPerView={numCols}
-        mousewheel
+        mousewheel={{
+          enabled: true,
+          forceToAxis: true,
+        }}
         virtual
         onReachEnd={onReachEnd}
+        onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
       >
         {grouped?.map((group) => (
           <SwiperSlide key={group[0]} className="flex! flex-col gap-3">
@@ -89,6 +98,7 @@ function CommunitiesSwiper({
           size="icon"
           variant="outline"
           onClick={() => ref.current?.swiper.slideTo(0)}
+          disabled={!hasPrev}
         >
           <ChevronLeft />
         </Button>
@@ -100,6 +110,7 @@ function CommunitiesSwiper({
               ref.current.swiper.activeIndex - numCols,
             )
           }
+          disabled={!hasPrev}
         >
           <ChevronLeft />
         </Button>
@@ -112,6 +123,7 @@ function CommunitiesSwiper({
               ref.current.swiper.activeIndex + numCols,
             )
           }
+          disabled={!hasNext}
         >
           <ChevronRight />
         </Button>
@@ -119,6 +131,7 @@ function CommunitiesSwiper({
           size="icon"
           variant="outline"
           onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
+          disabled={!hasNext}
         >
           <ChevronRight />
         </Button>
@@ -203,13 +216,18 @@ function FeedCard({
 function FeedSwiper({
   feeds,
   onReachEnd,
+  hasMore,
 }: {
   feeds: Schemas.Feed[];
   onReachEnd: () => void;
+  hasMore: boolean;
 }) {
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
   const grouped = useMemo(() => _.chunk(feeds, 3), [feeds]);
+  const [index, setIndex] = useState(0);
+  const hasPrev = index > 0;
+  const hasNext = hasMore || index < grouped.length - numCols;
   return (
     <div>
       <Swiper
@@ -217,9 +235,13 @@ function FeedSwiper({
         modules={[Mousewheel, Virtual]}
         spaceBetween={10}
         slidesPerView={numCols}
-        mousewheel
+        mousewheel={{
+          enabled: true,
+          forceToAxis: true,
+        }}
         virtual
         onReachEnd={onReachEnd}
+        onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
       >
         {grouped?.map((group) => (
           <SwiperSlide key={group[0]?.apId} className="flex! flex-col gap-3">
@@ -239,6 +261,7 @@ function FeedSwiper({
           size="icon"
           variant="outline"
           onClick={() => ref.current?.swiper.slideTo(0)}
+          disabled={!hasPrev}
         >
           <ChevronLeft />
         </Button>
@@ -250,6 +273,7 @@ function FeedSwiper({
               ref.current.swiper.activeIndex - numCols,
             )
           }
+          disabled={!hasPrev}
         >
           <ChevronLeft />
         </Button>
@@ -262,6 +286,7 @@ function FeedSwiper({
               ref.current.swiper.activeIndex + numCols,
             )
           }
+          disabled={!hasNext}
         >
           <ChevronRight />
         </Button>
@@ -269,6 +294,7 @@ function FeedSwiper({
           size="icon"
           variant="outline"
           onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
+          disabled={!hasNext}
         >
           <ChevronRight />
         </Button>
@@ -437,6 +463,7 @@ export default function Communities() {
                     communitiesQuery.fetchNextPage();
                   }
                 }}
+                hasMore={communitiesQuery.hasNextPage}
               />
             )}
 
@@ -449,6 +476,7 @@ export default function Communities() {
                     feeds.fetchNextPage();
                   }
                 }}
+                hasMore={feeds.hasNextPage}
               />
             )}
           </div>
