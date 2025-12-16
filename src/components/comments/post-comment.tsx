@@ -31,7 +31,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
-import { ActionMenu } from "../adaptable/action-menu";
+import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
@@ -63,7 +63,7 @@ import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
-import { Lock } from "../icons";
+import { Lock, personOutline } from "../icons";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -146,123 +146,109 @@ export function useCommentActions({
   }
 
   return [
-    ...(canMod
-      ? [
-          {
-            text: "Moderation",
-            actions: [
-              {
-                text: commentView.removed
-                  ? "Restore comment"
-                  : "Remove comment",
-                onClick: () => showCommentRemoveModal(commentView.path),
-              },
-              ...(software === "piefed"
-                ? [
-                    {
-                      text: locked ? "Unlock comment" : "Lock comment",
-                      onClick: () =>
-                        lockComment.mutate({
-                          path: commentView.path,
-                          commentId: commentView.id,
-                          locked: !locked,
-                        }),
-                    },
-                  ]
-                : []),
-            ],
+    {
+      hide: !canMod,
+      text: "Moderation",
+      actions: [
+        {
+          text: commentView.removed ? "Restore comment" : "Remove comment",
+          onClick: () => showCommentRemoveModal(commentView.path),
+        },
+        {
+          hide: software !== "piefed",
+          text: locked ? "Unlock comment" : "Lock comment",
+          onClick: () =>
+            lockComment.mutate({
+              path: commentView.path,
+              commentId: commentView.id,
+              locked: !locked,
+            }),
+        },
+      ],
+    },
+    {
+      icon: personOutline,
+      text: "Commenter",
+      hide: isMyComment,
+      actions: [
+        {
+          text: "Tag commenter",
+          onClick: async () => {
+            tagUser(commentView.creatorSlug, tag ?? undefined);
           },
-        ]
-      : []),
-    ...(!isMyComment
-      ? [
-          {
-            text: "Commenter",
-            actions: [
-              {
-                text: "Tag commenter",
-                onClick: async () => {
-                  tagUser(commentView.creatorSlug, tag ?? undefined);
-                },
-              },
-              {
-                text: "Message commenter",
-                onClick: () =>
-                  requireAuth().then(() =>
-                    router.push(
-                      resolveRoute("/messages/chat/:userId", {
-                        userId: encodeApId(commentView.creatorApId),
-                      }),
-                    ),
-                  ),
-              },
-              {
-                text: isCreatorBlocked
-                  ? "Unblock commenter"
-                  : "Block commenter",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const deferred = new Deferred();
-                    alrt({
-                      message: `${isCreatorBlocked ? "Unblock" : "Block"} ${commentView.creatorSlug}`,
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    blockPerson.mutate({
-                      personId: commentView.creatorId,
-                      block: !isCreatorBlocked,
-                    });
-                  } catch {}
-                },
-                danger: true,
-              },
-            ],
-          },
-        ]
-      : []),
-    ...(isMyComment && !commentView.deleted
-      ? [
-          {
-            text: "Edit",
-            onClick: () => {
-              loadCommentIntoEditor({
-                postApId: commentView.postApId,
-                queryKeyParentId: queryKeyParentId,
-                comment: commentView,
+        },
+        {
+          text: "Message commenter",
+          onClick: () =>
+            requireAuth().then(() =>
+              router.push(
+                resolveRoute("/messages/chat/:userId", {
+                  userId: encodeApId(commentView.creatorApId),
+                }),
+              ),
+            ),
+        },
+        {
+          text: isCreatorBlocked ? "Unblock commenter" : "Block commenter",
+          onClick: async () => {
+            try {
+              await requireAuth();
+              const deferred = new Deferred();
+              alrt({
+                message: `${isCreatorBlocked ? "Unblock" : "Block"} ${commentView.creatorSlug}`,
+                buttons: [
+                  {
+                    text: "Cancel",
+                    role: "cancel",
+                    handler: () => deferred.reject(),
+                  },
+                  {
+                    text: "OK",
+                    role: "confirm",
+                    handler: () => deferred.resolve(),
+                  },
+                ],
               });
-            },
-          } as const,
-        ]
-      : []),
-    ...(route
-      ? [
-          {
-            text: "Share",
-            actions: [
-              {
-                text: "Share link to comment",
-                onClick: () => shareRoute(route),
-              },
-              {
-                text: "Copy link to comment",
-                onClick: () => copyRouteToClipboard(route),
-              },
-            ],
+              await deferred.promise;
+              blockPerson.mutate({
+                personId: commentView.creatorId,
+                block: !isCreatorBlocked,
+              });
+            } catch {}
           },
-        ]
-      : []),
+          danger: true,
+        },
+      ],
+    },
+    {
+      hide: !isMyComment || commentView.deleted,
+      text: "Edit",
+      onClick: () => {
+        loadCommentIntoEditor({
+          postApId: commentView.postApId,
+          queryKeyParentId: queryKeyParentId,
+          comment: commentView,
+        });
+      },
+    },
+    {
+      hide: !route,
+      text: "Share",
+      actions: [
+        {
+          text: "Share link to comment",
+          onClick: () => {
+            if (route) shareRoute(route);
+          },
+        },
+        {
+          text: "Copy link to comment",
+          onClick: () => {
+            if (route) copyRouteToClipboard(route);
+          },
+        },
+      ],
+    },
     {
       text: saved ? "Unsave comment" : "Save comment",
       onClick: () =>
@@ -273,32 +259,26 @@ export function useCommentActions({
           });
         }),
     },
-    ...(isMyComment
-      ? [
-          {
-            text: commentView.deleted ? "Restore" : "Delete",
-            onClick: () => {
-              deleteComment.mutate({
-                id: commentView.id,
-                path: commentView.path,
-                deleted: !commentView.deleted,
-              });
-            },
-            danger: true,
-          } as const,
-        ]
-      : []),
-    ...(!canMod
-      ? [
-          {
-            text: "Report comment",
-            onClick: () =>
-              requireAuth().then(() => showReportModal(commentView.path)),
-            danger: true,
-          } as const,
-        ]
-      : []),
-  ];
+    {
+      hide: !isMyComment,
+      text: commentView.deleted ? "Restore" : "Delete",
+      onClick: () => {
+        deleteComment.mutate({
+          id: commentView.id,
+          path: commentView.path,
+          deleted: !commentView.deleted,
+        });
+      },
+      danger: true,
+    },
+    {
+      hide: !canMod,
+      text: "Report comment",
+      onClick: () =>
+        requireAuth().then(() => showReportModal(commentView.path)),
+      danger: true,
+    },
+  ] satisfies ActionMenuProps["actions"];
 }
 
 function Byline({

@@ -15,6 +15,12 @@ import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
 import { isErrorLike } from "./utils";
+import {
+  clipboardOutline,
+  downloadOutline,
+  imageOutline,
+  linkOutline,
+} from "ionicons/icons";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -289,12 +295,14 @@ export function useShareActions(
         ...(canShare
           ? [
               {
+                icon: linkOutline,
                 text: `Share link to ${label}`,
                 onClick: () => shareRoute(route),
               },
             ]
           : []),
         {
+          icon: clipboardOutline,
           text: `Copy link to ${label}`,
           onClick: () => copyRouteToClipboard(route),
         },
@@ -312,6 +320,7 @@ export function useImageShareActions({
     ...(imageSrc
       ? [
           {
+            icon: imageOutline,
             text: "Share image",
             onClick: () => shareImage(imageSrc, imageSrc),
           },
@@ -320,6 +329,7 @@ export function useImageShareActions({
     ...(imageSrc
       ? [
           {
+            icon: downloadOutline,
             text: "Download image",
             onClick: () => downloadImage(imageSrc, imageSrc),
           },

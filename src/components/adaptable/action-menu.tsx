@@ -1,4 +1,4 @@
-import { IonActionSheet } from "@ionic/react";
+import { IonActionSheet, IonIcon } from "@ionic/react";
 import { useId, useMemo, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
@@ -27,23 +27,29 @@ export interface ActionMenuProps<V = string>
   > {
   actions: (
     | {
+        icon?: string;
         text: string;
         value?: V;
         onClick: () => any;
         actions?: undefined;
         danger?: boolean;
+        hide?: boolean;
       }
     | {
+        icon?: string;
         text: string;
         value?: string;
         onClick?: undefined;
         actions: {
+          icon?: string;
           text: string;
           onClick: () => any;
           value?: V;
           danger?: boolean;
+          hide?: boolean;
         }[];
         danger?: undefined;
+        hide?: boolean;
       }
   )[];
   selectedValue?: V;
@@ -69,26 +75,31 @@ export function ActionMenu<V extends string>({
   const [subActionsTitle, setSubActionsTitle] = useState<string>();
   const [subActions, setSubActions] = useState<
     {
+      icon?: string;
       text: string;
       onClick: () => any;
       value?: string;
       danger?: boolean;
+      hide?: boolean;
     }[]
   >();
 
   const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
     useMemo(
       () => [
-        ...actions.map((a, index) => ({
-          text: a.text,
-          data: index,
-          cssClass: a.actions ? "detail" : undefined,
-          role: a.danger
-            ? "destructive"
-            : _.isString(a.value) && a.value === selectedValue
-              ? "selected"
-              : undefined,
-        })),
+        ...actions
+          .filter((a) => !a.hide)
+          .map((a, index) => ({
+            icon: a.icon,
+            text: a.text,
+            data: index,
+            cssClass: a.actions ? "detail" : undefined,
+            role: a.danger
+              ? "destructive"
+              : _.isString(a.value) && a.value === selectedValue
+                ? "selected"
+                : undefined,
+          })),
         ...(showCancel
           ? [
               {
@@ -107,15 +118,18 @@ export function ActionMenu<V extends string>({
     () =>
       subActions
         ? [
-            ...subActions.map((a, index) => ({
-              text: a.text,
-              data: index,
-              role: a.danger
-                ? "destructive"
-                : _.isString(a.value) && a.value === selectedValue
-                  ? "selected"
-                  : undefined,
-            })),
+            ...subActions
+              .filter((a) => !a.hide)
+              .map((a, index) => ({
+                icon: a.icon,
+                text: a.text,
+                data: index,
+                role: a.danger
+                  ? "destructive"
+                  : _.isString(a.value) && a.value === selectedValue
+                    ? "selected"
+                    : undefined,
+              })),
             ...(showCancel
               ? [
                   {
@@ -142,44 +156,53 @@ export function ActionMenu<V extends string>({
               <DropdownMenuSeparator />
             </>
           )}
-          {actions.map((a, index) =>
-            a.actions ? (
-              <DropdownMenuSub key={a.text + index}>
-                <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {a.actions.map((sa) => (
-                      <DropdownMenuItem
-                        key={sa.text + index}
-                        onClick={sa.onClick}
-                        className={cn(
-                          _.isString(a.value) &&
-                            sa.value === selectedValue &&
-                            "font-bold",
-                          sa.danger && "text-destructive!",
-                        )}
-                      >
-                        {sa.text}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            ) : (
-              <DropdownMenuItem
-                key={a.text + index}
-                onClick={a.onClick}
-                className={cn(
-                  _.isString(a.value) &&
-                    a.value === selectedValue &&
-                    "font-bold",
-                  a.danger && "text-destructive!",
-                )}
-              >
-                {a.text}
-              </DropdownMenuItem>
-            ),
-          )}
+          {actions
+            .filter((a) => !a.hide)
+            .map((a, index) =>
+              a.actions ? (
+                <DropdownMenuSub key={a.text + index}>
+                  <DropdownMenuSubTrigger className="flex gap-2">
+                    {a.icon && <IonIcon icon={a.icon} />}
+                    {a.text}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      {a.actions
+                        .filter((a) => !a.hide)
+                        .map((sa) => (
+                          <DropdownMenuItem
+                            key={sa.text + index}
+                            onClick={sa.onClick}
+                            className={cn(
+                              _.isString(a.value) &&
+                                sa.value === selectedValue &&
+                                "font-bold",
+                              sa.danger && "text-destructive!",
+                            )}
+                          >
+                            {sa.icon && <IonIcon icon={sa.icon} />}
+                            {sa.text}
+                          </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              ) : (
+                <DropdownMenuItem
+                  key={a.text + index}
+                  onClick={a.onClick}
+                  className={cn(
+                    _.isString(a.value) &&
+                      a.value === selectedValue &&
+                      "font-bold",
+                    a.danger && "text-destructive!",
+                  )}
+                >
+                  {a.icon && <IonIcon icon={a.icon} />}
+                  {a.text}
+                </DropdownMenuItem>
+              ),
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
     );

@@ -102,3 +102,7 @@ export function getPostEmbed(post: Schemas.Post) {
     embedUrl,
   };
 }
+
+export function canCrosspost(post: Schemas.Post) {
+  return !!post.url;
+}

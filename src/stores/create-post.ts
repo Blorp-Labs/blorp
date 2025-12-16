@@ -16,6 +16,7 @@ export type CommunityPartial = Pick<
 export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
   type: "text" | "media" | "link";
   createdAt: number;
+  sourceCommunitySlug?: string;
 }
 
 type CreatePostStore = {
@@ -62,6 +63,23 @@ export function postToDraft(
     createdAt: dayjs(post.createdAt).toDate().valueOf(),
     type: post.url ? "link" : post.thumbnailUrl ? "media" : "text",
     apId: post.apId,
+    thumbnailUrl: post.thumbnailUrl,
+    altText: post.altText,
+    url: post.url,
+    flairs: flairs ?? undefined,
+  };
+}
+
+export function postToCrosspostDraft(
+  post: Schemas.Post,
+  flairs?: Schemas.Flair[] | null,
+): Draft {
+  return {
+    title: post.title,
+    body: post.body ?? "",
+    sourceCommunitySlug: post.communitySlug,
+    createdAt: dayjs().toDate().valueOf(),
+    type: post.url ? "link" : post.thumbnailUrl ? "media" : "text",
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,

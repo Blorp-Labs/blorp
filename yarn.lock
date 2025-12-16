@@ -5043,6 +5043,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stencil/core@npm:^4.35.3":
+  version: 4.39.0
+  resolution: "@stencil/core@npm:4.39.0"
+  dependencies:
+    "@rollup/rollup-darwin-arm64": "npm:4.34.9"
+    "@rollup/rollup-darwin-x64": "npm:4.34.9"
+    "@rollup/rollup-linux-arm64-gnu": "npm:4.34.9"
+    "@rollup/rollup-linux-arm64-musl": "npm:4.34.9"
+    "@rollup/rollup-linux-x64-gnu": "npm:4.34.9"
+    "@rollup/rollup-linux-x64-musl": "npm:4.34.9"
+    "@rollup/rollup-win32-arm64-msvc": "npm:4.34.9"
+    "@rollup/rollup-win32-x64-msvc": "npm:4.34.9"
+  dependenciesMeta:
+    "@rollup/rollup-darwin-arm64":
+      optional: true
+    "@rollup/rollup-darwin-x64":
+      optional: true
+    "@rollup/rollup-linux-arm64-gnu":
+      optional: true
+    "@rollup/rollup-linux-arm64-musl":
+      optional: true
+    "@rollup/rollup-linux-x64-gnu":
+      optional: true
+    "@rollup/rollup-linux-x64-musl":
+      optional: true
+    "@rollup/rollup-win32-arm64-msvc":
+      optional: true
+    "@rollup/rollup-win32-x64-msvc":
+      optional: true
+  bin:
+    stencil: bin/stencil
+  checksum: 10c0/48241eacdcab9ec565029f8490b8ae9dde92c2710795f8d0defd7cdcbdb798aaaedda8840461d228e23b7eb26ac43456bb64493c75fd7d7613bb9959ba758668
+  languageName: node
+  linkType: hard
+
 "@storybook/addon-a11y@npm:^9.0.12":
   version: 9.0.12
   resolution: "@storybook/addon-a11y@npm:9.0.12"
@@ -7684,6 +7719,7 @@ __metadata:
     idb: "npm:^8.0.0"
     immer: "npm:^10.1.1"
     input-otp: "npm:^1.4.2"
+    ionicons: "npm:^8.0.13"
     jsdom: "npm:^26.1.0"
     lemmy-v3: "npm:lemmy-js-client@0.19.13-beta.1"
     lemmy-v4: "npm:lemmy-js-client@1.0.0-rename-paged-response-data.0"
@@ -7705,8 +7741,8 @@ __metadata:
     path-to-regexp: "npm:^8.2.0"
     prettier: "npm:3.4.1"
     prosemirror-model: "npm:^1.25.0"
-    react: "npm:19.2.0"
-    react-dom: "npm:19.2.0"
+    react: "npm:19.2.3"
+    react-dom: "npm:19.2.3"
     react-dropzone: "npm:^14.3.8"
     react-error-boundary: "npm:^6.0.0"
     react-hls-player: "npm:^3.0.7"
@@ -11017,6 +11053,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ionicons@npm:^8.0.13":
+  version: 8.0.13
+  resolution: "ionicons@npm:8.0.13"
+  dependencies:
+    "@stencil/core": "npm:^4.35.3"
+  checksum: 10c0/4f12586359ed5d68dafff0440ff7ca4c195bdea5fff1f9fa4626add1e4fcea78a862db87c20930199f93817737695425b319aede65ef2111cf0191cdc346ce80
+  languageName: node
+  linkType: hard
+
 "ip-address@npm:^9.0.5":
   version: 9.0.5
   resolution: "ip-address@npm:9.0.5"
@@ -14021,14 +14066,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.2.0":
-  version: 19.2.0
-  resolution: "react-dom@npm:19.2.0"
+"react-dom@npm:19.2.3":
+  version: 19.2.3
+  resolution: "react-dom@npm:19.2.3"
   dependencies:
     scheduler: "npm:^0.27.0"
   peerDependencies:
-    react: ^19.2.0
-  checksum: 10c0/fa2cae05248d01288e91523b590ce4e7635b1e13f1344e225f850d722a8da037bf0782f63b1c1d46353334e0c696909b82e582f8cad607948fde6f7646cc18d9
+    react: ^19.2.3
+  checksum: 10c0/dc43f7ede06f46f3acc16ee83107c925530de9b91d1d0b3824583814746ff4c498ea64fd65cd83aba363205268adff52e2827c582634ae7b15069deaeabc4892
   languageName: node
   linkType: hard
 
@@ -14250,10 +14295,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.2.0":
-  version: 19.2.0
-  resolution: "react@npm:19.2.0"
-  checksum: 10c0/1b6d64eacb9324725bfe1e7860cb7a6b8a34bc89a482920765ebff5c10578eb487e6b46b2f0df263bd27a25edbdae2c45e5ea5d81ae61404301c1a7192c38330
+"react@npm:19.2.3":
+  version: 19.2.3
+  resolution: "react@npm:19.2.3"
+  checksum: 10c0/094220b3ba3a76c1b668f972ace1dd15509b157aead1b40391d1c8e657e720c201d9719537375eff08f5e0514748c0319063392a6f000e31303aafc4471f1436
   languageName: node
   linkType: hard
 

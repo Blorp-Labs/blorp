@@ -12,6 +12,7 @@ import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { useAuth, useIsCommunityBlocked } from "@/src/stores/auth";
 import { IoEllipsisHorizontal } from "react-icons/io5";
+import { createPost as createPostIcon } from "@/src/components/icons";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { openUrl } from "@/src/lib/linking";
 import { useCommunityCreatePost } from "./community-create-post";
@@ -40,6 +41,7 @@ import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
 import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
+import { objectSource } from "../icons";
 
 dayjs.extend(localizedFormat);
 
@@ -232,6 +234,7 @@ function useCommunityActions({
     ...(isLoggedIn && !isBlocked
       ? [
           {
+            icon: createPostIcon,
             text: "Create post",
             onClick: createPost,
           },
@@ -240,6 +243,7 @@ function useCommunityActions({
     ...(actorId && !isBlocked
       ? [
           {
+            icon: objectSource,
             text: "View source",
             onClick: async () => {
               try {

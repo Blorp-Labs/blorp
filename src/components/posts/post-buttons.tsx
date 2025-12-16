@@ -16,7 +16,7 @@ import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { useLinkContext } from "../../routing/link-context";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
-import { Share } from "../icons";
+import { downloadOutline, imageOutline, Share } from "../icons";
 import { usePostsStore } from "@/src/stores/posts";
 import {
   shareImage,
@@ -297,6 +297,7 @@ function usePostShareActions({
     ...(post && thumbnailUrl && embed.type === "image"
       ? [
           {
+            icon: imageOutline,
             text: "Share image",
             onClick: () => shareImage(post.title, thumbnailUrl),
           },
@@ -305,6 +306,7 @@ function usePostShareActions({
     ...(post && thumbnailUrl && embed.type === "image"
       ? [
           {
+            icon: downloadOutline,
             text: "Download image",
             onClick: () => downloadImage(post.title, thumbnailUrl),
           },

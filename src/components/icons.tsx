@@ -30,3 +30,16 @@ export {
   ImCheckboxChecked as CheckboxChecked,
   ImCheckboxUnchecked as CheckboxUnchecked,
 } from "react-icons/im";
+export {
+  personOutline,
+  bookmarkOutline,
+  bookmark,
+  repeatOutline as crosspost,
+  flagOutline as reportOutline,
+  linkOutline,
+  clipboardOutline,
+  imageOutline,
+  downloadOutline,
+  readerOutline as objectSource,
+  createOutline as createPost,
+} from "ionicons/icons";

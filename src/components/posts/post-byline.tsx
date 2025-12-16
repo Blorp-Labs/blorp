@@ -25,7 +25,11 @@ import { encodeApId } from "@/src/lib/api/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { FaBookmark } from "react-icons/fa";
-import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
+import {
+  postToCrosspostDraft,
+  postToDraft,
+  useCreatePostStore,
+} from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
@@ -36,13 +40,23 @@ import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
-import { Lock } from "../icons";
+import {
+  bookmark,
+  bookmarkOutline,
+  crosspost,
+  Lock,
+  objectSource,
+  personOutline,
+  reportOutline,
+} from "../icons";
 import {
   useDeletePost,
   useFeaturePost,
   useLockPost,
   useSavePost,
 } from "@/src/lib/api/post-mutations";
+import { canCrosspost } from "@/src/lib/post";
+import _ from "lodash";
 
 export function usePostActions({
   post,
@@ -118,6 +132,7 @@ export function usePostActions({
     ...(!isMyPost
       ? [
           {
+            icon: personOutline,
             text: "Author",
             actions: [
               {
@@ -161,6 +176,7 @@ export function usePostActions({
         ]
       : []),
     {
+      icon: saved ? bookmark : bookmarkOutline,
       text: saved ? "Unsave post" : "Save post",
       onClick: () =>
         requireAuth().then(() => {
@@ -172,6 +188,17 @@ export function usePostActions({
         }),
     },
     {
+      icon: crosspost,
+      text: "Crosspost",
+      onClick: () => {
+        if (post) {
+          updateDraft(post.apId, postToCrosspostDraft(post, flairs));
+          router.push(resolveRoute("/create_post", `?id=${encodedApId}`));
+        }
+      },
+    },
+    {
+      icon: objectSource,
       text: "View post source",
       onClick: async () => {
         try {
@@ -207,6 +234,7 @@ export function usePostActions({
     ...(!isMyPost && !canMod
       ? [
           {
+            icon: reportOutline,
             text: "Report post",
             onClick: () =>
               requireAuth().then(() => {
