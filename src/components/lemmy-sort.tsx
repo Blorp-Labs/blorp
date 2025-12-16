@@ -463,50 +463,35 @@ export function CommunityFilter() {
     instanceHost = url.host;
   } catch {}
 
-  const software = useSoftware();
-
   const LISTING_TYPE_OPTIONS = useMemo(
     () =>
       [
         {
-          label: "All Communities",
+          label: "All",
           value: "All",
         } as const,
         {
-          label: `Local Communities`,
+          label: `Local (${instanceHost})`,
           value: "Local",
         } as const,
         ...(isLoggedIn
           ? ([
               {
-                label: "Subscribed Communities",
+                label: "Subscribed",
                 value: "Subscribed",
               },
               {
-                label: "Moderating Communities",
+                label: "Moderating",
                 value: "ModeratorView",
               },
             ] as const)
           : []),
-        ...(software === "piefed"
-          ? ([
-              "DIVIDER",
-              {
-                label: "All Feeds",
-                value: "All Feeds",
-              },
-            ] as const)
-          : []),
-      ].map((opt) =>
-        _.isString(opt)
-          ? opt
-          : {
-              text: opt.label,
-              value: opt.value,
-              onClick: () => setListingType(opt.value),
-            },
-      ),
-    [isLoggedIn, setListingType, software],
+      ].map((opt) => ({
+        text: opt.label,
+        value: opt.value,
+        onClick: () => setListingType(opt.value),
+      })),
+    [isLoggedIn, setListingType, instanceHost],
   );
 
   const value = LISTING_TYPE_OPTIONS.filter((opt) => _.isObject(opt)).find(

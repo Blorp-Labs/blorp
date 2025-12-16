@@ -9,11 +9,11 @@ import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "../components/communities/community-card";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { VirtualList } from "@/src/components/virtual-list";
-import { useMedia } from "../lib/hooks";
+import { useElementHasFocus, useMedia } from "../lib/hooks";
 import {
   IonContent,
   IonHeader,
@@ -25,7 +25,7 @@ import { MenuButton, UserDropdown } from "../components/nav";
 import { CommunityFilter, CommunitySortSelect } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { Search } from "../components/icons";
+import { ChevronLeft, ChevronRight, Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
@@ -34,14 +34,116 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { cn } from "../lib/utils";
 import { abbriviateNumber } from "../lib/format";
 import { useLinkContext } from "../routing/link-context";
+import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
+import { Mousewheel, Virtual } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/virtual";
+import { useCommunitiesFromStore } from "../stores/communities";
+import { CommunityHoverCard } from "../components/communities/community-hover-card";
+import { Button } from "../components/ui/button";
+import { Skeleton } from "../components/ui/skeleton";
 
-function FeedCard({ icon, name, communityCount, slug, id }: Schemas.Feed) {
+function useNumCols() {
+  const media = useMedia();
+  if (media.md) {
+    return 3;
+  } else if (media.sm) {
+    return 2;
+  }
+  return 1;
+}
+
+function CommunitiesSwiper({
+  communities,
+  onReachEnd,
+}: {
+  communities: string[];
+  onReachEnd: () => void;
+}) {
+  const numCols = useNumCols();
+  const ref = useRef<SwiperRef>(null);
+  const grouped = useMemo(() => _.chunk(communities, 3), [communities]);
+  return (
+    <div>
+      <Swiper
+        ref={ref}
+        modules={[Mousewheel, Virtual]}
+        spaceBetween={10}
+        slidesPerView={numCols}
+        mousewheel
+        virtual
+        onReachEnd={onReachEnd}
+      >
+        {grouped?.map((group) => (
+          <SwiperSlide key={group[0]} className="flex! flex-col gap-3">
+            {group.map((community) => (
+              <div key={community} className="border py-0.5 px-2 rounded-lg">
+                <CommunityCard communitySlug={community} />
+              </div>
+            ))}
+          </SwiperSlide>
+        ))}
+      </Swiper>
+      <div className="flex flex-row justify-center mt-3 items-center gap-2">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => ref.current?.swiper.slideTo(0)}
+        >
+          <ChevronLeft />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() =>
+            ref.current?.swiper.slideTo(
+              ref.current.swiper.activeIndex - numCols,
+            )
+          }
+        >
+          <ChevronLeft />
+        </Button>
+        <Button variant="outline">Show more</Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() =>
+            ref.current?.swiper.slideTo(
+              ref.current.swiper.activeIndex + numCols,
+            )
+          }
+        >
+          <ChevronRight />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
+        >
+          <ChevronRight />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function FeedCard({
+  icon,
+  name,
+  communityCount,
+  slug,
+  id,
+  communitySlugs,
+}: Schemas.Feed) {
+  const ref = useRef<HTMLDivElement>(null);
+  const hasFocus = useElementHasFocus(ref);
   const ctx = useLinkContext();
   const host = slug?.split("@")?.[1];
+  const communityViews = useCommunitiesFromStore(communitySlugs);
   return (
-    <ContentGutters className="md:contents">
+    <div className="flex flex-col gap-2" ref={ref}>
       <Link
-        className="mt-1 flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground"
+        className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground"
         to={`${ctx.root}f/:apId`}
         params={{
           apId: String(id),
@@ -71,7 +173,107 @@ function FeedCard({ icon, name, communityCount, slug, id }: Schemas.Feed) {
           )}
         </div>
       </Link>
-    </ContentGutters>
+
+      <div className="flex flex-row overflow-hidden">
+        {hasFocus ? (
+          communityViews?.map(({ communityView }) => (
+            <CommunityHoverCard
+              communityName={communityView.slug}
+              key={communityView.apId}
+            >
+              <Avatar className="h-6 w-6 border-2 border-background -mr-2">
+                <AvatarImage
+                  src={communityView.icon ?? undefined}
+                  className="object-cover absolute inset-0"
+                />
+                <AvatarFallback>
+                  {communityView.slug.substring(0, 1)}
+                </AvatarFallback>
+              </Avatar>
+            </CommunityHoverCard>
+          ))
+        ) : (
+          <Skeleton className="h-6 w-full rounded-4xl" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FeedSwiper({
+  feeds,
+  onReachEnd,
+}: {
+  feeds: Schemas.Feed[];
+  onReachEnd: () => void;
+}) {
+  const numCols = useNumCols();
+  const ref = useRef<SwiperRef>(null);
+  const grouped = useMemo(() => _.chunk(feeds, 3), [feeds]);
+  return (
+    <div>
+      <Swiper
+        ref={ref}
+        modules={[Mousewheel, Virtual]}
+        spaceBetween={10}
+        slidesPerView={numCols}
+        mousewheel
+        virtual
+        onReachEnd={onReachEnd}
+      >
+        {grouped?.map((group) => (
+          <SwiperSlide key={group[0]?.apId} className="flex! flex-col gap-3">
+            {group.map((feed) => (
+              <div
+                key={feed.apId}
+                className="border py-2 px-2 rounded-lg h-[88px]"
+              >
+                <FeedCard {...feed} />
+              </div>
+            ))}
+          </SwiperSlide>
+        ))}
+      </Swiper>
+      <div className="flex flex-row justify-center mt-3 items-center gap-2">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => ref.current?.swiper.slideTo(0)}
+        >
+          <ChevronLeft />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() =>
+            ref.current?.swiper.slideTo(
+              ref.current.swiper.activeIndex - numCols,
+            )
+          }
+        >
+          <ChevronLeft />
+        </Button>
+        <Button variant="outline">Show more</Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() =>
+            ref.current?.swiper.slideTo(
+              ref.current.swiper.activeIndex + numCols,
+            )
+          }
+        >
+          <ChevronRight />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
+        >
+          <ChevronRight />
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -82,7 +284,7 @@ const MemoedListItem = memo(function ListItem(props: {
 }) {
   return (
     <ContentGutters className="md:contents">
-      <CommunityCard communitySlug={props.communitySlug} className="mt-1" />
+      <CommunityCard communitySlug={props.communitySlug} />
     </ContentGutters>
   );
 });
@@ -99,28 +301,17 @@ export default function Communities() {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
-  const communitiesQuery = useListCommunities(
-    {
-      sort: communitySort,
-      type: listingType === "All Feeds" ? undefined : listingType,
-    },
-    {
-      enabled: listingType !== "All Feeds",
-    },
-  );
-
-  const feeds = useListFeeds({
-    enabled: listingType === "All Feeds",
+  const communitiesQuery = useListCommunities({
+    sort: communitySort,
+    type: listingType,
   });
 
-  // const [communities, feedsData] = useMemo(
-  //   () =>
-  //     [
-  //       data?.pages.map((p) => p.communities).flat(),
-  //       feeds.data?.pages.flatMap((p) => p.feeds),
-  //     ] as const,
-  //   [data?.pages, feeds.data?.pages],
-  // );
+  const feeds = useListFeeds({});
+
+  const feedsData = useMemo(
+    () => feeds.data?.pages.flatMap((p) => p.feeds),
+    [feeds.data?.pages],
+  );
 
   const { communities } = useMemo(() => {
     const communities = communitiesQuery.data?.pages
@@ -196,7 +387,7 @@ export default function Communities() {
       refresh={communitiesQuery.refetch}
       placeholder={
         <ContentGutters className="md:contents">
-          <CommunityCardSkeleton className="mt-1" />
+          <CommunityCardSkeleton />
         </ContentGutters>
       }
     />
@@ -231,12 +422,37 @@ export default function Communities() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent scrollY={false} fullscreen={media.maxMd}>
-        {media.md ? (
-          <ContentGutters className="h-full">{vlist}</ContentGutters>
-        ) : (
-          vlist
-        )}
+      <IonContent fullscreen={media.maxMd}>
+        <ContentGutters>
+          <div className="flex flex-col gap-4 py-6">
+            <h2>Communities</h2>
+            {communities && (
+              <CommunitiesSwiper
+                communities={communities}
+                onReachEnd={() => {
+                  if (
+                    communitiesQuery.hasNextPage &&
+                    !communitiesQuery.isFetchingNextPage
+                  ) {
+                    communitiesQuery.fetchNextPage();
+                  }
+                }}
+              />
+            )}
+
+            <h2>Feeds</h2>
+            {feedsData && (
+              <FeedSwiper
+                feeds={feedsData}
+                onReachEnd={() => {
+                  if (feeds.hasNextPage && !feeds.isFetchingNextPage) {
+                    feeds.fetchNextPage();
+                  }
+                }}
+              />
+            )}
+          </div>
+        </ContentGutters>
       </IonContent>
     </IonPage>
   );

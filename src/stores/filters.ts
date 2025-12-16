@@ -4,12 +4,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 
-type CommunityListingType =
-  | "All"
-  | "Local"
-  | "Subscribed"
-  | "ModeratorView"
-  | "All Feeds";
+type CommunityListingType = "All" | "Local" | "Subscribed" | "ModeratorView";
 
 type SortsStore = {
   communitySort: string;
