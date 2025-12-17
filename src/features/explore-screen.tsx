@@ -7,7 +7,7 @@ import {
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
 import { CommunityCard } from "../components/communities/community-card";
-import { memo, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useElementHasFocus, useMedia } from "../lib/hooks";
@@ -52,6 +52,29 @@ function useNumCols() {
     return 2;
   }
   return 1.05;
+}
+
+function SectionSkeleton() {
+  const numCols = useNumCols();
+
+  return (
+    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+      {Array.from({ length: _.toInteger(numCols) * 3 })
+        .fill(0)
+        .map((_i, index) => (
+          <div
+            key={index}
+            className="border py-3 px-2 rounded-lg h-24 flex flex-col gap-2"
+          >
+            <div className="flex flex-row gap-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 flex-1 rounded-md" />
+            </div>
+            <Skeleton className="w-full flex-1 rounded-md" />
+          </div>
+        ))}
+    </div>
+  );
 }
 
 function CommunityItem({ communitySlug }: { communitySlug: string }) {
@@ -107,28 +130,32 @@ function CommunitiesSwiper({
         {sort.split(/(?=[A-Z])/).join(" ")} Communities
       </h2>
 
-      <Swiper
-        className={ContentGutters.mobilePadding}
-        ref={ref}
-        modules={[Mousewheel, Virtual]}
-        spaceBetween={8}
-        slidesPerView={numCols}
-        mousewheel={{
-          enabled: true,
-          forceToAxis: true,
-        }}
-        virtual
-        onReachEnd={onReachEnd}
-        onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
-      >
-        {grouped?.map((group) => (
-          <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
-            {group.map((community) => (
-              <CommunityItem key={community} communitySlug={community} />
-            ))}
-          </SwiperSlide>
-        ))}
-      </Swiper>
+      {!communities?.length && communitiesQuery.isPending ? (
+        <SectionSkeleton />
+      ) : (
+        <Swiper
+          className={ContentGutters.mobilePadding}
+          ref={ref}
+          modules={[Mousewheel, Virtual]}
+          spaceBetween={8}
+          slidesPerView={numCols}
+          mousewheel={{
+            enabled: true,
+            forceToAxis: true,
+          }}
+          virtual
+          onReachEnd={onReachEnd}
+          onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+        >
+          {grouped?.map((group) => (
+            <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
+              {group.map((community) => (
+                <CommunityItem key={community} communitySlug={community} />
+              ))}
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      )}
       <div className="flex flex-row justify-center mt-3 items-center gap-2">
         <Button
           size="icon"
@@ -249,23 +276,41 @@ function FeedCard({
   );
 }
 
-function FeedSwiper({
-  feeds,
-  onReachEnd,
-  hasMore,
-}: {
-  feeds: Schemas.Feed[];
-  onReachEnd: () => void;
-  hasMore: boolean;
-}) {
+function FeedSwiper() {
+  const feeds = useListFeeds({});
+
+  const feedsData = useMemo(
+    () => feeds.data?.pages.flatMap((p) => p.feeds),
+    [feeds.data?.pages],
+  );
+
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
-  const grouped = useMemo(() => _.chunk(feeds, 3), [feeds]);
+  const grouped = useMemo(() => _.chunk(feedsData, 3), [feedsData]);
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
-  const hasNext = hasMore || index < grouped.length - numCols;
+  const hasNext = feeds.hasNextPage || index < grouped.length - numCols;
+
+  const onReachEnd = () => {
+    if (feeds.hasNextPage && !feeds.isFetchingNextPage) {
+      feeds.fetchNextPage();
+    }
+  };
+
+  const software = useSoftware();
+
+  if (software !== "piefed") {
+    return null;
+  }
+
   return (
     <div>
+      <h2 className={cn("font-bold mb-2", ContentGutters.mobilePadding)}>
+        Feeds
+      </h2>
+
+      {!feedsData?.length && feeds.isPending && <SectionSkeleton />}
+
       <Swiper
         className={ContentGutters.mobilePadding}
         ref={ref}
@@ -280,7 +325,7 @@ function FeedSwiper({
         onReachEnd={onReachEnd}
         onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
       >
-        {grouped?.map((group) => (
+        {grouped.map((group) => (
           <SwiperSlide key={group[0]?.apId} className="flex! flex-col gap-3">
             {group.map((feed) => (
               <div
@@ -340,19 +385,8 @@ function FeedSwiper({
   );
 }
 
-const NO_ITEMS = "NO_ITEMS";
-
-const MemoedListItem = memo(function ListItem(props: {
-  communitySlug: string;
-}) {
-  return (
-    <ContentGutters className="md:contents">
-      <CommunityCard communitySlug={props.communitySlug} />
-    </ContentGutters>
-  );
-});
-
-const FEATURED_SORTS = ["TopAll", "New"];
+const FEEDS = "FEEDS";
+const FEATURED_SORTS = ["TopAll", FEEDS, "New"] as const;
 
 export default function Communities() {
   const router = useIonRouter();
@@ -361,8 +395,8 @@ export default function Communities() {
   const { communitySort, communitySorts } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
-  const featuredSorts = FEATURED_SORTS?.filter((sort) =>
-    communitySorts?.includes(sort),
+  const featuredSorts = FEATURED_SORTS?.filter(
+    (sort) => communitySorts?.includes(sort) || sort === FEEDS,
   );
 
   const media = useMedia();
@@ -375,13 +409,6 @@ export default function Communities() {
     sort: communitySort,
     type: listingType,
   });
-
-  const feeds = useListFeeds({});
-
-  const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.feeds),
-    [feeds.data?.pages],
-  );
 
   // const { communities } = useMemo(() => {
   //   const communities = communitiesQuery.data?.pages
@@ -457,31 +484,16 @@ export default function Communities() {
               ))}
             </div>
 
-            {featuredSorts?.map((sort) => (
-              <CommunitiesSwiper
-                key={sort}
-                sort={sort}
-                hasMore={communitiesQuery.hasNextPage}
-              />
-            ))}
-
-            {software === "piefed" && (
-              <>
-                <h2 className={cn("font-bold", ContentGutters.mobilePadding)}>
-                  Feeds
-                </h2>
-                {feedsData && (
-                  <FeedSwiper
-                    feeds={feedsData}
-                    onReachEnd={() => {
-                      if (feeds.hasNextPage && !feeds.isFetchingNextPage) {
-                        feeds.fetchNextPage();
-                      }
-                    }}
-                    hasMore={feeds.hasNextPage}
-                  />
-                )}
-              </>
+            {featuredSorts?.map((sort) =>
+              sort === FEEDS ? (
+                <FeedSwiper key={sort} />
+              ) : (
+                <CommunitiesSwiper
+                  key={sort}
+                  sort={sort}
+                  hasMore={communitiesQuery.hasNextPage}
+                />
+              ),
             )}
           </div>
         </ContentGutters>
