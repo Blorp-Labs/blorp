@@ -19,7 +19,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
-import { CommunityFilter, CommunitySortSelect } from "../components/lemmy-sort";
+import { CommunityFilter } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { ChevronLeft, ChevronRight, Search } from "../components/icons";
@@ -49,7 +49,7 @@ function useNumCols() {
   if (media.md) {
     return 3;
   } else if (media.sm) {
-    return 2;
+    return 2.05;
   }
   return 1.05;
 }
@@ -110,7 +110,11 @@ function CommunitiesSwiper({
   );
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
-  const grouped = useMemo(() => _.chunk(communities, 3), [communities]);
+  const rows = Math.min(3, Math.ceil((communities?.length ?? 0) / 3));
+  const grouped = useMemo(
+    () => _.chunk(communities, rows),
+    [communities, rows],
+  );
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
   const hasNext = hasMore || index < grouped.length - numCols;
@@ -133,30 +137,34 @@ function CommunitiesSwiper({
       {!communities?.length && communitiesQuery.isPending ? (
         <SectionSkeleton />
       ) : (
-        <Swiper
-          className={ContentGutters.mobilePadding}
-          ref={ref}
-          modules={[Mousewheel, Virtual]}
-          spaceBetween={8}
-          slidesPerView={numCols}
-          mousewheel={{
-            enabled: true,
-            forceToAxis: true,
-          }}
-          virtual
-          onReachEnd={onReachEnd}
-          onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
-        >
-          {grouped?.map((group) => (
-            <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
-              {group.map((community) => (
-                <CommunityItem key={community} communitySlug={community} />
-              ))}
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <div className="relative">
+          <Swiper
+            className={cn("md:-mx-14! md:px-14!", ContentGutters.mobilePadding)}
+            ref={ref}
+            modules={[Mousewheel, Virtual]}
+            spaceBetween={8}
+            slidesPerView={numCols}
+            mousewheel={{
+              enabled: true,
+              forceToAxis: true,
+            }}
+            virtual
+            onReachEnd={onReachEnd}
+            onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+          >
+            {grouped?.map((group) => (
+              <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
+                {group.map((community) => (
+                  <CommunityItem key={community} communitySlug={community} />
+                ))}
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          <div className="absolute right-full inset-y-0 w-14 bg-gradient-to-r from-black to-transparent z-10 max-md:hidden" />
+          <div className="absolute left-full inset-y-0 w-14 bg-gradient-to-l from-black to-transparent z-10 max-md:hidden" />
+        </div>
       )}
-      <div className="flex flex-row justify-center mt-3 items-center gap-2">
+      <div className="flex flex-row justify-center mt-3 items-center gap-2 max-md:hidden">
         <Button
           size="icon"
           variant="outline"
@@ -286,7 +294,8 @@ function FeedSwiper() {
 
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
-  const grouped = useMemo(() => _.chunk(feedsData, 3), [feedsData]);
+  const rows = Math.min(3, Math.ceil((feedsData?.length ?? 0) / 3));
+  const grouped = useMemo(() => _.chunk(feedsData, rows), [feedsData, rows]);
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
   const hasNext = feeds.hasNextPage || index < grouped.length - numCols;
@@ -299,7 +308,7 @@ function FeedSwiper() {
 
   const software = useSoftware();
 
-  if (software !== "piefed") {
+  if (software !== "piefed" || (!feedsData?.length && !feeds.isPending)) {
     return null;
   }
 
@@ -309,36 +318,47 @@ function FeedSwiper() {
         Feeds
       </h2>
 
-      {!feedsData?.length && feeds.isPending && <SectionSkeleton />}
-
-      <Swiper
-        className={ContentGutters.mobilePadding}
-        ref={ref}
-        modules={[Mousewheel, Virtual]}
-        spaceBetween={8}
-        slidesPerView={numCols}
-        mousewheel={{
-          enabled: true,
-          forceToAxis: true,
-        }}
-        virtual
-        onReachEnd={onReachEnd}
-        onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
-      >
-        {grouped.map((group) => (
-          <SwiperSlide key={group[0]?.apId} className="flex! flex-col gap-3">
-            {group.map((feed) => (
-              <div
-                key={feed.apId}
-                className="border py-2 px-2 rounded-lg h-[88px]"
+      {!feedsData?.length && feeds.isPending ? (
+        <SectionSkeleton />
+      ) : (
+        <div className="relative">
+          <Swiper
+            className={cn("md:-mx-14! md:px-14!", ContentGutters.mobilePadding)}
+            ref={ref}
+            modules={[Mousewheel, Virtual]}
+            spaceBetween={8}
+            slidesPerView={numCols}
+            mousewheel={{
+              enabled: true,
+              forceToAxis: true,
+            }}
+            virtual
+            onReachEnd={onReachEnd}
+            onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+          >
+            {grouped.map((group) => (
+              <SwiperSlide
+                key={group[0]?.apId}
+                className="flex! flex-col gap-3"
               >
-                <FeedCard {...feed} />
-              </div>
+                {group.map((feed) => (
+                  <div
+                    key={feed.apId}
+                    className="border py-2 px-2 rounded-lg h-[88px]"
+                  >
+                    <FeedCard {...feed} />
+                  </div>
+                ))}
+              </SwiperSlide>
             ))}
-          </SwiperSlide>
-        ))}
-      </Swiper>
-      <div className="flex flex-row justify-center mt-3 items-center gap-2">
+          </Swiper>
+
+          <div className="absolute right-full inset-y-0 w-14 bg-gradient-to-r from-black to-transparent z-10 max-md:hidden" />
+          <div className="absolute left-full inset-y-0 w-14 bg-gradient-to-l from-black to-transparent z-10 max-md:hidden" />
+        </div>
+      )}
+
+      <div className="flex flex-row justify-center mt-3 items-center gap-2 max-md:hidden">
         <Button
           size="icon"
           variant="outline"
@@ -386,7 +406,7 @@ function FeedSwiper() {
 }
 
 const FEEDS = "FEEDS";
-const FEATURED_SORTS = ["TopAll", FEEDS, "New"] as const;
+const FEATURED_SORTS = ["TopAll", FEEDS, "New", "ActiveDaily"] as const;
 
 export default function Communities() {
   const router = useIonRouter();
@@ -400,7 +420,6 @@ export default function Communities() {
   );
 
   const media = useMedia();
-  const software = useSoftware();
 
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
@@ -437,13 +456,6 @@ export default function Communities() {
   //   communitiesQuery.data,
   // ]);
 
-  let numCols = 1;
-  if (media.xl) {
-    numCols = 3;
-  } else if (media.sm) {
-    numCols = 2;
-  }
-
   return (
     <IonPage>
       <PageTitle>Communities</PageTitle>
@@ -468,15 +480,19 @@ export default function Communities() {
             <Link to="/communities/s" className="text-2xl contents md:hidden">
               <Search className="text-muted-foreground scale-110" />
             </Link>
-            <CommunitySortSelect />
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={media.maxMd}>
         <ContentGutters noMobilePadding>
-          <div className="flex flex-col gap-4 py-6">
-            <div className="flex flex-row flex-wrap gap-1.5">
+          <div className="flex flex-col gap-4 py-4">
+            <div
+              className={cn(
+                "flex flex-row flex-wrap gap-1.5",
+                ContentGutters.mobilePadding,
+              )}
+            >
               {communitySorts?.map((sort) => (
                 <Button key={sort} size="sm" variant="outline">
                   {_.capitalize(sort)}
