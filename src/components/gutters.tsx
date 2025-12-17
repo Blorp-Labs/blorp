@@ -66,4 +66,4 @@ export function ContentGutters({
   );
 }
 
-ContentGutters.mobilePadding = "max-md:px-3.5";
+ContentGutters.mobilePadding = "max-md:px-3.5!";

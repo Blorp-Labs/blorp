@@ -2,17 +2,14 @@ import {
   useAvailableSorts,
   useListCommunities,
   useModeratingCommunities,
+  useSoftware,
   useSubscribedCommunities,
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
-import {
-  CommunityCard,
-  CommunityCardSkeleton,
-} from "../components/communities/community-card";
+import { CommunityCard } from "../components/communities/community-card";
 import { memo, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { VirtualList } from "@/src/components/virtual-list";
 import { useElementHasFocus, useMedia } from "../lib/hooks";
 import {
   IonContent,
@@ -38,10 +35,14 @@ import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
 import { Mousewheel, Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
-import { useCommunitiesFromStore } from "../stores/communities";
+import {
+  useCommunitiesFromStore,
+  useCommunityFromStore,
+} from "../stores/communities";
 import { CommunityHoverCard } from "../components/communities/community-hover-card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
+import { removeMd } from "../components/markdown/remove-md";
 
 function useNumCols() {
   const media = useMedia();
@@ -50,30 +51,67 @@ function useNumCols() {
   } else if (media.sm) {
     return 2;
   }
-  return 1;
+  return 1.05;
+}
+
+function CommunityItem({ communitySlug }: { communitySlug: string }) {
+  const community = useCommunityFromStore(communitySlug);
+  const description = community?.communityView.description;
+  return (
+    <div className="border py-1 px-2 rounded-lg h-24">
+      <CommunityCard communitySlug={communitySlug} />
+      {description && (
+        <p className="text-xs line-clamp-2 text-muted-foreground">
+          {removeMd(description)}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function CommunitiesSwiper({
-  communities,
-  onReachEnd,
   hasMore,
+  sort,
 }: {
-  communities: string[];
-  onReachEnd: () => void;
   hasMore: boolean;
+  sort: string;
 }) {
+  const listingType = useFiltersStore((s) => s.communitiesListingType);
+  const communitiesQuery = useListCommunities({
+    sort,
+    type: listingType,
+  });
+  const communities = useMemo(
+    () => communitiesQuery.data?.pages.flatMap((page) => page.communities),
+    [communitiesQuery.data],
+  );
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
   const grouped = useMemo(() => _.chunk(communities, 3), [communities]);
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
   const hasNext = hasMore || index < grouped.length - numCols;
+  const onReachEnd = () => {
+    if (communitiesQuery.hasNextPage && !communitiesQuery.isFetchingNextPage) {
+      communitiesQuery.fetchNextPage();
+    }
+  };
   return (
     <div>
+      <h2
+        className={cn(
+          "font-bold mb-2 capitalize",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        {sort.split(/(?=[A-Z])/).join(" ")} Communities
+      </h2>
+
       <Swiper
+        className={ContentGutters.mobilePadding}
         ref={ref}
         modules={[Mousewheel, Virtual]}
-        spaceBetween={10}
+        spaceBetween={8}
         slidesPerView={numCols}
         mousewheel={{
           enabled: true,
@@ -84,11 +122,9 @@ function CommunitiesSwiper({
         onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
       >
         {grouped?.map((group) => (
-          <SwiperSlide key={group[0]} className="flex! flex-col gap-3">
+          <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
             {group.map((community) => (
-              <div key={community} className="border py-0.5 px-2 rounded-lg">
-                <CommunityCard communitySlug={community} />
-              </div>
+              <CommunityItem key={community} communitySlug={community} />
             ))}
           </SwiperSlide>
         ))}
@@ -231,9 +267,10 @@ function FeedSwiper({
   return (
     <div>
       <Swiper
+        className={ContentGutters.mobilePadding}
         ref={ref}
         modules={[Mousewheel, Virtual]}
-        spaceBetween={10}
+        spaceBetween={8}
         slidesPerView={numCols}
         mousewheel={{
           enabled: true,
@@ -315,14 +352,21 @@ const MemoedListItem = memo(function ListItem(props: {
   );
 });
 
+const FEATURED_SORTS = ["TopAll", "New"];
+
 export default function Communities() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const { communitySort } = useAvailableSorts();
+  const { communitySort, communitySorts } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
+  const featuredSorts = FEATURED_SORTS?.filter((sort) =>
+    communitySorts?.includes(sort),
+  );
+
   const media = useMedia();
+  const software = useSoftware();
 
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
@@ -339,85 +383,39 @@ export default function Communities() {
     [feeds.data?.pages],
   );
 
-  const { communities } = useMemo(() => {
-    const communities = communitiesQuery.data?.pages
-      .map((p) => p.communities)
-      .flat();
-
-    if (listingType === "Subscribed") {
-      return {
-        communities: !communities?.length ? subscribedCommunities : communities,
-      };
-    }
-
-    if (listingType === "ModeratorView") {
-      return {
-        communities: moderatesCommunities,
-      };
-    }
-
-    return {
-      communities,
-    };
-  }, [
-    listingType,
-    moderatesCommunities,
-    subscribedCommunities,
-    communitiesQuery.data,
-  ]);
-
-  const noItems =
-    communities?.length === 0 &&
-    !communitiesQuery.isRefetching &&
-    !communitiesQuery.isPending;
+  // const { communities } = useMemo(() => {
+  //   const communities = communitiesQuery.data?.pages
+  //     .map((p) => p.communities)
+  //     .flat();
+  //
+  //   if (listingType === "Subscribed") {
+  //     return {
+  //       communities: !communities?.length ? subscribedCommunities : communities,
+  //     };
+  //   }
+  //
+  //   if (listingType === "ModeratorView") {
+  //     return {
+  //       communities: moderatesCommunities,
+  //     };
+  //   }
+  //
+  //   return {
+  //     communities,
+  //   };
+  // }, [
+  //   listingType,
+  //   moderatesCommunities,
+  //   subscribedCommunities,
+  //   communitiesQuery.data,
+  // ]);
 
   let numCols = 1;
-  if (media.xl && !noItems) {
+  if (media.xl) {
     numCols = 3;
-  } else if (media.sm && !noItems) {
+  } else if (media.sm) {
     numCols = 2;
   }
-
-  const vlist = (
-    <VirtualList<string | Schemas.Feed>
-      key={communitySort + listingType}
-      fullscreen
-      scrollHost
-      numColumns={numCols}
-      data={noItems ? [NO_ITEMS] : communities}
-      renderItem={({ item }) => {
-        if (item === NO_ITEMS) {
-          return (
-            <div className="flex-1 italic text-muted-foreground p-6 text-center">
-              <span>Nothing to see here</span>
-            </div>
-          );
-        }
-
-        if (_.isString(item)) {
-          return <MemoedListItem communitySlug={item} />;
-        }
-
-        return <FeedCard {...item} />;
-      }}
-      onEndReached={() => {
-        if (
-          listingType !== "ModeratorView" &&
-          communitiesQuery.hasNextPage &&
-          !communitiesQuery.isFetchingNextPage
-        ) {
-          communitiesQuery.fetchNextPage();
-        }
-      }}
-      estimatedItemSize={52}
-      refresh={communitiesQuery.refetch}
-      placeholder={
-        <ContentGutters className="md:contents">
-          <CommunityCardSkeleton />
-        </ContentGutters>
-      }
-    />
-  );
 
   return (
     <IonPage>
@@ -449,35 +447,41 @@ export default function Communities() {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={media.maxMd}>
-        <ContentGutters>
+        <ContentGutters noMobilePadding>
           <div className="flex flex-col gap-4 py-6">
-            <h2>Communities</h2>
-            {communities && (
+            <div className="flex flex-row flex-wrap gap-1.5">
+              {communitySorts?.map((sort) => (
+                <Button key={sort} size="sm" variant="outline">
+                  {_.capitalize(sort)}
+                </Button>
+              ))}
+            </div>
+
+            {featuredSorts?.map((sort) => (
               <CommunitiesSwiper
-                communities={communities}
-                onReachEnd={() => {
-                  if (
-                    communitiesQuery.hasNextPage &&
-                    !communitiesQuery.isFetchingNextPage
-                  ) {
-                    communitiesQuery.fetchNextPage();
-                  }
-                }}
+                key={sort}
+                sort={sort}
                 hasMore={communitiesQuery.hasNextPage}
               />
-            )}
+            ))}
 
-            <h2>Feeds</h2>
-            {feedsData && (
-              <FeedSwiper
-                feeds={feedsData}
-                onReachEnd={() => {
-                  if (feeds.hasNextPage && !feeds.isFetchingNextPage) {
-                    feeds.fetchNextPage();
-                  }
-                }}
-                hasMore={feeds.hasNextPage}
-              />
+            {software === "piefed" && (
+              <>
+                <h2 className={cn("font-bold", ContentGutters.mobilePadding)}>
+                  Feeds
+                </h2>
+                {feedsData && (
+                  <FeedSwiper
+                    feeds={feedsData}
+                    onReachEnd={() => {
+                      if (feeds.hasNextPage && !feeds.isFetchingNextPage) {
+                        feeds.fetchNextPage();
+                      }
+                    }}
+                    hasMore={feeds.hasNextPage}
+                  />
+                )}
+              </>
             )}
           </div>
         </ContentGutters>
