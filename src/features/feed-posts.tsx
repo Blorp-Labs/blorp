@@ -69,7 +69,7 @@ export default function FeedPosts() {
 
   const postSort = useFiltersStore((s) => s.postSort);
   const posts = usePosts({
-    feedId: _.parseInt(apId),
+    feedApId: apId,
   });
   const data = useMemo(
     () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
@@ -77,7 +77,7 @@ export default function FeedPosts() {
   );
 
   const mostRecentPost = useMostRecentPost("community", {
-    feedId: _.parseInt(apId),
+    feedApId: apId,
   });
 
   const feed = useFeedFromStore(apId);
@@ -109,7 +109,7 @@ export default function FeedPosts() {
 
   return (
     <IonPage>
-      <PageTitle>{apId}</PageTitle>
+      <PageTitle>{feed?.slug ?? apId}</PageTitle>
       <IonHeader>
         <IonToolbar
           data-tauri-drag-region
@@ -124,7 +124,7 @@ export default function FeedPosts() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" className="md:hidden" numRightIcons={3}>
-              {apId}
+              {feed?.slug ?? apId}
             </ToolbarTitle>
           </ToolbarButtons>
           <SearchBar

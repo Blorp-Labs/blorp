@@ -40,9 +40,6 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  // useCommunity({
-  //   name: communityName,
-  // });
   const feed = useFeedFromStore(apId);
 
   const actions = useCommunityActions({

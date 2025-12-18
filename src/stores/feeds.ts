@@ -91,9 +91,7 @@ export const useFeedStore = create<FeedStore>()(
         const newFeeds: Record<string, CachedFeed> = {};
 
         for (const view of views) {
-          const slug = view.id;
-          // TODO: use apId
-          //const slug = view.apId;
+          const slug = view.apId;
           if (slug) {
             const cacheKey = prefix(slug);
             const prevFeedData = prev[cacheKey]?.data;

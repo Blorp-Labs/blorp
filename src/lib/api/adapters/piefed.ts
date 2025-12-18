@@ -64,6 +64,7 @@ export function getIdFromLocalApId(apId: string) {
       comment_id: undefined,
       community_id: undefined,
       person_id: undefined,
+      feed_id: undefined,
     };
     if (id && pathname.startsWith("/post/")) {
       return {
@@ -883,25 +884,27 @@ export class PieFedApi implements ApiBlueprint<null> {
       });
 
       try {
-        const { post, comment, community, person } = z
+        const { post, comment, community, person, feed } = z
           .object({
             comment: z
               .object({
                 comment: z.object({ id: z.number() }),
               })
-              .nullable()
-              .optional(),
+              .nullish(),
             post: z.object({ post: z.object({ id: z.number() }) }).optional(),
             community: z
               .object({
                 community: z.object({ id: z.number() }),
               })
-              .nullable()
-              .optional(),
+              .nullish(),
             person: z
               .object({ person: z.object({ id: z.number() }) })
-              .nullable()
-              .optional(),
+              .nullish(),
+            feed: z
+              .object({
+                id: z.number(),
+              })
+              .nullish(),
           })
           .parse(json);
 
@@ -910,6 +913,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           comment_id: comment?.comment.id,
           community_id: community?.community.id,
           person_id: person?.person.id,
+          feed_id: feed?.id,
         };
       } catch (err) {
         console.log(err);
@@ -1003,6 +1007,15 @@ export class PieFedApi implements ApiBlueprint<null> {
 
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
     const { data: sort } = postSortSchema.safeParse(form.sort);
+
+    let feed_id: number | undefined = undefined;
+    if (form.feedApId) {
+      feed_id = (await this.resolveObjectId(form.feedApId)).feed_id;
+      if (!feed_id) {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+    }
+
     const json = await this.get(
       "/post/list",
       {
@@ -1012,7 +1025,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         sort,
         type_: form.type,
         saved_only: form.savedOnly,
-        feed_id: form.feedId,
+        feed_id,
       },
       options,
     );
