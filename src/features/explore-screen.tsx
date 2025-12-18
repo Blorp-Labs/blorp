@@ -482,7 +482,7 @@ export default function Communities() {
       </IonHeader>
       <IonContent fullscreen={media.maxMd}>
         <ContentGutters noMobilePadding>
-          <div className="flex flex-col gap-4 py-4">
+          <div className="flex flex-col gap-7 pt-4 pb-10">
             <div
               className={cn(
                 "flex flex-row flex-wrap gap-1.5",

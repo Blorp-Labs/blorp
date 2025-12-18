@@ -1008,8 +1008,8 @@ export class PieFedApi implements ApiBlueprint<null> {
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
     const { data: sort } = postSortSchema.safeParse(form.sort);
 
-    let feed_id: number | undefined = undefined;
-    if (form.feedApId) {
+    let feed_id: number | undefined = form.feedId;
+    if (form.feedApId && _.isNil(feed_id)) {
       feed_id = (await this.resolveObjectId(form.feedApId)).feed_id;
       if (!feed_id) {
         throw Errors.OBJECT_NOT_FOUND;

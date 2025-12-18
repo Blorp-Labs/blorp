@@ -67,9 +67,12 @@ export default function FeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
+  const feed = useFeedFromStore(apId);
+
   const postSort = useFiltersStore((s) => s.postSort);
   const posts = usePosts({
     feedApId: apId,
+    feedId: feed?.id,
   });
   const data = useMemo(
     () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
@@ -78,9 +81,9 @@ export default function FeedPosts() {
 
   const mostRecentPost = useMostRecentPost("community", {
     feedApId: apId,
+    feedId: feed?.id,
   });
 
-  const feed = useFeedFromStore(apId);
   const isBlocked = useIsCommunityBlocked(apId);
 
   const {
