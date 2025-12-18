@@ -22,7 +22,12 @@ import { MenuButton, UserDropdown } from "../components/nav";
 import { CommunityFilter } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { ChevronLeft, ChevronRight, Search } from "../components/icons";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Spinner,
+} from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
@@ -31,7 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { cn } from "../lib/utils";
 import { abbriviateNumber } from "../lib/format";
 import { useLinkContext } from "../routing/link-context";
-import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperClass, SwiperRef, SwiperSlide } from "swiper/react";
 import { Mousewheel, Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
@@ -43,6 +48,54 @@ import { CommunityHoverCard } from "../components/communities/community-hover-ca
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { removeMd } from "../components/markdown/remove-md";
+
+function SwiperControls({
+  swiper,
+  numCols,
+  hasPrev,
+  hasNext,
+  loading,
+  children,
+}: {
+  swiper?: SwiperClass | null;
+  numCols: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  loading: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <div className="absolute xl:right-full max-xl:left-0 inset-y-0 w-14 xl:bg-gradient-to-r from-background to-transparent z-10 max-md:hidden flex items-center justify-center">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => swiper?.slideTo(swiper.activeIndex - numCols)}
+          disabled={!hasPrev}
+          className="shadow-sm"
+        >
+          <ChevronLeft />
+        </Button>
+      </div>
+      {children}
+      <div className="absolute xl:left-full max-xl:right-0 inset-y-0 w-14 xl:bg-gradient-to-l from-background to-transparent z-10 max-md:hidden flex items-center justify-center">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={() => swiper?.slideTo(swiper.activeIndex + numCols)}
+          disabled={!hasNext}
+          className="shadow-sm"
+        >
+          {!hasNext && loading ? (
+            <Spinner className="animate-spin" />
+          ) : (
+            <ChevronRight />
+          )}
+        </Button>
+      </div>
+    </>
+  );
+}
 
 function useNumCols() {
   const media = useMedia();
@@ -81,24 +134,22 @@ function CommunityItem({ communitySlug }: { communitySlug: string }) {
   const community = useCommunityFromStore(communitySlug);
   const description = community?.communityView.description;
   return (
-    <div className="border py-1 px-2 rounded-lg h-24">
-      <CommunityCard communitySlug={communitySlug} />
+    <Link
+      className="border py-1 px-2 rounded-lg h-24"
+      to="/communities/c/:communityName"
+      params={{ communityName: communitySlug }}
+    >
+      <CommunityCard communitySlug={communitySlug} disableLink />
       {description && (
         <p className="text-xs line-clamp-2 text-muted-foreground">
           {removeMd(description)}
         </p>
       )}
-    </div>
+    </Link>
   );
 }
 
-function CommunitiesSwiper({
-  hasMore,
-  sort,
-}: {
-  hasMore: boolean;
-  sort: string;
-}) {
+function CommunitiesSwiper({ sort }: { sort: string }) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
   const communitiesQuery = useListCommunities({
     sort,
@@ -117,7 +168,7 @@ function CommunitiesSwiper({
   );
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
-  const hasNext = hasMore || index < grouped.length - numCols;
+  const hasNext = index < grouped.length - numCols;
   const onReachEnd = () => {
     if (communitiesQuery.hasNextPage && !communitiesQuery.isFetchingNextPage) {
       communitiesQuery.fetchNextPage();
@@ -125,88 +176,56 @@ function CommunitiesSwiper({
   };
   return (
     <div>
-      <h2
-        className={cn(
-          "font-bold mb-2 capitalize",
-          ContentGutters.mobilePadding,
-        )}
-      >
-        {sort.split(/(?=[A-Z])/).join(" ")} Communities
-      </h2>
+      <div className="flex flex-row items-center justify-between mb-2">
+        <h2
+          className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
+        >
+          {sort.split(/(?=[A-Z])/).join(" ")} Communities
+        </h2>
+        <Button variant="ghost" size="sm">
+          Show more
+        </Button>
+      </div>
 
       {!communities?.length && communitiesQuery.isPending ? (
         <SectionSkeleton />
       ) : (
         <div className="relative">
-          <Swiper
-            className={cn("md:-mx-14! md:px-14!", ContentGutters.mobilePadding)}
-            ref={ref}
-            modules={[Mousewheel, Virtual]}
-            spaceBetween={8}
-            slidesPerView={numCols}
-            mousewheel={{
-              enabled: true,
-              forceToAxis: true,
-            }}
-            virtual
-            onReachEnd={onReachEnd}
-            onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+          <SwiperControls
+            swiper={ref.current?.swiper}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
+            numCols={numCols}
+            loading={communitiesQuery.isFetchingNextPage}
           >
-            {grouped?.map((group) => (
-              <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
-                {group.map((community) => (
-                  <CommunityItem key={community} communitySlug={community} />
-                ))}
-              </SwiperSlide>
-            ))}
-          </Swiper>
-          <div className="absolute right-full inset-y-0 w-14 bg-gradient-to-r from-black to-transparent z-10 max-md:hidden" />
-          <div className="absolute left-full inset-y-0 w-14 bg-gradient-to-l from-black to-transparent z-10 max-md:hidden" />
+            <Swiper
+              className={cn(
+                "md:-mx-14! md:px-14!",
+                ContentGutters.mobilePadding,
+              )}
+              ref={ref}
+              modules={[Mousewheel, Virtual]}
+              spaceBetween={8}
+              slidesPerView={numCols}
+              mousewheel={{
+                enabled: true,
+                forceToAxis: true,
+              }}
+              virtual
+              onReachEnd={onReachEnd}
+              onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+            >
+              {grouped?.map((group) => (
+                <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
+                  {group.map((community) => (
+                    <CommunityItem key={community} communitySlug={community} />
+                  ))}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </SwiperControls>
         </div>
       )}
-      <div className="flex flex-row justify-center mt-3 items-center gap-2 max-md:hidden">
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => ref.current?.swiper.slideTo(0)}
-          disabled={!hasPrev}
-        >
-          <ChevronLeft />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() =>
-            ref.current?.swiper.slideTo(
-              ref.current.swiper.activeIndex - numCols,
-            )
-          }
-          disabled={!hasPrev}
-        >
-          <ChevronLeft />
-        </Button>
-        <Button variant="outline">Show more</Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() =>
-            ref.current?.swiper.slideTo(
-              ref.current.swiper.activeIndex + numCols,
-            )
-          }
-          disabled={!hasNext}
-        >
-          <ChevronRight />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
-          disabled={!hasNext}
-        >
-          <ChevronRight />
-        </Button>
-      </div>
     </div>
   );
 }
@@ -314,99 +333,76 @@ function FeedSwiper() {
 
   return (
     <div>
-      <h2 className={cn("font-bold mb-2", ContentGutters.mobilePadding)}>
-        Feeds
-      </h2>
+      <div className="flex flex-row items-center justify-between mb-2">
+        <h2
+          className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
+        >
+          Feeds
+        </h2>
+        <Button variant="ghost" size="sm">
+          Show more
+        </Button>
+      </div>
 
       {!feedsData?.length && feeds.isPending ? (
         <SectionSkeleton />
       ) : (
         <div className="relative">
-          <Swiper
-            className={cn("md:-mx-14! md:px-14!", ContentGutters.mobilePadding)}
-            ref={ref}
-            modules={[Mousewheel, Virtual]}
-            spaceBetween={8}
-            slidesPerView={numCols}
-            mousewheel={{
-              enabled: true,
-              forceToAxis: true,
-            }}
-            virtual
-            onReachEnd={onReachEnd}
-            onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+          <SwiperControls
+            swiper={ref.current?.swiper}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
+            numCols={numCols}
+            loading={feeds.isFetchingNextPage}
           >
-            {grouped.map((group) => (
-              <SwiperSlide
-                key={group[0]?.apId}
-                className="flex! flex-col gap-3"
-              >
-                {group.map((feed) => (
-                  <div
-                    key={feed.apId}
-                    className="border py-2 px-2 rounded-lg h-[88px]"
-                  >
-                    <FeedCard {...feed} />
-                  </div>
-                ))}
-              </SwiperSlide>
-            ))}
-          </Swiper>
-
-          <div className="absolute right-full inset-y-0 w-14 bg-gradient-to-r from-black to-transparent z-10 max-md:hidden" />
-          <div className="absolute left-full inset-y-0 w-14 bg-gradient-to-l from-black to-transparent z-10 max-md:hidden" />
+            <Swiper
+              className={cn(
+                "md:-mx-14! md:px-14!",
+                ContentGutters.mobilePadding,
+              )}
+              ref={ref}
+              modules={[Mousewheel, Virtual]}
+              spaceBetween={8}
+              slidesPerView={numCols}
+              mousewheel={{
+                enabled: true,
+                forceToAxis: true,
+              }}
+              virtual
+              onReachEnd={onReachEnd}
+              onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
+            >
+              {grouped.map((group) => (
+                <SwiperSlide
+                  key={group[0]?.apId}
+                  className="flex! flex-col gap-3"
+                >
+                  {group.map((feed) => (
+                    <div
+                      key={feed.apId}
+                      className="border py-2 px-2 rounded-lg h-[88px]"
+                    >
+                      <FeedCard {...feed} />
+                    </div>
+                  ))}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </SwiperControls>
         </div>
       )}
-
-      <div className="flex flex-row justify-center mt-3 items-center gap-2 max-md:hidden">
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => ref.current?.swiper.slideTo(0)}
-          disabled={!hasPrev}
-        >
-          <ChevronLeft />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() =>
-            ref.current?.swiper.slideTo(
-              ref.current.swiper.activeIndex - numCols,
-            )
-          }
-          disabled={!hasPrev}
-        >
-          <ChevronLeft />
-        </Button>
-        <Button variant="outline">Show more</Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() =>
-            ref.current?.swiper.slideTo(
-              ref.current.swiper.activeIndex + numCols,
-            )
-          }
-          disabled={!hasNext}
-        >
-          <ChevronRight />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => ref.current?.swiper.slideTo(grouped.length - 1)}
-          disabled={!hasNext}
-        >
-          <ChevronRight />
-        </Button>
-      </div>
     </div>
   );
 }
 
 const FEEDS = "FEEDS";
-const FEATURED_SORTS = ["TopAll", FEEDS, "New", "ActiveDaily"] as const;
+const FEATURED_SORTS = [
+  "TopAll",
+  FEEDS,
+  "New",
+  "ActiveDaily",
+  "Active",
+] as const;
 
 export default function Communities() {
   const router = useIonRouter();
@@ -414,6 +410,10 @@ export default function Communities() {
 
   const { communitySort, communitySorts } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
+
+  const sorts = _.uniq(
+    _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
+  );
 
   const featuredSorts = FEATURED_SORTS?.filter(
     (sort) => communitySorts?.includes(sort) || sort === FEEDS,
@@ -423,11 +423,6 @@ export default function Communities() {
 
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
-
-  const communitiesQuery = useListCommunities({
-    sort: communitySort,
-    type: listingType,
-  });
 
   // const { communities } = useMemo(() => {
   //   const communities = communitiesQuery.data?.pages
@@ -493,7 +488,7 @@ export default function Communities() {
                 ContentGutters.mobilePadding,
               )}
             >
-              {communitySorts?.map((sort) => (
+              {sorts?.map((sort) => (
                 <Button key={sort} size="sm" variant="outline">
                   {_.capitalize(sort)}
                 </Button>
@@ -504,11 +499,7 @@ export default function Communities() {
               sort === FEEDS ? (
                 <FeedSwiper key={sort} />
               ) : (
-                <CommunitiesSwiper
-                  key={sort}
-                  sort={sort}
-                  hasMore={communitiesQuery.hasNextPage}
-                />
+                <CommunitiesSwiper key={sort} sort={sort} />
               ),
             )}
           </div>
