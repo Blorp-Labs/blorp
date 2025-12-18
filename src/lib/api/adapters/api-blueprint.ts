@@ -419,7 +419,7 @@ export namespace Forms {
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
-    feedId?: number;
+    feedApId?: string;
     savedOnly?: boolean;
   };
 

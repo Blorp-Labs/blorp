@@ -48,6 +48,7 @@ import { CommunityHoverCard } from "../components/communities/community-hover-ca
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { removeMd } from "../components/markdown/remove-md";
+import { encodeApId } from "../lib/api/utils";
 
 function SwiperControls({
   swiper,
@@ -235,7 +236,7 @@ function FeedCard({
   name,
   communityCount,
   slug,
-  id,
+  apId,
   communitySlugs,
 }: Schemas.Feed) {
   const ref = useRef<HTMLDivElement>(null);
@@ -249,7 +250,7 @@ function FeedCard({
         className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground"
         to={`${ctx.root}f/:apId`}
         params={{
-          apId: String(id),
+          apId: encodeApId(apId),
         }}
       >
         <Avatar className="h-9 w-9">
@@ -337,7 +338,7 @@ function FeedSwiper() {
         <h2
           className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
         >
-          Feeds
+          Multi Community Feeds
         </h2>
         <Button variant="ghost" size="sm">
           Show more
