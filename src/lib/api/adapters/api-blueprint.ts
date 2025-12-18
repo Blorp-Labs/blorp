@@ -420,6 +420,7 @@ export namespace Forms {
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
     feedApId?: string;
+    feedId?: number;
     savedOnly?: boolean;
   };
 
