@@ -67,33 +67,33 @@ function SwiperControls({
 }) {
   return (
     <>
-      <div className="absolute xl:right-full max-xl:left-0 inset-y-0 w-14 xl:bg-gradient-to-r from-background to-transparent z-10 max-md:hidden flex items-center justify-center">
+      <div className="absolute xl:right-full max-xl:left-0 inset-y-0 w-14 xl:bg-gradient-to-r from-background to-transparent z-10 max-md:hidden"></div>
+      {hasPrev && (
         <Button
           size="icon"
           variant="outline"
           onClick={() => swiper?.slideTo(swiper.activeIndex - numCols)}
           disabled={!hasPrev}
-          className="shadow-sm"
+          className="shadow-sm absolute top-1/2 z-10 -translate-y-1/2 left-3 disabled:opacity-0 transition-opacity max-md:hidden"
         >
           <ChevronLeft />
         </Button>
-      </div>
+      )}
       {children}
-      <div className="absolute xl:left-full max-xl:right-0 inset-y-0 w-14 xl:bg-gradient-to-l from-background to-transparent z-10 max-md:hidden flex items-center justify-center">
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => swiper?.slideTo(swiper.activeIndex + numCols)}
-          disabled={!hasNext}
-          className="shadow-sm"
-        >
-          {!hasNext && loading ? (
-            <Spinner className="animate-spin" />
-          ) : (
-            <ChevronRight />
-          )}
-        </Button>
-      </div>
+      <div className="absolute xl:left-full max-xl:right-0 inset-y-0 w-14 xl:bg-gradient-to-l from-background to-transparent z-10"></div>
+      <Button
+        size="icon"
+        variant="outline"
+        onClick={() => swiper?.slideTo(swiper.activeIndex + numCols)}
+        disabled={!hasNext}
+        className="shadow-sm absolute top-1/2 z-10 -translate-y-1/2 right-3 disabled:opacity-0 transition-opacity max-md:hidden"
+      >
+        {!hasNext && loading ? (
+          <Spinner className="animate-spin" />
+        ) : (
+          <ChevronRight />
+        )}
+      </Button>
     </>
   );
 }
