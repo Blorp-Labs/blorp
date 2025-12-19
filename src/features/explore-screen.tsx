@@ -155,6 +155,7 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
 
   const vlist = (
     <VirtualList<string>
+      className="max-md:pt-0 max-md:pb-0"
       key={listingType}
       fullscreen
       scrollHost
@@ -195,18 +196,18 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
   );
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
-        <ContentGutters>
+        <ContentGutters noMobilePadding>
           <SortControlBar />
         </ContentGutters>
       )}
       {media.md ? (
-        <ContentGutters className="h-full">{vlist}</ContentGutters>
+        <ContentGutters className="flex-1">{vlist}</ContentGutters>
       ) : (
-        vlist
+        <div className="flex-1 relative">{vlist}</div>
       )}
-    </>
+    </div>
   );
 }
 
