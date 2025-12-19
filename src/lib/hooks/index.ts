@@ -92,7 +92,14 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   const search = location.search;
   const frozenLocation = useRef(location);
 
+  const locked = useRef(false);
   const currentValueRef = useRef(defaultValue);
+
+  useEffect(() => {
+    return () => {
+      locked.current = true;
+    };
+  }, []);
 
   const isActive = useIsActiveRoute();
 
@@ -114,7 +121,9 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
     const parsed = schema.safeParse(raw);
     if (parsed.success) {
-      currentValueRef.current = parsed.data;
+      if (!locked) {
+        currentValueRef.current = parsed.data;
+      }
       return parsed.data;
     }
     return currentValueRef.current;
