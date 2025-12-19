@@ -6,11 +6,14 @@ import {
   useSubscribedCommunities,
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
-import { CommunityCard } from "../components/communities/community-card";
+import {
+  CommunityCard,
+  CommunityCardSkeleton,
+} from "../components/communities/community-card";
 import { useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useElementHasFocus, useMedia } from "../lib/hooks";
+import { useElementHasFocus, useMedia, useUrlSearchState } from "../lib/hooks";
 import {
   IonContent,
   IonHeader,
@@ -27,6 +30,7 @@ import {
   ChevronRight,
   Search,
   Spinner,
+  X,
 } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
@@ -49,6 +53,162 @@ import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { removeMd } from "../components/markdown/remove-md";
 import { encodeApId } from "../lib/api/utils";
+import z from "zod";
+import { VirtualList } from "../components/virtual-list";
+
+const NO_ITEMS = "NO_ITEMS";
+
+function useSortState() {
+  return useUrlSearchState("sort", undefined, z.string().optional());
+}
+
+function SortControlBar() {
+  const { communitySorts } = useAvailableSorts();
+  const [selectedSort, setSelectedSort, clearSelectedSort] = useSortState();
+  const sorts = _.uniq(
+    _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
+  );
+  return (
+    <div
+      className={cn(
+        "flex flex-row flex-wrap gap-1.5 border-b py-1.5",
+        ContentGutters.mobilePadding,
+      )}
+    >
+      {selectedSort && (
+        <Button size="sm" variant="outline" onClick={() => clearSelectedSort()}>
+          {selectedSort}
+          <X />
+        </Button>
+      )}
+      {!selectedSort &&
+        sorts?.map((sort) => (
+          <Button
+            key={sort}
+            size="sm"
+            variant="outline"
+            onClick={() => setSelectedSort(sort)}
+          >
+            {_.capitalize(sort)}
+          </Button>
+        ))}
+    </div>
+  );
+}
+
+function ExpandedCommunities({ sort }: { sort?: string }) {
+  const listingType = useFiltersStore((s) => s.communitiesListingType);
+
+  const media = useMedia();
+
+  const moderatesCommunities = useModeratingCommunities();
+  const subscribedCommunities = useSubscribedCommunities();
+
+  const communitiesQuery = useListCommunities(
+    {
+      type: listingType,
+      sort,
+    },
+    {
+      enabled: listingType !== "ModeratorView",
+    },
+  );
+
+  const { communities } = useMemo(() => {
+    const communities = communitiesQuery.data?.pages
+      .map((p) => p.communities)
+      .flat();
+
+    if (listingType === "Subscribed") {
+      return {
+        communities: !communities?.length ? subscribedCommunities : communities,
+      };
+    }
+
+    if (listingType === "ModeratorView") {
+      return {
+        communities: moderatesCommunities,
+      };
+    }
+
+    return {
+      communities,
+    };
+  }, [
+    listingType,
+    moderatesCommunities,
+    subscribedCommunities,
+    communitiesQuery.data,
+  ]);
+
+  const noItems =
+    communities?.length === 0 &&
+    !communitiesQuery.isRefetching &&
+    !communitiesQuery.isPending;
+
+  let numCols = 1;
+  if (media.xl && !noItems) {
+    numCols = 3;
+  } else if (media.sm && !noItems) {
+    numCols = 2;
+  }
+
+  const vlist = (
+    <VirtualList<string>
+      key={listingType}
+      fullscreen
+      scrollHost
+      numColumns={numCols}
+      data={noItems ? [NO_ITEMS] : communities}
+      renderItem={({ item }) => {
+        if (item === NO_ITEMS) {
+          return (
+            <div className="flex-1 italic text-muted-foreground p-6 text-center">
+              <span>Nothing to see here</span>
+            </div>
+          );
+        }
+
+        return (
+          <ContentGutters className="md:contents">
+            <CommunityCard communitySlug={item} className="mt-1" />
+          </ContentGutters>
+        );
+      }}
+      onEndReached={() => {
+        if (
+          listingType !== "ModeratorView" &&
+          communitiesQuery.hasNextPage &&
+          !communitiesQuery.isFetchingNextPage
+        ) {
+          communitiesQuery.fetchNextPage();
+        }
+      }}
+      estimatedItemSize={52}
+      refresh={communitiesQuery.refetch}
+      placeholder={
+        <ContentGutters className="md:contents">
+          <CommunityCardSkeleton className="mt-1" />
+        </ContentGutters>
+      }
+    />
+  );
+
+  return (
+    <>
+      {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
+        <ContentGutters>
+          <SortControlBar />
+        </ContentGutters>
+      )}
+      {media.md ? (
+        <ContentGutters className="h-full">{vlist}</ContentGutters>
+      ) : (
+        vlist
+      )}
+    </>
+  );
+}
 
 function SwiperControls({
   swiper,
@@ -151,6 +311,7 @@ function CommunityItem({ communitySlug }: { communitySlug: string }) {
 }
 
 function CommunitiesSwiper({ sort }: { sort: string }) {
+  const [_selected, setSelectedSort] = useSortState();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
   const communitiesQuery = useListCommunities({
     sort,
@@ -183,7 +344,7 @@ function CommunitiesSwiper({ sort }: { sort: string }) {
         >
           {sort.split(/(?=[A-Z])/).join(" ")} Communities
         </h2>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" onClick={() => setSelectedSort(sort)}>
           Show more
         </Button>
       </div>
@@ -406,15 +567,13 @@ const FEATURED_SORTS = [
 ] as const;
 
 export default function Communities() {
+  const [selectedSort] = useSortState();
+
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
   const { communitySort, communitySorts } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
-
-  const sorts = _.uniq(
-    _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
-  );
 
   const featuredSorts = FEATURED_SORTS?.filter(
     (sort) => communitySorts?.includes(sort) || sort === FEEDS,
@@ -480,31 +639,30 @@ export default function Communities() {
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen={media.maxMd}>
-        <ContentGutters noMobilePadding>
-          <div className="flex flex-col gap-7 pt-4 pb-10">
-            <div
-              className={cn(
-                "flex flex-row flex-wrap gap-1.5",
-                ContentGutters.mobilePadding,
-              )}
-            >
-              {sorts?.map((sort) => (
-                <Button key={sort} size="sm" variant="outline">
-                  {_.capitalize(sort)}
-                </Button>
-              ))}
-            </div>
+      <IonContent fullscreen={media.maxMd} scrollY={!selectedSort}>
+        {(selectedSort ||
+          listingType === "Subscribed" ||
+          listingType === "ModeratorView") && (
+          <ExpandedCommunities sort={selectedSort} />
+        )}
 
-            {featuredSorts?.map((sort) =>
-              sort === FEEDS ? (
-                <FeedSwiper key={sort} />
-              ) : (
-                <CommunitiesSwiper key={sort} sort={sort} />
-              ),
-            )}
-          </div>
-        </ContentGutters>
+        {!selectedSort &&
+          listingType !== "Subscribed" &&
+          listingType !== "ModeratorView" && (
+            <ContentGutters noMobilePadding>
+              <div className="flex flex-col gap-4 md:gap-6 pb-8">
+                <SortControlBar />
+
+                {featuredSorts?.map((sort) =>
+                  sort === FEEDS ? (
+                    <FeedSwiper key={sort} />
+                  ) : (
+                    <CommunitiesSwiper key={sort} sort={sort} />
+                  ),
+                )}
+              </div>
+            </ContentGutters>
+          )}
       </IonContent>
     </IonPage>
   );
