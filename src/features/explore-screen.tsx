@@ -62,19 +62,14 @@ function useSortState() {
   return useUrlSearchState("sort", undefined, z.string().optional());
 }
 
-function SortControlBar() {
+function SortControlBarContent() {
   const { communitySorts } = useAvailableSorts();
   const [selectedSort, setSelectedSort, clearSelectedSort] = useSortState();
   const sorts = _.uniq(
     _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
   );
   return (
-    <div
-      className={cn(
-        "flex flex-row flex-wrap gap-1.5 border-b py-1.5",
-        ContentGutters.mobilePadding,
-      )}
-    >
+    <>
       {selectedSort && (
         <Button size="sm" variant="outline" onClick={() => clearSelectedSort()}>
           {selectedSort}
@@ -92,6 +87,20 @@ function SortControlBar() {
             {_.capitalize(sort)}
           </Button>
         ))}
+    </>
+  );
+}
+
+function SortControlBar({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex flex-row flex-wrap gap-1.5 border-b py-1.5",
+        ContentGutters.mobilePadding,
+        className,
+      )}
+    >
+      <SortControlBarContent />
     </div>
   );
 }
@@ -155,7 +164,6 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
 
   const vlist = (
     <VirtualList<string>
-      className="max-md:pt-0 max-md:pb-0"
       key={listingType}
       fullscreen
       scrollHost
@@ -195,19 +203,17 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
     />
   );
 
-  return (
+  return media.md ? (
     <div className="flex flex-col h-full">
       {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
-        <ContentGutters noMobilePadding>
+        <ContentGutters noMobilePadding className="max-md:hidden">
           <SortControlBar />
         </ContentGutters>
       )}
-      {media.md ? (
-        <ContentGutters className="flex-1">{vlist}</ContentGutters>
-      ) : (
-        <div className="flex-1 relative">{vlist}</div>
-      )}
+      <ContentGutters className="flex-1 min-h-0">{vlist}</ContentGutters>
     </div>
+  ) : (
+    vlist
   );
 }
 
@@ -639,6 +645,13 @@ export default function Communities() {
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
+        {media.maxMd && (
+          <IonToolbar>
+            <ToolbarButtons side="left">
+              <SortControlBarContent />
+            </ToolbarButtons>
+          </IonToolbar>
+        )}
       </IonHeader>
       <IonContent fullscreen={media.maxMd} scrollY={!selectedSort}>
         {(selectedSort ||
@@ -651,8 +664,8 @@ export default function Communities() {
           listingType !== "Subscribed" &&
           listingType !== "ModeratorView" && (
             <ContentGutters noMobilePadding>
-              <div className="flex flex-col gap-4 md:gap-6 pb-8">
-                <SortControlBar />
+              <div className="flex flex-col gap-4 md:gap-6 pb-8 max-md:pt-3">
+                <SortControlBar className="max-md:hidden" />
 
                 {featuredSorts?.map((sort) =>
                   sort === FEEDS ? (
