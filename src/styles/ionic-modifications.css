@@ -95,7 +95,7 @@ ion-toolbar ion-buttons {
 }
 
 ion-toolbar::part(container) {
-  @apply overflow-x-auto!;
+  @apply max-md:overflow-x-auto!;
 }
 ion-toolbar::part(container)::-webkit-scrollbar {
   height: 0;
