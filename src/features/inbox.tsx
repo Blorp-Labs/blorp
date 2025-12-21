@@ -568,7 +568,21 @@ export default function Inbox() {
       isPending,
       isRefetching,
     };
-  }, [type, replies.data, mentions.data, postReports]);
+  }, [
+    type,
+    replies.data,
+    replies.isPending,
+    replies.isRefetching,
+    mentions.data,
+    mentions.isPending,
+    mentions.isRefetching,
+    postReports.data,
+    postReports.isPending,
+    postReports.isRefetching,
+    commentReports.data,
+    commentReports.isPending,
+    commentReports.isRefetching,
+  ]);
 
   const hasUnreadReply = !!replies.data?.pages
     .flatMap((pages) => pages.replies)
