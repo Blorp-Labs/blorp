@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 
-type Type = "all" | "unread" | "mentions" | "replies";
+type Type = "all" | "unread" | "mentions" | "replies" | "post-reports";
 
 type InboxStore = {
   inboxType: Type;
