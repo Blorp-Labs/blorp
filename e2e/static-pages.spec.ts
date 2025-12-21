@@ -14,8 +14,3 @@ test("privacy policy page", async ({ page }) => {
   await page.goto("/privacy");
   await expect(page.getByText("How We Use Your Information")).toBeVisible();
 });
-
-test("download page", async ({ page }) => {
-  await page.goto("/download");
-  await expect(page.getByText("Blorp works best when installed")).toBeVisible();
-});

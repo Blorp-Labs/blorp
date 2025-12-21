@@ -103,7 +103,6 @@ export const routeDefs = {
   ...buildRoute("/settings/update-profile/:index", manageAccountSchema),
   ...buildRoute("/settings/*"),
   // Other
-  ...buildRoute("/download"),
   ...buildRoute("/support"),
   ...buildRoute("/privacy"),
   ...buildRoute("/terms"),

@@ -37,7 +37,6 @@ const DebugPage = lazy(() => import("@/src/features/debug-page"));
 const CSAE = lazy(() => import("@/src/features/csae"));
 const NotFound = lazy(() => import("@/src/features/not-found"));
 const ApResolver = lazy(() => import("@/src/features/resolver"));
-const Download = lazy(() => import("@/src/features/download"));
 const Inbox = lazy(() => import("@/src/features/inbox"));
 const Messages = lazy(() => import("@/src/features/messages/messages-screen"));
 const MessagesChat = lazy(
@@ -426,9 +425,6 @@ function Tabs() {
               </Route>
               <Route exact path="/c/:id">
                 <ApResolver />
-              </Route>
-              <Route exact path="/download">
-                <Download />
               </Route>
               <Route exact path="/support">
                 <Support />
