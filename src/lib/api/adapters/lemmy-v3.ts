@@ -351,6 +351,34 @@ function convertPostReport(report: lemmyV3.PostReportView) {
   };
 }
 
+function convertCommentReport(
+  report: lemmyV3.CommentReportView,
+): Schemas.CommentReport {
+  return {
+    resolved: report.comment_report.resolved,
+    createdAt: report.comment_report.published,
+    id: report.comment_report.id,
+    commentId: report.comment.id,
+    commentApId: report.comment.ap_id,
+    commentPath: report.comment.path,
+    creatorId: report.creator.id,
+    creatorApId: report.creator.actor_id,
+    creatorSlug: createSlug({
+      apId: report.creator.actor_id,
+      name: report.creator.name,
+    }).slug,
+    resolverId: report.resolver?.id ?? null,
+    resolverApId: report.resolver?.actor_id ?? null,
+    resolverSlug: report.resolver
+      ? createSlug({
+          apId: report.resolver.actor_id,
+          name: report.resolver.name,
+        }).slug
+      : null,
+    reason: report.comment_report.reason,
+  };
+}
+
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
 
@@ -1206,12 +1234,58 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     };
   }
 
+  async getCommentReports(
+    form: Forms.GetCommentReports,
+    options: RequestOptions,
+  ) {
+    const cursor = cursorToInt(form.pageCursor) ?? 1;
+    const { comment_reports } = await this.client.listCommentReports(
+      {
+        page: cursor,
+        unresolved_only: form.unresolvedOnly,
+        limit: this.limit,
+      },
+      options,
+    );
+    const commentReports = comment_reports.map(convertCommentReport);
+    const hasMore = comment_reports.length <= this.limit;
+    return {
+      commentReports,
+      users: _.compact(
+        comment_reports.flatMap(({ creator, resolver }) => [
+          convertPerson({ person: creator }),
+          resolver ? convertPerson({ person: resolver }) : null,
+        ]),
+      ),
+      comments: comment_reports.flatMap((report) =>
+        convertComment({
+          ...report,
+          creator: report.comment_creator,
+          // If you're the mod you're probably not banned
+          banned_from_community: false,
+        }),
+      ),
+      communities: comment_reports.map((report) =>
+        convertCommunity({ community: report.community }),
+      ),
+      nextCursor: hasMore ? String(cursor) : null,
+    };
+  }
+
   async resolvePostReport(form: Forms.ResolvePostReport) {
     const { post_report_view } = await this.client.resolvePostReport({
       report_id: form.reportId,
       resolved: form.resolved,
     });
     return convertPostReport(post_report_view);
+  }
+
+  async resolveCommentReport(form: Forms.ResolveCommentReport) {
+    const { comment_report_view } = await this.client.resolveCommentReport({
+      report_id: form.reportId,
+      resolved: form.resolved,
+    });
+    return convertCommentReport(comment_report_view);
   }
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {

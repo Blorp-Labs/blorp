@@ -400,18 +400,20 @@ export function PostComment({
   singleCommentThread,
   highlightCommentId,
   canMod,
+  standalone,
 }: {
   postApId: string;
   postLocked: boolean;
   queryKeyParentId?: number;
   commentTree: CommentTree;
-  level: number;
-  opId: number | undefined;
+  level?: number;
+  opId?: number;
   communityName: string;
   modApIds?: string[];
   singleCommentThread?: boolean;
   highlightCommentId?: string;
   canMod?: boolean;
+  standalone?: boolean;
 }) {
   const media = useMedia();
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
@@ -442,29 +444,31 @@ export function PostComment({
   );
 
   let color = "red";
-  switch (level % 6) {
-    case 0:
-      color = "#FF2A33";
-      break;
-    case 1:
-      color = "#F98C1D";
-      break;
-    case 2:
-      color = "#DAB84D";
-      break;
-    case 3:
-      color = "#459E6F";
-      break;
-    case 4:
-      color = "#3088C1";
-      break;
-    case 5:
-      color = "purple";
-      break;
+  if (_.isNumber(level)) {
+    switch (level % 6) {
+      case 0:
+        color = "#FF2A33";
+        break;
+      case 1:
+        color = "#F98C1D";
+        break;
+      case 2:
+        color = "#DAB84D";
+        break;
+      case 3:
+        color = "#459E6F";
+        break;
+      case 4:
+        color = "#3088C1";
+        break;
+      case 5:
+        color = "purple";
+        break;
+    }
   }
 
   const hasParent = useMemo(() => {
-    if (level > 0 || !comment || !singleCommentThread) {
+    if (_.isNil(level) || level > 0 || !comment || !singleCommentThread) {
       return false;
     }
     const parent = comment.path.split(".").slice(-2);
@@ -505,6 +509,20 @@ export function PostComment({
     queryKeyParentId,
     canMod,
   });
+
+  const bodyRenderer = commentView && (
+    <>
+      {commentView?.deleted && <span className="italic text-sm">deleted</span>}
+      {commentView?.removed && <span className="italic text-sm">removed</span>}
+      {!commentView && <span className="italic text-sm">missing comment</span>}
+      {!hideContent && (
+        <MarkdownRenderer
+          markdown={commentView.body}
+          className={cn(highlightComment && "bg-brand/10 dark:bg-brand/20")}
+        />
+      )}
+    </>
+  );
 
   const content = (
     <div
@@ -576,7 +594,7 @@ export function PostComment({
           <Byline
             className={cn(
               open && "pb-1.5",
-              level > 0 && !open && "pb-3",
+              level && level > 0 && !open && "pb-3",
               highlightComment && "bg-brand/10 dark:bg-brand/20",
             )}
             actorId={commentView.creatorApId}
@@ -589,26 +607,22 @@ export function PostComment({
         )}
 
         <CollapsibleContent>
-          {commentView?.deleted && (
-            <span className="italic text-sm">deleted</span>
-          )}
-          {commentView?.removed && (
-            <span className="italic text-sm">removed</span>
-          )}
-          {!commentView && (
-            <span className="italic text-sm">missing comment</span>
-          )}
-
-          {!hideContent && !editingState && commentView && (
-            <div {...doubleTapLike}>
-              <MarkdownRenderer
-                markdown={commentView.body}
-                className={cn(
-                  highlightComment && "bg-brand/10 dark:bg-brand/20",
-                )}
-              />
-            </div>
-          )}
+          {!editingState &&
+            commentView &&
+            (standalone ? (
+              <Link
+                to="/inbox/c/:communityName/posts/:post/comments/:comment"
+                params={{
+                  post: encodeApId(commentView.postApId),
+                  comment: encodeApId(commentView.apId),
+                  communityName: commentView.communitySlug,
+                }}
+              >
+                {bodyRenderer}
+              </Link>
+            ) : (
+              <div {...doubleTapLike}>{bodyRenderer}</div>
+            ))}
 
           {/* Editing */}
           {editingState && (
@@ -646,7 +660,7 @@ export function PostComment({
                 triggerAsChild
               />
 
-              {!commentView.locked && !postLocked && (
+              {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
                   onClick={() =>
                     loadCommentIntoEditor({
@@ -683,7 +697,7 @@ export function PostComment({
                   queryKeyParentId={queryKeyParentId}
                   key={id}
                   commentTree={map}
-                  level={level + 1}
+                  level={_.isNumber(level) ? level + 1 : level}
                   opId={opId}
                   communityName={communityName}
                   highlightCommentId={highlightCommentId}

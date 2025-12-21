@@ -291,6 +291,22 @@ export const postReportSchema = z.object({
   reason: z.string(),
 });
 
+export const commentReportSchema = z.object({
+  createdAt: z.string(),
+  id: z.number(),
+  commentId: z.number(),
+  commentApId: z.string(),
+  commentPath: z.string(),
+  creatorId: z.number(),
+  creatorApId: z.string(),
+  creatorSlug: z.string(),
+  resolverId: z.number().nullable(),
+  resolverApId: z.string().nullable(),
+  resolverSlug: z.string().nullable(),
+  resolved: z.boolean(),
+  reason: z.string(),
+});
+
 export const slugSchema = z.custom<`${string}@${string}`>((val) => {
   return /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val);
 });
@@ -346,6 +362,7 @@ export namespace Schemas {
   export type LinkMetadata = z.infer<typeof linkMetadataSchema>;
 
   export type PostReport = z.infer<typeof postReportSchema>;
+  export type CommentReport = z.infer<typeof commentReportSchema>;
 }
 
 export namespace Forms {
@@ -394,7 +411,17 @@ export namespace Forms {
     unresolvedOnly?: boolean;
   };
 
+  export type GetCommentReports = {
+    pageCursor?: string;
+    unresolvedOnly?: boolean;
+  };
+
   export type ResolvePostReport = {
+    reportId: number;
+    resolved: boolean;
+  };
+
+  export type ResolveCommentReport = {
     reportId: number;
     resolved: boolean;
   };
@@ -826,9 +853,25 @@ export abstract class ApiBlueprint<C> {
     }
   >;
 
+  abstract getCommentReports(
+    form: Forms.GetCommentReports,
+    options?: RequestOptions,
+  ): Promise<
+    Paginated & {
+      commentReports: Schemas.CommentReport[];
+      users: Schemas.Person[];
+      comments: Schemas.Comment[];
+      communities: Schemas.Community[];
+    }
+  >;
+
   abstract resolvePostReport(
     form: Forms.ResolvePostReport,
   ): Promise<Schemas.PostReport>;
+
+  abstract resolveCommentReport(
+    form: Forms.ResolvePostReport,
+  ): Promise<Schemas.CommentReport>;
 
   abstract resolveObject(
     form: Forms.ResolveObject,

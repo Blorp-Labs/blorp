@@ -1705,6 +1705,99 @@ export function useResolvePostReportMutation() {
   });
 }
 
+export function useResolveCommentReportMutation() {
+  const { api } = useApiClients();
+  const queryClient = useQueryClient();
+  const commentReportsQueryKey = useCommentReportsKey();
+  const notificationCountQueryKey = useNotificationCountQueryKey();
+
+  return useMutation({
+    mutationFn: async (form: Forms.ResolvePostReport) =>
+      (await api).resolveCommentReport(form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: notificationCountQueryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: commentReportsQueryKey,
+      });
+    },
+    onMutate: (form) => {
+      const reports = queryClient.getQueryData<
+        InfiniteData<{ commentReports: Schemas.CommentReport[] }, unknown>
+      >(commentReportsQueryKey);
+      if (reports) {
+        const patched = produce(reports, (prev) => {
+          for (const page of prev.pages) {
+            for (const commentReport of page.commentReports) {
+              if (commentReport.id === form.reportId) {
+                commentReport.resolved = form.resolved;
+                break;
+              }
+            }
+          }
+        });
+        queryClient.setQueryData(commentReportsQueryKey, patched);
+      }
+    },
+    onError: (err, { resolved }) => {
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(
+          `Failed to mark comment report ${resolved ? "resolved" : "unresolved"}`,
+        );
+      }
+      console.error(err);
+    },
+  });
+}
+
+function useCommentReportsKey() {
+  const { queryKeyPrefix } = useApiClients();
+  return [...queryKeyPrefix, "getCommentReports"];
+}
+
+export function useCommentReportsQuery() {
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const { api } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const cacheComments = useCommentsStore((s) => s.cacheComments);
+  const queryKey = useCommentReportsKey();
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam, signal }) => {
+      const { comments, users, communities, commentReports, nextCursor } =
+        await (
+          await api
+        ).getCommentReports(
+          {
+            pageCursor: pageParam,
+          },
+          {
+            signal,
+          },
+        );
+      cacheProfiles(getCachePrefixer(), users);
+      cacheCommunities(
+        getCachePrefixer(),
+        communities.map((communityView) => ({ communityView })),
+      );
+      cacheComments(getCachePrefixer(), comments);
+      return {
+        commentReports,
+        nextCursor,
+      };
+    },
+    initialPageParam: INIT_PAGE_TOKEN,
+    getNextPageParam: (prev) => prev.nextCursor,
+    enabled: isLoggedIn,
+    refetchOnWindowFocus: "always",
+  });
+}
+
 function useNotificationCountQueryKey() {
   const { apis } = useApiClients();
   const queryKey = [
@@ -1731,26 +1824,33 @@ export function useNotificationCount() {
 
           const a = await api;
 
-          const [mentions, replies, postReports] = await Promise.allSettled([
-            a.getMentions(
-              {
-                unreadOnly: true,
-              },
-              { signal },
-            ),
-            a.getReplies(
-              {
-                unreadOnly: true,
-              },
-              { signal },
-            ),
-            a.getPostReports(
-              {
-                unresolvedOnly: true,
-              },
-              { signal },
-            ),
-          ]);
+          const [mentions, replies, postReports, commentReports] =
+            await Promise.allSettled([
+              a.getMentions(
+                {
+                  unreadOnly: true,
+                },
+                { signal },
+              ),
+              a.getReplies(
+                {
+                  unreadOnly: true,
+                },
+                { signal },
+              ),
+              a.getPostReports(
+                {
+                  unresolvedOnly: true,
+                },
+                { signal },
+              ),
+              a.getCommentReports(
+                {
+                  unresolvedOnly: true,
+                },
+                { signal },
+              ),
+            ]);
           const mentionCount =
             mentions.status === "fulfilled"
               ? mentions.value.mentions.length
@@ -1761,7 +1861,13 @@ export function useNotificationCount() {
             postReports.status === "fulfilled"
               ? postReports.value.postReports.length
               : 0;
-          return mentionCount + repliesCount + postReportsCount;
+          const commentReportsCount =
+            commentReports.status === "fulfilled"
+              ? commentReports.value.commentReports.length
+              : 0;
+          return (
+            mentionCount + repliesCount + postReportsCount + commentReportsCount
+          );
         }),
       );
 

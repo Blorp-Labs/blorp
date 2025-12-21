@@ -1235,7 +1235,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return {} as any;
   }
 
+  async getCommentReports(
+    form: Forms.GetCommentReports,
+    options: RequestOptions,
+  ) {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async resolvePostReport(form: Forms.ResolvePostReport) {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async resolveCommentReport(form: Forms.ResolveCommentReport) {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }
