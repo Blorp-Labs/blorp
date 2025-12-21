@@ -520,9 +520,6 @@ export default function Inbox() {
                     Post Reports
                   </ToggleGroupItem>
                 </BadgeCount>
-                <ToggleGroupItem value="comment-reports">
-                  Comment Reports
-                </ToggleGroupItem>
               </ToggleGroup>
             </ToolbarButtons>
           </IonToolbar>
@@ -557,9 +554,6 @@ export default function Inbox() {
                       Post Reports
                     </ToggleGroupItem>
                   </BadgeCount>
-                  <ToggleGroupItem value="comment-reports">
-                    Comment Reports
-                  </ToggleGroupItem>
                 </ToggleGroup>
                 <Tooltip>
                   <TooltipTrigger>
