@@ -368,7 +368,7 @@ function convertPost({
   };
 }
 function convertComment(
-  commentView: Omit<lemmyV4.CommentView, "post_tags">,
+  commentView: Omit<lemmyV4.CommentView, "post_tags" | "can_mod">,
 ): Schemas.Comment {
   const { post, creator, comment, community, comment_actions } = commentView;
   const myVote = comment_actions
@@ -1313,8 +1313,6 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         convertPost({
           ...report,
           creator: report.post_creator,
-          // If you're the mod you're probably not banned
-          creator_banned_from_community: false,
         }),
       ),
       communities: post_reports.map((report) =>
@@ -1353,9 +1351,6 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         convertComment({
           ...report,
           creator: report.comment_creator,
-          // If you're the mod you're probably not banned
-          creator_banned_from_community: false,
-          can_mod: true,
         }),
       ),
       communities: comment_reports.map((report) =>
