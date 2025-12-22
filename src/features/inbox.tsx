@@ -594,6 +594,9 @@ export default function Inbox() {
   const hasUnresolvedPostReport = !!postReports.data?.pages
     .flatMap((pages) => pages.postReports)
     .find((r) => !r.resolved);
+  const hasUnresolvedCommentReport = !!commentReports.data?.pages
+    .flatMap((pages) => pages.commentReports)
+    .find((r) => !r.resolved);
 
   const confirmationAlrt = useConfirmationAlert();
 
@@ -646,9 +649,11 @@ export default function Inbox() {
                     Post Reports
                   </ToggleGroupItem>
                 </BadgeCount>
-                <ToggleGroupItem value="comment-reports">
-                  Comment Reports
-                </ToggleGroupItem>
+                <BadgeCount showBadge={hasUnresolvedCommentReport}>
+                  <ToggleGroupItem value="comment-reports">
+                    Comment Reports
+                  </ToggleGroupItem>
+                </BadgeCount>
               </ToggleGroup>
             </ToolbarButtons>
           </IonToolbar>
@@ -683,9 +688,11 @@ export default function Inbox() {
                       Post Reports
                     </ToggleGroupItem>
                   </BadgeCount>
-                  <ToggleGroupItem value="comment-reports">
-                    Comment Reports
-                  </ToggleGroupItem>
+                  <BadgeCount showBadge={hasUnresolvedCommentReport}>
+                    <ToggleGroupItem value="comment-reports">
+                      Comment Reports
+                    </ToggleGroupItem>
+                  </BadgeCount>
                 </ToggleGroup>
                 <Tooltip>
                   <TooltipTrigger>
