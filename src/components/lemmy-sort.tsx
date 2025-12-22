@@ -20,7 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { useAvailableSorts, useSite, useSoftware } from "../lib/api";
+import { useAvailableSorts } from "../lib/api";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
@@ -494,18 +494,16 @@ export function CommunityFilter() {
     [isLoggedIn, setListingType, instanceHost],
   );
 
-  const value = LISTING_TYPE_OPTIONS.filter((opt) => _.isObject(opt)).find(
-    (opt) => opt.value === listingType,
-  );
-
   return (
     <ActionMenu
       align="start"
       actions={LISTING_TYPE_OPTIONS}
       selectedValue={listingType}
       trigger={
-        <div className="flex flex-row items-center gap-0.5">
-          <span className="font-black capitalize">{value?.text}</span>
+        <div className="flex flex-row items-center gap-0.5 text-lg">
+          <span className="font-black capitalize">
+            {listingType === "ModeratorView" ? "Moderating" : listingType}
+          </span>
           <IoChevronDown className="text-muted-foreground" />
         </div>
       }

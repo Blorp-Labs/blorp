@@ -139,7 +139,7 @@ export function useCommentActions({
 
   const showCommentRemoveModal = useShowCommentRemoveModal();
 
-  const software = useSoftware();
+  const { software } = useSoftware();
 
   if (!commentView) {
     return [];

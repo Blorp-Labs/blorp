@@ -494,7 +494,9 @@ export namespace Forms {
     pageCursor?: string;
   };
 
-  export type GetFeeds = {};
+  export type GetFeeds = {
+    type?: "All" | "Local" | "Subscribed";
+  };
 
   export type FollowCommunity = {
     communityId: number;
@@ -671,6 +673,7 @@ export abstract class ApiBlueprint<C> {
   abstract limit: number;
 
   abstract software: Software;
+  abstract softwareVersion: string;
 
   abstract getSite(options?: RequestOptions): Promise<{
     site: Schemas.Site;

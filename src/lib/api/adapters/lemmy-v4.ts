@@ -513,8 +513,30 @@ function convertCommentReport(
   };
 }
 
+function convertFeed(multiCommunity: lemmyV4.MultiCommunityView): Schemas.Feed {
+  const { multi } = multiCommunity;
+  return {
+    id: multi.id,
+    apId: multi.ap_id,
+    createdAt: multi.published_at,
+    name: multi.name,
+    slug: createSlug({
+      name: multi.name,
+      apId: multi.ap_id,
+    }).slug,
+    icon: null,
+    description: multi.description ?? null,
+    banner: null,
+    subscriberCount: multi.subscribers,
+    communityCount: multi.communities,
+    nsfw: false,
+    communitySlugs: [],
+  };
+}
+
 export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   software = Software.LEMMY;
+  softwareVersion: string;
 
   client: lemmyV4.LemmyHttp;
   isLoggedIn = false;
@@ -537,17 +559,29 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       const community = resolve?.type_ === "community" ? resolve : undefined;
       const person = resolve?.type_ === "person" ? resolve : undefined;
       const comment = resolve?.type_ === "comment" ? resolve : undefined;
+      const multiCommunity =
+        resolve?.type_ === "multi_community" ? resolve : undefined;
       return {
         post_id: post?.post.id,
         comment_id: comment?.comment.id,
         community_id: community?.community.id,
         person_id: person?.person.id,
+        multi_community_id: multiCommunity?.multi.id,
       };
     },
     (apId) => apId,
   );
 
-  constructor({ instance, jwt }: { instance: string; jwt?: string }) {
+  constructor({
+    instance,
+    jwt,
+    softwareVersion,
+  }: {
+    instance: string;
+    jwt?: string;
+    softwareVersion: string;
+  }) {
+    this.softwareVersion = softwareVersion;
     this.instance = instance;
     this.client = new lemmyV4.LemmyHttp(instance.replace(/\/$/, ""), {
       headers: DEFAULT_HEADERS,
@@ -739,6 +773,16 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
     const sort = mapPostSort(form.sort);
+
+    let multi_community_id: number | undefined = form.feedId;
+    if (form.feedApId && _.isNil(multi_community_id)) {
+      multi_community_id = (await this.resolveObjectId(form.feedApId))
+        .multi_community_id;
+      if (!multi_community_id) {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+    }
+
     const posts = await this.client.getPosts(
       {
         show_read: form.showRead,
@@ -756,6 +800,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
         limit: this.limit,
         community_name: form.communitySlug,
+        multi_community_id,
       },
       options,
     );
@@ -860,9 +905,22 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     };
   }
 
-  async getFeeds() {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+  async getFeeds(form: Forms.GetFeeds) {
+    const { items } = await this.client.listMultiCommunities({
+      limit: this.limit,
+      type_: form.type
+        ? remapEnum(form.type, {
+            All: "all",
+            Local: "local",
+            Subscribed: "subscribed",
+          } as const)
+        : undefined,
+    });
+    return {
+      feeds: items.map(convertFeed),
+      communities: [],
+      nextCursor: null,
+    };
   }
 
   async followCommunity(form: Forms.FollowCommunity) {

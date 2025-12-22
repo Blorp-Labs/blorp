@@ -4,7 +4,6 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
-  queryOptions,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -112,14 +111,29 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
 }
 
 export function useSoftware(account?: Account) {
-  const [software, setSoftware] = useState<"lemmy" | "piefed">();
+  const [software, setSoftware] = useState<
+    | {
+        software: "lemmy" | "piefed";
+        softwareVersion: string;
+      }
+    | {
+        software: undefined;
+        softwareVersion: undefined;
+      }
+  >({
+    software: undefined,
+    softwareVersion: undefined,
+  });
   const { api } = useApiClients(account);
 
   useEffect(() => {
     let canceled = false;
-    api.then((ready) => {
+    api.then(({ software, softwareVersion }) => {
       if (!canceled) {
-        setSoftware(ready.software);
+        setSoftware({
+          software,
+          softwareVersion,
+        });
       }
     });
     return () => {
@@ -614,16 +628,19 @@ export function useListCommunities(
   });
 }
 
-export function useListFeeds(options?: QueryOverwriteOptions) {
+export function useListFeeds(
+  form: Forms.GetFeeds,
+  options?: QueryOverwriteOptions,
+) {
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheFeeds = useFeedStore((s) => s.cacheFeeds);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
-  const queryKey = [...queryKeyPrefix, "getFeeds"];
+  const queryKey = [...queryKeyPrefix, "getFeeds", form];
   return useThrottledInfiniteQuery({
     queryKey,
-    queryFn: async (form: Forms.GetFeeds) => {
-      const res = await (await api).getFeeds(form);
+    queryFn: async ({ signal }) => {
+      const res = await (await api).getFeeds(form, { signal });
       cacheFeeds(getCachePrefixer(), res.feeds);
       cacheCommunities(
         getCachePrefixer(),
