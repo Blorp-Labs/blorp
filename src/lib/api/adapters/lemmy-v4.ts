@@ -367,7 +367,9 @@ function convertPost({
     myVote: post_actions ? (post_actions.vote_is_upvote ? 1 : -1) : undefined,
   };
 }
-function convertComment(commentView: lemmyV4.CommentView): Schemas.Comment {
+function convertComment(
+  commentView: Omit<lemmyV4.CommentView, "post_tags" | "can_mod">,
+): Schemas.Comment {
   const { post, creator, comment, community, comment_actions } = commentView;
   const myVote = comment_actions
     ? comment_actions.vote_is_upvote
@@ -452,6 +454,62 @@ function convertMentionReply(
     postName: post.name,
     deleted: comment.deleted,
     removed: comment.removed,
+  };
+}
+
+function convertPostReport(report: lemmyV4.PostReportView) {
+  return {
+    resolved: report.post_report.resolved,
+    createdAt: report.post_report.published_at,
+    id: report.post_report.id,
+    postId: report.post.id,
+    postApId: report.post.ap_id,
+    creatorId: report.creator.id,
+    creatorApId: report.creator.ap_id,
+    creatorSlug: createSlug({
+      apId: report.creator.ap_id,
+      name: report.creator.name,
+    }).slug,
+    resolverId: report.resolver?.id ?? null,
+    resolverApId: report.resolver?.ap_id ?? null,
+    resolverSlug: report.resolver
+      ? createSlug({
+          apId: report.resolver.ap_id,
+          name: report.resolver.name,
+        }).slug
+      : null,
+    originalPostName: report.post_report.original_post_name,
+    originalPostBody: report.post_report.original_post_body ?? null,
+    originalPostUrl: report.post_report.original_post_url ?? null,
+    reason: report.post_report.reason,
+  };
+}
+
+function convertCommentReport(
+  report: lemmyV4.CommentReportView,
+): Schemas.CommentReport {
+  return {
+    resolved: report.comment_report.resolved,
+    createdAt: report.comment_report.published_at,
+    id: report.comment_report.id,
+    commentId: report.comment.id,
+    commentApId: report.comment.ap_id,
+    commentPath: report.comment.path,
+    creatorId: report.creator.id,
+    creatorApId: report.creator.ap_id,
+    creatorSlug: createSlug({
+      apId: report.creator.ap_id,
+      name: report.creator.name,
+    }).slug,
+    resolverId: report.resolver?.id ?? null,
+    resolverApId: report.resolver?.ap_id ?? null,
+    resolverSlug: report.resolver
+      ? createSlug({
+          apId: report.resolver.ap_id,
+          name: report.resolver.name,
+        }).slug
+      : null,
+    reason: report.comment_report.reason,
   };
 }
 
@@ -1231,13 +1289,91 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getPostReports(form: Forms.GetPostReports, options: RequestOptions) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { items, next_page } = await this.client.listReports(
+      {
+        type_: "posts",
+        unresolved_only: form.unresolvedOnly,
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+      },
+      options,
+    );
+    const post_reports = _.compact(
+      items.map((item) => (item.type_ === "post" ? item : null)),
+    );
+    return {
+      postReports: post_reports.map(convertPostReport),
+      users: _.compact(
+        post_reports.flatMap(({ creator, resolver }) => [
+          convertPerson({ person: creator }),
+          resolver ? convertPerson({ person: resolver }) : null,
+        ]),
+      ),
+      posts: post_reports.flatMap((report) =>
+        convertPost({
+          ...report,
+          creator: report.post_creator,
+        }),
+      ),
+      communities: post_reports.map((report) =>
+        convertCommunity({ community: report.community }),
+      ),
+      nextCursor: next_page ?? null,
+    };
+  }
+
+  async getCommentReports(
+    form: Forms.GetCommentReports,
+    options: RequestOptions,
+  ) {
+    const { items, next_page } = await this.client.listReports(
+      {
+        type_: "comments",
+        unresolved_only: form.unresolvedOnly,
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+      },
+      options,
+    );
+    const comment_reports = _.compact(
+      items.map((item) => (item.type_ === "comment" ? item : null)),
+    );
+    const commentReports = comment_reports.map(convertCommentReport);
+    return {
+      commentReports,
+      users: _.compact(
+        comment_reports.flatMap(({ creator, resolver }) => [
+          convertPerson({ person: creator }),
+          resolver ? convertPerson({ person: resolver }) : null,
+        ]),
+      ),
+      comments: comment_reports.flatMap((report) =>
+        convertComment({
+          ...report,
+          creator: report.comment_creator,
+        }),
+      ),
+      communities: comment_reports.map((report) =>
+        convertCommunity({ community: report.community }),
+      ),
+      nextCursor: next_page ?? null,
+    };
   }
 
   async resolvePostReport(form: Forms.ResolvePostReport) {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+    const { post_report_view } = await this.client.resolvePostReport({
+      report_id: form.reportId,
+      resolved: form.resolved,
+    });
+    return convertPostReport(post_report_view);
+  }
+
+  async resolveCommentReport(form: Forms.ResolveCommentReport) {
+    const { comment_report_view } = await this.client.resolveCommentReport({
+      report_id: form.reportId,
+      resolved: form.resolved,
+    });
+    return convertCommentReport(comment_report_view);
   }
 
   async resolveObject(form: Forms.ResolveObject, options?: RequestOptions) {

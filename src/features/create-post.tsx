@@ -31,10 +31,9 @@ import {
   useIonAlert,
 } from "@ionic/react";
 import { MarkdownEditor } from "../components/markdown/editor";
-import { Button } from "../components/ui/button";
+import { Button, LoadingButton } from "../components/ui/button";
 import { close } from "ionicons/icons";
 import { FaCheck, FaChevronDown } from "react-icons/fa6";
-import { LuLoaderCircle } from "react-icons/lu";
 import { Input } from "../components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { useDropzone } from "react-dropzone";
@@ -310,6 +309,12 @@ export function CreatePost() {
 
   const createPost = useCreatePost();
   const editPost = useEditPost(draftId);
+  const resetCreatePost = createPost.reset;
+  const resetEditPost = editPost.reset;
+  useEffect(() => {
+    resetCreatePost();
+    resetEditPost();
+  }, [draftId, resetCreatePost, resetEditPost]);
 
   const linkMetadata = useLinkMetadata();
 
@@ -333,7 +338,7 @@ export function CreatePost() {
   };
 
   const getPostButton = (className: string) => (
-    <Button
+    <LoadingButton
       size="sm"
       className={className}
       onClick={() => {
@@ -350,10 +355,14 @@ export function CreatePost() {
         }
       }}
       disabled={!draft.communitySlug || (isEdit && !canEdit)}
+      loading={
+        isEdit
+          ? editPost.isPending || editPost.isSuccess
+          : createPost.isPending || createPost.isSuccess
+      }
     >
       {isEdit ? "Update" : "Post"}
-      {createPost.isPending && <LuLoaderCircle className="animate-spin" />}
-    </Button>
+    </LoadingButton>
   );
 
   return (

@@ -4,6 +4,7 @@ import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { RelativeTime } from "@/src/components/relative-time";
 import {
+  useCommentReportsQuery,
   useMarkAllRead,
   useMarkPersonMentionRead,
   useMarkReplyRead,
@@ -12,6 +13,7 @@ import {
   usePostReportsQuery,
   useReplies,
   useResolvePostReportMutation,
+  useResolveCommentReportMutation,
 } from "@/src/lib/api/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
@@ -42,7 +44,10 @@ import {
   CommentVoting,
 } from "../components/comments/comment-buttons";
 import { useCommentsByPaths } from "../stores/comments";
-import { useCommentActions } from "../components/comments/post-comment";
+import {
+  PostComment,
+  useCommentActions,
+} from "../components/comments/post-comment";
 import { Page } from "../components/page";
 import { usePostFromStore } from "../stores/posts";
 import { SmallPostCard } from "../components/posts/post";
@@ -58,7 +63,8 @@ type Item =
       id: string;
       mention: Schemas.Mention;
     }
-  | { id: string; postReport: Schemas.PostReport };
+  | { id: string; postReport: Schemas.PostReport }
+  | { id: string; commentReport: Schemas.CommentReport };
 
 function Placeholder() {
   return (
@@ -148,6 +154,93 @@ function PostReport({
                 onCheckedChange={(checked) =>
                   resolvePostReport.mutate({
                     reportId: postReport.id,
+                    resolved: checked === true,
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
+
+function CommentReport({
+  commentReport,
+  noBorder = false,
+}: {
+  commentReport: Schemas.CommentReport;
+  noBorder?: boolean;
+}) {
+  const [commentView] = useCommentsByPaths([commentReport.commentPath]);
+  const resolveCommentReport = useResolveCommentReportMutation();
+  return (
+    <ContentGutters noMobilePadding>
+      <div
+        className={cn(
+          "flex-1",
+          !noBorder && "border-b",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        <div className="flex mt-2.5 mb-1 gap-3 items-start">
+          <Link
+            to="/inbox/u/:userId"
+            params={{ userId: encodeApId(commentReport.creatorApId) }}
+          >
+            <BadgeIcon
+              icon={<Report className="h-full w-full text-muted-foreground" />}
+            >
+              <PersonAvatar actorId={commentReport.creatorApId} size="sm" />
+            </BadgeIcon>
+          </Link>
+          <div
+            className={cn(
+              "flex-1 text-sm leading-6 min-w-0 gap-2 flex flex-col",
+              !commentReport.resolved && "border-l-3 border-l-brand pl-2",
+            )}
+          >
+            {commentView && (
+              <div className="border px-2 rounded-lg">
+                <PostComment
+                  communityName={commentView.communitySlug}
+                  postApId={commentView.postApId}
+                  postLocked={false}
+                  commentTree={{
+                    comment: commentView,
+                    imediateChildren: 0,
+                    sort: 0,
+                  }}
+                  canMod
+                  standalone
+                />
+              </div>
+            )}
+            <p>{commentReport.reason}</p>
+            <div className="flex flex-row items-center gap-2">
+              <RelativeTime time={commentReport.createdAt} />
+              <div className="flex-1" />
+              {commentReport.resolverApId && (
+                <>
+                  <i>{commentReport.resolved ? "Resolved" : "Unresolved"} by</i>
+                  <PersonHoverCard
+                    actorId={commentReport.resolverApId}
+                    align="center"
+                  >
+                    <PersonAvatar
+                      actorId={commentReport.resolverApId}
+                      size="xs"
+                    />
+                  </PersonHoverCard>
+                </>
+              )}
+              <Checkbox
+                checked={commentReport.resolved}
+                onCheckedChange={(checked) =>
+                  resolveCommentReport.mutate({
+                    reportId: commentReport.id,
                     resolved: checked === true,
                   })
                 }
@@ -372,6 +465,7 @@ export default function Inbox() {
     unreadOnly: type === "unread",
   });
   const postReports = usePostReportsQuery();
+  const commentReports = useCommentReportsQuery();
 
   // This updates in the background,
   // but calling it here ensures the
@@ -386,6 +480,7 @@ export default function Inbox() {
       | { id: string; reply: Schemas.Reply }
       | { id: string; mention: Schemas.Mention }
       | { id: string; postReport: Schemas.PostReport }
+      | { id: string; commentReport: Schemas.CommentReport }
     )[] = [];
 
     let isPending = false;
@@ -429,11 +524,24 @@ export default function Inbox() {
           .flatMap((p) => p.postReports)
           .map((postReport) => ({
             postReport,
-            id: `m${postReport.id}`,
+            id: `pr${postReport.id}`,
           })) ?? []),
       );
       isPending = isPending || postReports.isPending;
       isRefetching = isRefetching || postReports.isRefetching;
+    }
+
+    if (commentReports.data && type === "comment-reports") {
+      data.push(
+        ...(commentReports.data.pages
+          .flatMap((p) => p.commentReports)
+          .map((commentReport) => ({
+            commentReport,
+            id: `cr${commentReport.id}`,
+          })) ?? []),
+      );
+      isPending = isPending || commentReports.isPending;
+      isRefetching = isRefetching || commentReports.isRefetching;
     }
 
     data.sort((a, b) => {
@@ -442,13 +550,17 @@ export default function Inbox() {
           ? a.reply.createdAt
           : "mention" in a
             ? a.mention.createdAt
-            : a.postReport.createdAt;
+            : "postReport" in a
+              ? a.postReport.createdAt
+              : a.commentReport.createdAt;
       const bPublished =
         "reply" in b
           ? b.reply.createdAt
           : "mention" in b
             ? b.mention.createdAt
-            : b.postReport.createdAt;
+            : "postReport" in b
+              ? b.postReport.createdAt
+              : b.commentReport.createdAt;
       return bPublished.localeCompare(aPublished);
     });
 
@@ -457,7 +569,21 @@ export default function Inbox() {
       isPending,
       isRefetching,
     };
-  }, [type, replies.data, mentions.data, postReports]);
+  }, [
+    type,
+    replies.data,
+    replies.isPending,
+    replies.isRefetching,
+    mentions.data,
+    mentions.isPending,
+    mentions.isRefetching,
+    postReports.data,
+    postReports.isPending,
+    postReports.isRefetching,
+    commentReports.data,
+    commentReports.isPending,
+    commentReports.isRefetching,
+  ]);
 
   const hasUnreadReply = !!replies.data?.pages
     .flatMap((pages) => pages.replies)
@@ -520,6 +646,9 @@ export default function Inbox() {
                     Post Reports
                   </ToggleGroupItem>
                 </BadgeCount>
+                <ToggleGroupItem value="comment-reports">
+                  Comment Reports
+                </ToggleGroupItem>
               </ToggleGroup>
             </ToolbarButtons>
           </IonToolbar>
@@ -554,6 +683,9 @@ export default function Inbox() {
                       Post Reports
                     </ToggleGroupItem>
                   </BadgeCount>
+                  <ToggleGroupItem value="comment-reports">
+                    Comment Reports
+                  </ToggleGroupItem>
                 </ToggleGroup>
                 <Tooltip>
                   <TooltipTrigger>
@@ -587,6 +719,11 @@ export default function Inbox() {
                   <></>
                 </ContentGutters>
               );
+            }
+
+            if ("commentReport" in item) {
+              const commentReport = item.commentReport;
+              return <CommentReport commentReport={commentReport} />;
             }
 
             if ("postReport" in item) {

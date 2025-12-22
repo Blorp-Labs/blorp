@@ -11,7 +11,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { Button } from "../ui/button";
+import { Button, LoadingButton } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
 import { useAuth } from "@/src/stores/auth";
@@ -81,6 +81,14 @@ export function PostReportProvider({
     }
   };
 
+  const isPending = post
+    ? createPostReport.isPending
+    : createCommentReport.isPending;
+
+  const isSuccess = post
+    ? createPostReport.isSuccess
+    : createCommentReport.isSuccess;
+
   const cancel = () => {
     setApId(undefined);
     setCommentPath(undefined);
@@ -90,6 +98,10 @@ export function PostReportProvider({
     <Context.Provider value={value}>
       <IonModal
         isOpen={!!post || !!commentPath}
+        onDidPresent={() => {
+          createPostReport.reset();
+          createCommentReport.reset();
+        }}
         onDidDismiss={() => {
           setApId(undefined);
           setCommentPath(undefined);
@@ -114,7 +126,9 @@ export function PostReportProvider({
             className="h-full"
             onSubmit={(e) => {
               e.preventDefault();
-              submit();
+              if (!isPending && !isSuccess) {
+                submit();
+              }
             }}
           >
             <div className="p-3 h-full flex flex-col gap-3">
@@ -141,7 +155,7 @@ export function PostReportProvider({
                   Cancel
                 </Button>
 
-                <Button>Submit</Button>
+                <LoadingButton loading={isPending}>Submit</LoadingButton>
               </div>
             </div>
           </form>
