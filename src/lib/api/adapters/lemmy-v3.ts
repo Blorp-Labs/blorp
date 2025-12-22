@@ -381,6 +381,7 @@ function convertCommentReport(
 
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
+  softwareVersion: string;
 
   client: lemmyV3.LemmyHttp;
   instance: string;
@@ -410,7 +411,16 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     (apId) => apId,
   );
 
-  constructor({ instance, jwt }: { instance: string; jwt?: string }) {
+  constructor({
+    instance,
+    jwt,
+    softwareVersion,
+  }: {
+    instance: string;
+    jwt?: string;
+    softwareVersion: string;
+  }) {
+    this.softwareVersion = softwareVersion;
     this.instance = instance.replace(/\/$/, "");
     this.client = new lemmyV3.LemmyHttp(this.instance, {
       headers: DEFAULT_HEADERS,

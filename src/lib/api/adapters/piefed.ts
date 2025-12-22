@@ -767,6 +767,7 @@ export function flattenCommentViews(
 
 export class PieFedApi implements ApiBlueprint<null> {
   software = Software.PIEFED;
+  softwareVersion: string;
 
   client = null;
   instance: string;
@@ -923,7 +924,16 @@ export class PieFedApi implements ApiBlueprint<null> {
     (apId) => apId,
   );
 
-  constructor({ instance, jwt }: { instance: string; jwt?: string }) {
+  constructor({
+    instance,
+    jwt,
+    softwareVersion,
+  }: {
+    instance: string;
+    jwt?: string;
+    softwareVersion: string;
+  }) {
+    this.softwareVersion = softwareVersion;
     this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
   }

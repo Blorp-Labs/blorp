@@ -55,6 +55,7 @@ import { removeMd } from "../components/markdown/remove-md";
 import { encodeApId } from "../lib/api/utils";
 import z from "zod";
 import { VirtualList } from "../components/virtual-list";
+import { supportsFeeds } from "../lib/api/adapters/support";
 
 const NO_ITEMS = "NO_ITEMS";
 
@@ -72,7 +73,7 @@ function SortControlBarContent() {
     <>
       {selectedSort && (
         <Button size="sm" variant="outline" onClick={() => clearSelectedSort()}>
-          {selectedSort}
+          {_.capitalize(selectedSort)}
           <X />
         </Button>
       )}
@@ -113,13 +114,26 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
+  const feeds = useListFeeds(
+    {
+      type: listingType === "ModeratorView" ? undefined : listingType,
+    },
+    {
+      enabled: sort === FEEDS,
+    },
+  );
+  const feedsData = useMemo(
+    () => feeds.data?.pages.flatMap((p) => p.feeds),
+    [feeds.data?.pages],
+  );
+
   const communitiesQuery = useListCommunities(
     {
       type: listingType,
       sort,
     },
     {
-      enabled: listingType !== "ModeratorView",
+      enabled: listingType !== "ModeratorView" && sort !== FEEDS,
     },
   );
 
@@ -163,12 +177,12 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
   }
 
   const vlist = (
-    <VirtualList<string>
+    <VirtualList<string | Schemas.Feed>
       key={listingType}
       fullscreen
       scrollHost
       numColumns={numCols}
-      data={noItems ? [NO_ITEMS] : communities}
+      data={noItems ? [NO_ITEMS] : sort === FEEDS ? feedsData : communities}
       renderItem={({ item }) => {
         if (item === NO_ITEMS) {
           return (
@@ -178,9 +192,17 @@ function ExpandedCommunities({ sort }: { sort?: string }) {
           );
         }
 
+        if (_.isString(item)) {
+          return (
+            <ContentGutters className="md:contents">
+              <CommunityCard communitySlug={item} className="mt-1" />
+            </ContentGutters>
+          );
+        }
+
         return (
           <ContentGutters className="md:contents">
-            <CommunityCard communitySlug={item} className="mt-1" />
+            <FeedCard {...item} className="mt-1" expand={false} />
           </ContentGutters>
         );
       }}
@@ -406,14 +428,20 @@ function FeedCard({
   slug,
   apId,
   communitySlugs,
-}: Schemas.Feed) {
+  description,
+  className,
+  expand,
+}: Schemas.Feed & {
+  className?: string;
+  expand: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const hasFocus = useElementHasFocus(ref);
   const ctx = useLinkContext();
   const host = slug?.split("@")?.[1];
   const communityViews = useCommunitiesFromStore(communitySlugs);
   return (
-    <div className="flex flex-col gap-2" ref={ref}>
+    <div className={cn("flex flex-col gap-2", className)} ref={ref}>
       <Link
         className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground"
         to={`${ctx.root}f/:apId`}
@@ -446,34 +474,46 @@ function FeedCard({
         </div>
       </Link>
 
-      <div className="flex flex-row overflow-hidden">
-        {hasFocus ? (
-          communityViews?.map(({ communityView }) => (
-            <CommunityHoverCard
-              communityName={communityView.slug}
-              key={communityView.apId}
-            >
-              <Avatar className="h-6 w-6 border-2 border-background -mr-2">
-                <AvatarImage
-                  src={communityView.icon ?? undefined}
-                  className="object-cover absolute inset-0"
-                />
-                <AvatarFallback>
-                  {communityView.slug.substring(0, 1)}
-                </AvatarFallback>
-              </Avatar>
-            </CommunityHoverCard>
-          ))
-        ) : (
-          <Skeleton className="h-6 w-full rounded-4xl" />
-        )}
-      </div>
+      {expand && (
+        <div className="flex flex-row overflow-hidden">
+          {!communityViews?.length && description && (
+            <p className="line-clamp-2 -mt-1 text-xs text-muted-foreground">
+              {removeMd(description)}
+            </p>
+          )}
+          {hasFocus ? (
+            communityViews?.map(({ communityView }) => (
+              <CommunityHoverCard
+                communityName={communityView.slug}
+                key={communityView.apId}
+              >
+                <Avatar className="h-6 w-6 border-2 border-background -mr-2">
+                  <AvatarImage
+                    src={communityView.icon ?? undefined}
+                    className="object-cover absolute inset-0"
+                  />
+                  <AvatarFallback>
+                    {communityView.slug.substring(0, 1)}
+                  </AvatarFallback>
+                </Avatar>
+              </CommunityHoverCard>
+            ))
+          ) : (
+            <Skeleton className="h-6 w-full rounded-4xl" />
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function FeedSwiper() {
-  const feeds = useListFeeds({});
+  const [_selected, setSelectedSort] = useSortState();
+  const listingType = useFiltersStore((s) => s.communitiesListingType);
+
+  const feeds = useListFeeds({
+    type: listingType === "ModeratorView" ? undefined : listingType,
+  });
 
   const feedsData = useMemo(
     () => feeds.data?.pages.flatMap((p) => p.feeds),
@@ -496,7 +536,7 @@ function FeedSwiper() {
 
   const software = useSoftware();
 
-  if (software !== "piefed" || (!feedsData?.length && !feeds.isPending)) {
+  if (!supportsFeeds(software) || (!feedsData?.length && !feeds.isPending)) {
     return null;
   }
 
@@ -508,7 +548,11 @@ function FeedSwiper() {
         >
           Multi Community Feeds
         </h2>
-        <Button variant="ghost" size="sm">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSelectedSort(FEEDS)}
+        >
           Show more
         </Button>
       </div>
@@ -551,7 +595,7 @@ function FeedSwiper() {
                       key={feed.apId}
                       className="border py-2 px-2 rounded-lg h-[88px]"
                     >
-                      <FeedCard {...feed} />
+                      <FeedCard {...feed} expand />
                     </div>
                   ))}
                 </SwiperSlide>
@@ -579,7 +623,7 @@ export default function Communities() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const { communitySort, communitySorts } = useAvailableSorts();
+  const { communitySorts } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const featuredSorts = FEATURED_SORTS?.filter(
@@ -587,36 +631,6 @@ export default function Communities() {
   );
 
   const media = useMedia();
-
-  const moderatesCommunities = useModeratingCommunities();
-  const subscribedCommunities = useSubscribedCommunities();
-
-  // const { communities } = useMemo(() => {
-  //   const communities = communitiesQuery.data?.pages
-  //     .map((p) => p.communities)
-  //     .flat();
-  //
-  //   if (listingType === "Subscribed") {
-  //     return {
-  //       communities: !communities?.length ? subscribedCommunities : communities,
-  //     };
-  //   }
-  //
-  //   if (listingType === "ModeratorView") {
-  //     return {
-  //       communities: moderatesCommunities,
-  //     };
-  //   }
-  //
-  //   return {
-  //     communities,
-  //   };
-  // }, [
-  //   listingType,
-  //   moderatesCommunities,
-  //   subscribedCommunities,
-  //   communitiesQuery.data,
-  // ]);
 
   return (
     <IonPage>
