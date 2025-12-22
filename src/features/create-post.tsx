@@ -31,7 +31,7 @@ import {
   useIonAlert,
 } from "@ionic/react";
 import { MarkdownEditor } from "../components/markdown/editor";
-import { Button } from "../components/ui/button";
+import { Button, LoadingButton } from "../components/ui/button";
 import { close } from "ionicons/icons";
 import { FaCheck, FaChevronDown } from "react-icons/fa6";
 import { LuLoaderCircle } from "react-icons/lu";
@@ -333,7 +333,7 @@ export function CreatePost() {
   };
 
   const getPostButton = (className: string) => (
-    <Button
+    <LoadingButton
       size="sm"
       className={className}
       onClick={() => {
@@ -350,10 +350,14 @@ export function CreatePost() {
         }
       }}
       disabled={!draft.communitySlug || (isEdit && !canEdit)}
+      loading={
+        isEdit
+          ? editPost.isPending || editPost.isSuccess
+          : createPost.isPending || createPost.isSuccess
+      }
     >
       {isEdit ? "Update" : "Post"}
-      {createPost.isPending && <LuLoaderCircle className="animate-spin" />}
-    </Button>
+    </LoadingButton>
   );
 
   return (

@@ -288,7 +288,7 @@ export function useCommentActions({
           } as const,
         ]
       : []),
-    ...(!canMod
+    ...(!isMyComment && !canMod
       ? [
           {
             text: "Report comment",
