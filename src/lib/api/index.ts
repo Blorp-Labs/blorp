@@ -1661,6 +1661,7 @@ export function useResolvePostReportMutation() {
   const queryClient = useQueryClient();
   const postReportsQueryKey = usePostReportsKey();
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
 
   return useMutation({
     mutationFn: async (form: Forms.ResolvePostReport) =>
@@ -1684,6 +1685,11 @@ export function useResolvePostReportMutation() {
             for (const postReport of page.postReports) {
               if (postReport.id === form.reportId) {
                 postReport.resolved = form.resolved;
+                if (me) {
+                  postReport.resolverId = me.id;
+                  postReport.resolverApId = me.apId;
+                  postReport.resolverSlug = me.slug;
+                }
                 break;
               }
             }
@@ -1710,6 +1716,7 @@ export function useResolveCommentReportMutation() {
   const queryClient = useQueryClient();
   const commentReportsQueryKey = useCommentReportsKey();
   const notificationCountQueryKey = useNotificationCountQueryKey();
+  const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
 
   return useMutation({
     mutationFn: async (form: Forms.ResolvePostReport) =>
@@ -1732,6 +1739,11 @@ export function useResolveCommentReportMutation() {
             for (const commentReport of page.commentReports) {
               if (commentReport.id === form.reportId) {
                 commentReport.resolved = form.resolved;
+                if (me) {
+                  commentReport.resolverId = me.id;
+                  commentReport.resolverApId = me.apId;
+                  commentReport.resolverSlug = me.slug;
+                }
                 break;
               }
             }

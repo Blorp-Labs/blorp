@@ -12,6 +12,7 @@ import {
   usePersonMentions,
   usePostReportsQuery,
   useReplies,
+  useResolvePostReportMutation,
   useResolveCommentReportMutation,
 } from "@/src/lib/api/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
@@ -91,7 +92,7 @@ function PostReport({
 }) {
   const postView = usePostFromStore(postReport.postApId);
   const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
-  const resolvePostReport = useResolveCommentReportMutation();
+  const resolvePostReport = useResolvePostReportMutation();
   return (
     <ContentGutters noMobilePadding>
       <div
