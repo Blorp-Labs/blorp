@@ -85,6 +85,10 @@ export function PostReportProvider({
     ? createPostReport.isPending
     : createCommentReport.isPending;
 
+  const isSuccess = post
+    ? createPostReport.isSuccess
+    : createCommentReport.isSuccess;
+
   const cancel = () => {
     setApId(undefined);
     setCommentPath(undefined);
@@ -94,6 +98,10 @@ export function PostReportProvider({
     <Context.Provider value={value}>
       <IonModal
         isOpen={!!post || !!commentPath}
+        onDidPresent={() => {
+          createPostReport.reset();
+          createCommentReport.reset();
+        }}
         onDidDismiss={() => {
           setApId(undefined);
           setCommentPath(undefined);
@@ -118,7 +126,7 @@ export function PostReportProvider({
             className="h-full"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!isPending) {
+              if (!isPending && !isSuccess) {
                 submit();
               }
             }}

@@ -34,7 +34,6 @@ import { MarkdownEditor } from "../components/markdown/editor";
 import { Button, LoadingButton } from "../components/ui/button";
 import { close } from "ionicons/icons";
 import { FaCheck, FaChevronDown } from "react-icons/fa6";
-import { LuLoaderCircle } from "react-icons/lu";
 import { Input } from "../components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { useDropzone } from "react-dropzone";
@@ -310,6 +309,12 @@ export function CreatePost() {
 
   const createPost = useCreatePost();
   const editPost = useEditPost(draftId);
+  const resetCreatePost = createPost.reset;
+  const resetEditPost = editPost.reset;
+  useEffect(() => {
+    resetCreatePost();
+    resetEditPost();
+  }, [draftId, resetCreatePost, resetEditPost]);
 
   const linkMetadata = useLinkMetadata();
 
