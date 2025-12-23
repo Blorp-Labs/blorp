@@ -168,7 +168,6 @@ export function CommentSortSelect({
   const setCommentSort = useFiltersStore((s) => s.setCommentSort);
 
   const { commentSorts, commentSort } = useAvailableSorts();
-  const isValidSort = commentSorts?.includes(commentSort);
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
     if (commentSorts) {
@@ -217,8 +216,7 @@ export function CommentSortSelect({
           </Button>
         ) : (
           <div className={cn("text-2xl text-muted-foreground", className)}>
-            {isValidSort && getIconForSort(commentSort)}
-            {!isValidSort && <TbArrowsDownUp />}
+            {getIconForSort(commentSort)}
           </div>
         )
       }
@@ -298,13 +296,11 @@ export function PostSortButton({
     return null;
   }
 
-  const isValidSort = postSorts?.includes(postSort);
-
   const sortLabel = actions.find(
     (sort) => sort.value && postSort.startsWith(sort.value),
   )?.text;
 
-  const ariaLabel = (isValidSort ? postSort : "Invalid") + " post sort";
+  const ariaLabel = `${postSort} post sort`;
 
   return (
     <ActionMenu
@@ -322,15 +318,14 @@ export function PostSortButton({
             aria-label={ariaLabel}
           >
             {sortLabel ?? "Sort"}
-            {isValidSort && getIconForSort(postSort)}
+            {getIconForSort(postSort)}
           </Button>
         ) : (
           <div
             className={cn("text-2xl text-muted-foreground", className)}
             aria-label={ariaLabel}
           >
-            {isValidSort && getIconForSort(postSort)}
-            {!isValidSort && <TbArrowsDownUp />}
+            {getIconForSort(postSort)}
           </div>
         )
       }
