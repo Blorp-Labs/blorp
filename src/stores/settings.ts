@@ -33,6 +33,8 @@ type SettingsStore = {
   setShowMarkdown: (newVal: boolean) => any;
   hideRead: boolean;
   setHideRead: (newVal: boolean) => any;
+  hideBotPosts: boolean;
+  setHideBotPosts: (newVal: boolean) => any;
   filterKeywords: string[];
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
@@ -44,6 +46,7 @@ const INIT_STATE = {
   leftHandedMode: false,
   showMarkdown: false,
   hideRead: false,
+  hideBotPosts: false,
   filterKeywords: [],
 } satisfies Partial<SettingsStore>;
 
@@ -59,6 +62,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setLeftHandedMode: (leftHandedMode) => set({ leftHandedMode }),
       setShowMarkdown: (showMarkdown) => set({ showMarkdown }),
       setHideRead: (hideRead) => set({ hideRead }),
+      setHideBotPosts: (hideBotPosts) => set({ hideBotPosts }),
       setFilterKeywords: (update) => {
         const filterKeywords = [...get().filterKeywords];
         filterKeywords[update.index] = update.keyword;

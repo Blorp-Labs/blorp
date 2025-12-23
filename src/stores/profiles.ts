@@ -122,7 +122,9 @@ export const useProfilesStore = create<ProfilesStore>()(
 
 sync(useProfilesStore);
 
-export function useProfileFromStore(apId: string) {
+export function useProfileFromStore(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  return useProfilesStore((s) => s.profiles[getCachePrefixer()(apId)]?.data);
+  return useProfilesStore((s) =>
+    apId ? s.profiles[getCachePrefixer()(apId)]?.data : undefined,
+  );
 }
