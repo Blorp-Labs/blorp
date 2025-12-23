@@ -38,6 +38,7 @@ import { Badge } from "../ui/badge";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
+import { useProfileFromStore } from "@/src/stores/profiles";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -859,6 +860,8 @@ export function PostCard(props: PostProps) {
         : false;
 
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+  const creator = useProfileFromStore(post?.creatorApId);
+  const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
@@ -870,6 +873,10 @@ export function PostCard(props: PostProps) {
 
   if (post?.nsfw === true && !showNsfw) {
     return props.detailView ? <Notice>Hidden due to NSFW</Notice> : null;
+  }
+
+  if (hideBotPosts && creator?.isBot) {
+    return props.detailView ? <Notice>Hidden bot posts</Notice> : null;
   }
 
   if (props.detailView || postCardStyle === "large") {
