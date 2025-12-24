@@ -26,8 +26,8 @@ export const TABS: {
   {
     icon: (isActive) => (isActive ? people : peopleOutline),
     to: "/communities",
-    label: "Communities",
-    id: "communities",
+    label: "Explore",
+    id: "explore",
   },
   {
     icon: (isActive) => (isActive ? create : createOutline),

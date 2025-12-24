@@ -5,6 +5,7 @@ const RESOLVED = {
   comment_id: undefined,
   community_id: undefined,
   person_id: undefined,
+  multi_community_id: undefined,
 };
 
 export function getIdFromLocalApId(apId: string) {
