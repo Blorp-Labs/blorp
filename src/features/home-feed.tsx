@@ -33,6 +33,7 @@ import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
+import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
 
 const EMPTY_ARR: never[] = [];
 
@@ -216,9 +217,10 @@ export default function HomeFeed() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false);
+  const reducedMotion = useReducedMotion();
   const scrollAnimation = useHideHeaderTabBar(
     scrollRef.current,
-    focused && media.maxMd,
+    focused && media.maxMd && !reducedMotion,
   );
 
   const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);

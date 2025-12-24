@@ -29,6 +29,8 @@ type SettingsStore = {
   setPostCardStyle: (newVal: PostCardStyle) => any;
   leftHandedMode: boolean;
   setLeftHandedMode: (newVal: boolean) => any;
+  reduceMotion: boolean;
+  setReduceMotion: (newVal: boolean) => any;
   showMarkdown: boolean;
   setShowMarkdown: (newVal: boolean) => any;
   hideRead: boolean;
@@ -44,6 +46,7 @@ type SettingsStore = {
 const INIT_STATE = {
   postCardStyle: "large",
   leftHandedMode: false,
+  reduceMotion: false,
   showMarkdown: false,
   hideRead: false,
   hideBotPosts: false,
@@ -60,6 +63,7 @@ export const useSettingsStore = create<SettingsStore>()(
       ...INIT_STATE,
       setPostCardStyle: (postCardStyle) => set({ postCardStyle }),
       setLeftHandedMode: (leftHandedMode) => set({ leftHandedMode }),
+      setReduceMotion: (reduceMotion) => set({ reduceMotion }),
       setShowMarkdown: (showMarkdown) => set({ showMarkdown }),
       setHideRead: (hideRead) => set({ hideRead }),
       setHideBotPosts: (hideBotPosts) => set({ hideBotPosts }),

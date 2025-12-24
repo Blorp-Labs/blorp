@@ -16,11 +16,11 @@ import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import _ from "lodash";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
-import NumberFlow from "@number-flow/react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
+import { NumberFlow } from "../number-flow";
 
 type Vote = {
   postId: number;
