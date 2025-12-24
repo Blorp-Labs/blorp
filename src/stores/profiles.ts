@@ -105,6 +105,11 @@ export const useProfilesStore = create<ProfilesStore>()(
       name: "profiles",
       storage: createStorage<ProfilesStore>(),
       version: 2,
+      onRehydrateStorage: () => {
+        return (state) => {
+          state?.cleanup();
+        };
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<ProfilesStore>;
         return {
