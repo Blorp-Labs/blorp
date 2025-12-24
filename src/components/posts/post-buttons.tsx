@@ -1,6 +1,5 @@
 import { voteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
-import NumberFlow from "@number-flow/react";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
   PiArrowFatUpBold,
@@ -32,6 +31,7 @@ import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useMedia } from "@/src/lib/hooks";
 import { useLikePost } from "@/src/lib/api/post-mutations";
+import { NumberFlow } from "../number-flow";
 
 export function usePostVoting(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);

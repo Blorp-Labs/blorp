@@ -45,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
 
 const version =
   _.isObject(pkgJson) && "version" in pkgJson ? pkgJson.version : undefined;
@@ -259,6 +260,10 @@ export default function SettingsPage() {
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
   const setLeftHandedMode = useSettingsStore((s) => s.setLeftHandedMode);
 
+  const reduceMotionSystemSetting = useReducedMotionSystemSetting();
+  const reduceMotion = useSettingsStore((s) => s.reduceMotion);
+  const setReduceMotion = useSettingsStore((s) => s.setReduceMotion);
+
   const postCardStyle = useSettingsStore((s) => s.postCardStyle);
   const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
 
@@ -301,6 +306,17 @@ export default function SettingsPage() {
                   onIonChange={(e) => setLeftHandedMode(e.detail.checked)}
                 >
                   Left handed mode
+                </IonToggle>
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={reduceMotion || reduceMotionSystemSetting}
+                  onIonChange={(e) => setReduceMotion(e.detail.checked)}
+                  disabled={reduceMotionSystemSetting}
+                >
+                  Reduce motion
+                  {reduceMotionSystemSetting && " (controlled by OS)"}
                 </IonToggle>
               </SectionItem>
             </Section>
