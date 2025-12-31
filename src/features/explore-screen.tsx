@@ -48,7 +48,6 @@ import {
   useCommunitiesFromStore,
   useCommunityFromStore,
 } from "../stores/communities";
-import { CommunityHoverCard } from "../components/communities/community-hover-card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { removeMd } from "../components/markdown/remove-md";
@@ -301,7 +300,12 @@ function SectionSkeleton() {
   const numCols = useNumCols();
 
   return (
-    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+    <div
+      className={cn(
+        "grid sm:grid-cols-2 md:grid-cols-3 gap-2",
+        ContentGutters.mobilePadding,
+      )}
+    >
       {Array.from({ length: _.toInteger(numCols) * 3 })
         .fill(0)
         .map((_i, index) => (
@@ -436,7 +440,6 @@ function FeedCard({
   expand: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const hasFocus = useElementHasFocus(ref);
   const ctx = useLinkContext();
   const host = slug?.split("@")?.[1];
   const communityViews = useCommunitiesFromStore(communitySlugs);
@@ -476,30 +479,10 @@ function FeedCard({
 
       {expand && (
         <div className="flex flex-row overflow-hidden">
-          {!communityViews?.length && description && (
+          {description && (
             <p className="line-clamp-2 -mt-1 text-xs text-muted-foreground">
               {removeMd(description)}
             </p>
-          )}
-          {hasFocus ? (
-            communityViews?.map(({ communityView }) => (
-              <CommunityHoverCard
-                communityName={communityView.slug}
-                key={communityView.apId}
-              >
-                <Avatar className="h-6 w-6 border-2 border-background -mr-2">
-                  <AvatarImage
-                    src={communityView.icon ?? undefined}
-                    className="object-cover absolute inset-0"
-                  />
-                  <AvatarFallback>
-                    {communityView.slug.substring(0, 1)}
-                  </AvatarFallback>
-                </Avatar>
-              </CommunityHoverCard>
-            ))
-          ) : (
-            <Skeleton className="h-6 w-full rounded-4xl" />
           )}
         </div>
       )}
