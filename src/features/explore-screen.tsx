@@ -431,7 +431,6 @@ function FeedCard({
   communityCount,
   slug,
   apId,
-  communitySlugs,
   description,
   className,
   expand,
@@ -439,19 +438,17 @@ function FeedCard({
   className?: string;
   expand: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
   const ctx = useLinkContext();
   const host = slug?.split("@")?.[1];
-  const communityViews = useCommunitiesFromStore(communitySlugs);
   return (
-    <div className={cn("flex flex-col gap-2", className)} ref={ref}>
-      <Link
-        className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground"
-        to={`${ctx.root}f/:apId`}
-        params={{
-          apId: encodeApId(apId),
-        }}
-      >
+    <Link
+      className={cn("flex flex-col gap-2", className)}
+      to={`${ctx.root}f/:apId`}
+      params={{
+        apId: encodeApId(apId),
+      }}
+    >
+      <div className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground">
         <Avatar className="h-9 w-9">
           <AvatarImage
             src={icon ?? undefined}
@@ -475,7 +472,7 @@ function FeedCard({
             </span>
           )}
         </div>
-      </Link>
+      </div>
 
       {expand && (
         <div className="flex flex-row overflow-hidden">
@@ -486,7 +483,7 @@ function FeedCard({
           )}
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 
