@@ -13,7 +13,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useElementHasFocus, useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia, useUrlSearchState } from "../lib/hooks";
 import {
   IonContent,
   IonHeader,

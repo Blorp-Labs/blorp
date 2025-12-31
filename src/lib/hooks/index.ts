@@ -96,6 +96,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   const currentValueRef = useRef(defaultValue);
 
   useEffect(() => {
+    locked.current = false;
     return () => {
       locked.current = true;
     };
@@ -121,9 +122,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
     const parsed = schema.safeParse(raw);
     if (parsed.success) {
-      if (!locked) {
-        currentValueRef.current = parsed.data;
-      }
+      currentValueRef.current = parsed.data;
       return parsed.data;
     }
     return currentValueRef.current;
@@ -146,6 +145,9 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
       const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
+      if (!locked.current) {
+        currentValueRef.current = newVal;
+      }
       const newSearch = params.toString();
       const to = {
         // Idk why but location is getting out of sync with
@@ -154,17 +156,19 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         ...frozenLocation.current,
         search: newSearch ? `?${newSearch}` : "",
       };
-      const id = setTimeout(() => {
-        replace ? history.replace(to) : history.push(to);
+      const id = window.setTimeout(() => {
+        if (!locked.current) {
+          replace ? history.replace(to) : history.push(to);
+        }
       }, 5);
       return {
         and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
-          clearTimeout(id);
+          window.clearTimeout(id);
           return setValue(val, { ...config, search: newSearch });
         },
       };
     },
-    [history, key, schema, value, search],
+    [history, key, schema, value, search, locked],
   );
 
   const removeParam = useCallback(
