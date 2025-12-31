@@ -59,6 +59,21 @@ export const postPollSchema = z.object({
   myVotes: z.array(z.number()).optional(),
 });
 
+export const postEventSchema = z.object({
+  // anonymous_participation: false,
+  end: z.string(),
+  full: z.boolean(),
+  cost: z.enum(["free", "paid", "donation"]),
+  addressLine1: z.string(),
+  city: z.string(),
+  country: z.string(),
+  maxAttendees: z.number(),
+  online: z.boolean(),
+  participantCount: z.number(),
+  start: z.string(),
+  timezone: z.string(),
+});
+
 export const postSchema = z.object({
   locked: z.boolean(),
   optimisticLocked: z.boolean().optional(),
@@ -113,6 +128,7 @@ export const postSchema = z.object({
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
   poll: postPollSchema.optional(),
+  event: postEventSchema.optional(),
 });
 const communitySchema = z.object({
   createdAt: z.string(),

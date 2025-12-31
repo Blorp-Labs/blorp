@@ -157,6 +157,23 @@ export const piefedPostPoll = z.object({
   my_votes: z.array(z.number()).nullish(),
 });
 
+const pieFedPostEventSchema = z.object({
+  // anonymous_participation: false,
+  end: z.string(),
+  full: z.boolean(),
+  join_mode: z.enum(["free", "paid", "donation"]),
+  location: z.object({
+    address: z.string(),
+    city: z.string(),
+    country: z.string(),
+  }),
+  max_attendees: z.number(),
+  online: z.boolean(),
+  participant_count: z.number(),
+  start: z.string(),
+  timezone: z.string(),
+});
+
 export const pieFedPostSchema = z.object({
   alt_text: z.string().nullable().optional(),
   ap_id: z.string(),
@@ -179,6 +196,7 @@ export const pieFedPostSchema = z.object({
   //user_id: z.number(),
   locked: z.boolean().nullish(),
   poll: piefedPostPoll.nullish(),
+  event: pieFedPostEventSchema.nullish(),
 });
 
 export const pieFedPostViewSchema = z.object({
@@ -449,6 +467,24 @@ function convertPoll(
   };
 }
 
+function convertPostEvent(
+  poll: z.infer<typeof pieFedPostEventSchema>,
+): Schemas.Post["event"] {
+  return {
+    end: poll.end,
+    full: poll.full,
+    cost: poll.join_mode,
+    addressLine1: poll.location.address,
+    city: poll.location.city,
+    country: poll.location.country,
+    maxAttendees: poll.max_attendees,
+    online: poll.online,
+    participantCount: poll.participant_count,
+    start: poll.start,
+    timezone: poll.timezone,
+  };
+}
+
 function convertFlair(flair: z.infer<typeof pieFedFlairSchema>): Schemas.Flair {
   return {
     id: flair.id,
@@ -465,6 +501,7 @@ function convertPost({
   postView: z.infer<typeof pieFedPostViewSchema>;
   crossPosts?: z.infer<typeof pieFedCrosspostSchema>[];
 }): Schemas.Post {
+  console.log(postView, "HERE");
   const { post, counts, community, creator } = postView;
   return {
     locked: post.locked ?? false,
@@ -513,6 +550,9 @@ function convertPost({
     altText: post.alt_text ?? null,
     flairs: postView.flair_list?.map((flair) => ({ id: flair.id })) ?? null,
     poll: postView.post.poll ? convertPoll(postView.post.poll) : undefined,
+    event: postView.post.event
+      ? convertPostEvent(postView.post.event)
+      : undefined,
   };
 }
 

@@ -39,6 +39,7 @@ import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { useProfileFromStore } from "@/src/stores/profiles";
+import { PostEventEmbed } from "./embeds/post-event-embed";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -465,6 +466,8 @@ function LargePostCard({
       )}
 
       {post.poll && <PostPollEmbed post={post} />}
+
+      {post.event && <PostEventEmbed event={post.event} />}
 
       {showArticle && (
         <PostArticleEmbed
