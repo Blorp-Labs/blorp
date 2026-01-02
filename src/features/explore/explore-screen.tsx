@@ -1,19 +1,14 @@
 import {
   useAvailableSorts,
   useListCommunities,
-  useModeratingCommunities,
   useSoftware,
-  useSubscribedCommunities,
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
-import {
-  CommunityCard,
-  CommunityCardSkeleton,
-} from "../components/communities/community-card";
+import { CommunityCard } from "../../components/communities/community-card";
 import { useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia } from "../../lib/hooks";
 import {
   IonContent,
   IonHeader,
@@ -21,75 +16,32 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { MenuButton, UserDropdown } from "../components/nav";
-import { CommunityFilter } from "../components/lemmy-sort";
-import { PageTitle } from "../components/page-title";
+import { MenuButton, UserDropdown } from "../../components/nav";
+import { CommunityFilter } from "../../components/lemmy-sort";
+import { PageTitle } from "../../components/page-title";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
   ChevronLeft,
   ChevronRight,
   Search,
   Spinner,
-  X,
-} from "../components/icons";
-import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { SearchBar } from "./search/search-bar";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+} from "../../components/icons";
+import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
+import { SearchBar } from "../search/search-bar";
 import _ from "lodash";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { cn } from "../lib/utils";
-import { abbriviateNumber } from "../lib/format";
-import { useLinkContext } from "../routing/link-context";
+import { cn } from "../../lib/utils";
 import { Swiper, SwiperClass, SwiperRef, SwiperSlide } from "swiper/react";
 import { Mousewheel, Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
-import { useCommunityFromStore } from "../stores/communities";
-import { Button } from "../components/ui/button";
-import { Skeleton } from "../components/ui/skeleton";
-import { removeMd } from "../components/markdown/remove-md";
-import { encodeApId } from "../lib/api/utils";
-import z from "zod";
-import { VirtualList } from "../components/virtual-list";
-import { supportsFeeds } from "../lib/api/adapters/support";
-
-const NO_ITEMS = "NO_ITEMS";
-
-const NO_SORT = "NO_SORT";
-
-function useSortState() {
-  const [sort, set, reset] = useUrlSearchState("sort", NO_SORT, z.string());
-  return [sort === NO_SORT ? undefined : sort, set, reset] as const;
-}
-
-function SortControlBarContent() {
-  const { communitySorts } = useAvailableSorts();
-  const [selectedSort, setSelectedSort, clearSelectedSort] = useSortState();
-  const sorts = _.uniq(
-    _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
-  );
-  return (
-    <>
-      {selectedSort && (
-        <Button size="sm" variant="outline" onClick={() => clearSelectedSort()}>
-          {_.capitalize(selectedSort)}
-          <X />
-        </Button>
-      )}
-      {!selectedSort &&
-        sorts?.map((sort) => (
-          <Button
-            key={sort}
-            size="sm"
-            variant="outline"
-            onClick={() => setSelectedSort(sort)}
-          >
-            {_.capitalize(sort)}
-          </Button>
-        ))}
-    </>
-  );
-}
+import { useCommunityFromStore } from "../../stores/communities";
+import { Button } from "../../components/ui/button";
+import { Skeleton } from "../../components/ui/skeleton";
+import { removeMd } from "../../components/markdown/remove-md";
+import { supportsFeeds } from "../../lib/api/adapters/support";
+import { FeedCard, FEEDS } from "./feed-card";
+import { ExpandedCommunities } from "./explore-expanded-section-screen";
+import { SortControlBarContent } from "./sort-bar";
 
 function SortControlBar({ className }: { className?: string }) {
   return (
@@ -102,139 +54,6 @@ function SortControlBar({ className }: { className?: string }) {
     >
       <SortControlBarContent />
     </div>
-  );
-}
-
-function ExpandedCommunities({ sort }: { sort?: string }) {
-  const listingType = useFiltersStore((s) => s.communitiesListingType);
-
-  const media = useMedia();
-
-  const moderatesCommunities = useModeratingCommunities();
-  const subscribedCommunities = useSubscribedCommunities();
-
-  const feeds = useListFeeds(
-    {
-      type: listingType === "ModeratorView" ? undefined : listingType,
-    },
-    {
-      enabled: sort === FEEDS,
-    },
-  );
-  const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.feeds),
-    [feeds.data?.pages],
-  );
-
-  const communitiesQuery = useListCommunities(
-    {
-      type: listingType,
-      sort,
-    },
-    {
-      enabled: listingType !== "ModeratorView" && sort !== FEEDS,
-    },
-  );
-
-  const { communities } = useMemo(() => {
-    const communities = communitiesQuery.data?.pages
-      .map((p) => p.communities)
-      .flat();
-
-    if (listingType === "Subscribed") {
-      return {
-        communities: !communities?.length ? subscribedCommunities : communities,
-      };
-    }
-
-    if (listingType === "ModeratorView") {
-      return {
-        communities: moderatesCommunities,
-      };
-    }
-
-    return {
-      communities,
-    };
-  }, [
-    listingType,
-    moderatesCommunities,
-    subscribedCommunities,
-    communitiesQuery.data,
-  ]);
-
-  const noItems =
-    communities?.length === 0 &&
-    !communitiesQuery.isRefetching &&
-    !communitiesQuery.isPending;
-
-  let numCols = 1;
-  if (media.xl && !noItems) {
-    numCols = 3;
-  } else if (media.sm && !noItems) {
-    numCols = 2;
-  }
-
-  const vlist = (
-    <VirtualList<string | Schemas.Feed>
-      key={listingType}
-      fullscreen
-      scrollHost
-      numColumns={numCols}
-      data={noItems ? [NO_ITEMS] : sort === FEEDS ? feedsData : communities}
-      renderItem={({ item }) => {
-        if (item === NO_ITEMS) {
-          return (
-            <div className="flex-1 italic text-muted-foreground p-6 text-center">
-              <span>Nothing to see here</span>
-            </div>
-          );
-        }
-
-        if (_.isString(item)) {
-          return (
-            <ContentGutters className="md:contents">
-              <CommunityCard communitySlug={item} className="mt-1" />
-            </ContentGutters>
-          );
-        }
-
-        return (
-          <ContentGutters className="md:contents">
-            <FeedCard {...item} className="mt-1" expand={false} />
-          </ContentGutters>
-        );
-      }}
-      onEndReached={() => {
-        if (
-          listingType !== "ModeratorView" &&
-          communitiesQuery.hasNextPage &&
-          !communitiesQuery.isFetchingNextPage
-        ) {
-          communitiesQuery.fetchNextPage();
-        }
-      }}
-      estimatedItemSize={52}
-      refresh={communitiesQuery.refetch}
-      placeholder={
-        <ContentGutters className="md:contents">
-          <CommunityCardSkeleton className="mt-1" />
-        </ContentGutters>
-      }
-    />
-  );
-
-  return media.md ? (
-    <div className="flex flex-col h-full">
-      {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
-        <ContentGutters noMobilePadding className="max-md:hidden">
-          <SortControlBar />
-        </ContentGutters>
-      )}
-      <ContentGutters className="flex-1 min-h-0">{vlist}</ContentGutters>
-    </div>
-  ) : (
-    vlist
   );
 }
 
@@ -344,7 +163,6 @@ function CommunityItem({ communitySlug }: { communitySlug: string }) {
 }
 
 function CommunitiesSwiper({ sort }: { sort: string }) {
-  const [_selected, setSelectedSort] = useSortState();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
   const communitiesQuery = useListCommunities({
     sort,
@@ -377,8 +195,10 @@ function CommunitiesSwiper({ sort }: { sort: string }) {
         >
           {sort.split(/(?=[A-Z])/).join(" ")} Communities
         </h2>
-        <Button variant="ghost" size="sm" onClick={() => setSelectedSort(sort)}>
-          Show more
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/communities/sort/:sort" params={{ sort }}>
+            Show more
+          </Link>
         </Button>
       </div>
 
@@ -425,70 +245,7 @@ function CommunitiesSwiper({ sort }: { sort: string }) {
   );
 }
 
-function FeedCard({
-  icon,
-  name,
-  communityCount,
-  slug,
-  apId,
-  description,
-  className,
-  expand,
-}: Schemas.Feed & {
-  className?: string;
-  expand: boolean;
-}) {
-  const ctx = useLinkContext();
-  const host = slug?.split("@")?.[1];
-  return (
-    <Link
-      className={cn("flex flex-col gap-2", className)}
-      to={`${ctx.root}f/:apId`}
-      params={{
-        apId: encodeApId(apId),
-      }}
-    >
-      <div className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground">
-        <Avatar className="h-9 w-9">
-          <AvatarImage
-            src={icon ?? undefined}
-            className="object-cover absolute inset-0"
-          />
-          <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
-        </Avatar>
-
-        <div
-          className={cn(
-            "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
-          )}
-        >
-          <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
-            {name}
-            <span className="text-muted-foreground italic">@{host}</span>
-          </span>
-          {_.isNumber(communityCount) && (
-            <span className="text-xs text-muted-foreground">
-              {abbriviateNumber(communityCount)} communities
-            </span>
-          )}
-        </div>
-      </div>
-
-      {expand && (
-        <div className="flex flex-row overflow-hidden">
-          {description && (
-            <p className="line-clamp-2 -mt-1 text-xs text-muted-foreground">
-              {removeMd(description)}
-            </p>
-          )}
-        </div>
-      )}
-    </Link>
-  );
-}
-
 function FeedSwiper() {
-  const [_selected, setSelectedSort] = useSortState();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const feeds = useListFeeds({
@@ -528,12 +285,10 @@ function FeedSwiper() {
         >
           Multi Community Feeds
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedSort(FEEDS)}
-        >
-          Show more
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/communities/sort/:sort" params={{ sort: FEEDS }}>
+            Show more
+          </Link>
         </Button>
       </div>
 
@@ -588,7 +343,6 @@ function FeedSwiper() {
   );
 }
 
-const FEEDS = "FEEDS";
 const FEATURED_SORTS = [
   "TopAll",
   FEEDS,
@@ -598,8 +352,6 @@ const FEATURED_SORTS = [
 ] as const;
 
 export default function Communities() {
-  const [selectedSort] = useSortState();
-
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
@@ -647,30 +399,31 @@ export default function Communities() {
           </IonToolbar>
         )}
       </IonHeader>
-      <IonContent fullscreen={media.maxMd} scrollY={!selectedSort}>
-        {(selectedSort ||
-          listingType === "Subscribed" ||
-          listingType === "ModeratorView") && (
-          <ExpandedCommunities sort={selectedSort} />
+      <IonContent
+        fullscreen={media.maxMd}
+        scrollY={
+          listingType !== "Subscribed" && listingType !== "ModeratorView"
+        }
+      >
+        {(listingType === "Subscribed" || listingType === "ModeratorView") && (
+          <ExpandedCommunities />
         )}
 
-        {!selectedSort &&
-          listingType !== "Subscribed" &&
-          listingType !== "ModeratorView" && (
-            <ContentGutters noMobilePadding>
-              <div className="flex flex-col gap-4 md:gap-6 pb-8 max-md:pt-3">
-                <SortControlBar className="max-md:hidden" />
+        {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
+          <ContentGutters noMobilePadding>
+            <div className="flex flex-col gap-4 md:gap-6 pb-8 max-md:pt-3">
+              <SortControlBar className="max-md:hidden" />
 
-                {featuredSorts?.map((sort) =>
-                  sort === FEEDS ? (
-                    <FeedSwiper key={sort} />
-                  ) : (
-                    <CommunitiesSwiper key={sort} sort={sort} />
-                  ),
-                )}
-              </div>
-            </ContentGutters>
-          )}
+              {featuredSorts?.map((sort) =>
+                sort === FEEDS ? (
+                  <FeedSwiper key={sort} />
+                ) : (
+                  <CommunitiesSwiper key={sort} sort={sort} />
+                ),
+              )}
+            </div>
+          </ContentGutters>
+        )}
       </IonContent>
     </IonPage>
   );
