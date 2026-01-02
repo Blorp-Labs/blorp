@@ -64,6 +64,7 @@ export const routeDefs = {
   ...buildRoute("/home/saved"),
   // Communities
   ...buildRoute("/communities"),
+  ...buildRoute("/communities/sort/:sort", z.object({ sort: z.string() })),
   ...buildRoute("/communities/*"),
   ...buildRoute("/communities/s"),
   ...buildRoute("/communities/sidebar"),

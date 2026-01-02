@@ -61,7 +61,12 @@ const FeedPosts = lazy(() => import("@/src/features/feed-posts"));
 const FeedSidebar = lazy(() => import("@/src/features/feed-sidebar"));
 const CommunityFeed = lazy(() => import("@/src/features/community-feed"));
 const CommunitySidebar = lazy(() => import("@/src/features/community-sidebar"));
-const CommunitiesFeed = lazy(() => import("@/src/features/explore-screen"));
+const CommunitiesFeed = lazy(
+  () => import("@/src/features/explore/explore-screen"),
+);
+const ExploreExpandedSectionScreen = lazy(
+  () => import("@/src/features/explore/explore-expanded-section-screen"),
+);
 const User = lazy(() => import("@/src/features/user"));
 const SavedFeed = lazy(() => import("@/src/features/saved-feed"));
 const Search = lazy(() => import("@/src/features/search/search-screen"));
@@ -190,6 +195,9 @@ const COMMUNITIES_STACK = [
   </Route>,
   <Route key="/communities" exact path="/communities">
     <CommunitiesFeed />
+  </Route>,
+  <Route key="/communities" exact path="/communities/sort/:sort">
+    <ExploreExpandedSectionScreen />
   </Route>,
   <Route key="/communities/s" exact path="/communities/s">
     <Search defaultType="communities" />
