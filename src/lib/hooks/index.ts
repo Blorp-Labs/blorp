@@ -93,40 +93,43 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   const frozenLocation = useRef(location);
 
   const locked = useRef(false);
-  const currentValueRef = useRef(defaultValue);
+  const defaultValueRef = useRef(defaultValue);
 
   useEffect(() => {
     locked.current = false;
     return () => {
       locked.current = true;
     };
-  }, []);
+  }, [defaultValue]);
 
   const isActive = useIsActiveRoute();
 
   // parse & validate the raw URL param, fallback to default
   const value = useMemo<z.infer<S>>(() => {
     if (!isActive) {
-      return currentValueRef.current;
+      return undefined;
     }
 
     const params = new URLSearchParams(location.search);
     const raw = params.get(key);
-    if (raw == null) {
-      return currentValueRef.current;
+    if (raw === null) {
+      defaultValueRef.current = defaultValue;
+      return undefined;
     }
 
     if (!schema) {
-      return raw ?? currentValueRef.current;
+      defaultValueRef.current = raw;
+      return raw;
     }
 
     const parsed = schema.safeParse(raw);
     if (parsed.success) {
-      currentValueRef.current = parsed.data;
+      defaultValueRef.current = parsed.data;
       return parsed.data;
     }
-    return currentValueRef.current;
-  }, [location.search, key, schema, isActive]);
+
+    return undefined;
+  }, [location.search, key, schema, isActive, defaultValue]);
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
@@ -145,9 +148,6 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
       const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
-      if (!locked.current) {
-        currentValueRef.current = newVal;
-      }
       const newSearch = params.toString();
       const to = {
         // Idk why but location is getting out of sync with
@@ -179,7 +179,6 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       and: AndRemove;
     } => {
       const replace = config?.replace ?? true;
-      currentValueRef.current = defaultValue;
       const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
       const newSearch = params.toString();
@@ -200,10 +199,10 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         },
       };
     },
-    [history, key, search, defaultValue],
+    [history, key, search],
   );
 
-  return [value, setValue, removeParam];
+  return [value ?? defaultValueRef.current, setValue, removeParam];
 }
 
 export function useConfirmationAlert() {

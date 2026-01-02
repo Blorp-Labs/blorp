@@ -44,10 +44,7 @@ import { Swiper, SwiperClass, SwiperRef, SwiperSlide } from "swiper/react";
 import { Mousewheel, Virtual } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/virtual";
-import {
-  useCommunitiesFromStore,
-  useCommunityFromStore,
-} from "../stores/communities";
+import { useCommunityFromStore } from "../stores/communities";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { removeMd } from "../components/markdown/remove-md";
@@ -58,8 +55,11 @@ import { supportsFeeds } from "../lib/api/adapters/support";
 
 const NO_ITEMS = "NO_ITEMS";
 
+const NO_SORT = "NO_SORT";
+
 function useSortState() {
-  return useUrlSearchState("sort", undefined, z.string().optional());
+  const [sort, set, reset] = useUrlSearchState("sort", NO_SORT, z.string());
+  return [sort === NO_SORT ? undefined : sort, set, reset] as const;
 }
 
 function SortControlBarContent() {
