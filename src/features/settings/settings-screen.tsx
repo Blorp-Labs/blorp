@@ -21,8 +21,6 @@ import {
 import { MenuButton, UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { PersonCard } from "@/src/components/person/person-card";
-import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import { openUrl } from "@/src/lib/linking";
 import { resolveRoute } from "@/src/routing";
 import { SectionItem, Section } from "./shared-components";
@@ -67,7 +65,7 @@ function AccountCard({
   const logoutZustand = useAuth((s) => s.logout);
   const { person, instance } = parseAccountInfo(account);
   const isLoggedIn = Boolean(account.jwt);
-  const software = useSoftware(account);
+  const { software } = useSoftware(account);
 
   return (
     <Section title={`ACCOUNT ${accountIndex + 1}`}>

@@ -39,6 +39,27 @@ function DisableLinks({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function registerSpoilerPlugin(md: MarkdownIt) {
+  md.use(markdownitContainer, "spoiler", {
+    validate: function (params) {
+      return /^spoiler\s+(.*)$/.test(params.trim());
+    },
+
+    render: function (tokens, idx) {
+      const m = tokens[idx]!.info.trim().match(/^spoiler\s+(.*)$/);
+      const summary = m?.[1] ? md.utils.escapeHtml(m[1]) : "";
+
+      if (tokens[idx]!.nesting === 1) {
+        // opening tag
+        return `<details><summary>${summary}</summary>\n`;
+      } else {
+        // closing tag
+        return "</details>\n";
+      }
+    },
+  } satisfies ContainerOpts);
+}
+
 function SafeRouterLink<Path extends RoutePath>(props: LinkProps<Path>) {
   const { insideLink } = useContext(Context);
   return insideLink ? (
@@ -227,24 +248,7 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
     },
   });
 
-  md.use(markdownitContainer, "spoiler", {
-    validate: function (params) {
-      return /^spoiler\s+(.*)$/.test(params.trim());
-    },
-
-    render: function (tokens, idx) {
-      const m = tokens[idx]!.info.trim().match(/^spoiler\s+(.*)$/);
-      const summary = m?.[1] ? md.utils.escapeHtml(m[1]) : "";
-
-      if (tokens[idx]!.nesting === 1) {
-        // opening tag
-        return `<details><summary>${summary}</summary>\n`;
-      } else {
-        // closing tag
-        return "</details>\n";
-      }
-    },
-  } satisfies ContainerOpts);
+  registerSpoilerPlugin(md);
 
   return md;
 }
