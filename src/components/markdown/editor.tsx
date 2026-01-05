@@ -154,7 +154,7 @@ const MenuBar = ({
               inputs: [
                 {
                   name: "description",
-                  placeholder: "Desscription",
+                  placeholder: "Description",
                   value: linkInfo
                     ? linkInfo.text || linkInfo.href
                     : selectedText,
