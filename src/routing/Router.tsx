@@ -57,9 +57,16 @@ const ManageBlocks = lazy(
 const UpdateProfile = lazy(
   () => import("@/src/features/settings/update-profile-screen"),
 );
+const FeedPosts = lazy(() => import("@/src/features/feed-posts"));
+const FeedSidebar = lazy(() => import("@/src/features/feed-sidebar"));
 const CommunityFeed = lazy(() => import("@/src/features/community-feed"));
 const CommunitySidebar = lazy(() => import("@/src/features/community-sidebar"));
-const CommunitiesFeed = lazy(() => import("@/src/features/communities-feed"));
+const CommunitiesFeed = lazy(
+  () => import("@/src/features/explore/explore-screen"),
+);
+const ExploreExpandedSectionScreen = lazy(
+  () => import("@/src/features/explore/explore-expanded-section-screen"),
+);
 const User = lazy(() => import("@/src/features/user"));
 const SavedFeed = lazy(() => import("@/src/features/saved-feed"));
 const Search = lazy(() => import("@/src/features/search/search-screen"));
@@ -114,6 +121,12 @@ const HOME_STACK = [
   </Route>,
   <Route key="/home/s" exact path="/home/s">
     <Search />
+  </Route>,
+  <Route key="/home/f/:apId" exact path="/home/f/:apId">
+    <FeedPosts />
+  </Route>,
+  <Route key="/home/f/:apId/sidebar" exact path="/home/f/:apId/sidebar">
+    <FeedSidebar />
   </Route>,
   <Route key="/home/c/:communityName" exact path="/home/c/:communityName">
     <CommunityFeed />
@@ -183,6 +196,9 @@ const COMMUNITIES_STACK = [
   <Route key="/communities" exact path="/communities">
     <CommunitiesFeed />
   </Route>,
+  <Route key="/communities" exact path="/communities/sort/:sort">
+    <ExploreExpandedSectionScreen />
+  </Route>,
   <Route key="/communities/s" exact path="/communities/s">
     <Search defaultType="communities" />
   </Route>,
@@ -192,6 +208,16 @@ const COMMUNITIES_STACK = [
     path="/communities/sidebar"
     component={InstanceSidebar}
   />,
+  <Route key="/communities/f/:apId" exact path="/communities/f/:apId">
+    <FeedPosts />
+  </Route>,
+  <Route
+    key="/communities/f/:apId/sidebar"
+    exact
+    path="/communities/f/:apId/sidebar"
+  >
+    <FeedSidebar />
+  </Route>,
   <Route
     key="/communities/c/:communityName"
     exact
@@ -255,6 +281,12 @@ const INBOX_STACK = [
   </Route>,
   <Route key="/inbox/s" exact path="/inbox/s">
     <Search />
+  </Route>,
+  <Route key="/inbox/f/:apId" exact path="/inbox/f/:apId">
+    <FeedPosts />
+  </Route>,
+  <Route key="/inbox/f/:apId/sidebar" exact path="/inbox/f/:apId/sidebar">
+    <FeedSidebar />
   </Route>,
   <Route key="/inbox/c/:communityName" exact path="/inbox/c/:communityName">
     <CommunityFeed />

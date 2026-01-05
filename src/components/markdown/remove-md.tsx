@@ -1,5 +1,6 @@
 import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token.mjs";
+import { registerSpoilerPlugin } from "./renderer";
 
 /**
  * Extract first N sentences from whitelisted markdown content.
@@ -11,6 +12,7 @@ import Token from "markdown-it/lib/token.mjs";
  */
 export function removeMd(markdown: string) {
   const md = new MarkdownIt();
+  registerSpoilerPlugin(md);
   const tokens = md.parse(markdown, []);
 
   const allowedOpenTypes = ["paragraph_open", "heading_open"];
