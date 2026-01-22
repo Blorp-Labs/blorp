@@ -1,4 +1,4 @@
-import { voteHaptics } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
@@ -48,6 +48,7 @@ export function usePostVoting(apId?: string) {
 
   const requireAuth = useRequireAuth();
 
+  const voteHaptics = useVoteHaptics();
   const vote = useCallback(
     (form: { postApId: string; postId: number; score: -1 | 0 | 1 }) => {
       requireAuth().then(() => {
@@ -55,7 +56,7 @@ export function usePostVoting(apId?: string) {
         mutateVote(form);
       });
     },
-    [requireAuth, mutateVote],
+    [requireAuth, mutateVote, voteHaptics],
   );
 
   if (!postView) return null;

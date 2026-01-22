@@ -19,6 +19,7 @@ import { useMedia } from "../../lib/hooks";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { IoEllipsisHorizontal } from "react-icons/io5";
+import { useSettingsStore } from "@/src/stores/settings";
 
 export interface ActionMenuProps<V = string>
   extends Omit<
@@ -129,6 +130,8 @@ export function ActionMenu<V extends string>({
     [showCancel, subActions, selectedValue],
   );
 
+  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
+
   if (media.md) {
     return (
       <DropdownMenu onOpenChange={(open) => open && onOpen?.()}>
@@ -192,7 +195,11 @@ export function ActionMenu<V extends string>({
       <Button
         data-slot="button"
         id={id}
-        onClick={() => Haptics.impact({ style: ImpactStyle.Medium })}
+        onClick={() => {
+          if (!disableHaptics) {
+            Haptics.impact({ style: ImpactStyle.Medium });
+          }
+        }}
       >
         {trigger}
       </Button>
@@ -231,7 +238,9 @@ export function ActionMenu<V extends string>({
             if (action.onClick) {
               action.onClick();
             } else {
-              Haptics.impact({ style: ImpactStyle.Medium });
+              if (!disableHaptics) {
+                Haptics.impact({ style: ImpactStyle.Medium });
+              }
               setSubActions(action.actions);
               setSubActionsTitle(action.text);
             }

@@ -23,6 +23,7 @@ import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
+import { useSettingsStore } from "../stores/settings";
 
 export function useScrollToTopEvents({
   scrollToTop,
@@ -372,8 +373,12 @@ export function VirtualList<T>({
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
 
+  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
+
   function handleRefresh(event: CustomEvent<RefresherEventDetail>) {
-    Haptics.impact({ style: ImpactStyle.Medium });
+    if (!disableHaptics) {
+      Haptics.impact({ style: ImpactStyle.Medium });
+    }
     refresh?.().finally(() => event.detail.complete());
   }
 

@@ -1,5 +1,5 @@
 import { useLikeComment } from "@/src/lib/api/index";
-import { voteHaptics } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import { ButtonHTMLAttributes, DetailedHTMLProps, useId } from "react";
 import { cn } from "@/src/lib/utils";
@@ -32,6 +32,7 @@ type Vote = {
 function usePostVoting() {
   const requireAuth = useRequireAuth();
   const vote = useLikeComment();
+  const voteHaptics = useVoteHaptics();
   return (config: Vote) => {
     requireAuth().then(() => {
       voteHaptics(config.score);

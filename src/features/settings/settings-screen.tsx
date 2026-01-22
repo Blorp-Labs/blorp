@@ -21,8 +21,6 @@ import {
 import { MenuButton, UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { PersonCard } from "@/src/components/person/person-card";
-import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import { openUrl } from "@/src/lib/linking";
 import { resolveRoute } from "@/src/routing";
 import { SectionItem, Section } from "./shared-components";
@@ -264,6 +262,9 @@ export default function SettingsPage() {
   const reduceMotion = useSettingsStore((s) => s.reduceMotion);
   const setReduceMotion = useSettingsStore((s) => s.setReduceMotion);
 
+  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
+  const setDisableHaptics = useSettingsStore((s) => s.setDisableHaptics);
+
   const postCardStyle = useSettingsStore((s) => s.postCardStyle);
   const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
 
@@ -317,6 +318,15 @@ export default function SettingsPage() {
                 >
                   Reduce motion
                   {reduceMotionSystemSetting && " (controlled by OS)"}
+                </IonToggle>
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={disableHaptics}
+                  onIonChange={(e) => setDisableHaptics(e.detail.checked)}
+                >
+                  Reduce vibration (haptics)
                 </IonToggle>
               </SectionItem>
             </Section>
