@@ -48,6 +48,7 @@ import "swiper/css/mousewheel";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
 import { PanzoomProvider, usePanZoom } from "./panzoom";
+import { NsfwBlurToggle } from "@/src/components/posts/nsfw-blur-toggle";
 
 const EMPTY_ARR: never[] = [];
 
@@ -119,9 +120,10 @@ const Post = memo(
       (s) => s.posts[getCachePrefixer()(apId)]?.data,
     );
 
+    const [removeBlur, setRemoveBlur] = useState(false);
     const blurNsfw =
       useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
-    const blurImg = blurNsfw ? postView?.nsfw : false;
+    const blurImg = blurNsfw ? postView?.nsfw && !removeBlur : false;
 
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;
@@ -157,6 +159,9 @@ const Post = memo(
             imgClassName="object-contain"
             onAspectRatio={(ratio) => setAr(ratio)}
           />
+          {blurImg && !removeBlur && (
+            <NsfwBlurToggle onClick={() => setRemoveBlur(true)} />
+          )}
         </div>
       </div>
     ) : (

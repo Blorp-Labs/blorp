@@ -39,6 +39,8 @@ import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { useProfileFromStore } from "@/src/stores/profiles";
+import { Button } from "../ui/button";
+import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -412,11 +414,6 @@ function LargePostCard({
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
             className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
-            onClick={() => {
-              if (!removeBlur && detailView) {
-                setRemoveBlur(true);
-              }
-            }}
           >
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
@@ -440,12 +437,11 @@ function LargePostCard({
               aspectRatio={post.thumbnailAspectRatio ?? undefined}
               alt={post.altText}
             />
-            {blurImg && !removeBlur && (
-              <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
-                NSFW
-              </div>
-            )}
           </Link>
+
+          {blurImg && !removeBlur && (
+            <NsfwBlurToggle onClick={() => setRemoveBlur(true)} />
+          )}
 
           {post.altText && (
             <ResponsiveTooltip
