@@ -128,7 +128,7 @@ export default function SavedFeed() {
                 }
               >
                 <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
-                <ToggleGroupItem value="comments">comments</ToggleGroupItem>
+                <ToggleGroupItem value="comments">Comments</ToggleGroupItem>
               </ToggleGroup>
             </ToolbarButtons>
           </IonToolbar>
@@ -161,7 +161,7 @@ export default function SavedFeed() {
                     }
                   >
                     <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
-                    <ToggleGroupItem value="comments">comments</ToggleGroupItem>
+                    <ToggleGroupItem value="comments">Comments</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
                 <></>
