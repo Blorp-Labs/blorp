@@ -109,7 +109,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
           onLoad?.();
         }}
         onError={() => onError?.()}
-        className={cn("w-full h-full", imgClassName, hiVisible && "opacity-0")}
+        className={cn("w-full h-full", imgClassName)}
       />
     </div>
   );
