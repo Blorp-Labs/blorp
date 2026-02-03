@@ -1007,9 +1007,12 @@ export class PieFedApi implements ApiBlueprint<null> {
           posts: z.array(pieFedPostViewSchema),
         })
         .parse(json);
+      const filteredPosts = form.showRead
+        ? posts
+        : posts.filter((p) => !p.read);
       return {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
-        posts: posts.map((post) => ({
+        posts: filteredPosts.map((post) => ({
           post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
           community: convertCommunity({ community: post.community }, "partial"),
