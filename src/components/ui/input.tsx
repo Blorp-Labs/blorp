@@ -26,7 +26,7 @@ function Input({
       )}
     >
       {startAdornment && (
-        <div className="mr-2 flex shrink-0 items-center text-muted-foreground">
+        <div className="me-2 flex shrink-0 items-center text-muted-foreground">
           {startAdornment}
         </div>
       )}
@@ -46,7 +46,7 @@ function Input({
       />
 
       {endAdornment && (
-        <div className="ml-2 flex shrink-0 items-center text-muted-foreground">
+        <div className="ms-2 flex shrink-0 items-center text-muted-foreground">
           {endAdornment}
         </div>
       )}

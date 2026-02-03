@@ -67,7 +67,7 @@ export function Combobox<V extends string>({
                   {option.label}
                   <Check
                     className={cn(
-                      "ml-auto",
+                      "ms-auto",
                       value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
