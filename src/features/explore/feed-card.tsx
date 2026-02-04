@@ -12,7 +12,7 @@ import { useLinkContext } from "../../routing/link-context";
 import { removeMd } from "../../components/markdown/remove-md";
 import { encodeApId } from "../../lib/api/utils";
 
-export const FEEDS = "FEEDS";
+export const FEEDS = "Feeds";
 
 export function FeedCard({
   icon,
