@@ -43,7 +43,10 @@ export const apiClient = _.memoize(
 
     switch (nodeInfo.software.name) {
       case "lemmy": {
-        if (nodeInfo.software.version.startsWith("1.")) {
+        if (
+          nodeInfo.software.version.startsWith("1.") ||
+          nodeInfo.software.version.startsWith("nightly")
+        ) {
           return new LemmyV4Api({ instance, jwt });
         } else {
           return new LemmyV3Api({ instance, jwt });
