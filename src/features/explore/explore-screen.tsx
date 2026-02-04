@@ -5,10 +5,10 @@ import {
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
 import { CommunityCard } from "../../components/communities/community-card";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useMedia } from "../../lib/hooks";
+import { useIsActiveRoute, useMedia } from "../../lib/hooks";
 import {
   IonContent,
   IonHeader,
@@ -42,6 +42,7 @@ import { supportsFeeds } from "../../lib/api/adapters/support";
 import { FeedCard, FEEDS } from "./feed-card";
 import { ExpandedCommunities } from "./explore-expanded-section-screen";
 import { SortControlBarContent } from "./sort-bar";
+import { useScrollToTopEvents } from "@/src/components/virtual-list";
 
 function SortControlBar({ className }: { className?: string }) {
   return (
@@ -190,11 +191,12 @@ function CommunitiesSwiper({ sort }: { sort: string }) {
   return (
     <div>
       <div className="flex flex-row items-center justify-between mb-2">
-        <h2
+        <button
           className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
+          onClick={() => ref.current?.swiper.slideTo(0)}
         >
           {sort.split(/(?=[A-Z])/).join(" ")} Communities
-        </h2>
+        </button>
         <Button variant="ghost" size="sm" asChild>
           <Link to="/communities/sort/:sort" params={{ sort }}>
             Show more
@@ -280,9 +282,7 @@ function FeedSwiper() {
   return (
     <div>
       <div className="flex flex-row items-center justify-between mb-2">
-        <h2
-          className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
-        >
+        <h2 className={cn("font-bold", ContentGutters.mobilePadding)}>
           Multi Community Feeds
         </h2>
         <Button variant="ghost" size="sm" asChild>
@@ -364,6 +364,19 @@ export default function Communities() {
 
   const media = useMedia();
 
+  const contentRef = useRef<HTMLIonContentElement>(null);
+
+  const active = useIsActiveRoute();
+  useScrollToTopEvents({
+    scrollToTop: useCallback(async () => {
+      const container = await contentRef.current?.getScrollElement();
+      if (container) {
+        container.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, []),
+    focused: active,
+  });
+
   return (
     <IonPage>
       <PageTitle>Communities</PageTitle>
@@ -400,6 +413,7 @@ export default function Communities() {
         )}
       </IonHeader>
       <IonContent
+        ref={contentRef}
         fullscreen={media.maxMd}
         scrollY={
           listingType !== "Subscribed" && listingType !== "ModeratorView"

@@ -16,30 +16,63 @@ export function SortControlBarContent({
 }) {
   const router = useIonRouter();
   const { communitySorts } = useAvailableSorts();
-  const sorts = _.uniq(
-    _.compact(communitySorts?.map((sort) => sort.split(/(?=[A-Z])/)[0])),
+  const sorts = _.uniqBy(
+    _.compact(
+      communitySorts?.map((sort) => {
+        const label = sort.split(/(?=[A-Z])/)[0];
+        return {
+          label,
+          sort,
+        };
+      }),
+    ),
+    "label",
   );
+  const selectedSplit = selectedSort?.split(/(?=[A-Z])/);
+  const selectedSortLabel = selectedSplit?.join(" ");
+  const selectedFirstWord = selectedSplit?.[0];
+  const associatedSorts = selectedFirstWord
+    ? communitySorts
+        ?.filter(
+          (sort) => sort.startsWith(selectedFirstWord) && sort !== selectedSort,
+        )
+        .map((sort) => {
+          const label = sort.split(/(?=[A-Z])/).join(" ");
+          return {
+            label,
+            sort,
+          };
+        })
+    : null;
   return (
     <>
       {selectedSort &&
         (router.canGoBack() ? (
           <Button size="sm" variant="outline" onClick={() => router.goBack()}>
-            {_.capitalize(selectedSort)}
+            {selectedSortLabel}
             <X />
           </Button>
         ) : (
           <Button size="sm" variant="outline" asChild>
             <Link to="/communities" replace>
-              {_.capitalize(selectedSort)}
+              {selectedSortLabel}
               <X />
             </Link>
           </Button>
         ))}
+      {selectedSort &&
+        associatedSorts?.map(({ sort, label }) => (
+          <Button key={sort} size="sm" variant="outline" asChild>
+            <Link to="/communities/sort/:sort" params={{ sort }} replace>
+              {label}
+            </Link>
+          </Button>
+        ))}
       {!selectedSort &&
-        sorts?.map((sort) => (
+        sorts?.map(({ sort, label }) => (
           <Button key={sort} size="sm" variant="outline" asChild>
             <Link to="/communities/sort/:sort" params={{ sort }}>
-              {_.capitalize(sort)}
+              {label}
             </Link>
           </Button>
         ))}
