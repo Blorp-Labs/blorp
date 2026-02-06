@@ -1,6 +1,6 @@
 import { ContentGutters } from "../components/gutters";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
@@ -246,7 +246,8 @@ function useDraftFromUrl({
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
-  const [draftIdEncoded] = useUrlSearchState("id", uuid(), z.string());
+  const [defaultUuid, setDefaultUuid] = useState(uuid());
+  const [draftIdEncoded] = useUrlSearchState("id", defaultUuid, z.string());
   const draftId = decodeURIComponent(draftIdEncoded);
   const id = useId();
 
@@ -344,10 +345,14 @@ export function CreatePost() {
       onClick={() => {
         try {
           if (draft.communitySlug) {
+            const cleanup = () => {
+              deleteDraft(draftId);
+              setDefaultUuid(uuid());
+            };
             if (isEdit) {
-              editPost.mutateAsync(draft).then(() => deleteDraft(draftId));
+              editPost.mutateAsync(draft).then(cleanup);
             } else {
-              createPost.mutateAsync(draft).then(() => deleteDraft(draftId));
+              createPost.mutateAsync(draft).then(cleanup);
             }
           }
         } catch {
