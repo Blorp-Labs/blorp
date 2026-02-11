@@ -28,6 +28,7 @@ import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import { CommunityCard } from "../communities/community-card";
+import { encodeApId } from "@/src/lib/api/utils";
 
 dayjs.extend(localizedFormat);
 
@@ -88,7 +89,7 @@ export function SmallScreenSidebar({
             <Link
               to={`${linkCtx.root}f/:apId/sidebar`}
               params={{
-                apId,
+                apId: encodeApId(apId),
               }}
               className="text-brand"
             >

@@ -20,19 +20,13 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useMedia } from "../lib/hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 
-export default function CommunityFeed() {
+export default function MultiCommunitySidebar() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
   const { apId: encodedApId } = useParams(`${linkCtx.root}f/:apId/sidebar`);
   const apId = useMemo(() => decodeURIComponent(encodedApId), [encodedApId]);
-
-  // const communityQuery = useCommunity({
-  //   name: apId,
-  // });
-  const feed = useMultiCommunityFeedFromStore(apId);
 
   return (
     <IonPage>

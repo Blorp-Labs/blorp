@@ -57,10 +57,10 @@ const ManageBlocks = lazy(
 const UpdateProfile = lazy(
   () => import("@/src/features/settings/update-profile-screen"),
 );
-const FeedPosts = lazy(
+const MultiCommunityFeedPosts = lazy(
   () => import("@/src/features/multi-community-feed-posts"),
 );
-const FeedSidebar = lazy(
+const MultiCommunityFeedSidebar = lazy(
   () => import("@/src/features/multi-community-feed-sidebar"),
 );
 const CommunityFeed = lazy(() => import("@/src/features/community-posts"));
@@ -127,10 +127,10 @@ const HOME_STACK = [
     <Search />
   </Route>,
   <Route key="/home/f/:apId" exact path="/home/f/:apId">
-    <FeedPosts />
+    <MultiCommunityFeedPosts />
   </Route>,
   <Route key="/home/f/:apId/sidebar" exact path="/home/f/:apId/sidebar">
-    <FeedSidebar />
+    <MultiCommunityFeedSidebar />
   </Route>,
   <Route key="/home/c/:communityName" exact path="/home/c/:communityName">
     <CommunityFeed />
@@ -213,14 +213,14 @@ const COMMUNITIES_STACK = [
     component={InstanceSidebar}
   />,
   <Route key="/communities/f/:apId" exact path="/communities/f/:apId">
-    <FeedPosts />
+    <MultiCommunityFeedPosts />
   </Route>,
   <Route
     key="/communities/f/:apId/sidebar"
     exact
     path="/communities/f/:apId/sidebar"
   >
-    <FeedSidebar />
+    <MultiCommunityFeedSidebar />
   </Route>,
   <Route
     key="/communities/c/:communityName"
@@ -287,10 +287,10 @@ const INBOX_STACK = [
     <Search />
   </Route>,
   <Route key="/inbox/f/:apId" exact path="/inbox/f/:apId">
-    <FeedPosts />
+    <MultiCommunityFeedPosts />
   </Route>,
   <Route key="/inbox/f/:apId/sidebar" exact path="/inbox/f/:apId/sidebar">
-    <FeedSidebar />
+    <MultiCommunityFeedSidebar />
   </Route>,
   <Route key="/inbox/c/:communityName" exact path="/inbox/c/:communityName">
     <CommunityFeed />
