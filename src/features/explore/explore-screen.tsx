@@ -5,7 +5,14 @@ import {
 } from "@/src/lib/api/index";
 import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
 import { CommunityCard } from "../../components/communities/community-card";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useIsActiveRoute, useMedia } from "../../lib/hooks";
@@ -178,11 +185,11 @@ function CommunitiesSwiper({
     sort,
     type: listingType,
   });
-  const refetch = communitiesQuery.refetch;
+  const refetch = useEffectEvent(communitiesQuery.refetch);
   useEffect(() => {
     const unsubscribe = registerRefresher(refetch);
     return unsubscribe;
-  }, [registerRefresher, refetch]);
+  }, [registerRefresher]);
   const communities = useMemo(
     () => communitiesQuery.data?.pages.flatMap((page) => page.communities),
     [communitiesQuery.data],
@@ -271,11 +278,11 @@ function FeedSwiper({
   const feeds = useListMultiCommunityFeeds({
     type: listingType === "ModeratorView" ? undefined : listingType,
   });
-  const refetch = feeds.refetch;
+  const refetch = useEffectEvent(feeds.refetch);
   useEffect(() => {
     const unsubscribe = registerRefresher(refetch);
     return unsubscribe;
-  }, [registerRefresher, refetch]);
+  }, [registerRefresher]);
 
   const feedsData = useMemo(
     () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
