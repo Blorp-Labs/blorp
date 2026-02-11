@@ -8,7 +8,7 @@ import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "../../components/communities/community-card";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useMedia } from "../../lib/hooks";
@@ -43,6 +43,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
       enabled: sort === FEEDS,
     },
   );
+
   const feedsData = useMemo(
     () => feeds.data?.pages.flatMap((p) => p.feeds),
     [feeds.data?.pages],

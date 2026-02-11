@@ -5,7 +5,7 @@ import {
 } from "@/src/lib/api/index";
 import { useListFeeds } from "@/src/lib/api/index";
 import { CommunityCard } from "../../components/communities/community-card";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useIsActiveRoute, useMedia } from "../../lib/hooks";
@@ -13,7 +13,10 @@ import {
   IonContent,
   IonHeader,
   IonPage,
+  IonRefresher,
+  IonRefresherContent,
   IonToolbar,
+  RefresherCustomEvent,
   useIonRouter,
 } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../../components/nav";
@@ -163,12 +166,23 @@ function CommunityItem({ communitySlug }: { communitySlug: string }) {
   );
 }
 
-function CommunitiesSwiper({ sort }: { sort: string }) {
+function CommunitiesSwiper({
+  sort,
+  registerRefresher,
+}: {
+  sort: string;
+  registerRefresher: (fn: () => Promise<any>) => () => void;
+}) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
   const communitiesQuery = useListCommunities({
     sort,
     type: listingType,
   });
+  const refetch = communitiesQuery.refetch;
+  useEffect(() => {
+    const unsubscribe = registerRefresher(refetch);
+    return unsubscribe;
+  }, [registerRefresher, refetch]);
   const communities = useMemo(
     () => communitiesQuery.data?.pages.flatMap((page) => page.communities),
     [communitiesQuery.data],
@@ -247,12 +261,21 @@ function CommunitiesSwiper({ sort }: { sort: string }) {
   );
 }
 
-function FeedSwiper() {
+function FeedSwiper({
+  registerRefresher,
+}: {
+  registerRefresher: (fn: () => Promise<any>) => () => void;
+}) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const feeds = useListFeeds({
     type: listingType === "ModeratorView" ? undefined : listingType,
   });
+  const refetch = feeds.refetch;
+  useEffect(() => {
+    const unsubscribe = registerRefresher(refetch);
+    return unsubscribe;
+  }, [registerRefresher, refetch]);
 
   const feedsData = useMemo(
     () => feeds.data?.pages.flatMap((p) => p.feeds),
@@ -377,6 +400,21 @@ export default function Communities() {
     focused: active,
   });
 
+  const [refreshers, setRefershers] = useState<(() => Promise<any>)[]>([]);
+
+  async function handleRefresh(event: RefresherCustomEvent) {
+    const promises = refreshers.map((r) => r());
+    await Promise.all(promises);
+    event.detail.complete();
+  }
+
+  const registerRefresher = useCallback((fn: () => Promise<any>) => {
+    setRefershers((prev) => [...prev, fn]);
+    return () => {
+      setRefershers((prev) => prev.filter((item) => item !== fn));
+    };
+  }, []);
+
   return (
     <IonPage>
       <PageTitle>Communities</PageTitle>
@@ -419,6 +457,10 @@ export default function Communities() {
           listingType !== "Subscribed" && listingType !== "ModeratorView"
         }
       >
+        <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+          <IonRefresherContent />
+        </IonRefresher>
+
         {(listingType === "Subscribed" || listingType === "ModeratorView") && (
           <ExpandedCommunities />
         )}
@@ -430,9 +472,16 @@ export default function Communities() {
 
               {featuredSorts?.map((sort) =>
                 sort === FEEDS ? (
-                  <FeedSwiper key={sort} />
+                  <FeedSwiper
+                    key={sort}
+                    registerRefresher={registerRefresher}
+                  />
                 ) : (
-                  <CommunitiesSwiper key={sort} sort={sort} />
+                  <CommunitiesSwiper
+                    key={sort}
+                    sort={sort}
+                    registerRefresher={registerRefresher}
+                  />
                 ),
               )}
             </div>
