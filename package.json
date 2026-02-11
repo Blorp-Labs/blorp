@@ -6,6 +6,7 @@
   "scripts": {
     "postinstall": "husky",
     "dev": "vite dev",
+    "preview": "vite preview",
     "dev:tauri": "tauri dev",
     "dev:ios": "yarn ionic capacitor run ios -l --external",
     "lint": "yarn oxlint",
@@ -18,8 +19,7 @@
     "test:ui": "vitest --watch --coverage --ui",
     "test:e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "serve": "yarn node ./test-utils/express.js"
+    "build-storybook": "storybook build"
   },
   "installConfig": {
     "hoistingLimits": "workspaces"
@@ -156,7 +156,6 @@
     "@tanstack/react-devtools": "^0.3.0",
     "@tauri-apps/cli": "^2.8.1",
     "@types/canvas-confetti": "^1.9.0",
-    "@types/express": "^4",
     "@types/license-checker": "^25.0.6",
     "@types/markdown-it": "14.1.2",
     "@types/markdown-it-container": "^2.0.10",
@@ -169,7 +168,6 @@
     "@vitest/coverage-v8": "4.0.13",
     "@vitest/ui": "4.0.13",
     "chromatic": "^11.25.1",
-    "express": "^4.21.2",
     "fetch-mock": "^12.5.3",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
