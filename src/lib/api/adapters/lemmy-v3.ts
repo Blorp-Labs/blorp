@@ -755,7 +755,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     };
   }
 
-  async getFeeds() {
+  async getMultiCommunityFeeds() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

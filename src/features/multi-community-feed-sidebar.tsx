@@ -1,4 +1,4 @@
-import { SmallScreenSidebar } from "@/src/components/feeds/feed-sidebar";
+import { SmallScreenSidebar } from "@/src/components/multi-community-feeds/multi-community-feed-sidebar";
 import { useMemo } from "react";
 import _ from "lodash";
 import {
@@ -20,7 +20,7 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useMedia } from "../lib/hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { useFeedFromStore } from "../stores/feeds";
+import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -32,7 +32,7 @@ export default function CommunityFeed() {
   // const communityQuery = useCommunity({
   //   name: apId,
   // });
-  const feed = useFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId);
 
   return (
     <IonPage>

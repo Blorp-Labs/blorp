@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { CommunityJoinButton } from "./community-join-button";
 import { CommunityCreatePost } from "./community-create-post";
 
-export function CommunityFeedSortBar({
+export function CommunityPostSortBar({
   communityName,
 }: {
   communityName: string | undefined;

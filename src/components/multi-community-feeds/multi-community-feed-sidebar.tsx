@@ -26,7 +26,7 @@ import { AggregateBadges } from "../aggregates";
 import { Skeleton } from "../ui/skeleton";
 import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
-import { useFeedFromStore } from "@/src/stores/feeds";
+import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import { CommunityCard } from "../communities/community-card";
 
 dayjs.extend(localizedFormat);
@@ -40,7 +40,7 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  const feed = useFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId);
 
   const actions = useCommunityActions({
     apId,
@@ -169,7 +169,7 @@ export function FeedSidebar({
   //   name: communityName,
   // });
 
-  const feed = useFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId);
 
   const aboutOpen = useSidebarStore((s) => s.communityAboutExpanded);
   const setAboutOpen = useSidebarStore((s) => s.setCommunityAboutExpanded);

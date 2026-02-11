@@ -55,7 +55,7 @@ import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
-import { useFeedStore } from "@/src/stores/feeds";
+import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -628,20 +628,20 @@ export function useListCommunities(
   });
 }
 
-export function useListFeeds(
-  form: Forms.GetFeeds,
+export function useListMultiCommunityFeeds(
+  form: Forms.GetMultiCommunityFeeds,
   options?: QueryOverwriteOptions,
 ) {
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cacheFeeds = useFeedStore((s) => s.cacheFeeds);
+  const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const queryKey = [...queryKeyPrefix, "getFeeds", form];
   return useThrottledInfiniteQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const res = await (await api).getFeeds(form, { signal });
-      cacheFeeds(getCachePrefixer(), res.feeds);
+      const res = await (await api).getMultiCommunityFeeds(form, { signal });
+      cacheFeeds(getCachePrefixer(), res.multiCommunityFeeds);
       cacheCommunities(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),

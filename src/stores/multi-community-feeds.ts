@@ -9,7 +9,7 @@ import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
 
-type Data = Schemas.Feed;
+type Data = Schemas.MultiCommunityFeed;
 
 type CachedFeed = {
   data: Data;
@@ -21,7 +21,7 @@ type FeedStore = {
   patchFeed: (
     id: string,
     prefix: CachePrefixer,
-    feed: Partial<Schemas.Feed>,
+    feed: Partial<Schemas.MultiCommunityFeed>,
   ) => void;
   cacheFeed: (prefix: CachePrefixer, data: Data) => void;
   cacheFeeds: (
@@ -36,7 +36,7 @@ const INIT_STATE = {
   feeds: {},
 };
 
-export const useFeedStore = create<FeedStore>()(
+export const useMultiCommunityFeedStore = create<FeedStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
@@ -141,7 +141,7 @@ export const useFeedStore = create<FeedStore>()(
       },
     }),
     {
-      name: "feed",
+      name: "multi-community-feeds",
       storage: createStorage<FeedStore>(),
       version: 1,
       onRehydrateStorage: () => {
@@ -164,18 +164,18 @@ export const useFeedStore = create<FeedStore>()(
   ),
 );
 
-sync(useFeedStore);
+sync(useMultiCommunityFeedStore);
 
-export function useFeedFromStore(apId?: string) {
+export function useMultiCommunityFeedFromStore(apId?: string) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
-  return useFeedStore((s) =>
+  return useMultiCommunityFeedStore((s) =>
     apId ? s.feeds[cachePrefixer()(apId)]?.data : undefined,
   );
 }
 
-export function useFeedsFromStore(apId?: string[]) {
+export function useMultiCommunityFeedsFromStore(apId?: string[]) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
-  return useFeedStore(
+  return useMultiCommunityFeedStore(
     useShallow((s) =>
       apId
         ?.map((slug) => s.feeds[cachePrefixer()(slug)]?.data)

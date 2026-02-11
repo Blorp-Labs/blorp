@@ -46,7 +46,7 @@ const Privacy = lazy(() => import("@/src/features/privacy"));
 const OSLicenses = lazy(() => import("@/src/features/licenses"));
 const Terms = lazy(() => import("@/src/features/terms"));
 const Support = lazy(() => import("@/src/features/support"));
-const HomeFeed = lazy(() => import("@/src/features/home-feed"));
+const HomeFeed = lazy(() => import("@/src/features/home-posts"));
 const Post = lazy(() => import("@/src/features/post"));
 const SettingsPage = lazy(
   () => import("@/src/features/settings/settings-screen"),
@@ -57,9 +57,13 @@ const ManageBlocks = lazy(
 const UpdateProfile = lazy(
   () => import("@/src/features/settings/update-profile-screen"),
 );
-const FeedPosts = lazy(() => import("@/src/features/feed-posts"));
-const FeedSidebar = lazy(() => import("@/src/features/feed-sidebar"));
-const CommunityFeed = lazy(() => import("@/src/features/community-feed"));
+const FeedPosts = lazy(
+  () => import("@/src/features/multi-community-feed-posts"),
+);
+const FeedSidebar = lazy(
+  () => import("@/src/features/multi-community-feed-sidebar"),
+);
+const CommunityFeed = lazy(() => import("@/src/features/community-posts"));
 const CommunitySidebar = lazy(() => import("@/src/features/community-sidebar"));
 const CommunitiesFeed = lazy(
   () => import("@/src/features/explore/explore-screen"),
@@ -68,10 +72,10 @@ const ExploreExpandedSectionScreen = lazy(
   () => import("@/src/features/explore/explore-expanded-section-screen"),
 );
 const User = lazy(() => import("@/src/features/user"));
-const SavedFeed = lazy(() => import("@/src/features/saved-feed"));
+const SavedFeed = lazy(() => import("@/src/features/saved-content"));
 const Search = lazy(() => import("@/src/features/search/search-screen"));
 const LightBoxPostFeed = lazy(
-  () => import("@/src/features/light-box/light-box-post-feed"),
+  () => import("@/src/features/light-box/light-box-posts"),
 );
 const LightBox = lazy(() => import("@/src/features/light-box/light-box"));
 

@@ -63,7 +63,7 @@ function Comment({ path }: { path: string }) {
   );
 }
 
-export default function SavedFeed() {
+export default function SavedContent() {
   const media = useMedia();
 
   const [type, setType] = useUrlSearchState(

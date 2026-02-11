@@ -513,7 +513,9 @@ function convertCommentReport(
   };
 }
 
-function convertFeed(multiCommunity: lemmyV4.MultiCommunityView): Schemas.Feed {
+function convertFeed(
+  multiCommunity: lemmyV4.MultiCommunityView,
+): Schemas.MultiCommunityFeed {
   const { multi } = multiCommunity;
   return {
     id: multi.id,
@@ -774,10 +776,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
     const sort = mapPostSort(form.sort);
 
-    let multi_community_id: number | undefined = form.feedId;
-    if (form.feedApId && _.isNil(multi_community_id)) {
-      multi_community_id = (await this.resolveObjectId(form.feedApId))
-        .multi_community_id;
+    let multi_community_id: number | undefined = form.multiCommunityFeedId;
+    if (form.multiCommunityFeedApId && _.isNil(multi_community_id)) {
+      multi_community_id = (
+        await this.resolveObjectId(form.multiCommunityFeedApId)
+      ).multi_community_id;
       if (!multi_community_id) {
         throw Errors.OBJECT_NOT_FOUND;
       }
@@ -905,7 +908,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     };
   }
 
-  async getFeeds(form: Forms.GetFeeds) {
+  async getMultiCommunityFeeds(form: Forms.GetMultiCommunityFeeds) {
     const { items } = await this.client.listMultiCommunities({
       limit: this.limit,
       type_: form.type
@@ -917,7 +920,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         : undefined,
     });
     return {
-      feeds: items.map(convertFeed),
+      multiCommunityFeeds: items.map(convertFeed),
       communities: [],
       nextCursor: null,
     };

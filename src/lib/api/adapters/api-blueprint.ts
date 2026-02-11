@@ -142,7 +142,7 @@ const communitySchema = z.object({
     )
     .optional(),
 });
-const feedSchema = z.object({
+const multiCommunityFeedSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -356,7 +356,7 @@ export namespace Schemas {
 
   export type Post = z.infer<typeof postSchema>;
 
-  export type Feed = z.infer<typeof feedSchema>;
+  export type MultiCommunityFeed = z.infer<typeof multiCommunityFeedSchema>;
 
   export type Community = z.infer<typeof communitySchema>;
   export type Person = z.infer<typeof personSchema>;
@@ -419,8 +419,8 @@ export namespace Forms {
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
-    feedApId?: string;
-    feedId?: number;
+    multiCommunityFeedApId?: string;
+    multiCommunityFeedId?: number;
     savedOnly?: boolean;
   };
 
@@ -494,7 +494,7 @@ export namespace Forms {
     pageCursor?: string;
   };
 
-  export type GetFeeds = {
+  export type GetMultiCommunityFeeds = {
     type?: "All" | "Local" | "Subscribed";
   };
 
@@ -755,11 +755,11 @@ export abstract class ApiBlueprint<C> {
     nextCursor: string | null;
   }>;
 
-  abstract getFeeds(
-    form: Forms.GetFeeds,
+  abstract getMultiCommunityFeeds(
+    form: Forms.GetMultiCommunityFeeds,
     options?: RequestOptions,
   ): Promise<{
-    feeds: Schemas.Feed[];
+    multiCommunityFeeds: Schemas.MultiCommunityFeed[];
     communities: Schemas.Community[];
     nextCursor: null;
   }>;

@@ -3,13 +3,13 @@ import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { useIsCommunityBlocked } from "@/src/stores/auth";
 import _ from "lodash";
-import { useFeedFromStore } from "@/src/stores/feeds";
+import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 
-export function FeedBanner({ apId }: { apId?: string }) {
+export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
   const [bannerReady, setBannerReady] = useState(false);
   const [iconReady, setIconReady] = useState(false);
 
-  const feed = useFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId);
   const isBlocked = useIsCommunityBlocked(apId);
 
   const banner = feed?.banner ?? undefined;

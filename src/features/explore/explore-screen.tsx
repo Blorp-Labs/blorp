@@ -3,7 +3,7 @@ import {
   useListCommunities,
   useSoftware,
 } from "@/src/lib/api/index";
-import { useListFeeds } from "@/src/lib/api/index";
+import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
 import { CommunityCard } from "../../components/communities/community-card";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
@@ -268,7 +268,7 @@ function FeedSwiper({
 }) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
-  const feeds = useListFeeds({
+  const feeds = useListMultiCommunityFeeds({
     type: listingType === "ModeratorView" ? undefined : listingType,
   });
   const refetch = feeds.refetch;
@@ -278,7 +278,7 @@ function FeedSwiper({
   }, [registerRefresher, refetch]);
 
   const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.feeds),
+    () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
     [feeds.data?.pages],
   );
 

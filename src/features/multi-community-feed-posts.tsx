@@ -17,11 +17,11 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
-import { FeedBanner } from "../components/feeds/feed-banner";
+import { MultiCommunityFeedBanner } from "../components/multi-community-feeds/multi-community-feed-banner";
 import {
   FeedSidebar,
   SmallScreenSidebar,
-} from "../components/feeds/feed-sidebar";
+} from "../components/multi-community-feeds/multi-community-feed-sidebar";
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
@@ -33,7 +33,7 @@ import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
-import { CommunityFeedSortBar } from "../components/communities/community-feed-sort-bar";
+import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
@@ -43,7 +43,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
-import { useFeedFromStore } from "../stores/feeds";
+import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 
 const EMPTY_ARR: never[] = [];
 
@@ -57,7 +57,7 @@ const Post = memo((props: PostProps) => (
   </ContentGutters>
 ));
 
-export default function FeedPosts() {
+export default function MultiCommunityFeedPosts() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
@@ -67,12 +67,12 @@ export default function FeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
-  const feed = useFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId);
 
   const postSort = useFiltersStore((s) => s.postSort);
   const posts = usePosts({
-    feedApId: apId,
-    feedId: feed?.id,
+    multiCommunityFeedApId: apId,
+    multiCommunityFeedId: feed?.id,
   });
   const data = useMemo(
     () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
@@ -80,8 +80,8 @@ export default function FeedPosts() {
   );
 
   const mostRecentPost = useMostRecentPost("community", {
-    feedApId: apId,
-    feedId: feed?.id,
+    multiCommunityFeedApId: apId,
+    multiCommunityFeedId: feed?.id,
   });
 
   const isBlocked = useIsCommunityBlocked(apId);
@@ -207,12 +207,12 @@ export default function FeedPosts() {
               <Fragment key="community-header">
                 <SmallScreenSidebar apId={apId} />
                 <ContentGutters className="max-md:hidden pt-4">
-                  <FeedBanner apId={apId} />
+                  <MultiCommunityFeedBanner apId={apId} />
                   <></>
                 </ContentGutters>
               </Fragment>,
               <Fragment key="community-sort-bar">
-                <CommunityFeedSortBar communityName={apId} />
+                <CommunityPostSortBar communityName={apId} />
                 {!refreshing && (
                   <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
                 )}

@@ -27,7 +27,7 @@ import { LuLoaderCircle } from "react-icons/lu";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { PostReportProvider } from "../components/posts/post-report";
 import { PageTitle } from "../components/page-title";
-import { PostFeedSortBar } from "../components/posts/post-feed-sort-bar";
+import { PostsSortBar } from "../components/posts/posts-sort-bar";
 import { useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
@@ -177,7 +177,7 @@ function WrappedIonContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function HomeFeed() {
+export default function HomePosts() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
@@ -299,7 +299,7 @@ export default function HomeFeed() {
                 <></>
               </ContentGutters>
             }
-            header={[<PostFeedSortBar key="header" />]}
+            header={[<PostsSortBar key="header" />]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
                 return (

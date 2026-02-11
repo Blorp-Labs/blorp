@@ -23,7 +23,7 @@ export function FeedCard({
   description,
   className,
   expand,
-}: Schemas.Feed & {
+}: Schemas.MultiCommunityFeed & {
   className?: string;
   expand: boolean;
 }) {

@@ -38,7 +38,7 @@ import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
-import { CommunityFeedSortBar } from "../components/communities/community-feed-sort-bar";
+import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
@@ -61,7 +61,7 @@ const Post = memo((props: PostProps) => (
   </ContentGutters>
 ));
 
-export default function CommunityFeed() {
+export default function CommunityPosts() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
@@ -228,7 +228,7 @@ export default function CommunityFeed() {
                 </ContentGutters>
               </Fragment>,
               <Fragment key="community-sort-bar">
-                <CommunityFeedSortBar communityName={communityName} />
+                <CommunityPostSortBar communityName={communityName} />
                 {!refreshing && (
                   <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
                 )}

@@ -3,12 +3,12 @@ import {
   useModeratingCommunities,
   useSubscribedCommunities,
 } from "@/src/lib/api/index";
-import { useListFeeds } from "@/src/lib/api/index";
+import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "../../components/communities/community-card";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useMedia } from "../../lib/hooks";
@@ -35,7 +35,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
-  const feeds = useListFeeds(
+  const feeds = useListMultiCommunityFeeds(
     {
       type: listingType === "ModeratorView" ? undefined : listingType,
     },
@@ -45,7 +45,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   );
 
   const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.feeds),
+    () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
     [feeds.data?.pages],
   );
 
@@ -99,7 +99,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   }
 
   const vlist = (
-    <VirtualList<string | Schemas.Feed>
+    <VirtualList<string | Schemas.MultiCommunityFeed>
       key={listingType}
       fullscreen
       scrollHost

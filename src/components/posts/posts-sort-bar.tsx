@@ -1,7 +1,7 @@
 import { ContentGutters } from "../gutters";
 import { PostSortButton, PostCardStyleButton } from "../lemmy-sort";
 
-export function PostFeedSortBar() {
+export function PostsSortBar() {
   return (
     <ContentGutters className="max-md:hidden">
       <div className="flex flex-row md:h-12 md:border-b md:bg-background flex-1 items-center gap-2">
