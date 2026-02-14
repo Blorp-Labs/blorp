@@ -16,6 +16,7 @@ import {
   useBlockPerson,
   useDeleteComment,
   useLockComment,
+  useMarkCommentAsAnswer,
   useSaveComment,
   useSoftware,
 } from "@/src/lib/api/index";
@@ -86,10 +87,12 @@ export function useCommentActions({
   commentView,
   queryKeyParentId,
   canMod,
+  opId,
 }: {
   commentView?: Schemas.Comment;
   queryKeyParentId?: number;
   canMod?: boolean;
+  opId?: number;
 }) {
   const myUserId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
@@ -101,6 +104,9 @@ export function useCommentActions({
   );
 
   const saveComment = useSaveComment(commentView?.path);
+  const markCommentAsAnswer = useMarkCommentAsAnswer();
+  const answer = commentView?.optimisticAnswer ?? commentView?.answer;
+  const isOp = myUserId != null && myUserId === opId;
 
   const isMyComment = commentView?.creatorId === myUserId;
 
@@ -171,6 +177,19 @@ export function useCommentActions({
                   ]
                 : []),
             ],
+          },
+        ]
+      : []),
+    ...(isOp && commentView && software === "piefed"
+      ? [
+          {
+            text: answer ? "Unmark as answer" : "Mark as answer",
+            onClick: () =>
+              markCommentAsAnswer.mutate({
+                path: commentView.path,
+                commentId: commentView.id,
+                answer: !answer,
+              }),
           },
         ]
       : []),
@@ -384,6 +403,14 @@ function Byline({
         className="text-xs text-muted-foreground"
       />
       {locked && <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />}
+      {(comment.optimisticAnswer ?? comment.answer) && (
+        <Badge
+          size="sm"
+          className="ml-1 bg-green-500/15 text-green-600 border-green-500/30"
+        >
+          Answer
+        </Badge>
+      )}
     </CollapsibleTrigger>
   );
 }
@@ -508,6 +535,7 @@ export function PostComment({
     commentView,
     queryKeyParentId,
     canMod,
+    opId,
   });
 
   const bodyRenderer = commentView && (

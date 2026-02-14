@@ -214,6 +214,8 @@ export const commentSchema = z.object({
   childCount: z.number(),
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
+  answer: z.boolean(),
+  optimisticAnswer: z.boolean().optional(),
 });
 export const privateMessageSchema = z.object({
   createdAt: z.string(),
@@ -622,6 +624,11 @@ export namespace Forms {
     locked: boolean;
   };
 
+  export type MarkCommentAsAnswer = {
+    commentId: number;
+    answer: boolean;
+  };
+
   export type BlockPerson = {
     personId: number;
     block: boolean;
@@ -850,6 +857,10 @@ export abstract class ApiBlueprint<C> {
   abstract removeComment(form: Forms.RemoveComment): Promise<Schemas.Comment>;
 
   abstract lockComment(form: Forms.LockComment): Promise<Schemas.Comment>;
+
+  abstract markCommentAsAnswer(
+    form: Forms.MarkCommentAsAnswer,
+  ): Promise<Schemas.Comment>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,
