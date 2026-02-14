@@ -118,6 +118,7 @@ Ionic provides the app shell (pages, tabs, menus, gestures, safe areas). ShadCN/
 ### General
 
 - Keep code concise. Don't be overly verbose.
+- **Always use `===` and `!==` for comparisons.** Never use `==` or `!=` — no type coercion.
 - **Always clean up dead code.** If unsure what's new, diff against master.
 - Follow existing patterns — look at nearby components for reference.
 - Keep PRs focused. Clean up code you touch, but don't expand the diff into unrelated files.

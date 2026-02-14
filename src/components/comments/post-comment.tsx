@@ -106,7 +106,7 @@ export function useCommentActions({
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const answer = commentView?.optimisticAnswer ?? commentView?.answer;
-  const isOp = myUserId != null && myUserId === opId;
+  const isOp = myUserId !== undefined && myUserId === opId;
 
   const isMyComment = commentView?.creatorId === myUserId;
 
