@@ -70,6 +70,7 @@ import { getCommentBgClass } from "./utils";
 import {
   commentIsAnswer,
   getCommentEmojiReaction,
+  getCommentMyVote,
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 
@@ -292,6 +293,7 @@ export function useCommentActions({
                       path: commentView.path,
                       commentId: commentView.id,
                       emoji,
+                      score: getCommentMyVote(commentView) ?? undefined,
                     }),
                   ),
               })),

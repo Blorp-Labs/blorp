@@ -635,6 +635,7 @@ export namespace Forms {
   export type AddCommentReactionEmoji = {
     commentId: number;
     emoji: string | null;
+    score?: number;
   };
 
   export type BlockPerson = {
@@ -690,8 +691,8 @@ export abstract class ApiBlueprint<C> {
   abstract software: Software;
   abstract softwareVersion: string;
 
-  myApId?: string;
-  myId?: number;
+  abstract myApId?: string;
+  abstract myId?: number;
 
   abstract getSite(options?: RequestOptions): Promise<{
     site: Schemas.Site;

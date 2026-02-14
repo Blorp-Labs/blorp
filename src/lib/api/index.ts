@@ -66,7 +66,12 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
     const apis = accounts.map((account) => {
       const { instance, jwt } = account;
       const site = getAccountSite(account);
-      const api = apiClient({ instance, jwt, myApId: site?.me?.apId, myId: site?.me?.id });
+      const api = apiClient({
+        instance,
+        jwt,
+        myApId: site?.me?.apId,
+        myId: site?.me?.id,
+      });
 
       const queryKeyPrefix: unknown[] = [
         `instance-${instance}`,
@@ -2538,8 +2543,9 @@ export function useAddCommentReactionEmoji() {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   return useMutation({
-    mutationFn: async (form: Forms.AddCommentReactionEmoji & { path: string }) =>
-      (await api).addCommentReactionEmoji(_.omit(form, ["path"])),
+    mutationFn: async (
+      form: Forms.AddCommentReactionEmoji & { path: string },
+    ) => (await api).addCommentReactionEmoji(_.omit(form, ["path"])),
     onMutate: ({ emoji, path }) => {
       patchComment(path, getCachePrefixer(), () => ({
         optimisticMyEmojiReaction: emoji,
@@ -2548,8 +2554,7 @@ export function useAddCommentReactionEmoji() {
     onSuccess: (commentView, { path }) =>
       patchComment(path, getCachePrefixer(), () => ({
         optimisticMyEmojiReaction: undefined,
-        myEmojiReaction: commentView.myEmojiReaction,
-        emojiReactions: commentView.emojiReactions,
+        ...commentView,
       })),
     onError: (_err, { path }) => {
       patchComment(path, getCachePrefixer(), () => ({
