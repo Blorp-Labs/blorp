@@ -130,7 +130,7 @@ export function CommentVoting({
           });
         }}
         className={cn(
-          "hover:text-brand hover:bg-brand/10",
+          "hover:text-brand hover:bg-brand/10 dark:hover:bg-brand/25",
           isUpvoted && "text-brand",
           isDownvoted && "text-brand-secondary",
         )}
@@ -172,7 +172,7 @@ export function CommentVoting({
           });
         }}
         className={cn(
-          "hover:text-brand-secondary hover:bg-brand-secondary/10",
+          "hover:text-brand-secondary hover:bg-brand-secondary/10 dark:hover:bg-brand-secondary/30",
           isDownvoted && "text-brand-secondary",
         )}
       >
