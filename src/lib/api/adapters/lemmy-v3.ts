@@ -246,6 +246,7 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     myVote: commentView.my_vote ?? null,
     childCount: counts.child_count,
     saved: commentView.saved,
+    answer: false,
   };
 }
 function convertPrivateMessage(
@@ -1119,6 +1120,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async lockComment() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async markCommentAsAnswer() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

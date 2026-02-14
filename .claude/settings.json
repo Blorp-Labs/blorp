@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file_path=$(cat | jq -r '.tool_input.file_path // .tool_input.notebook_path') && npx prettier --write \"$file_path\" 2>/dev/null; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

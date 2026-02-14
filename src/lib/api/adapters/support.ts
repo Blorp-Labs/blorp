@@ -21,3 +21,7 @@ export function supportsFeeds({ software, softwareVersion }: Software) {
     (softwareVersion && compareVersions(softwareVersion, "1.0.0"))
   );
 }
+
+export function supportsMarkCommentAsAnswer({ software }: Software) {
+  return software === "piefed";
+}

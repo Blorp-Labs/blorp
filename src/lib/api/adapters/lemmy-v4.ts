@@ -400,6 +400,7 @@ function convertComment(
     myVote,
     childCount: comment.child_count,
     saved: false,
+    answer: false,
   };
 }
 
@@ -1284,6 +1285,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       reason: "",
     });
     return convertComment(comment_view);
+  }
+
+  async markCommentAsAnswer() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {

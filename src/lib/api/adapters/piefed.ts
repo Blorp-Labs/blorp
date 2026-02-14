@@ -322,6 +322,7 @@ export const pieFedCommentSchema = z.object({
   body: z.string(),
   deleted: z.boolean(),
   //distinguished: z.boolean(),
+  answer: z.boolean().nullish(),
   //edited_at: z.string().optional(),
   id: z.number(),
   //language_id: z.number(),
@@ -651,6 +652,7 @@ function convertComment(
     myVote: commentView.my_vote ?? null,
     childCount: counts.child_count,
     saved: commentView.saved ?? false,
+    answer: comment.answer ?? false,
   };
 }
 
@@ -2010,6 +2012,21 @@ export class PieFedApi implements ApiBlueprint<null> {
       })
       .parse(json);
     return convertComment(comment_view);
+  }
+
+  async markCommentAsAnswer(form: Forms.MarkCommentAsAnswer) {
+    const json = await this.post("/comment/mark_as_answer", {
+      comment_reply_id: form.commentId,
+      answer: form.answer,
+    });
+    const { comment_reply_view } = z
+      .object({ comment_reply_view: pieFedReplyViewSchema })
+      .parse(json);
+    return convertComment({
+      ...comment_reply_view,
+      saved: null,
+      creator_banned_from_community: null,
+    });
   }
 
   async blockPerson(form: Forms.BlockPerson) {

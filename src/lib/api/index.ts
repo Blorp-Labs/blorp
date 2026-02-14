@@ -1233,6 +1233,7 @@ export function useCreateComment() {
         myVote: 1,
         childCount: 0,
         saved: false,
+        answer: false,
       };
 
       cacheComments(getCachePrefixer(), [newComment]);
@@ -2500,6 +2501,37 @@ export function useLockComment() {
         toast.error(extractErrorContent(err));
       } else {
         toast.error(`Couldn't ${locked ? "lock" : "unlock"} comment`);
+      }
+    },
+  });
+}
+
+export function useMarkCommentAsAnswer() {
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.MarkCommentAsAnswer & { path: string }) =>
+      (await api).markCommentAsAnswer(_.omit(form, ["path"])),
+    onMutate: ({ answer, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticAnswer: answer,
+      }));
+    },
+    onSuccess: (commentView, { path }) =>
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticAnswer: undefined,
+        answer: commentView.answer,
+      })),
+    onError: (err, { answer, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticAnswer: undefined,
+      }));
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${answer ? "mark" : "unmark"} comment as answer`);
       }
     },
   });
