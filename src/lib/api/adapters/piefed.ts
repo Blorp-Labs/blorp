@@ -318,6 +318,12 @@ export const pieFedSiteSchema = z.object({
   version: z.string(),
 });
 
+const pieFedEmojiReactionSchema = z.object({
+  token: z.string(),
+  count: z.number(),
+  authors: z.array(z.string()),
+});
+
 export const pieFedCommentSchema = z.object({
   ap_id: z.string(),
   body: z.string(),
@@ -334,6 +340,7 @@ export const pieFedCommentSchema = z.object({
   removed: z.boolean(),
   //user_id: z.number(),
   locked: z.boolean().nullish(),
+  emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
 });
 
 export const pieFedCommentCountsSchema = z.object({
@@ -345,14 +352,11 @@ export const pieFedCommentCountsSchema = z.object({
   upvotes: z.number(),
 });
 
-const pieFedEmojiReactionSchema = z.object({
-  token: z.string(),
-  count: z.number(),
-  authors: z.array(z.string()),
-});
-
 function extractEmojiReactionData(
-  emojiReactions: z.infer<typeof pieFedEmojiReactionSchema>[] | undefined,
+  emojiReactions:
+    | z.infer<typeof pieFedEmojiReactionSchema>[]
+    | undefined
+    | null,
   myApId?: string,
 ) {
   const reactions = emojiReactions ?? [];
@@ -371,7 +375,7 @@ type PieFedCommentChildView = {
   creator: z.infer<typeof pieFedPersonSchema>;
   my_vote: number;
   replies: PieFedCommentChildView[];
-  emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[];
+  emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[] | null;
 };
 
 const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
@@ -383,7 +387,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     replies: z.array(pieFedCommentChildSchema),
     creator_banned_from_community: z.boolean().nullish(),
     saved: z.boolean().nullable().optional(),
-    emoji_reactions: z.array(pieFedEmojiReactionSchema).optional(),
+    emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
   }),
 );
 
@@ -404,7 +408,6 @@ const pieFedCommentViewSchema = z.object({
   saved: z.boolean().nullable().optional(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
   replies: z.array(pieFedCommentChildSchema).nullable().optional(),
-  emoji_reactions: z.array(pieFedEmojiReactionSchema).optional(),
 });
 
 export const pieFedCommentReplySchema = z.object({
@@ -677,7 +680,7 @@ function convertComment(
     childCount: counts.child_count,
     saved: commentView.saved ?? false,
     answer: comment.answer ?? false,
-    ...extractEmojiReactionData(commentView.emoji_reactions, myApId),
+    ...extractEmojiReactionData(comment.emoji_reactions, myApId),
   };
 }
 

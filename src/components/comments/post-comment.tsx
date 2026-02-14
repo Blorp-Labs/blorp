@@ -719,6 +719,18 @@ export function PostComment({
             <InlineCommentReply state={editingState} autoFocus />
           )}
 
+          {commentView?.emojiReactions &&
+            commentView.emojiReactions.length > 0 && (
+              <div className="mt-2 flex flex-row flex-wrap gap-1.5">
+                {commentView.emojiReactions.map((emoji) => (
+                  <Button key={emoji.token} size="sm" variant="secondary">
+                    {emoji.token}
+                    <span>{emoji.count}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+
           {commentView && (
             <div
               className={cn(
