@@ -294,6 +294,44 @@ export function useConfirmationAlert() {
   };
 }
 
+export function useInputAlert() {
+  const [alrt] = useIonAlert();
+
+  return async ({
+    header,
+    message,
+    placeholder,
+  }: {
+    header?: string;
+    message?: string;
+    placeholder?: string;
+  }) => {
+    const deferred = new Deferred<string>();
+    alrt({
+      header,
+      message,
+      inputs: [{ placeholder, name: "value" }],
+      buttons: [
+        { text: "Cancel", role: "cancel" },
+        { text: "OK", role: "confirm" },
+      ],
+      onDidDismiss: (e) => {
+        if (e.detail.role === "cancel" || e.detail.role === "backdrop") {
+          deferred.reject();
+        } else {
+          const val = e.detail.data?.values?.value ?? "";
+          if (val) {
+            deferred.resolve(val);
+          } else {
+            deferred.reject();
+          }
+        }
+      },
+    });
+    return await deferred.promise;
+  };
+}
+
 /**
  * To be used to extract the page element from an
  * IonPage and passed to an IonModal.

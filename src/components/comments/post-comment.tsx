@@ -13,6 +13,7 @@ import {
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
+  useAddCommentReactionEmoji,
   useBlockPerson,
   useDeleteComment,
   useLockComment,
@@ -66,7 +67,11 @@ import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
-import { commentIsAnswer } from "@/src/lib/api/adapters/utils";
+import {
+  commentIsAnswer,
+  getCommentEmojiReaction,
+} from "@/src/lib/api/adapters/utils";
+import { useInputAlert } from "@/src/lib/hooks/index";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -84,6 +89,8 @@ const useDetailsStore = create<StoreState>((set) => ({
     }));
   },
 }));
+
+export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 
 export function useCommentActions({
   commentView,
@@ -107,6 +114,9 @@ export function useCommentActions({
 
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
+  const addReactionEmoji = useAddCommentReactionEmoji();
+  const currentEmoji = getCommentEmojiReaction(commentView);
+  const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -269,6 +279,56 @@ export function useCommentActions({
         ]
       : []),
     ...(route ? shareActions : []),
+    ...(software === "piefed" && commentView
+      ? [
+          {
+            text: "React",
+            actions: [
+              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
+                text: emoji,
+                onClick: () =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                    }),
+                  ),
+              })),
+              ...(currentEmoji
+                ? [
+                    {
+                      text: "Clear reaction",
+                      onClick: () =>
+                        addReactionEmoji.mutate({
+                          path: commentView.path,
+                          commentId: commentView.id,
+                          emoji: null,
+                        }),
+                    },
+                  ]
+                : []),
+              {
+                text: "Other...",
+                onClick: async () => {
+                  try {
+                    await requireAuth();
+                    const emoji = await inputAlert({
+                      header: "React with emoji",
+                      placeholder: "Enter an emoji",
+                    });
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                    });
+                  } catch {}
+                },
+              },
+            ],
+          },
+        ]
+      : []),
     ...((isPostAuthor || canMod) && commentView && software === "piefed"
       ? [
           {

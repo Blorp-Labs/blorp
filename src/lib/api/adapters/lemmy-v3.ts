@@ -268,6 +268,8 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     childCount: counts.child_count,
     saved: commentView.saved,
     answer: false,
+    myEmojiReaction: null,
+    emojiReactions: [],
   };
 }
 function convertPrivateMessage(
@@ -438,12 +440,18 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     instance,
     jwt,
     softwareVersion,
+    myApId,
+    myId,
   }: {
     instance: string;
     jwt?: string;
     softwareVersion: string;
+    myApId?: string;
+    myId?: number;
   }) {
     this.softwareVersion = softwareVersion;
+    this.myApId = myApId;
+    this.myId = myId;
     this.instance = instance.replace(/\/$/, "");
     this.client = new lemmyV3.LemmyHttp(this.instance, {
       headers: DEFAULT_HEADERS,
@@ -488,6 +496,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       );
 
       const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
+      this.myApId = me?.apId;
+      this.myId = me?.id;
 
       const admins = lemmySite.admins.map((p) => convertPerson(p));
 
@@ -1222,6 +1232,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async markCommentAsAnswer() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addCommentReactionEmoji() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

@@ -401,6 +401,8 @@ function convertComment(
     childCount: comment.child_count,
     saved: false,
     answer: false,
+    myEmojiReaction: null,
+    emojiReactions: [],
   };
 }
 
@@ -579,12 +581,18 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     instance,
     jwt,
     softwareVersion,
+    myApId,
+    myId,
   }: {
     instance: string;
     jwt?: string;
     softwareVersion: string;
+    myApId?: string;
+    myId?: number;
   }) {
     this.softwareVersion = softwareVersion;
+    this.myApId = myApId;
+    this.myId = myId;
     this.instance = instance;
     this.client = new lemmyV4.LemmyHttp(instance.replace(/\/$/, ""), {
       headers: DEFAULT_HEADERS,
@@ -613,6 +621,8 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       lemmySite.site_view.local_site.enable_downvotes === true;
 
     const me = myUser ? convertPerson(myUser.local_user_view) : null;
+    this.myApId = me?.apId;
+    this.myId = me?.id;
 
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
@@ -1288,6 +1298,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async markCommentAsAnswer() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addCommentReactionEmoji() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

@@ -65,7 +65,8 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
   return useMemo(() => {
     const apis = accounts.map((account) => {
       const { instance, jwt } = account;
-      const api = apiClient({ instance, jwt });
+      const site = getAccountSite(account);
+      const api = apiClient({ instance, jwt, myApId: site?.me?.apId, myId: site?.me?.id });
 
       const queryKeyPrefix: unknown[] = [
         `instance-${instance}`,
@@ -1226,6 +1227,8 @@ export function useCreateComment() {
         childCount: 0,
         saved: false,
         answer: false,
+        myEmojiReaction: null,
+        emojiReactions: [],
       };
 
       cacheComments(getCachePrefixer(), [newComment]);
@@ -2525,6 +2528,34 @@ export function useMarkCommentAsAnswer() {
       } else {
         toast.error(`Couldn't ${answer ? "mark" : "unmark"} comment as answer`);
       }
+    },
+  });
+}
+
+export function useAddCommentReactionEmoji() {
+  const { api } = useApiClients();
+  const patchComment = useCommentsStore((s) => s.patchComment);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (form: Forms.AddCommentReactionEmoji & { path: string }) =>
+      (await api).addCommentReactionEmoji(_.omit(form, ["path"])),
+    onMutate: ({ emoji, path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticMyEmojiReaction: emoji,
+      }));
+    },
+    onSuccess: (commentView, { path }) =>
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticMyEmojiReaction: undefined,
+        myEmojiReaction: commentView.myEmojiReaction,
+        emojiReactions: commentView.emojiReactions,
+      })),
+    onError: (_err, { path }) => {
+      patchComment(path, getCachePrefixer(), () => ({
+        optimisticMyEmojiReaction: undefined,
+      }));
+      toast.error("Couldn't add emoji reaction");
     },
   });
 }
