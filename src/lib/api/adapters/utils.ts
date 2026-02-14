@@ -33,3 +33,14 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
   }
   return comment.optimisticAnswer ?? comment.answer;
 }
+
+export function getCommentEmojiReaction(comment: Schemas.Comment | undefined) {
+  if (!comment) {
+    return null;
+  }
+  return comment.optimisticMyEmojiReaction ?? comment.myEmojiReaction;
+}
+
+export function getCommentMyVote(comment: Schemas.Comment) {
+  return comment.optimisticMyVote ?? comment.myVote;
+}

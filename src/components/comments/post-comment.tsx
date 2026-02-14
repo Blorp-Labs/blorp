@@ -13,6 +13,7 @@ import {
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
+  useAddCommentReactionEmoji,
   useBlockPerson,
   useDeleteComment,
   useLockComment,
@@ -66,7 +67,12 @@ import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
-import { commentIsAnswer } from "@/src/lib/api/adapters/utils";
+import {
+  commentIsAnswer,
+  getCommentEmojiReaction,
+  getCommentMyVote,
+} from "@/src/lib/api/adapters/utils";
+import { useInputAlert } from "@/src/lib/hooks/index";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -84,6 +90,8 @@ const useDetailsStore = create<StoreState>((set) => ({
     }));
   },
 }));
+
+export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 
 export function useCommentActions({
   commentView,
@@ -107,6 +115,9 @@ export function useCommentActions({
 
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
+  const addReactionEmoji = useAddCommentReactionEmoji();
+  const currentEmoji = getCommentEmojiReaction(commentView);
+  const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -266,6 +277,57 @@ export function useCommentActions({
               {
                 text: "Copy link to comment",
                 onClick: () => copyRouteToClipboard(route),
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(software === "piefed" && commentView
+      ? [
+          {
+            text: "React",
+            actions: [
+              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
+                text: emoji,
+                onClick: () =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                      score: getCommentMyVote(commentView) ?? undefined,
+                    }),
+                  ),
+              })),
+              ...(currentEmoji
+                ? [
+                    {
+                      text: "Clear reaction",
+                      onClick: () =>
+                        addReactionEmoji.mutate({
+                          path: commentView.path,
+                          commentId: commentView.id,
+                          emoji: null,
+                        }),
+                    },
+                  ]
+                : []),
+              {
+                text: "Other...",
+                onClick: async () => {
+                  try {
+                    await requireAuth();
+                    const emoji = await inputAlert({
+                      header: "React with emoji",
+                      placeholder: "Enter an emoji",
+                    });
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                    });
+                  } catch {}
+                },
               },
             ],
           },
@@ -538,6 +600,8 @@ export function PostComment({
     postCreatorId,
   });
 
+  const bgOnParent = sorted.length === 0 && !replyState;
+
   const bodyRenderer = commentView && (
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
@@ -546,7 +610,9 @@ export function PostComment({
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
-          className={getCommentBgClass({ commentView, highlightComment })}
+          className={cn(
+            !bgOnParent && getCommentBgClass({ commentView, highlightComment }),
+          )}
         />
       )}
     </>
@@ -559,8 +625,7 @@ export function PostComment({
         "flex-1",
         level === 0 && "max-md:px-3.5 pb-2 bg-background",
         level === 0 && !singleCommentThread && "border-t",
-        sorted.length === 0 &&
-          getCommentBgClass({ commentView, highlightComment }),
+        bgOnParent && getCommentBgClass({ commentView, highlightComment }),
       )}
     >
       {singleCommentThread && level === 0 && (
@@ -627,7 +692,8 @@ export function PostComment({
               level === 0 && "pt-3",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
-              getCommentBgClass({ commentView, highlightComment }),
+              !bgOnParent &&
+                getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
@@ -661,12 +727,31 @@ export function PostComment({
             <InlineCommentReply state={editingState} autoFocus />
           )}
 
+          {commentView?.emojiReactions &&
+            commentView.emojiReactions.length > 0 && (
+              <div
+                className={cn(
+                  "pt-2 flex flex-row flex-wrap gap-1.5",
+                  !bgOnParent &&
+                    getCommentBgClass({ commentView, highlightComment }),
+                )}
+              >
+                {commentView.emojiReactions.map((emoji) => (
+                  <Button key={emoji.token} size="sm" variant="secondary">
+                    {emoji.token}
+                    <span>{emoji.count}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+
           {commentView && (
             <div
               className={cn(
                 "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1",
                 leftHandedMode && "flex-row-reverse",
-                getCommentBgClass({ commentView, highlightComment }),
+                !bgOnParent &&
+                  getCommentBgClass({ commentView, highlightComment }),
               )}
             >
               {saved && (
