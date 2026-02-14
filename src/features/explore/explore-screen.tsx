@@ -292,7 +292,10 @@ function FeedSwiper({
   const numCols = useNumCols();
   const ref = useRef<SwiperRef>(null);
   const rows = Math.min(3, Math.ceil((feedsData?.length ?? 0) / 3));
-  const grouped = useMemo(() => _.chunk(feedsData, rows), [feedsData, rows]);
+  const grouped = useMemo(
+    () => (_.isNil(feedsData) ? [] : _.chunk(feedsData, rows)),
+    [feedsData, rows],
+  );
   const [index, setIndex] = useState(0);
   const hasPrev = index > 0;
   const hasNext = feeds.hasNextPage || index < grouped.length - numCols;

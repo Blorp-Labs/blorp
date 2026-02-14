@@ -636,7 +636,7 @@ export function useListMultiCommunityFeeds(
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
-  const queryKey = [...queryKeyPrefix, "getFeeds", form];
+  const queryKey = [...queryKeyPrefix, "getMultiCommunityFeeds", form];
   return useThrottledInfiniteQuery({
     queryKey,
     queryFn: async ({ signal }) => {
