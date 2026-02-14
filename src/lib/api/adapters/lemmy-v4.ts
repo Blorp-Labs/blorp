@@ -548,6 +548,9 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   instance: string;
   limit = 50;
 
+  myApId?: string;
+  myId?: number;
+
   private resolveObjectId = _.memoize(
     async (apId: string) => {
       // This shortcut only works for local objects
