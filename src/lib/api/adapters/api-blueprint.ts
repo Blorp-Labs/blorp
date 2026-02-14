@@ -216,6 +216,9 @@ export const commentSchema = z.object({
   optimisticSaved: z.boolean().optional(),
   answer: z.boolean(),
   optimisticAnswer: z.boolean().optional(),
+  myEmojiReaction: z.string().nullable(),
+  optimisticMyEmojiReaction: z.string().nullable().optional(),
+  emojiReactions: z.array(z.object({ token: z.string(), count: z.number() })),
 });
 export const privateMessageSchema = z.object({
   createdAt: z.string(),
@@ -629,6 +632,11 @@ export namespace Forms {
     answer: boolean;
   };
 
+  export type AddCommentReactionEmoji = {
+    commentId: number;
+    emoji: string | null;
+  };
+
   export type BlockPerson = {
     personId: number;
     block: boolean;
@@ -681,6 +689,9 @@ export abstract class ApiBlueprint<C> {
 
   abstract software: Software;
   abstract softwareVersion: string;
+
+  myApId?: string;
+  myId?: number;
 
   abstract getSite(options?: RequestOptions): Promise<{
     site: Schemas.Site;
@@ -860,6 +871,10 @@ export abstract class ApiBlueprint<C> {
 
   abstract markCommentAsAnswer(
     form: Forms.MarkCommentAsAnswer,
+  ): Promise<Schemas.Comment>;
+
+  abstract addCommentReactionEmoji(
+    form: Forms.AddCommentReactionEmoji,
   ): Promise<Schemas.Comment>;
 
   abstract getLinkMetadata(

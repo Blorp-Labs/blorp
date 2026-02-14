@@ -345,12 +345,33 @@ export const pieFedCommentCountsSchema = z.object({
   upvotes: z.number(),
 });
 
+const pieFedEmojiReactionSchema = z.object({
+  token: z.string(),
+  count: z.number(),
+  authors: z.array(z.string()),
+});
+
+function extractEmojiReactionData(
+  emojiReactions: z.infer<typeof pieFedEmojiReactionSchema>[] | undefined,
+  myApId?: string,
+) {
+  const reactions = emojiReactions ?? [];
+  const myReaction = myApId
+    ? reactions.find((r) => r.authors.includes(myApId))
+    : undefined;
+  return {
+    myEmojiReaction: myReaction?.token ?? null,
+    emojiReactions: reactions.map(({ token, count }) => ({ token, count })),
+  };
+}
+
 type PieFedCommentChildView = {
   comment: z.infer<typeof pieFedCommentSchema>;
   counts: z.infer<typeof pieFedCommentCountsSchema>;
   creator: z.infer<typeof pieFedPersonSchema>;
   my_vote: number;
   replies: PieFedCommentChildView[];
+  emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[];
 };
 
 const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
@@ -362,6 +383,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     replies: z.array(pieFedCommentChildSchema),
     creator_banned_from_community: z.boolean().nullish(),
     saved: z.boolean().nullable().optional(),
+    emoji_reactions: z.array(pieFedEmojiReactionSchema).optional(),
   }),
 );
 
@@ -382,6 +404,7 @@ const pieFedCommentViewSchema = z.object({
   saved: z.boolean().nullable().optional(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
   replies: z.array(pieFedCommentChildSchema).nullable().optional(),
+  emoji_reactions: z.array(pieFedEmojiReactionSchema).optional(),
 });
 
 export const pieFedCommentReplySchema = z.object({
@@ -623,6 +646,7 @@ function convertPerson(
 
 function convertComment(
   commentView: z.infer<typeof pieFedCommentViewSchema>,
+  myApId?: string,
 ): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
@@ -653,6 +677,7 @@ function convertComment(
     childCount: counts.child_count,
     saved: commentView.saved ?? false,
     answer: comment.answer ?? false,
+    ...extractEmojiReactionData(commentView.emoji_reactions, myApId),
   };
 }
 
@@ -930,14 +955,20 @@ export class PieFedApi implements ApiBlueprint<null> {
     instance,
     jwt,
     softwareVersion,
+    myApId,
+    myId,
   }: {
     instance: string;
     jwt?: string;
     softwareVersion: string;
+    myApId?: string;
+    myId?: number;
   }) {
     this.softwareVersion = softwareVersion;
     this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
+    this.myApId = myApId;
+    this.myId = myId;
   }
 
   async getSite(options: RequestOptions) {
@@ -962,6 +993,9 @@ export class PieFedApi implements ApiBlueprint<null> {
       const me = pieFedMe
         ? convertPerson({ person: pieFedMe }, "partial")
         : null;
+
+      this.myApId = me?.apId;
+      this.myId = me?.id;
 
       const personBlocks = pieFedSite.my_user?.person_blocks?.map((block) =>
         shrinkBlockedPerson(convertPerson({ person: block.target }, "partial")),
@@ -1370,7 +1404,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           .parse(json);
 
         return {
-          comments: comments.map(convertComment),
+          comments: comments.map((c) => convertComment(c, this.myApId)),
           creators: comments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
@@ -1402,7 +1436,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         const flattenedComments = flattenCommentViews(comments);
 
         return {
-          comments: flattenedComments.map(convertComment),
+          comments: flattenedComments.map((c) => convertComment(c, this.myApId)),
           creators: flattenedComments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
@@ -1431,11 +1465,21 @@ export class PieFedApi implements ApiBlueprint<null> {
         .object({ comment_view: pieFedCommentViewSchema })
         .parse(json);
 
-      return convertComment(data.comment_view);
+      return convertComment(data.comment_view, this.myApId);
     } catch (err) {
       console.log(err);
       throw err;
     }
+  }
+
+  async addCommentReactionEmoji(form: Forms.AddCommentReactionEmoji) {
+    await this.post("/comment/like", {
+      comment_id: form.commentId,
+      emoji: form.emoji,
+    });
+    const json = await this.get("/comment", { id: form.commentId });
+    const data = z.object({ comment_view: pieFedCommentViewSchema }).parse(json);
+    return convertComment(data.comment_view, this.myApId);
   }
 
   async saveComment(form: Forms.SaveComment): Promise<Schemas.Comment> {
@@ -1447,7 +1491,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z
         .object({ comment_view: pieFedCommentViewSchema })
         .parse(json);
-      return convertComment(data.comment_view);
+      return convertComment(data.comment_view, this.myApId);
     } catch (err) {
       console.log(err);
       throw err;
@@ -1529,7 +1573,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           ],
           (c) => c.apId,
         ),
-        comments: comments?.map(convertComment) ?? [],
+        comments: comments?.map((c) => convertComment(c as any, this.myApId)) ?? [],
         users: _.uniqBy(
           [
             ...users.map((p) => convertPerson(p, "partial")),
@@ -1586,7 +1630,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return convertComment(comment_view);
+      return convertComment(comment_view, this.myApId);
     } catch (err) {
       console.error(err);
       throw err;
@@ -1606,7 +1650,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return convertComment(comment_view);
+      return convertComment(comment_view, this.myApId);
     } catch (err) {
       console.error(err);
       throw err;
@@ -1626,7 +1670,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })
         .parse(json);
 
-      return convertComment(comment_view);
+      return convertComment(comment_view, this.myApId);
     } catch (err) {
       console.error(err);
       throw err;
@@ -1694,7 +1738,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
-        comments: comments?.map(convertComment) ?? [],
+        comments: comments?.map((c) => convertComment(c, this.myApId)) ?? [],
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
@@ -1879,7 +1923,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         replies: replies.map(convertReply),
-        comments: replies.map(convertComment),
+        comments: replies.map((c) => convertComment(c as any, this.myApId)),
         profiles: replies.map((r) =>
           convertPerson({ person: r.creator }, "partial"),
         ),
@@ -1912,7 +1956,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         mentions: replies.map(convertMention),
-        comments: replies.map(convertComment),
+        comments: replies.map((c) => convertComment(c as any, this.myApId)),
         profiles: _.unionBy(
           replies.map((r) => convertPerson({ person: r.creator }, "partial")),
           (p) => p.apId,
@@ -1998,7 +2042,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         comment_view: pieFedCommentViewSchema,
       })
       .parse(json);
-    return convertComment(comment_view);
+    return convertComment(comment_view, this.myApId);
   }
 
   async lockComment(form: Forms.LockComment) {
@@ -2011,7 +2055,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         comment_view: pieFedCommentViewSchema,
       })
       .parse(json);
-    return convertComment(comment_view);
+    return convertComment(comment_view, this.myApId);
   }
 
   async markCommentAsAnswer(form: Forms.MarkCommentAsAnswer) {
@@ -2026,7 +2070,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       ...comment_reply_view,
       saved: null,
       creator_banned_from_community: null,
-    });
+    } as any, this.myApId);
   }
 
   async blockPerson(form: Forms.BlockPerson) {
@@ -2174,7 +2218,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         post: post ? convertPost({ postView: post }) : null,
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
-        comment: comment ? convertComment(comment) : null,
+        comment: comment ? convertComment(comment, this.myApId) : null,
       });
     } catch (err) {
       console.error(err);

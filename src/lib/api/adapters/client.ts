@@ -22,9 +22,13 @@ export const apiClient = _.memoize(
   async ({
     instance,
     jwt,
+    myApId,
+    myId,
   }: {
     instance: string;
     jwt?: string;
+    myApId?: string;
+    myId?: number;
   }): Promise<ApiBlueprint<any>> => {
     instance = instance.replace(/\/$/, "").trim();
 
@@ -48,13 +52,13 @@ export const apiClient = _.memoize(
           nodeInfo.software.version.startsWith("1.") ||
           nodeInfo.software.version.startsWith("nightly")
         ) {
-          return new LemmyV4Api({ instance, jwt, softwareVersion });
+          return new LemmyV4Api({ instance, jwt, softwareVersion, myApId, myId });
         } else {
-          return new LemmyV3Api({ instance, jwt, softwareVersion });
+          return new LemmyV3Api({ instance, jwt, softwareVersion, myApId, myId });
         }
       }
       case "piefed": {
-        return new PieFedApi({ instance, jwt, softwareVersion });
+        return new PieFedApi({ instance, jwt, softwareVersion, myApId, myId });
       }
     }
 
