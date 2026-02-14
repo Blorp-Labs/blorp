@@ -2547,9 +2547,24 @@ export function useAddCommentReactionEmoji() {
       form: Forms.AddCommentReactionEmoji & { path: string },
     ) => (await api).addCommentReactionEmoji(_.omit(form, ["path"])),
     onMutate: ({ emoji, path }) => {
-      patchComment(path, getCachePrefixer(), () => ({
-        optimisticMyEmojiReaction: emoji,
-      }));
+      patchComment(path, getCachePrefixer(), (prev) => {
+        const reactions = [...prev.emojiReactions];
+        if (emoji) {
+          const reaction = reactions.find(
+            (reaction) => reaction.token === emoji,
+          );
+          if (!reaction) {
+            reactions.push({
+              token: emoji,
+              count: 1,
+            });
+          }
+        }
+        return {
+          emojiReactions: reactions,
+          optimisticMyEmojiReaction: emoji,
+        };
+      });
     },
     onSuccess: (commentView, { path }) =>
       patchComment(path, getCachePrefixer(), () => ({
