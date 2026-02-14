@@ -344,7 +344,7 @@ export default function Post() {
     return <NotFound />;
   }
 
-  const opId = post?.creatorId;
+  const postCreatorId = post?.creatorId;
 
   const showMobileReply = post && !commentPath && media.maxMd;
 
@@ -451,7 +451,7 @@ export default function Post() {
                     queryKeyParentId={parentId}
                     commentTree={item[1]}
                     level={0}
-                    opId={opId}
+                    postCreatorId={postCreatorId}
                     communityName={communityName}
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}

@@ -11,12 +11,12 @@ import _ from "lodash";
 export function CommentCreatorBadge({
   comment,
   isMod,
-  opId,
+  postCreatorId,
   className,
 }: {
   comment: Schemas.Comment;
   isMod: boolean | undefined;
-  opId?: number;
+  postCreatorId?: number;
   className?: string;
 }) {
   const media = useMedia();
@@ -83,7 +83,7 @@ export function CommentCreatorBadge({
     );
   }
 
-  if (_.isNumber(opId) && comment.creatorId === opId) {
+  if (_.isNumber(postCreatorId) && comment.creatorId === postCreatorId) {
     return (
       <Badge size="sm" variant="brand" className={className}>
         OP

@@ -89,12 +89,12 @@ export function useCommentActions({
   commentView,
   queryKeyParentId,
   canMod,
-  opId,
+  postCreatorId,
 }: {
   commentView?: Schemas.Comment;
   queryKeyParentId?: number;
   canMod?: boolean;
-  opId?: number;
+  postCreatorId?: number;
 }) {
   const myUserId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
@@ -108,7 +108,7 @@ export function useCommentActions({
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const answer = commentIsAnswer(commentView);
-  const isOp = myUserId !== undefined && myUserId === opId;
+  const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
   const isMyComment = commentView?.creatorId === myUserId;
 
@@ -271,7 +271,7 @@ export function useCommentActions({
           },
         ]
       : []),
-    ...(isOp && commentView && software === "piefed"
+    ...(isPostAuthor && commentView && software === "piefed"
       ? [
           {
             text: answer ? "Unmark as answer" : "Mark as answer",
@@ -329,7 +329,7 @@ function Byline({
   publishedDate,
   isMod,
   className,
-  opId,
+  postCreatorId,
 }: {
   comment: Schemas.Comment;
   actorId: string;
@@ -337,7 +337,7 @@ function Byline({
   publishedDate: string;
   isMod?: boolean;
   className?: string;
-  opId?: number;
+  postCreatorId?: number;
 }) {
   const linkCtx = useLinkContext();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -391,7 +391,7 @@ function Byline({
             </span>
           )}
           <CommentCreatorBadge
-            opId={opId}
+            postCreatorId={postCreatorId}
             comment={comment}
             isMod={isMod}
             className="ml-2"
@@ -421,7 +421,7 @@ export function PostComment({
   queryKeyParentId,
   commentTree,
   level,
-  opId,
+  postCreatorId,
   communityName,
   modApIds,
   singleCommentThread,
@@ -434,7 +434,7 @@ export function PostComment({
   queryKeyParentId?: number;
   commentTree: CommentTree;
   level?: number;
-  opId?: number;
+  postCreatorId?: number;
   communityName: string;
   modApIds?: string[];
   singleCommentThread?: boolean;
@@ -535,7 +535,7 @@ export function PostComment({
     commentView,
     queryKeyParentId,
     canMod,
-    opId,
+    postCreatorId,
   });
 
   const bodyRenderer = commentView && (
@@ -634,7 +634,7 @@ export function PostComment({
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}
-            opId={opId}
+            postCreatorId={postCreatorId}
           />
         )}
 
@@ -731,7 +731,7 @@ export function PostComment({
                   key={id}
                   commentTree={map}
                   level={_.isNumber(level) ? level + 1 : level}
-                  opId={opId}
+                  postCreatorId={postCreatorId}
                   communityName={communityName}
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
