@@ -600,6 +600,8 @@ export function PostComment({
     postCreatorId,
   });
 
+  const bgOnParent = sorted.length === 0 && !replyState;
+
   const bodyRenderer = commentView && (
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
@@ -608,7 +610,9 @@ export function PostComment({
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
-          className={getCommentBgClass({ commentView, highlightComment })}
+          className={cn(
+            !bgOnParent && getCommentBgClass({ commentView, highlightComment }),
+          )}
         />
       )}
     </>
@@ -621,8 +625,7 @@ export function PostComment({
         "flex-1",
         level === 0 && "max-md:px-3.5 pb-2 bg-background",
         level === 0 && !singleCommentThread && "border-t",
-        sorted.length === 0 &&
-          getCommentBgClass({ commentView, highlightComment }),
+        bgOnParent && getCommentBgClass({ commentView, highlightComment }),
       )}
     >
       {singleCommentThread && level === 0 && (
@@ -689,7 +692,8 @@ export function PostComment({
               level === 0 && "pt-3",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
-              getCommentBgClass({ commentView, highlightComment }),
+              !bgOnParent &&
+                getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
@@ -725,7 +729,13 @@ export function PostComment({
 
           {commentView?.emojiReactions &&
             commentView.emojiReactions.length > 0 && (
-              <div className="mt-2 flex flex-row flex-wrap gap-1.5">
+              <div
+                className={cn(
+                  "pt-2 flex flex-row flex-wrap gap-1.5",
+                  !bgOnParent &&
+                    getCommentBgClass({ commentView, highlightComment }),
+                )}
+              >
                 {commentView.emojiReactions.map((emoji) => (
                   <Button key={emoji.token} size="sm" variant="secondary">
                     {emoji.token}
@@ -740,7 +750,8 @@ export function PostComment({
               className={cn(
                 "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1",
                 leftHandedMode && "flex-row-reverse",
-                getCommentBgClass({ commentView, highlightComment }),
+                !bgOnParent &&
+                  getCommentBgClass({ commentView, highlightComment }),
               )}
             >
               {saved && (
