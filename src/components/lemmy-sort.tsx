@@ -296,9 +296,9 @@ export function PostSortButton({
     return null;
   }
 
-  const sortLabel = actions.find(
-    (sort) => sort.value && postSort.startsWith(sort.value),
-  )?.text;
+  const sortLabel = actions
+    .filter((a) => _.isObject(a))
+    .find((sort) => sort.value && postSort.startsWith(sort.value))?.text;
 
   const ariaLabel = `${postSort} post sort`;
 
@@ -480,7 +480,6 @@ export function CommunityFilter() {
                 label: "Subscribed",
                 value: "Subscribed",
               },
-
               {
                 label: "Moderating",
                 value: "ModeratorView",
@@ -492,7 +491,7 @@ export function CommunityFilter() {
         value: opt.value,
         onClick: () => setListingType(opt.value),
       })),
-    [isLoggedIn, instanceHost, setListingType],
+    [isLoggedIn, setListingType, instanceHost],
   );
 
   return (

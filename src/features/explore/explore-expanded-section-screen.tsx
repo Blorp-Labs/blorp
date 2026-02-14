@@ -1,50 +1,33 @@
 import {
-  useAvailableSorts,
   useListCommunities,
   useModeratingCommunities,
   useSubscribedCommunities,
 } from "@/src/lib/api/index";
+import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
-} from "../components/communities/community-card";
-import { memo, useMemo, useState } from "react";
+} from "../../components/communities/community-card";
+import { useMemo } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { VirtualList } from "@/src/components/virtual-list";
-import { useMedia } from "../lib/hooks";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
-import { MenuButton, UserDropdown } from "../components/nav";
-import { CommunityFilter, CommunitySortSelect } from "../components/lemmy-sort";
-import { PageTitle } from "../components/page-title";
-import { Link, resolveRoute } from "@/src/routing/index";
-import { Search } from "../components/icons";
-import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { SearchBar } from "./search/search-bar";
+import { useMedia } from "../../lib/hooks";
+import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { MenuButton, UserDropdown } from "../../components/nav";
+import { CommunityFilter } from "../../components/lemmy-sort";
+import { PageTitle } from "../../components/page-title";
+import { Link, useParams } from "@/src/routing/index";
+import { Search } from "../../components/icons";
+import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
+import { Schemas } from "../../lib/api/adapters/api-blueprint";
+import _ from "lodash";
+import { VirtualList } from "../../components/virtual-list";
+import { FeedCard, FEEDS } from "./feed-card";
+import { SortControlBar, SortControlBarContent } from "./sort-bar";
 
 const NO_ITEMS = "NO_ITEMS";
 
-const MemoedListItem = memo(function ListItem(props: {
-  communitySlug: string;
-}) {
-  return (
-    <ContentGutters className="md:contents">
-      <CommunityCard communitySlug={props.communitySlug} className="mt-1" />
-    </ContentGutters>
-  );
-});
-
-export default function Communities() {
-  const router = useIonRouter();
-  const [search, setSearch] = useState("");
-
-  const { communitySort } = useAvailableSorts();
+export function ExpandedCommunities({ sort }: { sort?: string }) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const media = useMedia();
@@ -52,13 +35,27 @@ export default function Communities() {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
+  const feeds = useListMultiCommunityFeeds(
+    {
+      type: listingType === "ModeratorView" ? undefined : listingType,
+    },
+    {
+      enabled: sort === FEEDS,
+    },
+  );
+
+  const feedsData = useMemo(
+    () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
+    [feeds.data?.pages],
+  );
+
   const communitiesQuery = useListCommunities(
     {
       type: listingType,
-      sort: communitySort,
+      sort,
     },
     {
-      enabled: listingType !== "ModeratorView",
+      enabled: listingType !== "ModeratorView" && sort !== FEEDS,
     },
   );
 
@@ -102,12 +99,12 @@ export default function Communities() {
   }
 
   const vlist = (
-    <VirtualList<string>
-      key={communitySort + listingType}
+    <VirtualList<string | Schemas.MultiCommunityFeed>
+      key={listingType}
       fullscreen
       scrollHost
       numColumns={numCols}
-      data={noItems ? [NO_ITEMS] : communities}
+      data={noItems ? [NO_ITEMS] : sort === FEEDS ? feedsData : communities}
       renderItem={({ item }) => {
         if (item === NO_ITEMS) {
           return (
@@ -117,7 +114,19 @@ export default function Communities() {
           );
         }
 
-        return <MemoedListItem communitySlug={item} />;
+        if (_.isString(item)) {
+          return (
+            <ContentGutters className="md:contents">
+              <CommunityCard communitySlug={item} className="mt-1" />
+            </ContentGutters>
+          );
+        }
+
+        return (
+          <ContentGutters className="md:contents">
+            <FeedCard {...item} className="mt-1" expand={false} />
+          </ContentGutters>
+        );
       }}
       onEndReached={() => {
         if (
@@ -138,6 +147,23 @@ export default function Communities() {
     />
   );
 
+  return media.md ? (
+    <div className="flex flex-col h-full">
+      {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
+        <ContentGutters noMobilePadding className="max-md:hidden">
+          <SortControlBar selectedSort={sort} />
+        </ContentGutters>
+      )}
+      <ContentGutters className="flex-1 min-h-0">{vlist}</ContentGutters>
+    </div>
+  ) : (
+    vlist
+  );
+}
+
+export default function ExploreExpandedSectionScreen() {
+  const { sort } = useParams("/communities/sort/:sort");
+  const media = useMedia();
   return (
     <IonPage>
       <PageTitle>Communities</PageTitle>
@@ -147,32 +173,23 @@ export default function Communities() {
             <MenuButton />
             <CommunityFilter />
           </ToolbarButtons>
-          <SearchBar
-            value={search}
-            onValueChange={setSearch}
-            onSubmit={(newVal) => {
-              router.push(
-                resolveRoute("/communities/s", `?q=${newVal ?? search}`),
-              );
-            }}
-            type="Communities"
-            className="max-md:hidden"
-          />
           <ToolbarButtons side="right">
             <Link to="/communities/s" className="text-2xl contents md:hidden">
               <Search className="text-muted-foreground scale-110" />
             </Link>
-            <CommunitySortSelect />
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
-      </IonHeader>
-      <IonContent scrollY={false} fullscreen={media.maxMd}>
-        {media.md ? (
-          <ContentGutters className="h-full">{vlist}</ContentGutters>
-        ) : (
-          vlist
+        {media.maxMd && (
+          <IonToolbar>
+            <ToolbarButtons side="left">
+              <SortControlBarContent selectedSort={sort} />
+            </ToolbarButtons>
+          </IonToolbar>
         )}
+      </IonHeader>
+      <IonContent fullscreen={media.maxMd} scrollY={false}>
+        <ExpandedCommunities sort={sort} />
       </IonContent>
     </IonPage>
   );

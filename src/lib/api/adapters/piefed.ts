@@ -64,6 +64,7 @@ export function getIdFromLocalApId(apId: string) {
       comment_id: undefined,
       community_id: undefined,
       person_id: undefined,
+      feed_id: undefined,
     };
     if (id && pathname.startsWith("/post/")) {
       return {
@@ -105,6 +106,21 @@ export const pieFedCommunitySchema = z.object({
   //title: z.string(),
   description: z.string().nullable().optional(),
   //updated: z.string().optional(),
+});
+
+export const pieFedFeedSchema = z.object({
+  published: z.string(),
+  actor_id: z.string(),
+  banner: z.string().nullish(),
+  communities_count: z.number(),
+  subscriptions_count: z.number(),
+  description: z.string(),
+  description_html: z.string(),
+  icon: z.string().nullish(),
+  id: z.number(),
+  name: z.string(),
+  nsfw: z.boolean(),
+  communities: z.array(pieFedCommunitySchema),
 });
 
 export const pieFedPostCountsSchema = z.object({
@@ -751,6 +767,7 @@ export function flattenCommentViews(
 
 export class PieFedApi implements ApiBlueprint<null> {
   software = Software.PIEFED;
+  softwareVersion: string;
 
   client = null;
   instance: string;
@@ -868,25 +885,27 @@ export class PieFedApi implements ApiBlueprint<null> {
       });
 
       try {
-        const { post, comment, community, person } = z
+        const { post, comment, community, person, feed } = z
           .object({
             comment: z
               .object({
                 comment: z.object({ id: z.number() }),
               })
-              .nullable()
-              .optional(),
+              .nullish(),
             post: z.object({ post: z.object({ id: z.number() }) }).optional(),
             community: z
               .object({
                 community: z.object({ id: z.number() }),
               })
-              .nullable()
-              .optional(),
+              .nullish(),
             person: z
               .object({ person: z.object({ id: z.number() }) })
-              .nullable()
-              .optional(),
+              .nullish(),
+            feed: z
+              .object({
+                id: z.number(),
+              })
+              .nullish(),
           })
           .parse(json);
 
@@ -895,6 +914,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           comment_id: comment?.comment.id,
           community_id: community?.community.id,
           person_id: person?.person.id,
+          feed_id: feed?.id,
         };
       } catch (err) {
         console.log(err);
@@ -904,7 +924,16 @@ export class PieFedApi implements ApiBlueprint<null> {
     (apId) => apId,
   );
 
-  constructor({ instance, jwt }: { instance: string; jwt?: string }) {
+  constructor({
+    instance,
+    jwt,
+    softwareVersion,
+  }: {
+    instance: string;
+    jwt?: string;
+    softwareVersion: string;
+  }) {
+    this.softwareVersion = softwareVersion;
     this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
   }
@@ -988,6 +1017,16 @@ export class PieFedApi implements ApiBlueprint<null> {
 
   async getPosts(form: Forms.GetPosts, options: RequestOptions) {
     const { data: sort } = postSortSchema.safeParse(form.sort);
+
+    let feed_id: number | undefined = form.multiCommunityFeedId;
+    if (form.multiCommunityFeedApId && _.isNil(feed_id)) {
+      feed_id = (await this.resolveObjectId(form.multiCommunityFeedApId))
+        .feed_id;
+      if (!feed_id) {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+    }
+
     const json = await this.get(
       "/post/list",
       {
@@ -997,6 +1036,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         sort,
         type_: form.type,
         saved_only: form.savedOnly,
+        feed_id,
       },
       options,
     );
@@ -1048,6 +1088,57 @@ export class PieFedApi implements ApiBlueprint<null> {
       return {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
         communities: communities.map((c) => convertCommunity(c, "partial")),
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async getMultiCommunityFeeds(
+    form: Forms.GetMultiCommunityFeeds,
+    options?: RequestOptions,
+  ) {
+    const json = await this.get("/feed/list", {}, options);
+    try {
+      const { feeds } = z
+        .object({
+          feeds: z.array(pieFedFeedSchema),
+        })
+        .parse(json);
+
+      const communities = feeds.flatMap(({ communities }) =>
+        communities.map((community) =>
+          convertCommunity(
+            {
+              community,
+            },
+            "partial",
+          ),
+        ),
+      );
+
+      return {
+        multiCommunityFeeds: feeds.map((feed) => ({
+          createdAt: feed.published,
+          id: feed.id,
+          apId: feed.actor_id,
+          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+          name: feed.name,
+          icon: feed.icon ?? null,
+          banner: feed.banner ?? null,
+          nsfw: feed.nsfw,
+          communityCount: feed.communities_count,
+          subscriberCount: feed.subscriptions_count,
+          description: feed.description ?? null,
+          communitySlugs: feed.communities.map(
+            (community) =>
+              createSlug({ apId: community.actor_id, name: community.name })
+                .slug,
+          ),
+        })),
+        communities,
+        nextCursor: null,
       };
     } catch (err) {
       console.log(err);

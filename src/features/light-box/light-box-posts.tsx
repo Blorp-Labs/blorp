@@ -170,7 +170,7 @@ const Post = memo(
   },
 );
 
-function useLightboxPostFeedData({
+function useLightboxPostsData({
   communityName,
   listingType,
   activePostApId,
@@ -228,7 +228,7 @@ function useLightboxPostFeedData({
   };
 }
 
-export default function LightBoxPostFeed() {
+export default function LightBoxPosts() {
   useHideTabBarOnMount();
 
   const linkCtx = useLinkContext();
@@ -264,7 +264,7 @@ export default function LightBoxPostFeed() {
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
-  const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostFeedData({
+  const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostsData({
     communityName,
     listingType,
     activePostApId: decodedApId,

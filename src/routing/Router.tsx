@@ -46,7 +46,7 @@ const Privacy = lazy(() => import("@/src/features/privacy"));
 const OSLicenses = lazy(() => import("@/src/features/licenses"));
 const Terms = lazy(() => import("@/src/features/terms"));
 const Support = lazy(() => import("@/src/features/support"));
-const HomeFeed = lazy(() => import("@/src/features/home-feed"));
+const HomeFeed = lazy(() => import("@/src/features/home-posts"));
 const Post = lazy(() => import("@/src/features/post"));
 const SettingsPage = lazy(
   () => import("@/src/features/settings/settings-screen"),
@@ -57,14 +57,25 @@ const ManageBlocks = lazy(
 const UpdateProfile = lazy(
   () => import("@/src/features/settings/update-profile-screen"),
 );
-const CommunityFeed = lazy(() => import("@/src/features/community-feed"));
+const MultiCommunityFeedPosts = lazy(
+  () => import("@/src/features/multi-community-feed-posts"),
+);
+const MultiCommunityFeedSidebar = lazy(
+  () => import("@/src/features/multi-community-feed-sidebar"),
+);
+const CommunityFeed = lazy(() => import("@/src/features/community-posts"));
 const CommunitySidebar = lazy(() => import("@/src/features/community-sidebar"));
-const CommunitiesFeed = lazy(() => import("@/src/features/communities-feed"));
+const CommunitiesFeed = lazy(
+  () => import("@/src/features/explore/explore-screen"),
+);
+const ExploreExpandedSectionScreen = lazy(
+  () => import("@/src/features/explore/explore-expanded-section-screen"),
+);
 const User = lazy(() => import("@/src/features/user"));
-const SavedFeed = lazy(() => import("@/src/features/saved-feed"));
+const SavedFeed = lazy(() => import("@/src/features/saved-content"));
 const Search = lazy(() => import("@/src/features/search/search-screen"));
 const LightBoxPostFeed = lazy(
-  () => import("@/src/features/light-box/light-box-post-feed"),
+  () => import("@/src/features/light-box/light-box-posts"),
 );
 const LightBox = lazy(() => import("@/src/features/light-box/light-box"));
 
@@ -114,6 +125,12 @@ const HOME_STACK = [
   </Route>,
   <Route key="/home/s" exact path="/home/s">
     <Search />
+  </Route>,
+  <Route key="/home/f/:apId" exact path="/home/f/:apId">
+    <MultiCommunityFeedPosts />
+  </Route>,
+  <Route key="/home/f/:apId/sidebar" exact path="/home/f/:apId/sidebar">
+    <MultiCommunityFeedSidebar />
   </Route>,
   <Route key="/home/c/:communityName" exact path="/home/c/:communityName">
     <CommunityFeed />
@@ -183,6 +200,9 @@ const COMMUNITIES_STACK = [
   <Route key="/communities" exact path="/communities">
     <CommunitiesFeed />
   </Route>,
+  <Route key="/communities" exact path="/communities/sort/:sort">
+    <ExploreExpandedSectionScreen />
+  </Route>,
   <Route key="/communities/s" exact path="/communities/s">
     <Search defaultType="communities" />
   </Route>,
@@ -192,6 +212,16 @@ const COMMUNITIES_STACK = [
     path="/communities/sidebar"
     component={InstanceSidebar}
   />,
+  <Route key="/communities/f/:apId" exact path="/communities/f/:apId">
+    <MultiCommunityFeedPosts />
+  </Route>,
+  <Route
+    key="/communities/f/:apId/sidebar"
+    exact
+    path="/communities/f/:apId/sidebar"
+  >
+    <MultiCommunityFeedSidebar />
+  </Route>,
   <Route
     key="/communities/c/:communityName"
     exact
@@ -255,6 +285,12 @@ const INBOX_STACK = [
   </Route>,
   <Route key="/inbox/s" exact path="/inbox/s">
     <Search />
+  </Route>,
+  <Route key="/inbox/f/:apId" exact path="/inbox/f/:apId">
+    <MultiCommunityFeedPosts />
+  </Route>,
+  <Route key="/inbox/f/:apId/sidebar" exact path="/inbox/f/:apId/sidebar">
+    <MultiCommunityFeedSidebar />
   </Route>,
   <Route key="/inbox/c/:communityName" exact path="/inbox/c/:communityName">
     <CommunityFeed />

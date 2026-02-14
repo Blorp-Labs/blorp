@@ -65,7 +65,7 @@ function AccountCard({
   const logoutZustand = useAuth((s) => s.logout);
   const { person, instance } = parseAccountInfo(account);
   const isLoggedIn = Boolean(account.jwt);
-  const software = useSoftware(account);
+  const { software } = useSoftware(account);
 
   return (
     <Section title={`ACCOUNT ${accountIndex + 1}`}>

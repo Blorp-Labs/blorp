@@ -40,6 +40,7 @@ export const apiClient = _.memoize(
     const json = await res.json();
 
     const nodeInfo = nodeInfoSchema.parse(json);
+    const softwareVersion = nodeInfo.software.version;
 
     switch (nodeInfo.software.name) {
       case "lemmy": {
@@ -47,13 +48,13 @@ export const apiClient = _.memoize(
           nodeInfo.software.version.startsWith("1.") ||
           nodeInfo.software.version.startsWith("nightly")
         ) {
-          return new LemmyV4Api({ instance, jwt });
+          return new LemmyV4Api({ instance, jwt, softwareVersion });
         } else {
-          return new LemmyV3Api({ instance, jwt });
+          return new LemmyV3Api({ instance, jwt, softwareVersion });
         }
       }
       case "piefed": {
-        return new PieFedApi({ instance, jwt });
+        return new PieFedApi({ instance, jwt, softwareVersion });
       }
     }
 

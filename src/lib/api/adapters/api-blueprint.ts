@@ -142,6 +142,20 @@ const communitySchema = z.object({
     )
     .optional(),
 });
+const multiCommunityFeedSchema = z.object({
+  createdAt: z.string(),
+  id: z.number(),
+  apId: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  icon: z.string().nullable(),
+  banner: z.string().nullable(),
+  nsfw: z.boolean(),
+  communityCount: z.number(),
+  subscriberCount: z.number(),
+  description: z.string().nullable(),
+  communitySlugs: z.array(z.string()),
+});
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
   instance: z.string(),
@@ -342,6 +356,8 @@ export namespace Schemas {
 
   export type Post = z.infer<typeof postSchema>;
 
+  export type MultiCommunityFeed = z.infer<typeof multiCommunityFeedSchema>;
+
   export type Community = z.infer<typeof communitySchema>;
   export type Person = z.infer<typeof personSchema>;
 
@@ -403,6 +419,8 @@ export namespace Forms {
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     communitySlug?: string;
+    multiCommunityFeedApId?: string;
+    multiCommunityFeedId?: number;
     savedOnly?: boolean;
   };
 
@@ -474,6 +492,10 @@ export namespace Forms {
     sort?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     pageCursor?: string;
+  };
+
+  export type GetMultiCommunityFeeds = {
+    type?: "All" | "Local" | "Subscribed";
   };
 
   export type FollowCommunity = {
@@ -651,6 +673,7 @@ export abstract class ApiBlueprint<C> {
   abstract limit: number;
 
   abstract software: Software;
+  abstract softwareVersion: string;
 
   abstract getSite(options?: RequestOptions): Promise<{
     site: Schemas.Site;
@@ -730,6 +753,15 @@ export abstract class ApiBlueprint<C> {
   ): Promise<{
     communities: Schemas.Community[];
     nextCursor: string | null;
+  }>;
+
+  abstract getMultiCommunityFeeds(
+    form: Forms.GetMultiCommunityFeeds,
+    options?: RequestOptions,
+  ): Promise<{
+    multiCommunityFeeds: Schemas.MultiCommunityFeed[];
+    communities: Schemas.Community[];
+    nextCursor: null;
   }>;
 
   abstract getPerson(

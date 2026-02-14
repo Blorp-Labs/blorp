@@ -55,6 +55,7 @@ import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/features/easter-eggs/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../post";
+import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -110,14 +111,29 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
 }
 
 export function useSoftware(account?: Account) {
-  const [software, setSoftware] = useState<"lemmy" | "piefed">();
+  const [software, setSoftware] = useState<
+    | {
+        software: "lemmy" | "piefed";
+        softwareVersion: string;
+      }
+    | {
+        software: undefined;
+        softwareVersion: undefined;
+      }
+  >({
+    software: undefined,
+    softwareVersion: undefined,
+  });
   const { api } = useApiClients(account);
 
   useEffect(() => {
     let canceled = false;
-    api.then((ready) => {
+    api.then(({ software, softwareVersion }) => {
       if (!canceled) {
-        setSoftware(ready.software);
+        setSoftware({
+          software,
+          softwareVersion,
+        });
       }
     });
     return () => {
@@ -611,6 +627,33 @@ export function useListCommunities(
         : true),
   });
 }
+
+export function useListMultiCommunityFeeds(
+  form: Forms.GetMultiCommunityFeeds,
+  options?: QueryOverwriteOptions,
+) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const queryKey = [...queryKeyPrefix, "getMultiCommunityFeeds", form];
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async ({ signal }) => {
+      const res = await (await api).getMultiCommunityFeeds(form, { signal });
+      cacheFeeds(getCachePrefixer(), res.multiCommunityFeeds);
+      cacheCommunities(
+        getCachePrefixer(),
+        res.communities.map((communityView) => ({ communityView })),
+      );
+      return res;
+    },
+    getNextPageParam: () => null,
+    initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
 export function useCommunity({
   enabled = true,
   ...form

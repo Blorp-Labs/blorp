@@ -8,7 +8,7 @@ export function CommentSkeleton() {
         <Skeleton className="h-3 w-32" />
       </div>
       <Skeleton className="h-5 w-full" />
-      <Skeleton className="h-5 w-32 self-end" />
+      <Skeleton className="h-5 w-40 self-end" />
     </div>
   );
 }
