@@ -411,6 +411,9 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   instance: string;
   limit = 50;
 
+  myApId?: string;
+  myId?: number;
+
   private resolveObjectId = _.memoize(
     async (apId: string) =>
       translateErrors(async () => {

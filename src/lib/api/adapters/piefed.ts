@@ -802,6 +802,9 @@ export class PieFedApi implements ApiBlueprint<null> {
 
   jwt?: string;
 
+  myApId?: string;
+  myId?: number;
+
   private async parseResponse(res: Response) {
     const json = await res.json();
     if (res.status < 200 || res.status >= 300) {
@@ -1436,7 +1439,9 @@ export class PieFedApi implements ApiBlueprint<null> {
         const flattenedComments = flattenCommentViews(comments);
 
         return {
-          comments: flattenedComments.map((c) => convertComment(c, this.myApId)),
+          comments: flattenedComments.map((c) =>
+            convertComment(c, this.myApId),
+          ),
           creators: flattenedComments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
@@ -1478,7 +1483,9 @@ export class PieFedApi implements ApiBlueprint<null> {
       emoji: form.emoji,
     });
     const json = await this.get("/comment", { id: form.commentId });
-    const data = z.object({ comment_view: pieFedCommentViewSchema }).parse(json);
+    const data = z
+      .object({ comment_view: pieFedCommentViewSchema })
+      .parse(json);
     return convertComment(data.comment_view, this.myApId);
   }
 
@@ -1573,7 +1580,8 @@ export class PieFedApi implements ApiBlueprint<null> {
           ],
           (c) => c.apId,
         ),
-        comments: comments?.map((c) => convertComment(c as any, this.myApId)) ?? [],
+        comments:
+          comments?.map((c) => convertComment(c as any, this.myApId)) ?? [],
         users: _.uniqBy(
           [
             ...users.map((p) => convertPerson(p, "partial")),
@@ -2066,11 +2074,14 @@ export class PieFedApi implements ApiBlueprint<null> {
     const { comment_reply_view } = z
       .object({ comment_reply_view: pieFedReplyViewSchema })
       .parse(json);
-    return convertComment({
-      ...comment_reply_view,
-      saved: null,
-      creator_banned_from_community: null,
-    } as any, this.myApId);
+    return convertComment(
+      {
+        ...comment_reply_view,
+        saved: null,
+        creator_banned_from_community: null,
+      } as any,
+      this.myApId,
+    );
   }
 
   async blockPerson(form: Forms.BlockPerson) {
