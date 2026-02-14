@@ -64,7 +64,9 @@ import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
-import { Lock } from "../icons";
+import { Check, Lock } from "../icons";
+import { getCommentBgClass } from "./utils";
+import { commentIsAnswer } from "@/src/lib/api/adapters/utils";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -105,7 +107,7 @@ export function useCommentActions({
 
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
-  const answer = commentView?.optimisticAnswer ?? commentView?.answer;
+  const answer = commentIsAnswer(commentView);
   const isOp = myUserId !== undefined && myUserId === opId;
 
   const isMyComment = commentView?.creatorId === myUserId;
@@ -177,19 +179,6 @@ export function useCommentActions({
                   ]
                 : []),
             ],
-          },
-        ]
-      : []),
-    ...(isOp && commentView && software === "piefed"
-      ? [
-          {
-            text: answer ? "Unmark as answer" : "Mark as answer",
-            onClick: () =>
-              markCommentAsAnswer.mutate({
-                path: commentView.path,
-                commentId: commentView.id,
-                answer: !answer,
-              }),
           },
         ]
       : []),
@@ -282,6 +271,19 @@ export function useCommentActions({
           },
         ]
       : []),
+    ...(isOp && commentView && software === "piefed"
+      ? [
+          {
+            text: answer ? "Unmark as answer" : "Mark as answer",
+            onClick: () =>
+              markCommentAsAnswer.mutate({
+                path: commentView.path,
+                commentId: commentView.id,
+                answer: !answer,
+              }),
+          },
+        ]
+      : []),
     {
       text: saved ? "Unsave comment" : "Save comment",
       onClick: () =>
@@ -358,12 +360,18 @@ function Byline({
         className,
       )}
     >
-      <Avatar className="w-6 h-6">
-        <AvatarImage src={profileView?.avatar ?? undefined} />
-        <AvatarFallback className="text-xs">
-          {profileView?.slug?.substring(0, 1).toUpperCase()}{" "}
-        </AvatarFallback>
-      </Avatar>
+      {commentIsAnswer(comment) ? (
+        <div className="w-6 h-6 bg-green-600 flex items-center justify-center">
+          <Check className="text-green-100" />
+        </div>
+      ) : (
+        <Avatar className="w-6 h-6">
+          <AvatarImage src={profileView?.avatar ?? undefined} />
+          <AvatarFallback className="text-xs">
+            {profileView?.slug?.substring(0, 1).toUpperCase()}{" "}
+          </AvatarFallback>
+        </Avatar>
+      )}
       <PersonHoverCard actorId={actorId} asChild>
         <Link
           to={`${linkCtx.root}u/:userId`}
@@ -403,14 +411,6 @@ function Byline({
         className="text-xs text-muted-foreground"
       />
       {locked && <Lock className="ml-1 text-yellow-500 text-sm -mt-0.5" />}
-      {(comment.optimisticAnswer ?? comment.answer) && (
-        <Badge
-          size="sm"
-          className="ml-1 bg-green-500/15 text-green-600 border-green-500/30"
-        >
-          Answer
-        </Badge>
-      )}
     </CollapsibleTrigger>
   );
 }
@@ -525,7 +525,7 @@ export function PostComment({
   const hideContent = commentView?.removed || commentView?.deleted || false;
 
   const highlightComment =
-    highlightCommentId &&
+    _.isString(highlightCommentId) &&
     commentView &&
     highlightCommentId === String(commentView.id);
 
@@ -546,7 +546,7 @@ export function PostComment({
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
-          className={cn(highlightComment && "bg-brand/10 dark:bg-brand/20")}
+          className={getCommentBgClass({ commentView, highlightComment })}
         />
       )}
     </>
@@ -556,13 +556,15 @@ export function PostComment({
     <div
       ref={ref}
       className={cn(
-        "flex-1 pt-2",
-        level === 0 && "max-md:px-3.5 pt-3 pb-2 bg-background",
+        "flex-1",
+        level === 0 && "max-md:px-3.5 pb-2 bg-background",
         level === 0 && !singleCommentThread && "border-t",
+        sorted.length === 0 &&
+          getCommentBgClass({ commentView, highlightComment }),
       )}
     >
       {singleCommentThread && level === 0 && (
-        <div className="flex flex-row gap-2 items-center mb-6">
+        <div className={cn("flex flex-row gap-2 items-center mb-6")}>
           {hasParent && commentView && (
             <Button
               size="sm"
@@ -621,9 +623,11 @@ export function PostComment({
         {commentView && (
           <Byline
             className={cn(
+              "pt-2",
+              level === 0 && "pt-3",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
-              highlightComment && "bg-brand/10 dark:bg-brand/20",
+              getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
@@ -662,6 +666,7 @@ export function PostComment({
               className={cn(
                 "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1",
                 leftHandedMode && "flex-row-reverse",
+                getCommentBgClass({ commentView, highlightComment }),
               )}
             >
               {saved && (

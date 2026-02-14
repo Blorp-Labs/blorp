@@ -26,3 +26,10 @@ export function shrinkBlockedCommunity(
 ): Schemas.Community {
   return _.pick(community, ["createdAt", "id", "apId", "slug", "icon"]);
 }
+
+export function commentIsAnswer(comment: Schemas.Comment | undefined) {
+  if (!comment) {
+    return false;
+  }
+  return comment.optimisticAnswer ?? comment.answer;
+}
