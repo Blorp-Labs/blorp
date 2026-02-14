@@ -1484,6 +1484,8 @@ export class PieFedApi implements ApiBlueprint<null> {
     await this.post("/comment/like", {
       comment_id: form.commentId,
       emoji: form.emoji,
+      // PieFed requires a score of -1 or 1 to react
+      score: !form.score ? 1 : form.score,
     });
     const json = await this.get("/comment", { id: form.commentId });
     const data = z
