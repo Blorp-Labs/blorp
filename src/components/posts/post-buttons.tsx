@@ -372,7 +372,7 @@ export function PostShareButton({
         >
           <div>
             <Share className="scale-110" />
-            Share
+            <span className="max-md:hidden">Share</span>
           </div>
         </Button>
       }

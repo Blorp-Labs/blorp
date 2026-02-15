@@ -540,7 +540,7 @@ function LargePostCard({
       )}
       <div
         className={cn(
-          "flex flex-row items-center justify-end gap-2.5 pt-1",
+          "flex flex-row items-center justify-end gap-2 pt-1",
           leftHandedMode && "flex-row-reverse",
         )}
       >
