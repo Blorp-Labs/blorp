@@ -365,6 +365,8 @@ function convertPost({
     altText: post.alt_text ?? null,
     flairs: [],
     myVote: post_actions ? (post_actions.vote_is_upvote ? 1 : -1) : undefined,
+    myEmojiReaction: null,
+    emojiReactions: [],
   };
 }
 function convertComment(
@@ -1306,6 +1308,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async addCommentReactionEmoji() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addPostReactionEmoji() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

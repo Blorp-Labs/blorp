@@ -8,6 +8,7 @@ import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
 import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
+  PostEmojiReactions,
   PostShareButton,
   PostVoting,
   useDoubleTapPostLike,
@@ -520,6 +521,7 @@ function LargePostCard({
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
+      <PostEmojiReactions apId={apId} />
       <div
         className={cn(
           "flex flex-row items-center justify-end gap-2.5 pt-1",
@@ -709,6 +711,7 @@ export function SmallPostCard({
           </span>
         </Link>
 
+        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end gap-2.5",
@@ -803,6 +806,7 @@ function ExtraSmallPostCard({
           </span>
         </Link>
 
+        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end",

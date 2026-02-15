@@ -49,6 +49,11 @@ export function getCommentEmojiReaction(comment: Schemas.Comment | undefined) {
   return comment.optimisticMyEmojiReaction ?? comment.myEmojiReaction;
 }
 
+export function getPostEmojiReaction(post: Schemas.Post | undefined) {
+  if (!post) return null;
+  return post.optimisticMyEmojiReaction ?? post.myEmojiReaction;
+}
+
 export function getCommentMyVote(comment: Schemas.Comment) {
   return comment.optimisticMyVote ?? comment.myVote;
 }

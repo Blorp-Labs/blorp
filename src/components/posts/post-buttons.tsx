@@ -97,6 +97,24 @@ export function useDoubleTapPostLike(config?: {
   });
 }
 
+export function PostEmojiReactions({ apId }: { apId: string }) {
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const reactions = usePostsStore(
+    (s) => s.posts[getCachePrefixer()(apId)]?.data?.emojiReactions,
+  );
+  if (!reactions || reactions.length === 0) return null;
+  return (
+    <div className="flex flex-row flex-wrap gap-1.5">
+      {reactions.map((emoji) => (
+        <Button key={emoji.token} size="sm" variant="secondary">
+          {emoji.token}
+          <span>{emoji.count}</span>
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 export function PostVoting({
   apId,
   className,
