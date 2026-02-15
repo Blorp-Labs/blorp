@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isErrorLike } from "../utils";
 import { extractErrorContent } from "./utils";
 import { toast } from "sonner";
+import _ from "lodash";
 
 function createPostMutation<
   ApiFn extends keyof ApiBlueprint<any>,
@@ -121,6 +122,46 @@ export const useLikePost = createPostMutation({
     return `Couldn't ${verb} post`;
   },
 });
+
+export function useAddPostReactionEmoji() {
+  const { api } = useApiClients();
+  const patchPost = usePostsStore((s) => s.patchPost);
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+
+  return useMutation({
+    mutationFn: async (
+      form: Forms.AddPostReactionEmoji & { postApId: string },
+    ) => (await api).addPostReactionEmoji(_.omit(form, ["postApId"])),
+    onMutate: ({ emoji, postApId }) => {
+      const getCachePrefix = getCachePrefixer();
+      const prev =
+        usePostsStore.getState().posts[getCachePrefix(postApId)]?.data;
+      const reactions = prev ? [...prev.emojiReactions] : [];
+      if (emoji) {
+        const existing = reactions.find((r) => r.token === emoji);
+        if (!existing) {
+          reactions.push({ token: emoji, count: 1 });
+        }
+      }
+      patchPost(postApId, getCachePrefix, {
+        emojiReactions: reactions,
+        optimisticMyEmojiReaction: emoji,
+      });
+    },
+    onSuccess: (postView) => {
+      patchPost(postView.apId, getCachePrefixer(), {
+        optimisticMyEmojiReaction: undefined,
+        ...postView,
+      });
+    },
+    onError: (_err, { postApId }) => {
+      patchPost(postApId, getCachePrefixer(), {
+        optimisticMyEmojiReaction: undefined,
+      });
+      toast.error("Couldn't add emoji reaction");
+    },
+  });
+}
 
 export function useVotePostPoll(apId: string) {
   const { api } = useApiClients();

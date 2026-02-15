@@ -236,6 +236,8 @@ function convertPost(
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
     flairs: [],
+    myEmojiReaction: null,
+    emojiReactions: [],
   };
 }
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
@@ -1240,6 +1242,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async addCommentReactionEmoji() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addPostReactionEmoji() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

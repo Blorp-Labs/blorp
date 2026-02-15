@@ -113,6 +113,9 @@ export const postSchema = z.object({
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
   poll: postPollSchema.optional(),
+  myEmojiReaction: z.string().nullable(),
+  optimisticMyEmojiReaction: z.string().nullable().optional(),
+  emojiReactions: z.array(z.object({ token: z.string(), count: z.number() })),
 });
 const communitySchema = z.object({
   createdAt: z.string(),
@@ -638,6 +641,12 @@ export namespace Forms {
     score?: number;
   };
 
+  export type AddPostReactionEmoji = {
+    postId: number;
+    emoji: string | null;
+    score?: number;
+  };
+
   export type BlockPerson = {
     personId: number;
     block: boolean;
@@ -877,6 +886,10 @@ export abstract class ApiBlueprint<C> {
   abstract addCommentReactionEmoji(
     form: Forms.AddCommentReactionEmoji,
   ): Promise<Schemas.Comment>;
+
+  abstract addPostReactionEmoji(
+    form: Forms.AddPostReactionEmoji,
+  ): Promise<Schemas.Post>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

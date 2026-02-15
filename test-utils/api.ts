@@ -119,6 +119,8 @@ export function getPost(config?: {
     read: false,
     altText: null,
     flairs: [],
+    myEmojiReaction: null,
+    emojiReactions: [],
     ...config?.post,
   };
 
