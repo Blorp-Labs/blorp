@@ -1,6 +1,7 @@
 import { MarkdownRenderer } from "../markdown/renderer";
 import _ from "lodash";
 import {
+  CommentEmojiReactions,
   CommentReplyButton,
   CommentVoting,
   useDoubleTapLike,
@@ -725,24 +726,6 @@ export function PostComment({
             <InlineCommentReply state={editingState} autoFocus />
           )}
 
-          {commentView?.emojiReactions &&
-            commentView.emojiReactions.length > 0 && (
-              <div
-                className={cn(
-                  "pt-2 flex flex-row flex-wrap gap-1.5",
-                  !bgOnParent &&
-                    getCommentBgClass({ commentView, highlightComment }),
-                )}
-              >
-                {commentView.emojiReactions.map((emoji) => (
-                  <Button key={emoji.token} size="sm" variant="secondary">
-                    {emoji.token}
-                    <span>{emoji.count}</span>
-                  </Button>
-                ))}
-              </div>
-            )}
-
           {commentView && (
             <div
               className={cn(
@@ -760,7 +743,6 @@ export function PostComment({
                   )}
                 />
               )}
-
               <ActionMenu
                 actions={actions}
                 trigger={
@@ -775,7 +757,6 @@ export function PostComment({
                 }
                 triggerAsChild
               />
-
               {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
                   onClick={() =>
@@ -788,6 +769,9 @@ export function PostComment({
                   className="z-10"
                 />
               )}
+
+              <CommentEmojiReactions reactions={commentView?.emojiReactions} />
+
               <CommentVoting
                 commentView={commentView}
                 className={cn("z-10", leftHandedMode ? "-ml-2.5" : "-mr-2.5")}

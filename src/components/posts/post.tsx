@@ -538,7 +538,6 @@ function LargePostCard({
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
-      <PostEmojiReactions apId={apId} />
       <div
         className={cn(
           "flex flex-row items-center justify-end gap-2.5 pt-1",
@@ -547,6 +546,7 @@ function LargePostCard({
       >
         <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
+        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
       </div>
@@ -739,7 +739,6 @@ export function SmallPostCard({
           </span>
         </Link>
 
-        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end gap-2.5",
@@ -748,6 +747,7 @@ export function SmallPostCard({
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
           <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
@@ -839,7 +839,6 @@ function ExtraSmallPostCard({
           </span>
         </Link>
 
-        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end",
