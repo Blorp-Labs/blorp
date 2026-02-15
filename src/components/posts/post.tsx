@@ -40,7 +40,6 @@ import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { Button } from "../ui/button";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
@@ -521,7 +520,6 @@ function LargePostCard({
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
-      <PostEmojiReactions apId={apId} />
       <div
         className={cn(
           "flex flex-row items-center justify-end gap-2.5 pt-1",
@@ -530,6 +528,7 @@ function LargePostCard({
       >
         <PostShareButton postApId={apId} />
         <div className="flex-1" />
+        <PostEmojiReactions apId={apId} />
         <PostCommentsButton postApId={apId} />
         <PostVoting apId={apId} />
       </div>
@@ -711,7 +710,6 @@ export function SmallPostCard({
           </span>
         </Link>
 
-        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end gap-2.5",
@@ -720,6 +718,7 @@ export function SmallPostCard({
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} />
+          <PostEmojiReactions apId={apId} />
           <PostVoting apId={apId} />
         </div>
       </div>
@@ -806,7 +805,6 @@ function ExtraSmallPostCard({
           </span>
         </Link>
 
-        <PostEmojiReactions apId={apId} />
         <div
           className={cn(
             "flex items-center justify-end",

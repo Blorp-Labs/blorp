@@ -106,7 +106,7 @@ export function PostEmojiReactions({ apId }: { apId: string }) {
   return (
     <div className="flex flex-row flex-wrap gap-1.5">
       {reactions.map((emoji) => (
-        <Button key={emoji.token} size="sm" variant="secondary">
+        <Button key={emoji.token} size="sm" variant="outline" className="px-2">
           {emoji.token}
           <span>{emoji.count}</span>
         </Button>
