@@ -21,7 +21,8 @@ export default function ApResolver() {
   const { replace } = useHistory();
   const apId = origin + location.pathname;
 
-  const { data } = useResolveObject(apId);
+  const resolveQuery = useResolveObject(apId);
+  const { data } = resolveQuery;
 
   useEffect(() => {
     const { post, community, user } = data ?? {};
@@ -48,5 +49,11 @@ export default function ApResolver() {
     }
   }, [replace, data?.post, data?.community, data?.user]);
 
-  return <NotFound />;
+  const notFoundApId =
+    resolveQuery.isError ||
+    (resolveQuery.isSuccess && !data?.post && !data?.community && !data?.user)
+      ? apId
+      : undefined;
+
+  return <NotFound apId={notFoundApId} />;
 }

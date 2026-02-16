@@ -341,7 +341,7 @@ export default function Post() {
   );
 
   if (!decodedApId || (postQuery.isError && !post)) {
-    return <NotFound />;
+    return <NotFound apId={decodedApId} />;
   }
 
   const postCreatorId = post?.creatorId;
