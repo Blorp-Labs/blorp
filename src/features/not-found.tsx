@@ -10,8 +10,12 @@ import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { useResolveObject, useResolveObjectAcrossAccounts } from "../lib/api";
-import { parseAccountInfo, useAuth } from "../stores/auth";
+import {
+  useResolveObject,
+  useResolveObjectAcrossAccounts,
+  useSite,
+} from "../lib/api";
+import { getAccountSite, parseAccountInfo, useAuth } from "../stores/auth";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
@@ -22,6 +26,7 @@ import { encodeApId } from "../lib/api/utils";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { useRequireAuth } from "../components/auth-context";
 import { apIdFromCommunitySlug } from "../lib/api/adapters/utils";
+import { env } from "../env";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {
@@ -66,6 +71,9 @@ function CrossInstanceResolver({
   const accounts = useAuth((s) => s.accounts);
   const requireAuth = useRequireAuth();
   const [expandSearch, setExpandSearch] = useState(false);
+  const selectedInstance = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.instance,
+  );
 
   const resolvedApId = useMemo(
     () =>
@@ -82,6 +90,9 @@ function CrossInstanceResolver({
       return undefined;
     }
   }, [resolvedApId]);
+
+  const objectFromSelectedInstance =
+    originHost && selectedInstance?.includes(originHost);
 
   const crossAccountQuery = useResolveObjectAcrossAccounts(resolvedApId);
   const originQuery = useResolveObject(
@@ -200,7 +211,11 @@ function CrossInstanceResolver({
     );
   }
 
-  if (!expandSearch) {
+  if (
+    !expandSearch &&
+    !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE &&
+    !objectFromSelectedInstance
+  ) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="font-bold text-4xl">Not found</h1>
