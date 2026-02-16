@@ -23,6 +23,7 @@ import { useMedia } from "../lib/hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { useCommunityFromStore } from "../stores/communities";
+import NotFound from "./not-found";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -42,6 +43,10 @@ export default function CommunityFeed() {
   const community = useCommunityFromStore(communityName)?.communityView;
 
   useUpdateRecentCommunity(community);
+
+  if (communityQuery.isError && !community) {
+    return <NotFound communitySlug={communityName} />;
+  }
 
   return (
     <IonPage>

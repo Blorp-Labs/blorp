@@ -40,6 +40,7 @@ import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
+import { NotFound } from "./not-found";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item = string;
@@ -174,6 +175,10 @@ export default function User() {
         return commentViews;
     }
   }, [data?.pages, type]);
+
+  if (personQuery.isError && !person) {
+    return <NotFound apId={actorId} />;
+  }
 
   return (
     <IonPage>

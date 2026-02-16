@@ -33,3 +33,11 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
   }
   return comment.optimisticAnswer ?? comment.answer;
 }
+
+export function apIdFromCommunitySlug(slug: string): string | undefined {
+  const parts = slug.split("@");
+  if (parts.length !== 2) return undefined;
+  const [name, host] = parts;
+  if (!name || !host) return undefined;
+  return `https://${host}/c/${name}`;
+}

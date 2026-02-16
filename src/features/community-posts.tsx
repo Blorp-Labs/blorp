@@ -48,6 +48,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
+import { NotFound } from "./not-found";
 
 const EMPTY_ARR: never[] = [];
 
@@ -89,7 +90,7 @@ export default function CommunityPosts() {
     communitySlug: communityName,
   });
 
-  useCommunity({
+  const communityQuery = useCommunity({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
@@ -122,6 +123,10 @@ export default function CommunityPosts() {
     await Promise.all([refetch(), mostRecentPost.refetch()]);
     setRefreshing(false);
   };
+
+  if (communityQuery.isError && !community) {
+    return <NotFound communitySlug={communityName} />;
+  }
 
   return (
     <IonPage>

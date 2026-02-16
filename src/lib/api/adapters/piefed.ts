@@ -894,7 +894,7 @@ export class PieFedApi implements ApiBlueprint<null> {
                 comment: z.object({ id: z.number() }),
               })
               .nullish(),
-            post: z.object({ post: z.object({ id: z.number() }) }).optional(),
+            post: z.object({ post: z.object({ id: z.number() }) }).nullish(),
             community: z
               .object({
                 community: z.object({ id: z.number() }),

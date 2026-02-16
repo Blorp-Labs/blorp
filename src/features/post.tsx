@@ -198,7 +198,7 @@ function useResolveComment(pathOrApId: string | undefined): {
     return noResult;
   }, [decoded]);
 
-  const object = useResolveObject(apId);
+  const object = useResolveObject({ q: apId });
   useQueryToast(object, {
     error: "Couldn't resolve comment",
   });
@@ -341,7 +341,7 @@ export default function Post() {
   );
 
   if (!decodedApId || (postQuery.isError && !post)) {
-    return <NotFound />;
+    return <NotFound apId={decodedApId} />;
   }
 
   const postCreatorId = post?.creatorId;

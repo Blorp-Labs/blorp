@@ -34,7 +34,6 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
-  compareErrors,
   Errors,
   Forms,
   INIT_PAGE_TOKEN,
@@ -305,13 +304,6 @@ export function usePost({
       }
 
       return {};
-    },
-    retry: (count, err) => {
-      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
-      if (notFound) {
-        return false;
-      }
-      return count <= 3;
     },
     enabled: !!apId && enabled,
     initialData,
@@ -2623,24 +2615,78 @@ export function useAvailableSorts() {
   };
 }
 
-export function useResolveObject(query: string | undefined) {
+export function useResolveObject(
+  config: {
+    q: string | undefined;
+    instance?: string;
+  },
+  options?: QueryOverwriteOptions,
+) {
   const { api, queryKeyPrefix } = useApiClients();
+  const enabled = options?.enabled ?? true;
   return useQuery({
-    queryKey: [queryKeyPrefix, "resolveObject" + query],
+    queryKey: [queryKeyPrefix, "resolveObject", config],
     queryFn: async ({ signal }) => {
-      if (!query) {
+      if (!config.q) {
         throw new Error("This shouldn't happen");
       }
-      return await (await api).resolveObject({ q: query }, { signal });
-    },
-    enabled: !!query,
-    retry: (count, err) => {
-      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
-      if (notFound) {
-        return false;
+      if (config.instance) {
+        return await (
+          await apiClient({ instance: config.instance })
+        ).resolveObject({ q: config.q }, { signal });
       }
-      return count <= 3;
+      return await (await api).resolveObject({ q: config.q }, { signal });
     },
+    enabled: enabled && !!config.q,
+  });
+}
+
+export function useResolveObjectAcrossAccounts(apId: string | undefined) {
+  const { apis } = useApiClients();
+  const accountIndex = useAuth((s) => s.accountIndex);
+  const accounts = useAuth((s) => s.accounts);
+
+  const queryKey = [
+    "resolveObjectAcrossAccounts",
+    apId,
+    ...apis.map((a) => a.queryKeyPrefix.join("_")),
+  ];
+
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!apId) {
+        throw new Error("This shouldn't happen");
+      }
+      const results = await Promise.allSettled(
+        apis.map(async (apiEntry, index) => {
+          if (index === accountIndex) {
+            throw new Error("Skip current account");
+          }
+          const resolved = await (
+            await apiEntry.api
+          ).resolveObject({ q: apId });
+          return {
+            accountIndex: index,
+            account: accounts[index],
+            result: resolved,
+          };
+        }),
+      );
+      return results
+        .filter(
+          (
+            r,
+          ): r is PromiseFulfilledResult<{
+            accountIndex: number;
+            account: Account;
+            result: Schemas.ResolveObject;
+          }> => r.status === "fulfilled",
+        )
+        .map((r) => r.value);
+    },
+    enabled: !!apId && accounts.length > 1,
+    retry: false,
   });
 }
 
