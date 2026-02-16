@@ -49,11 +49,5 @@ export default function ApResolver() {
     }
   }, [replace, data?.post, data?.community, data?.user]);
 
-  const notFoundApId =
-    resolveQuery.isError ||
-    (resolveQuery.isSuccess && !data?.post && !data?.community && !data?.user)
-      ? apId
-      : undefined;
-
-  return <NotFound apId={notFoundApId} />;
+  return <NotFound />;
 }
