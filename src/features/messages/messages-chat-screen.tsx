@@ -38,6 +38,8 @@ import { useScrollToTopEvents } from "@/src/components/virtual-list";
 import { getPreferedTimeFormat } from "@/src/lib/format";
 import { Page } from "@/src/components/page";
 
+const EMPTY_ARR: never[] = [];
+
 dayjs.extend(localizedFormat);
 
 export default function Messages() {
@@ -166,7 +168,7 @@ export default function Messages() {
                   }
                 }
               }}
-              data={data}
+              data={data ?? EMPTY_ARR}
             >
               {(item) => {
                 const isMe = item.creatorId === me?.id;
