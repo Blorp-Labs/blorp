@@ -24,14 +24,7 @@ import { resolveRoute } from "../routing";
 import { encodeApId } from "../lib/api/utils";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { useRequireAuth } from "../components/auth-context";
-
-function apIdFromCommunitySlug(slug: string): string | undefined {
-  const parts = slug.split("@");
-  if (parts.length !== 2) return undefined;
-  const [name, host] = parts;
-  if (!name || !host) return undefined;
-  return `https://${host}/c/${name}`;
-}
+import { apIdFromCommunitySlug } from "../lib/api/adapters/utils";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {
