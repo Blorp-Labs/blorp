@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useDeepCompareMemoize } from "use-deep-compare-effect";
 
 type Task<T> = () => Promise<T>;
@@ -123,7 +123,7 @@ export function useThrottleQueue(key: ReadonlyArray<unknown> | {}) {
   const memo = useDeepCompareMemoize(key);
   const queue = useMemo(() => new PriorityThrottledQueue(1000 * 5), [memo]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     queue.start();
     return () => {
       queue.clear();
