@@ -17,6 +17,17 @@ import { ErrorLike, isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
+function is2faError(err?: Error | null) {
+  if (!err) {
+    return false;
+  }
+  const msg = err.message.toLowerCase();
+  const name = err.name.toLowerCase();
+  return (
+    msg.includes("missing_totp_token") || name.includes("missing_totp_token")
+  );
+}
+
 function translateError(err: ErrorLike): Error {
   const name = err.name.trim().toLowerCase();
   const msg = err.message.trim().toLowerCase();
@@ -410,16 +421,16 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   limit = 50;
 
   private resolveObjectId = _.memoize(
-    async (apId: string) => {
-      // This shortcut only works for local objects
-      if (apId.startsWith(this.instance)) {
-        const local = getIdFromLocalApId(apId);
-        if (local) {
-          return local;
+    async (apId: string) =>
+      translateErrors(async () => {
+        // This shortcut only works for local objects
+        if (apId.startsWith(this.instance)) {
+          const local = getIdFromLocalApId(apId);
+          if (local) {
+            return local;
+          }
         }
-      }
 
-      return translateErrors(async () => {
         const { post, comment, community, person } =
           await this.client.resolveObject({
             q: apId,
@@ -430,8 +441,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           community_id: community?.community.id,
           person_id: person?.person.id,
         };
-      });
-    },
+      }),
     (apId) => apId,
   );
 
