@@ -316,3 +316,11 @@ export function useIsAdmin(apId?: string) {
   );
   return apId ? (adminApIds?.includes(apId) ?? false) : false;
 }
+
+export function useAmIAdmin() {
+  return useAuth((s) => {
+    const account = s.getSelectedAccount();
+    const site = getAccountSite(account);
+    return site?.me?.apId && site?.admins?.includes(site.me?.apId);
+  });
+}
