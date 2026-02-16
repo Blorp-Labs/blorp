@@ -21,7 +21,7 @@ import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import _ from "lodash";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { getAccountSite, useAmIAdmin, useAuth } from "@/src/stores/auth";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -273,6 +273,8 @@ function LargePostCard({
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
 
+  const amIAdmin = useAmIAdmin();
+
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   const [imageStatus, setImageStatus] = useState<
@@ -351,7 +353,7 @@ function LargePostCard({
             ? true
             : detailView
         }
-        canMod={myApId ? modApIds?.includes(myApId) : false}
+        canMod={(myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin}
         isMod={modApIds?.includes(post.creatorApId)}
       />
 
@@ -559,6 +561,8 @@ export function SmallPostCard({
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
 
+  const amIAdmin = useAmIAdmin();
+
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
 
   const linkCtx = useLinkContext();
@@ -592,7 +596,7 @@ export function SmallPostCard({
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
 
-  const canMod = myApId ? modApIds?.includes(myApId) : false;
+  const canMod = (myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin;
 
   return (
     <article
@@ -739,6 +743,8 @@ function ExtraSmallPostCard({
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
 
+  const amIAdmin = useAmIAdmin();
+
   const linkCtx = useLinkContext();
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
@@ -758,7 +764,7 @@ function ExtraSmallPostCard({
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
 
-  const canMod = myApId ? modApIds?.includes(myApId) : false;
+  const canMod = (myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin;
 
   return (
     <article

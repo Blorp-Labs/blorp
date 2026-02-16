@@ -24,7 +24,7 @@ import {
   useCommentEditingState,
   useLoadCommentIntoEditor,
 } from "../components/comments/comment-reply-modal";
-import { getAccountSite, useAuth } from "../stores/auth";
+import { getAccountSite, useAmIAdmin, useAuth } from "../stores/auth";
 import { VirtualList } from "../components/virtual-list";
 import { PostReportProvider } from "../components/posts/post-report";
 import { usePostsStore } from "../stores/posts";
@@ -251,12 +251,15 @@ export default function Post() {
   const myUserApId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.apId;
 
+  const amIAdmin = useAmIAdmin();
+
   useCommunity({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
   const modApIds = community?.mods?.map((m) => m.apId);
-  const canMod = myUserApId ? modApIds?.includes(myUserApId) : false;
+  const canMod =
+    (myUserApId ? modApIds?.includes(myUserApId) : false) || !!amIAdmin;
   const postQuery = usePost({
     ap_id: decodedApId,
   });
