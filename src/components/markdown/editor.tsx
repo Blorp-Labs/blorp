@@ -7,7 +7,7 @@ import {
 } from "@tiptap/react";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
+import { Markdown } from "@tiptap/markdown";
 import {
   DetailsWithMarkdown,
   DetailsContentWithMarkdown,
@@ -48,6 +48,13 @@ import { ActionMenu } from "../adaptable/action-menu";
 import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
+
+/** Strip trailing &nbsp; markers that @tiptap/extension-paragraph emits for empty paragraphs */
+function stripTrailingNbsp(md: string): string {
+  let result = md.replace(/(\n\n&nbsp;)+$/, "");
+  if (result === "&nbsp;") result = "";
+  return result;
+}
 
 const CustomLink = Link.extend({
   inclusive: false,
@@ -109,9 +116,9 @@ function useRenderOnTipTapChange(editor: Editor | null) {
   useEffect(() => {
     if (!editor) return;
     const rerender = () => setSignal((x) => x + 1);
-    editor.on("selectionUpdate", rerender);
+    editor.on("transaction", rerender);
     return () => {
-      editor.off("selectionUpdate", rerender);
+      editor.off("transaction", rerender);
     };
   }, [editor]);
 }
@@ -190,7 +197,13 @@ const MenuBar = ({
 
             if (url.trim() === "") {
               editor.chain().focus().unsetLink().run();
-            } else if (isLinkActive) {
+            } else if (isLinkActive && linkInfo) {
+              // Collect existing marks (bold, italic, etc.) excluding the old link
+              const nodeAtStart = editor.state.doc.nodeAt(linkInfo.range.from);
+              const existingMarks = (nodeAtStart?.marks ?? [])
+                .filter((m) => m.type.name !== "link")
+                .map((m) => ({ type: m.type.name, attrs: m.attrs }));
+
               editor
                 .chain()
                 .focus()
@@ -199,7 +212,10 @@ const MenuBar = ({
                   {
                     type: "text",
                     text: description,
-                    marks: [{ type: "link", attrs: { href: url } }],
+                    marks: [
+                      ...existingMarks,
+                      { type: "link", attrs: { href: url } },
+                    ],
                   },
                 ])
                 .run();
@@ -392,8 +408,8 @@ function TipTapEditor({
         editor.commands.focus("end");
       }
     },
-    content,
     extensions: [
+      Markdown,
       Placeholder.configure({
         placeholder,
       }),
@@ -401,7 +417,6 @@ function TipTapEditor({
         codeBlock: false,
       }),
       Image,
-      Markdown,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockEditor);
@@ -433,9 +448,7 @@ function TipTapEditor({
       DetailsContentWithMarkdown,
     ],
     onUpdate: ({ editor }) => {
-      // @ts-expect-error
-      const markdown = editor?.storage["markdown"].getMarkdown();
-      onChange(markdown);
+      onChange(stripTrailingNbsp(editor.getMarkdown()));
     },
     onFocus: () => onFocus?.(),
     onBlur,
@@ -502,11 +515,10 @@ function TipTapEditor({
   });
 
   useEffect(() => {
-    // @ts-expect-error
-    if (editor?.storage["markdown"].getMarkdown() !== content) {
-      editor?.commands.setContent(content);
+    if (stripTrailingNbsp(editor.getMarkdown()) !== content) {
+      editor.commands.setContent(content, { contentType: "markdown" });
     }
-  }, [content]);
+  }, [content, editor]);
 
   return (
     <>
