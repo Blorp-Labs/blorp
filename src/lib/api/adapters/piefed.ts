@@ -189,6 +189,7 @@ export const pieFedPostSchema = z.object({
   removed: z.boolean(),
   //small_thumbnail_url: z.string().optional(),
   sticky: z.boolean().nullish(),
+  instance_sticky: z.boolean().nullish(),
   thumbnail_url: z.string().nullable().optional(),
   title: z.string(),
   url: z.string().nullable().optional(),
@@ -522,8 +523,7 @@ function convertPost({
         }).slug,
       })) ?? null,
     featuredCommunity: postView.post.sticky ?? false,
-    // TODO: see if this exists
-    featuredLocal: false,
+    featuredLocal: postView.post.instance_sticky ?? false,
     read: postView.read,
     saved: postView.saved,
     nsfw: post.nsfw || community.nsfw,
