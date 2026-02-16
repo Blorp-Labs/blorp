@@ -10,10 +10,7 @@ import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import {
-  useResolveObjectAcrossAccounts,
-  useResolveObjectOnOriginInstance,
-} from "../lib/api";
+import { useResolveObject, useResolveObjectAcrossAccounts } from "../lib/api";
 import { parseAccountInfo, useAuth } from "../stores/auth";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
@@ -68,7 +65,7 @@ function CrossInstanceResolver({
   const addAccount = useAuth((s) => s.addAccount);
   const accounts = useAuth((s) => s.accounts);
   const requireAuth = useRequireAuth();
-  const [originConfirmed, setOriginConfirmed] = useState(false);
+  const [expandSearch, setExpandSearch] = useState(false);
 
   const resolvedApId = useMemo(
     () =>
@@ -76,16 +73,6 @@ function CrossInstanceResolver({
       (communitySlug ? apIdFromCommunitySlug(communitySlug) : undefined),
     [apId, communitySlug],
   );
-
-  const crossAccountQuery = useResolveObjectAcrossAccounts(resolvedApId);
-  const originQuery = useResolveObjectOnOriginInstance(
-    resolvedApId,
-    originConfirmed,
-  );
-
-  const matches = crossAccountQuery.data ?? [];
-  const isSearching = crossAccountQuery.isLoading;
-  const hasMultipleAccounts = accounts.length > 1;
 
   const originHost = useMemo(() => {
     if (!resolvedApId) return undefined;
@@ -95,6 +82,21 @@ function CrossInstanceResolver({
       return undefined;
     }
   }, [resolvedApId]);
+
+  const crossAccountQuery = useResolveObjectAcrossAccounts(resolvedApId);
+  const originQuery = useResolveObject(
+    {
+      q: resolvedApId,
+      instance: originHost,
+    },
+    {
+      enabled: expandSearch,
+    },
+  );
+
+  const matches = crossAccountQuery.data ?? [];
+  const isSearching = crossAccountQuery.isLoading;
+  const hasMultipleAccounts = accounts.length > 1;
 
   const originUrl = useMemo(() => {
     if (!resolvedApId) return undefined;
@@ -198,24 +200,21 @@ function CrossInstanceResolver({
     );
   }
 
-  // No matches on other accounts — offer origin instance search
-  const showOriginSearch = originHost && !originQuery.alreadyOnOrigin;
-
-  if (showOriginSearch && !originConfirmed) {
+  if (!expandSearch) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="font-bold text-4xl">Not found</h1>
         <p className="text-muted-foreground">
           Not available on your {hasMultipleAccounts ? "accounts" : "account"}.
         </p>
-        <Button variant="outline" onClick={() => setOriginConfirmed(true)}>
+        <Button variant="outline" onClick={() => setExpandSearch(true)}>
           Search {originHost}?
         </Button>
       </div>
     );
   }
 
-  if (showOriginSearch && originConfirmed && originQuery.isLoading) {
+  if (expandSearch && originQuery.isLoading) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="font-bold text-4xl">Not found</h1>
@@ -227,7 +226,7 @@ function CrossInstanceResolver({
     );
   }
 
-  if (showOriginSearch && originConfirmed && originRedirectUrl && originUrl) {
+  if (expandSearch && originRedirectUrl && originUrl) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="font-bold text-4xl">Found</h1>

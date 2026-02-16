@@ -34,7 +34,6 @@ import {
 } from "../../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
 import {
-  compareErrors,
   Errors,
   Forms,
   INIT_PAGE_TOKEN,
@@ -2616,17 +2615,29 @@ export function useAvailableSorts() {
   };
 }
 
-export function useResolveObject(query: string | undefined) {
+export function useResolveObject(
+  config: {
+    q: string | undefined;
+    instance?: string;
+  },
+  options?: QueryOverwriteOptions,
+) {
   const { api, queryKeyPrefix } = useApiClients();
+  const enabled = options?.enabled ?? true;
   return useQuery({
-    queryKey: [queryKeyPrefix, "resolveObject" + query],
+    queryKey: [queryKeyPrefix, "resolveObject", config],
     queryFn: async ({ signal }) => {
-      if (!query) {
+      if (!config.q) {
         throw new Error("This shouldn't happen");
       }
-      return await (await api).resolveObject({ q: query }, { signal });
+      if (config.instance) {
+        return await (
+          await apiClient({ instance: config.instance })
+        ).resolveObject({ q: config.q }, { signal });
+      }
+      return await (await api).resolveObject({ q: config.q }, { signal });
     },
-    enabled: !!query,
+    enabled: enabled && !!config.q,
   });
 }
 
@@ -2677,55 +2688,6 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
     enabled: !!apId && accounts.length > 1,
     retry: false,
   });
-}
-
-export function useResolveObjectOnOriginInstance(
-  apId: string | undefined,
-  enabled: boolean,
-) {
-  const originInstance = useMemo(() => {
-    if (!apId) return undefined;
-    try {
-      return new URL(apId).origin;
-    } catch {
-      return undefined;
-    }
-  }, [apId]);
-
-  const { api, queryKeyPrefix } = useApiClients(
-    originInstance ? { instance: originInstance } : undefined,
-  );
-
-  // Skip if any logged-in account is already on this instance
-  const accounts = useAuth((s) => s.accounts);
-  const alreadyOnOrigin = useMemo(() => {
-    if (!originInstance) return false;
-    return accounts.some((account) => {
-      try {
-        return (
-          new URL(normalizeInstance(account.instance)).origin === originInstance
-        );
-      } catch {
-        return false;
-      }
-    });
-  }, [accounts, originInstance]);
-
-  return {
-    ...useQuery({
-      queryKey: [...queryKeyPrefix, "resolveObjectOrigin", apId],
-      queryFn: async ({ signal }) => {
-        if (!apId) {
-          throw new Error("This shouldn't happen");
-        }
-        return await (await api).resolveObject({ q: apId }, { signal });
-      },
-      enabled: !!apId && enabled && !!originInstance && !alreadyOnOrigin,
-      retry: false,
-    }),
-    originInstance,
-    alreadyOnOrigin,
-  };
 }
 
 export function useLinkMetadata() {

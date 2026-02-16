@@ -21,7 +21,7 @@ export default function ApResolver() {
   const { replace } = useHistory();
   const apId = origin + location.pathname;
 
-  const resolveQuery = useResolveObject(apId);
+  const resolveQuery = useResolveObject({ q: apId });
   const { data } = resolveQuery;
 
   useEffect(() => {

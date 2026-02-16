@@ -161,10 +161,6 @@ export default function User() {
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 
-  if (personQuery.isError && !person) {
-    return <NotFound apId={actorId} />;
-  }
-
   const listData = useMemo(() => {
     const commentViews =
       _.uniq(data?.pages.map((res) => res.comments).flat()) ?? EMPTY_ARR;
@@ -179,6 +175,10 @@ export default function User() {
         return commentViews;
     }
   }, [data?.pages, type]);
+
+  if (personQuery.isError && !person) {
+    return <NotFound apId={actorId} />;
+  }
 
   return (
     <IonPage>

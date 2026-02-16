@@ -198,7 +198,7 @@ function useResolveComment(pathOrApId: string | undefined): {
     return noResult;
   }, [decoded]);
 
-  const object = useResolveObject(apId);
+  const object = useResolveObject({ q: apId });
   useQueryToast(object, {
     error: "Couldn't resolve comment",
   });
