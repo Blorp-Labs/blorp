@@ -116,10 +116,6 @@ export default function CommunityPosts() {
       : false,
   );
 
-  if (communityQuery.isError && !community) {
-    return <NotFound />;
-  }
-
   const [refreshing, setRefreshing] = useState(false);
 
   const refresh = async () => {
@@ -127,6 +123,10 @@ export default function CommunityPosts() {
     await Promise.all([refetch(), mostRecentPost.refetch()]);
     setRefreshing(false);
   };
+
+  if (communityQuery.isError && !community) {
+    return <NotFound communitySlug={communityName} />;
+  }
 
   return (
     <IonPage>

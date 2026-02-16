@@ -23,6 +23,15 @@ import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../routing";
 import { encodeApId } from "../lib/api/utils";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { useRequireAuth } from "../components/auth-context";
+
+function apIdFromCommunitySlug(slug: string): string | undefined {
+  const parts = slug.split("@");
+  if (parts.length !== 2) return undefined;
+  const [name, host] = parts;
+  if (!name || !host) return undefined;
+  return `https://${host}/c/${name}`;
+}
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {
@@ -54,35 +63,54 @@ function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   return undefined;
 }
 
-function CrossInstanceResolver({ apId }: { apId: string }) {
+function CrossInstanceResolver({
+  apId,
+  communitySlug,
+}: {
+  apId?: string;
+  communitySlug?: string;
+}) {
   const router = useIonRouter();
   const setAccountIndex = useAuth((s) => s.setAccountIndex);
   const addAccount = useAuth((s) => s.addAccount);
   const accounts = useAuth((s) => s.accounts);
+  const requireAuth = useRequireAuth();
   const [originConfirmed, setOriginConfirmed] = useState(false);
 
-  const crossAccountQuery = useResolveObjectAcrossAccounts(apId);
-  const originQuery = useResolveObjectOnOriginInstance(apId, originConfirmed);
+  const resolvedApId = useMemo(
+    () =>
+      apId ??
+      (communitySlug ? apIdFromCommunitySlug(communitySlug) : undefined),
+    [apId, communitySlug],
+  );
+
+  const crossAccountQuery = useResolveObjectAcrossAccounts(resolvedApId);
+  const originQuery = useResolveObjectOnOriginInstance(
+    resolvedApId,
+    originConfirmed,
+  );
 
   const matches = crossAccountQuery.data ?? [];
   const isSearching = crossAccountQuery.isLoading;
   const hasMultipleAccounts = accounts.length > 1;
 
   const originHost = useMemo(() => {
+    if (!resolvedApId) return undefined;
     try {
-      return new URL(apId).host;
+      return new URL(resolvedApId).host;
     } catch {
       return undefined;
     }
-  }, [apId]);
+  }, [resolvedApId]);
 
   const originUrl = useMemo(() => {
+    if (!resolvedApId) return undefined;
     try {
-      return new URL(apId).origin;
+      return new URL(resolvedApId).origin;
     } catch {
       return undefined;
     }
-  }, [apId]);
+  }, [resolvedApId]);
 
   const originRedirectUrl = useMemo(() => {
     if (!originQuery.data) return undefined;
@@ -103,6 +131,19 @@ function CrossInstanceResolver({ apId }: { apId: string }) {
     if (!originUrl || !originRedirectUrl) return;
     addAccount({ instance: originUrl });
     router.push(originRedirectUrl, "forward", "replace");
+  };
+
+  const handleLogin = async () => {
+    if (!originUrl) return;
+    addAccount({ instance: originUrl });
+    try {
+      await requireAuth({ addAccount: true });
+      if (originRedirectUrl) {
+        router.push(originRedirectUrl, "forward", "replace");
+      }
+    } catch {
+      // User dismissed the login modal
+    }
   };
 
   // Still searching across accounts
@@ -200,9 +241,12 @@ function CrossInstanceResolver({ apId }: { apId: string }) {
         <p className="text-muted-foreground">
           This content is available on {originHost}.
         </p>
-        <Button onClick={handleAddGuest} variant="secondary">
-          Add {originHost} as guest
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleAddGuest} variant="secondary">
+            Add {originHost} as guest
+          </Button>
+          <Button onClick={handleLogin}>Login to {originHost}</Button>
+        </div>
       </div>
     );
   }
@@ -215,7 +259,14 @@ function CrossInstanceResolver({ apId }: { apId: string }) {
   );
 }
 
-export function NotFound({ apId }: { apId?: string }) {
+export function NotFound({
+  apId,
+  communitySlug,
+}: {
+  apId?: string;
+
+  communitySlug?: string;
+}) {
   return (
     <IonPage>
       <IonHeader>
@@ -232,8 +283,8 @@ export function NotFound({ apId }: { apId?: string }) {
 
       <IonContent>
         <ContentGutters className="py-6">
-          {apId ? (
-            <CrossInstanceResolver apId={apId} />
+          {apId || communitySlug ? (
+            <CrossInstanceResolver apId={apId} communitySlug={communitySlug} />
           ) : (
             <h1 className="font-bold text-4xl">Not found</h1>
           )}

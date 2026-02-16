@@ -56,7 +56,7 @@ export function formatOrdinal(n: number) {
   return `${n}${suffix}`;
 }
 
-interface ErrorLike {
+export interface ErrorLike {
   name: string;
   message: string;
 }

@@ -306,13 +306,6 @@ export function usePost({
 
       return {};
     },
-    retry: (count, err) => {
-      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
-      if (notFound) {
-        return false;
-      }
-      return count <= 3;
-    },
     enabled: !!apId && enabled,
     initialData,
     refetchOnMount: "always",
@@ -2634,13 +2627,6 @@ export function useResolveObject(query: string | undefined) {
       return await (await api).resolveObject({ q: query }, { signal });
     },
     enabled: !!query,
-    retry: (count, err) => {
-      const notFound = compareErrors(err, "OBJECT_NOT_FOUND");
-      if (notFound) {
-        return false;
-      }
-      return count <= 3;
-    },
   });
 }
 
