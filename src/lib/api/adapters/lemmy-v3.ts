@@ -17,17 +17,6 @@ import { ErrorLike, isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
-function is2faError(err?: Error | null) {
-  if (!err) {
-    return false;
-  }
-  const msg = err.message.toLowerCase();
-  const name = err.name.toLowerCase();
-  return (
-    msg.includes("missing_totp_token") || name.includes("missing_totp_token")
-  );
-}
-
 function translateError(err: ErrorLike): Error {
   const name = err.name.trim().toLowerCase();
   const msg = err.message.trim().toLowerCase();
@@ -49,7 +38,7 @@ function translateError(err: ErrorLike): Error {
     return Errors.MFA_REQUIRED;
   }
 
-  return err instanceof Error ? err : new Error(err.message);
+  return err;
 }
 
 async function translateErrors<T>(fn: () => Promise<T>): Promise<T> {
