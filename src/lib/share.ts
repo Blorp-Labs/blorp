@@ -300,21 +300,21 @@ function resolveShareUrl(
       }
     }
 
-    case "lemmyverse": {
+    case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
         return null;
       }
       if (entity.type === "community") {
-        return `https://lemmyverse.link/c/${entity.slug}`;
+        return `https://threadiverse.link/c/${entity.slug}`;
       }
       if (entity.type === "person") {
-        return `https://lemmyverse.link/u/${entity.slug}`;
+        return `https://threadiverse.link/u/${entity.slug}`;
       }
       if (entity.type === "post") {
-        return `https://lemmyverse.link/${instance}/post/${entity.id}`;
+        return `https://threadiverse.link/${instance}/post/${entity.id}`;
       }
       if (entity.type === "comment") {
-        return `https://lemmyverse.link/${instance}/comment/${entity.commentId}`;
+        return `https://threadiverse.link/${instance}/comment/${entity.commentId}`;
       }
     }
   }

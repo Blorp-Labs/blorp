@@ -223,11 +223,11 @@ export function useSelectAlert() {
       header,
       message,
       buttons: [
-        { text: cancelText, role: "cancel" },
         ...options.map((opt) => ({
           text: opt.text,
           handler: () => deferred.resolve(opt.value),
         })),
+        { text: cancelText, role: "cancel" },
       ],
       onDidDismiss: (e) => {
         if (e.detail.role === "cancel" || e.detail.role === "backdrop") {

@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 import _ from "lodash";
+import { env } from "../env";
 
 type PostCardStyle = "small" | "large" | "extra-small";
 
@@ -24,16 +25,20 @@ export const POST_CARD_STYLE_OPTIONS: {
   },
 ];
 
-export type ShareLinkType = "blorp" | "source" | "instance" | "lemmyverse";
+export type ShareLinkType =
+  | "blorp"
+  | "source"
+  | "instance"
+  | "threadiverse.link";
 
 export const SHARE_LINK_TYPE_OPTIONS: {
   label: string;
   value: ShareLinkType;
 }[] = [
-  { value: "blorp", label: "Blorp" },
+  { value: "blorp", label: `${env.REACT_APP_NAME} (${window.location.host})` },
   { value: "source", label: "Source" },
   { value: "instance", label: "My Instance" },
-  { value: "lemmyverse", label: "Lemmyverse" },
+  { value: "threadiverse.link", label: "threadiverse.link" },
 ];
 
 type SettingsStore = {
