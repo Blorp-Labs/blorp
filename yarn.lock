@@ -6340,6 +6340,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-subscript@npm:^3.19.0":
+  version: 3.19.0
+  resolution: "@tiptap/extension-subscript@npm:3.19.0"
+  peerDependencies:
+    "@tiptap/core": ^3.19.0
+    "@tiptap/pm": ^3.19.0
+  checksum: 10c0/3cec1cda621b5971ae40bfb382336f80d49c41a524aeb9b29440d65865f30fb828779a20bd9b696f99bdfee8da54eb474bb728d196ec6f2f251e6ff05c7dc0f8
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-superscript@npm:^3.19.0":
+  version: 3.19.0
+  resolution: "@tiptap/extension-superscript@npm:3.19.0"
+  peerDependencies:
+    "@tiptap/core": ^3.19.0
+    "@tiptap/pm": ^3.19.0
+  checksum: 10c0/1543429137e4339e186ddb56b5c8fefd2f7ab1f51fe8fec81ad98bb9c848a84d7ad0fbcca3af4fc1d2a7b9af2024e186e1559af2d10a58b7cfaabf512536a504
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-table-cell@npm:3.19.0":
   version: 3.19.0
   resolution: "@tiptap/extension-table-cell@npm:3.19.0"
@@ -7925,6 +7945,8 @@ __metadata:
     "@tiptap/extension-link": "npm:3.19.0"
     "@tiptap/extension-mention": "npm:3.19.0"
     "@tiptap/extension-placeholder": "npm:3.19.0"
+    "@tiptap/extension-subscript": "npm:^3.19.0"
+    "@tiptap/extension-superscript": "npm:^3.19.0"
     "@tiptap/extension-table": "npm:3.19.0"
     "@tiptap/extension-table-cell": "npm:3.19.0"
     "@tiptap/extension-table-header": "npm:3.19.0"

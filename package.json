@@ -69,6 +69,8 @@
     "@tiptap/extension-link": "3.19.0",
     "@tiptap/extension-mention": "3.19.0",
     "@tiptap/extension-placeholder": "3.19.0",
+    "@tiptap/extension-subscript": "^3.19.0",
+    "@tiptap/extension-superscript": "^3.19.0",
     "@tiptap/extension-table": "3.19.0",
     "@tiptap/extension-table-cell": "3.19.0",
     "@tiptap/extension-table-header": "3.19.0",

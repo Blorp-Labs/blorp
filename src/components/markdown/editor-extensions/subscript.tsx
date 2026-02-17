@@ -1,39 +1,41 @@
-import { Mark, mergeAttributes } from "@tiptap/core";
-import MarkdownIt from "markdown-it";
-// @ts-expect-error
-import markdownitSub from "markdown-it-sub";
+import Subscript from "@tiptap/extension-subscript";
+import type {
+  JSONContent,
+  MarkdownToken,
+  MarkdownParseHelpers,
+  MarkdownParseResult,
+  MarkdownRendererHelpers,
+  MarkdownTokenizer,
+} from "@tiptap/core";
 
-const Subscript = Mark.create({
-  name: "subscript",
+export default Subscript.extend({
+  markdownTokenizer: {
+    name: "subscript",
+    level: "inline",
+    start: "~",
+    tokenize(src, _tokens, lexer): MarkdownToken | undefined {
+      const match = src.match(/^~([^~\n]+)~/);
+      if (!match) return undefined;
+      return {
+        type: "subscript",
+        raw: match[0],
+        text: match[1],
+        tokens: lexer.inlineTokens(match[1]!),
+      };
+    },
+  } satisfies MarkdownTokenizer,
 
-  parseHTML() {
-    return [{ tag: "sub" }];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ["sub", mergeAttributes(HTMLAttributes), 0];
-  },
-
-  addStorage() {
+  parseMarkdown(
+    token: MarkdownToken,
+    helpers: MarkdownParseHelpers,
+  ): MarkdownParseResult {
     return {
-      markdown: {
-        // tell markdown-it how to parse `H~2~0` into a <sub> mark
-        parse: {
-          setup(md: MarkdownIt) {
-            md.use(markdownitSub);
-          },
-        },
-        // tell tiptap-markdown how to *serialize* this mark back to markdown
-        serialize: {
-          open: "~",
-          close: "~",
-          // these two flags match how other inline marks behave
-          mixable: true,
-          expelEnclosingWhitespace: true,
-        },
-      },
+      mark: "subscript",
+      content: helpers.parseInline(token.tokens || []),
     };
   },
-});
 
-export default Subscript;
+  renderMarkdown(node: JSONContent, helpers: MarkdownRendererHelpers): string {
+    return `~${helpers.renderChildren(node.content || [])}~`;
+  },
+});
