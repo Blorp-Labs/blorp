@@ -382,9 +382,9 @@ export function useShareActions(
     if (shareLinkType !== null) return shareLinkType;
     try {
       const selected = await selectAlert({
-        header: "Share link style",
+        header: "How would you like to share? Change this later in Settings.",
         message:
-          "How would you like to share links? You can change this later in Settings.",
+          '"My Instance" uses whatever account or guess account you have selected',
         options: SHARE_LINK_TYPE_OPTIONS.map((o) => ({
           text: o.label,
           value: o.value,
