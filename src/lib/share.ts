@@ -15,6 +15,13 @@ import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
 import { isErrorLike } from "./utils";
+import {
+  ShareLinkType,
+  SHARE_LINK_TYPE_OPTIONS,
+  useSettingsStore,
+} from "../stores/settings";
+import { Account, parseAccountInfo, useAuth } from "../stores/auth";
+import { useSelectAlert } from "./hooks/index";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -237,6 +244,70 @@ const origin = isCapacitor()
   ? "https://blorpblorp.xyz"
   : window.location.origin || "https://blorpblorp.xyz";
 
+export type ShareEntityContext =
+  | { type: "post"; apId: string; communitySlug: string; route: string }
+  | { type: "comment"; apId: string; communitySlug: string; route: string }
+  | { type: "community"; apId: string; slug: string; route: string }
+  | { type: "person"; apId: string; slug: string; route: string }
+  | { type: "multi-community-feed"; route: string };
+
+function resolveShareUrl(
+  mode: ShareLinkType,
+  entity: ShareEntityContext,
+  account?: Account,
+): string | null {
+  switch (mode) {
+    case "blorp":
+      return `${origin}${entity.route}`;
+
+    case "source":
+      if (entity.type === "multi-community-feed") return null;
+      return entity.apId;
+
+    case "instance": {
+      if (entity.type === "multi-community-feed") return null;
+      const instance = account ? parseAccountInfo(account).instance : null;
+      if (!instance) return null;
+      if (entity.type === "community") {
+        return `https://${instance}/c/${entity.slug}`;
+      }
+      if (entity.type === "person") {
+        return `https://${instance}/u/${entity.slug}`;
+      }
+      return `https://${instance}/search?q=${encodeURIComponent(entity.apId)}`;
+    }
+
+    case "lemmyverse": {
+      if (entity.type === "multi-community-feed") return null;
+      if (entity.type === "community") {
+        return `https://lemmyverse.link/c/${entity.slug}`;
+      }
+      if (entity.type === "person") {
+        return `https://lemmyverse.link/u/${entity.slug}`;
+      }
+      // Post or comment: extract pathname from apId
+      try {
+        const url = new URL(entity.apId);
+        return `https://lemmyverse.link${url.pathname}@${url.host}`;
+      } catch {
+        return null;
+      }
+    }
+  }
+}
+
+function getShareUrl(
+  mode: ShareLinkType,
+  entity: ShareEntityContext,
+  account?: Account,
+): string {
+  return (
+    resolveShareUrl(mode, entity, account) ??
+    resolveShareUrl("source", entity, account) ??
+    resolveShareUrl("blorp", entity, account)!
+  );
+}
+
 export function useCanShare() {
   // Firefox doesn't typically allow sharing
   const [share, setShare] = useState(!isFirefox());
@@ -276,27 +347,74 @@ export async function shareRoute(route: string) {
 
 export function useShareActions(
   label: string,
-  route: string | null | undefined,
+  entity: ShareEntityContext | null | undefined,
 ) {
-  const canShare = useCanShare();
-  if (!route) {
+  const canShareNative = useCanShare();
+  const shareLinkType = useSettingsStore((s) => s.shareLinkType);
+  const setShareLinkType = useSettingsStore((s) => s.setShareLinkType);
+  const account = useAuth((s) => s.getSelectedAccount());
+  const selectAlert = useSelectAlert();
+
+  if (!entity) {
     return [];
   }
+
+  const getMode = async (): Promise<ShareLinkType> => {
+    if (shareLinkType !== null) return shareLinkType;
+    try {
+      const selected = await selectAlert({
+        header: "Share link style",
+        message:
+          "How would you like to share links? You can change this later in Settings.",
+        options: SHARE_LINK_TYPE_OPTIONS.map((o) => ({
+          text: o.label,
+          value: o.value,
+        })),
+      });
+      setShareLinkType(selected);
+      return selected;
+    } catch {
+      // cancelled — use blorp as one-time default
+      return "blorp";
+    }
+  };
+
+  const doShare = async () => {
+    const mode = await getMode();
+    const url = getShareUrl(mode, entity, account);
+    try {
+      const result = await Share.canShare();
+      if (result.value) {
+        await Share.share({ url });
+      } else if (_.isFunction(navigator.share)) {
+        await navigator.share({ url });
+      }
+    } catch (e) {
+      console.error("Error sharing URL:", e);
+    }
+  };
+
+  const doCopy = async () => {
+    const mode = await getMode();
+    const url = getShareUrl(mode, entity, account);
+    copyToClipboard(url);
+  };
+
   return [
     {
       text: "Share",
       actions: [
-        ...(canShare
+        ...(canShareNative
           ? [
               {
                 text: `Share link to ${label}`,
-                onClick: () => shareRoute(route),
+                onClick: doShare,
               },
             ]
           : []),
         {
           text: `Copy link to ${label}`,
-          onClick: () => copyRouteToClipboard(route),
+          onClick: doCopy,
         },
       ],
     },

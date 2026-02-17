@@ -47,7 +47,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
-import { copyRouteToClipboard, shareRoute } from "@/src/lib/share";
+import { useShareActions } from "@/src/lib/share";
 import { useProfilesStore } from "@/src/stores/profiles";
 import {
   Collapsible,
@@ -146,6 +146,18 @@ export function useCommentActions({
   const locked = commentView?.optimisticLocked ?? commentView?.locked;
 
   const showCommentRemoveModal = useShowCommentRemoveModal();
+
+  const shareActions = useShareActions(
+    "comment",
+    commentView
+      ? {
+          type: "comment",
+          apId: commentView.apId,
+          communitySlug: commentView.communitySlug,
+          route: route!,
+        }
+      : null,
+  );
 
   const { software } = useSoftware();
 
@@ -254,23 +266,7 @@ export function useCommentActions({
           } as const,
         ]
       : []),
-    ...(route
-      ? [
-          {
-            text: "Share",
-            actions: [
-              {
-                text: "Share link to comment",
-                onClick: () => shareRoute(route),
-              },
-              {
-                text: "Copy link to comment",
-                onClick: () => copyRouteToClipboard(route),
-              },
-            ],
-          },
-        ]
-      : []),
+    ...(route ? shareActions : []),
     ...(isPostAuthor && commentView && software === "piefed"
       ? [
           {

@@ -225,7 +225,17 @@ function useCommunityActions({
     communityName,
   });
 
-  const shareActions = useShareActions("community", route);
+  const shareActions = useShareActions(
+    "community",
+    actorId
+      ? {
+          type: "community",
+          apId: actorId,
+          slug: communityName,
+          route,
+        }
+      : null,
+  );
 
   return [
     ...(!isBlocked ? shareActions : []),

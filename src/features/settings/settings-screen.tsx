@@ -1,6 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import {
   POST_CARD_STYLE_OPTIONS,
+  SHARE_LINK_TYPE_OPTIONS,
+  ShareLinkType,
   useSettingsStore,
 } from "@/src/stores/settings";
 import { useLogout, useSoftware } from "@/src/lib/api/index";
@@ -268,6 +270,9 @@ export default function SettingsPage() {
   const postCardStyle = useSettingsStore((s) => s.postCardStyle);
   const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
 
+  const shareLinkType = useSettingsStore((s) => s.shareLinkType);
+  const setShareLinkType = useSettingsStore((s) => s.setShareLinkType);
+
   const hideRead = useSettingsStore((s) => s.hideRead);
   const setHideRead = useSettingsStore((s) => s.setHideRead);
 
@@ -345,6 +350,35 @@ export default function SettingsPage() {
                     <SelectGroup>
                       <SelectLabel>Display posts as</SelectLabel>
                       {POST_CARD_STYLE_OPTIONS.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </SectionItem>
+            </Section>
+
+            <Section title="SHARING">
+              <SectionItem>
+                <label htmlFor={`${id}-share-link-type`}>Share links as</label>
+                <Select
+                  value={shareLinkType ?? "blorp"}
+                  onValueChange={(val) =>
+                    setShareLinkType(val as ShareLinkType)
+                  }
+                >
+                  <SelectTrigger
+                    className="w-[160px]"
+                    id={`${id}-share-link-type`}
+                  >
+                    <SelectValue placeholder="Choose style" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Share link style</SelectLabel>
+                      {SHARE_LINK_TYPE_OPTIONS.map(({ label, value }) => (
                         <SelectItem key={value} value={value}>
                           {label}
                         </SelectItem>

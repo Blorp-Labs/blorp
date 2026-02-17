@@ -205,6 +205,40 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   return [value ?? defaultValueRef.current, setValue, removeParam];
 }
 
+export function useSelectAlert() {
+  const [alrt] = useIonAlert();
+  return async <T extends string>({
+    header,
+    message,
+    options,
+    cancelText = "Cancel",
+  }: {
+    header?: string;
+    message?: string;
+    options: { text: string; value: T }[];
+    cancelText?: string;
+  }): Promise<T> => {
+    const deferred = new Deferred<T>();
+    alrt({
+      header,
+      message,
+      buttons: [
+        { text: cancelText, role: "cancel" },
+        ...options.map((opt) => ({
+          text: opt.text,
+          handler: () => deferred.resolve(opt.value),
+        })),
+      ],
+      onDidDismiss: (e) => {
+        if (e.detail.role === "cancel" || e.detail.role === "backdrop") {
+          deferred.reject();
+        }
+      },
+    });
+    return deferred.promise;
+  };
+}
+
 export function useConfirmationAlert() {
   const [alrt] = useIonAlert();
 

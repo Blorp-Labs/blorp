@@ -47,9 +47,14 @@ export function usePersonActions({
   const shareActions = useShareActions(
     "person",
     person
-      ? resolveRoute("/messages/chat/:userId", {
-          userId: encodeApId(person.apId),
-        })
+      ? {
+          type: "person",
+          apId: person.apId,
+          slug: person.slug,
+          route: resolveRoute("/messages/chat/:userId", {
+            userId: encodeApId(person.apId),
+          }),
+        }
       : null,
   );
 
