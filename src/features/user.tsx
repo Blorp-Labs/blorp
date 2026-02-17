@@ -196,7 +196,7 @@ export default function User() {
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
-            <ToolbarTitle numRightIcons={1}>
+            <ToolbarTitle numRightIcons={1} size="sm">
               {person?.slug ?? "Person"}
             </ToolbarTitle>
           </ToolbarButtons>

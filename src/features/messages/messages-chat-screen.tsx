@@ -6,9 +6,9 @@ import {
   useMarkPriavteMessageRead,
   usePrivateMessages,
 } from "@/src/lib/api";
-import { decodeApId } from "@/src/lib/api/utils";
+import { decodeApId, encodeApId } from "@/src/lib/api/utils";
 import { cn } from "@/src/lib/utils";
-import { useParams } from "@/src/routing";
+import { Link, useParams } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import _ from "lodash";
@@ -46,7 +46,8 @@ export default function Messages() {
   const media = useMedia();
 
   const { mutateAsync: markMessageRead } = useMarkPriavteMessageRead();
-  const otherActorId = decodeApId(useParams("/messages/chat/:userId").userId);
+  const encodedOtherActorId = useParams("/messages/chat/:userId").userId;
+  const otherActorId = decodeApId(encodedOtherActorId);
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const person = useProfilesStore(
@@ -134,9 +135,11 @@ export default function Messages() {
         <IonToolbar>
           <ToolbarButtons side="left">
             <ToolbarBackButton />
-            <ToolbarTitle size="sm" numRightIcons={1}>
-              {(person ? person.slug : null) ?? "Loading..."}
-            </ToolbarTitle>
+            <Link to="/home/u/:userId" params={{ userId: encodedOtherActorId }}>
+              <ToolbarTitle size="sm" numRightIcons={1}>
+                {(person ? person.slug : null) ?? "Loading..."}
+              </ToolbarTitle>
+            </Link>
           </ToolbarButtons>
           <ToolbarButtons side="right">
             <UserDropdown />
@@ -182,7 +185,15 @@ export default function Messages() {
                       )}
                       <div className="flex gap-2">
                         {!isMe && (
-                          <PersonAvatar actorId={item.creatorApId} size="sm" />
+                          <Link
+                            to="/home/u/:userId"
+                            params={{ userId: encodedOtherActorId }}
+                          >
+                            <PersonAvatar
+                              actorId={item.creatorApId}
+                              size="sm"
+                            />
+                          </Link>
                         )}
                         <div
                           className={cn(
