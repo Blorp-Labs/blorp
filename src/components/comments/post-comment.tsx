@@ -153,6 +153,8 @@ export function useCommentActions({
       ? {
           type: "comment",
           apId: commentView.apId,
+          postId: commentView.postId,
+          commentId: commentView.id,
           communitySlug: commentView.communitySlug,
           route: route!,
         }

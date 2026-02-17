@@ -245,8 +245,21 @@ const origin = isCapacitor()
   : window.location.origin || "https://blorpblorp.xyz";
 
 export type ShareEntityContext =
-  | { type: "post"; apId: string; communitySlug: string; route: string }
-  | { type: "comment"; apId: string; communitySlug: string; route: string }
+  | {
+      type: "post";
+      id: number;
+      apId: string;
+      communitySlug: string;
+      route: string;
+    }
+  | {
+      type: "comment";
+      postId: number;
+      commentId: number;
+      apId: string;
+      communitySlug: string;
+      route: string;
+    }
   | { type: "community"; apId: string; slug: string; route: string }
   | { type: "person"; apId: string; slug: string; route: string }
   | { type: "multi-community-feed"; route: string };
@@ -256,17 +269,22 @@ function resolveShareUrl(
   entity: ShareEntityContext,
   account?: Account,
 ): string | null {
+  const instance = account ? parseAccountInfo(account).instance : null;
+
   switch (mode) {
     case "blorp":
       return `${origin}${entity.route}`;
 
     case "source":
-      if (entity.type === "multi-community-feed") return null;
+      if (entity.type === "multi-community-feed") {
+        return null;
+      }
       return entity.apId;
 
     case "instance": {
-      if (entity.type === "multi-community-feed") return null;
-      const instance = account ? parseAccountInfo(account).instance : null;
+      if (entity.type === "multi-community-feed") {
+        return null;
+      }
       if (!instance) return null;
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.slug}`;
@@ -274,26 +292,34 @@ function resolveShareUrl(
       if (entity.type === "person") {
         return `https://${instance}/u/${entity.slug}`;
       }
-      return `https://${instance}/search?q=${encodeURIComponent(entity.apId)}`;
+      if (entity.type === "post") {
+        return `https://${instance}/post/${entity.id}`;
+      }
+      if (entity.type === "comment") {
+        return `https://${instance}/post/${entity.postId}/${entity.commentId}`;
+      }
     }
 
     case "lemmyverse": {
-      if (entity.type === "multi-community-feed") return null;
+      if (entity.type === "multi-community-feed") {
+        return null;
+      }
       if (entity.type === "community") {
         return `https://lemmyverse.link/c/${entity.slug}`;
       }
       if (entity.type === "person") {
         return `https://lemmyverse.link/u/${entity.slug}`;
       }
-      // Post or comment: extract pathname from apId
-      try {
-        const url = new URL(entity.apId);
-        return `https://lemmyverse.link${url.pathname}@${url.host}`;
-      } catch {
-        return null;
+      if (entity.type === "post") {
+        return `https://lemmyverse.link/${instance}/post/${entity.id}`;
+      }
+      if (entity.type === "comment") {
+        return `https://lemmyverse.link/${instance}/comment/${entity.commentId}`;
       }
     }
   }
+
+  return null;
 }
 
 function getShareUrl(

@@ -286,6 +286,7 @@ function usePostShareActions({
     post
       ? {
           type: "post",
+          id: post.id,
           apId: post.apId,
           communitySlug: post.communitySlug,
           route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
