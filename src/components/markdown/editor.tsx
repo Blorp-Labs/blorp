@@ -13,8 +13,8 @@ import {
   DetailsContentWithMarkdown,
   DetailsSummaryWithMarkdown,
 } from "./editor-extensions/spoiler-plugin";
-import SubScript from "./editor-extensions/subscript";
-import SupScript from "./editor-extensions/supscript";
+import Subscript from "./editor-extensions/subscript";
+import Superscript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
@@ -311,14 +311,11 @@ const MenuBar = ({
       {/* </button> */}
 
       <ActionMenu
+        preventFocusReturnOnClose
         actions={[
           {
             text: "Horizontal Line",
             onClick: () => editor.chain().focus().setHorizontalRule().run(),
-          },
-          {
-            text: "Code",
-            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
           },
           {
             text: "Spoiler",
@@ -333,20 +330,29 @@ const MenuBar = ({
             },
           },
           {
+            text: "Code",
+            checked: editor.isActive("codeBlock"),
+            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+          },
+          {
             text: "Unordered List",
+            checked: editor.isActive("bulletList"),
             onClick: () => editor.chain().focus().toggleBulletList().run(),
           },
           {
             text: "Ordered List",
+            checked: editor.isActive("orderedList"),
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
           },
           {
             text: "Subscript",
-            onClick: () => editor.chain().focus().toggleMark("subscript").run(),
+            checked: editor.isActive("subscript"),
+            onClick: () => editor.chain().focus().toggleSubscript().run(),
           },
           {
             text: "Superscript",
-            onClick: () => editor.chain().focus().toggleMark("supscript").run(),
+            checked: editor.isActive("superscript"),
+            onClick: () => editor.chain().focus().toggleSuperscript().run(),
           },
         ]}
         trigger={
@@ -437,8 +443,8 @@ function TipTapEditor({
         },
         suggestions: mentionSuggestions,
       }),
-      SubScript,
-      SupScript,
+      Subscript,
+      Superscript,
       DetailsWithMarkdown.configure({
         HTMLAttributes: {
           class: "details",

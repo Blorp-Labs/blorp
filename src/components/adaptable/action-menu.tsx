@@ -5,6 +5,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -34,6 +35,7 @@ export interface ActionMenuProps<V = string>
         onClick: () => any;
         actions?: undefined;
         danger?: boolean;
+        checked?: boolean;
       }
     | {
         text: string;
@@ -54,6 +56,7 @@ export interface ActionMenuProps<V = string>
   onOpen?: () => any;
   align?: "start" | "end";
   showCancel?: boolean;
+  preventFocusReturnOnClose?: boolean;
 }
 
 export function ActionMenu<V extends string>({
@@ -64,6 +67,7 @@ export function ActionMenu<V extends string>({
   align,
   showCancel,
   selectedValue,
+  preventFocusReturnOnClose,
   ...props
 }: ActionMenuProps<V>) {
   const media = useMedia();
@@ -89,7 +93,8 @@ export function ActionMenu<V extends string>({
             cssClass: a.actions ? "detail" : undefined,
             role: a.danger
               ? "destructive"
-              : _.isString(a.value) && a.value === selectedValue
+              : (_.isString(a.value) && a.value === selectedValue) ||
+                  ("checked" in a && a.checked === true)
                 ? "selected"
                 : undefined,
           })),
@@ -141,7 +146,12 @@ export function ActionMenu<V extends string>({
         <DropdownMenuTrigger asChild={triggerAsChild} className="text-left">
           {trigger}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align={align}>
+        <DropdownMenuContent
+          align={align}
+          onCloseAutoFocus={
+            preventFocusReturnOnClose ? (e) => e.preventDefault() : undefined
+          }
+        >
           {props.header && (
             <>
               <DropdownMenuLabel>{props.header}</DropdownMenuLabel>
@@ -173,6 +183,15 @@ export function ActionMenu<V extends string>({
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
+            ) : a.checked !== undefined ? (
+              <DropdownMenuCheckboxItem
+                key={a.text + index}
+                checked={a.checked}
+                onCheckedChange={a.onClick}
+                className={cn(a.danger && "text-destructive!")}
+              >
+                {a.text}
+              </DropdownMenuCheckboxItem>
             ) : (
               <DropdownMenuItem
                 key={a.text + index}
