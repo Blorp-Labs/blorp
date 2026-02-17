@@ -378,7 +378,7 @@ export function useShareActions(
     return [];
   }
 
-  const getMode = async (): Promise<ShareLinkType> => {
+  const getMode = async (): Promise<ShareLinkType | null> => {
     if (shareLinkType !== null) return shareLinkType;
     try {
       const selected = await selectAlert({
@@ -393,30 +393,33 @@ export function useShareActions(
       setShareLinkType(selected);
       return selected;
     } catch {
-      // cancelled — use blorp as one-time default
-      return "blorp";
+      return null;
     }
   };
 
   const doShare = async () => {
     const mode = await getMode();
-    const url = getShareUrl(mode, entity, account);
-    try {
-      const result = await Share.canShare();
-      if (result.value) {
-        await Share.share({ url });
-      } else if (_.isFunction(navigator.share)) {
-        await navigator.share({ url });
+    if (mode) {
+      const url = getShareUrl(mode, entity, account);
+      try {
+        const result = await Share.canShare();
+        if (result.value) {
+          await Share.share({ url });
+        } else if (_.isFunction(navigator.share)) {
+          await navigator.share({ url });
+        }
+      } catch (e) {
+        console.error("Error sharing URL:", e);
       }
-    } catch (e) {
-      console.error("Error sharing URL:", e);
     }
   };
 
   const doCopy = async () => {
     const mode = await getMode();
-    const url = getShareUrl(mode, entity, account);
-    copyToClipboard(url);
+    if (mode) {
+      const url = getShareUrl(mode, entity, account);
+      copyToClipboard(url);
+    }
   };
 
   return [
