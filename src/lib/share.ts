@@ -275,12 +275,6 @@ function resolveShareUrl(
     case "blorp":
       return `${origin}${entity.route}`;
 
-    case "source":
-      if (entity.type === "multi-community-feed") {
-        return null;
-      }
-      return entity.apId;
-
     case "instance": {
       if (entity.type === "multi-community-feed") {
         return null;
@@ -329,7 +323,6 @@ function getShareUrl(
 ): string {
   return (
     resolveShareUrl(mode, entity, account) ??
-    resolveShareUrl("source", entity, account) ??
     resolveShareUrl("blorp", entity, account)!
   );
 }

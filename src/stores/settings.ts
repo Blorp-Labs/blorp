@@ -25,18 +25,13 @@ export const POST_CARD_STYLE_OPTIONS: {
   },
 ];
 
-export type ShareLinkType =
-  | "blorp"
-  | "source"
-  | "instance"
-  | "threadiverse.link";
+export type ShareLinkType = "blorp" | "instance" | "threadiverse.link";
 
 export const SHARE_LINK_TYPE_OPTIONS: {
   label: string;
   value: ShareLinkType;
 }[] = [
   { value: "blorp", label: `${env.REACT_APP_NAME} (${window.location.host})` },
-  { value: "source", label: "Source" },
   { value: "instance", label: "My Instance" },
   { value: "threadiverse.link", label: "threadiverse.link" },
 ];
