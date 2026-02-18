@@ -111,14 +111,6 @@ export default function MultiCommunityFeedPosts() {
     setRefreshing(false);
   };
 
-  console.log(
-    isBlocked || (data.length === 0 && !posts.isRefetching && !posts.isPending)
-      ? [NO_ITEMS]
-      : data,
-    posts.isPending,
-    posts.status,
-  );
-
   return (
     <IonPage>
       <PageTitle>{feed?.slug ?? apId}</PageTitle>
