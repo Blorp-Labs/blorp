@@ -210,9 +210,9 @@ export default function HomePosts() {
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const getSelectedAccount = useAuth((s) => s.getSelectedAccount);
-  const siteHasPosts =
-    (getAccountSite(getSelectedAccount())?.postCount ?? 0) > 0;
+  const siteHasPosts = useAuth(
+    (s) => (getAccountSite(s.getSelectedAccount())?.postCount ?? 0) > 0,
+  );
 
   const hasNewPost = usePostsStore((s) =>
     mostRecentPostApId
