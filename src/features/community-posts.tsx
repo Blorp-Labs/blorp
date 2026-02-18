@@ -41,6 +41,7 @@ import { useMedia } from "../lib/hooks";
 import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
+import { useFiltersStore } from "../stores/filters";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
@@ -77,7 +78,7 @@ export default function CommunityPosts() {
     [communityNameEncoded],
   );
 
-  const { postSort } = useAvailableSorts();
+  const { postSort, postSorts } = useAvailableSorts();
   const posts = usePosts({
     communitySlug: communityName,
   });
@@ -95,6 +96,13 @@ export default function CommunityPosts() {
   });
   const community = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
+  const setPostSort = useFiltersStore((s) => s.setPostSort);
+
+  const suggestedSort = postSorts?.includes("Active")
+    ? "Active"
+    : postSorts?.includes("Hot")
+      ? "Hot"
+      : undefined;
 
   useUpdateRecentCommunity(community?.communityView);
 
@@ -215,8 +223,7 @@ export default function CommunityPosts() {
             fullscreen
             scrollHost
             data={
-              isBlocked ||
-              (data.length === 0 && !posts.isRefetching && !posts.isPending)
+              isBlocked || (data.length === 0 && !posts.isFetching)
                 ? [NO_ITEMS]
                 : data
             }
@@ -241,14 +248,34 @@ export default function CommunityPosts() {
             ]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
+                const communityHasPosts =
+                  (community?.communityView?.postCount ?? 0) > 0;
+                const showSortHint =
+                  !isBlocked &&
+                  communityHasPosts &&
+                  suggestedSort !== undefined &&
+                  postSort !== suggestedSort;
+
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>
-                        {isBlocked
-                          ? `You have ${communityName} blocked`
-                          : "Nothing to see here"}
-                      </span>
+                      {isBlocked ? (
+                        <span>You have {communityName} blocked</span>
+                      ) : showSortHint ? (
+                        <span>
+                          No posts for &ldquo;{postSort}&rdquo; sort. Try
+                          switching to{" "}
+                          <button
+                            className="not-italic underline"
+                            onClick={() => setPostSort(suggestedSort)}
+                          >
+                            &ldquo;{suggestedSort}&rdquo;
+                          </button>
+                          .
+                        </span>
+                      ) : (
+                        <span>Nothing to see here</span>
+                      )}
                     </div>
                     <></>
                   </ContentGutters>
@@ -270,7 +297,7 @@ export default function CommunityPosts() {
             estimatedItemSize={475}
             refresh={refresh}
             placeholder={
-              posts.isPending ? (
+              posts.isFetching ? (
                 <ContentGutters className="px-0">
                   <PostCardSkeleton />
                   <></>

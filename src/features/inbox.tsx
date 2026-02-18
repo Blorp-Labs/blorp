@@ -475,7 +475,7 @@ export default function Inbox() {
 
   const markAllRead = useMarkAllRead();
 
-  const { data, isPending, isRefetching } = useMemo(() => {
+  const { data, isFetching } = useMemo(() => {
     const data: (
       | { id: string; reply: Schemas.Reply }
       | { id: string; mention: Schemas.Mention }
@@ -483,8 +483,7 @@ export default function Inbox() {
       | { id: string; commentReport: Schemas.CommentReport }
     )[] = [];
 
-    let isPending = false;
-    let isRefetching = false;
+    let isFetching = false;
 
     if (
       replies.data &&
@@ -498,8 +497,7 @@ export default function Inbox() {
             id: `r${reply.id}`,
           })),
       );
-      isPending = isPending || replies.isPending;
-      isRefetching = isRefetching || replies.isRefetching;
+      isFetching = isFetching || replies.isFetching;
     }
 
     if (
@@ -514,8 +512,7 @@ export default function Inbox() {
             id: `m${mention.id}`,
           })) ?? []),
       );
-      isPending = isPending || mentions.isPending;
-      isRefetching = isRefetching || mentions.isRefetching;
+      isFetching = isFetching || mentions.isFetching;
     }
 
     if (postReports.data && type === "post-reports") {
@@ -527,8 +524,7 @@ export default function Inbox() {
             id: `pr${postReport.id}`,
           })) ?? []),
       );
-      isPending = isPending || postReports.isPending;
-      isRefetching = isRefetching || postReports.isRefetching;
+      isFetching = isFetching || postReports.isFetching;
     }
 
     if (commentReports.data && type === "comment-reports") {
@@ -540,8 +536,7 @@ export default function Inbox() {
             id: `cr${commentReport.id}`,
           })) ?? []),
       );
-      isPending = isPending || commentReports.isPending;
-      isRefetching = isRefetching || commentReports.isRefetching;
+      isFetching = isFetching || commentReports.isFetching;
     }
 
     data.sort((a, b) => {
@@ -566,23 +561,18 @@ export default function Inbox() {
 
     return {
       data: _.uniqBy(data, "id"),
-      isPending,
-      isRefetching,
+      isFetching,
     };
   }, [
     type,
     replies.data,
-    replies.isPending,
-    replies.isRefetching,
+    replies.isFetching,
     mentions.data,
-    mentions.isPending,
-    mentions.isRefetching,
+    mentions.isFetching,
     postReports.data,
-    postReports.isPending,
-    postReports.isRefetching,
+    postReports.isFetching,
     commentReports.data,
-    commentReports.isPending,
-    commentReports.isRefetching,
+    commentReports.isFetching,
   ]);
 
   const hasUnreadReply = !!replies.data?.pages
@@ -713,9 +703,7 @@ export default function Inbox() {
             </ContentGutters>,
           ]}
           stickyIndicies={[0]}
-          data={
-            data.length === 0 && !isRefetching && !isPending ? [NO_ITEMS] : data
-          }
+          data={data.length === 0 && !isFetching ? [NO_ITEMS] : data}
           renderItem={({ item }) => {
             if (item === NO_ITEMS) {
               return (

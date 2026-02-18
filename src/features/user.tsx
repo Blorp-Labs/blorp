@@ -151,7 +151,7 @@ export default function User() {
     isFetchingNextPage,
     refetch,
     data,
-    isLoading,
+    isFetching,
   } = query;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -211,7 +211,7 @@ export default function User() {
             key={type === "Comments" ? "comments" : type + postSort}
             scrollHost
             data={
-              (listData.length === 0 && !isLoading) || isBlocked
+              (listData.length === 0 && !isFetching) || isBlocked
                 ? [NO_ITEMS]
                 : listData
             }
