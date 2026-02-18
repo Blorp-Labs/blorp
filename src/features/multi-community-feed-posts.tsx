@@ -69,7 +69,7 @@ export default function MultiCommunityFeedPosts() {
 
   const feed = useMultiCommunityFeedFromStore(apId);
 
-  const { postSort, postSorts } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSorts();
   const setPostSort = useFiltersStore((s) => s.setPostSort);
   const posts = usePosts({
     multiCommunityFeedApId: apId,
@@ -86,12 +86,6 @@ export default function MultiCommunityFeedPosts() {
   });
 
   const isBlocked = useIsCommunityBlocked(apId);
-
-  const suggestedSort = postSorts?.includes("Active")
-    ? "Active"
-    : postSorts?.includes("Hot")
-      ? "Hot"
-      : undefined;
 
   const {
     hasNextPage,
@@ -236,8 +230,8 @@ export default function MultiCommunityFeedPosts() {
               if (item === NO_ITEMS) {
                 const showSortHint =
                   !isBlocked &&
-                  suggestedSort !== undefined &&
-                  postSort !== suggestedSort;
+                  suggestedPostSort !== undefined &&
+                  postSort !== suggestedPostSort;
 
                 return (
                   <ContentGutters>
@@ -250,9 +244,9 @@ export default function MultiCommunityFeedPosts() {
                           switching to{" "}
                           <button
                             className="not-italic underline"
-                            onClick={() => setPostSort(suggestedSort)}
+                            onClick={() => setPostSort(suggestedPostSort)}
                           >
-                            &ldquo;{suggestedSort}&rdquo;
+                            &ldquo;{suggestedPostSort}&rdquo;
                           </button>
                           .
                         </span>

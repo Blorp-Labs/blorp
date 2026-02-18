@@ -78,7 +78,7 @@ export default function CommunityPosts() {
     [communityNameEncoded],
   );
 
-  const { postSort, postSorts } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSorts();
   const posts = usePosts({
     communitySlug: communityName,
   });
@@ -97,12 +97,6 @@ export default function CommunityPosts() {
   const community = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
-
-  const suggestedSort = postSorts?.includes("Active")
-    ? "Active"
-    : postSorts?.includes("Hot")
-      ? "Hot"
-      : undefined;
 
   useUpdateRecentCommunity(community?.communityView);
 
@@ -253,8 +247,8 @@ export default function CommunityPosts() {
                 const showSortHint =
                   !isBlocked &&
                   communityHasPosts &&
-                  suggestedSort !== undefined &&
-                  postSort !== suggestedSort;
+                  suggestedPostSort !== undefined &&
+                  postSort !== suggestedPostSort;
 
                 return (
                   <ContentGutters>
@@ -267,9 +261,9 @@ export default function CommunityPosts() {
                           switching to{" "}
                           <button
                             className="not-italic underline"
-                            onClick={() => setPostSort(suggestedSort)}
+                            onClick={() => setPostSort(suggestedPostSort)}
                           >
-                            &ldquo;{suggestedSort}&rdquo;
+                            &ldquo;{suggestedPostSort}&rdquo;
                           </button>
                           .
                         </span>

@@ -182,7 +182,7 @@ export default function HomePosts() {
   const [search, setSearch] = useState("");
 
   const media = useMedia();
-  const { postSort, postSorts } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.listingType);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
@@ -214,11 +214,6 @@ export default function HomePosts() {
   const siteHasPosts =
     (getAccountSite(getSelectedAccount())?.postCount ?? 0) > 0;
 
-  const suggestedSort = postSorts?.includes("Active")
-    ? "Active"
-    : postSorts?.includes("Hot")
-      ? "Hot"
-      : undefined;
   const hasNewPost = usePostsStore((s) =>
     mostRecentPostApId
       ? !(getCachePrefixer()(mostRecentPostApId) in s.posts)
@@ -310,8 +305,8 @@ export default function HomePosts() {
               if (item === NO_ITEMS) {
                 const showSortHint =
                   siteHasPosts &&
-                  suggestedSort !== undefined &&
-                  postSort !== suggestedSort;
+                  suggestedPostSort !== undefined &&
+                  postSort !== suggestedPostSort;
 
                 return (
                   <ContentGutters>
@@ -322,9 +317,9 @@ export default function HomePosts() {
                           switching to{" "}
                           <button
                             className="not-italic underline"
-                            onClick={() => setPostSort(suggestedSort)}
+                            onClick={() => setPostSort(suggestedPostSort)}
                           >
-                            &ldquo;{suggestedSort}&rdquo;
+                            &ldquo;{suggestedPostSort}&rdquo;
                           </button>
                           .
                         </span>
