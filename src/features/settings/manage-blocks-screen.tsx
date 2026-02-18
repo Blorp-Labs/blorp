@@ -8,8 +8,6 @@ import { getAccountSite, parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { Page } from "../../components/page";
 import { PersonCard } from "@/src/components/person/person-card";
 import { CommunityCard } from "@/src/components/communities/community-card";
-import { useBlockCommunity, useBlockPerson } from "@/src/lib/api";
-import { useConfirmationAlert } from "@/src/lib/hooks/index";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
@@ -19,15 +17,10 @@ import { useCommunitiesStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
 
 export default function SettingsPage() {
-  const _getConfirmation = useConfirmationAlert();
-
   const { index: indexStr } = useParams("/settings/manage-blocks/:index");
   const index = parseInt(indexStr);
 
   const account = useAuth((s) => s.accounts[index]);
-
-  const _blockCommunity = useBlockCommunity({ account });
-  const _blockPerson = useBlockPerson({ account });
 
   const site = account ? getAccountSite(account) : null;
 

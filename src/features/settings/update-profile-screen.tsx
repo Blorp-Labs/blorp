@@ -85,15 +85,17 @@ export default function SettingsPage() {
   const slug = person?.slug;
 
   const handleSubmit = () => {
-    updateUserSettings
-      .mutateAsync({
-        account: account!,
-        form: {
-          bio,
-          email,
-        },
-      })
-      .then(() => history.goBack());
+    if (account) {
+      updateUserSettings
+        .mutateAsync({
+          account,
+          form: {
+            bio,
+            email,
+          },
+        })
+        .then(() => history.goBack());
+    }
   };
 
   return (
@@ -121,20 +123,26 @@ export default function SettingsPage() {
               </label>
               <FileUpload
                 placeholder={person?.avatar}
-                onDrop={(file) =>
-                  updateUserSettings.mutate({
-                    account: account!,
-                    form: {
-                      avatar: file,
-                    },
-                  })
-                }
+                onDrop={(file) => {
+                  if (account) {
+                    updateUserSettings.mutate({
+                      account,
+                      form: {
+                        avatar: file,
+                      },
+                    });
+                  }
+                }}
                 imgClassName="w-24 h-24 rounded-full"
               />
               {person?.avatar && (
                 <Button
                   variant="outline"
-                  onClick={() => removeUserAvatar.mutate(account!)}
+                  onClick={() => {
+                    if (account) {
+                      removeUserAvatar.mutate(account);
+                    }
+                  }}
                 >
                   Remove avatar
                 </Button>
