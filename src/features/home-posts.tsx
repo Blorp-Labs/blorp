@@ -28,7 +28,7 @@ import { dispatchScrollEvent } from "../lib/scroll-events";
 import { PostReportProvider } from "../components/posts/post-report";
 import { PageTitle } from "../components/page-title";
 import { PostsSortBar } from "../components/posts/posts-sort-bar";
-import { useAuth } from "../stores/auth";
+import { getAccountSite, useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -182,8 +182,9 @@ export default function HomePosts() {
   const [search, setSearch] = useState("");
 
   const media = useMedia();
-  const { postSort } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSorts();
   const listingType = useFiltersStore((s) => s.listingType);
+  const setPostSort = useFiltersStore((s) => s.setPostSort);
 
   const posts = usePosts({
     sort: postSort,
@@ -209,6 +210,10 @@ export default function HomePosts() {
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const siteHasPosts = useAuth(
+    (s) => (getAccountSite(s.getSelectedAccount())?.postCount ?? 0) > 0,
+  );
+
   const hasNewPost = usePostsStore((s) =>
     mostRecentPostApId
       ? !(getCachePrefixer()(mostRecentPostApId) in s.posts)
@@ -288,11 +293,7 @@ export default function HomePosts() {
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
-            data={
-              data.length === 0 && !posts.isRefetching && !posts.isPending
-                ? [NO_ITEMS]
-                : data
-            }
+            data={data.length === 0 && !posts.isFetching ? [NO_ITEMS] : data}
             placeholder={
               <ContentGutters className="px-0">
                 <PostCardSkeleton />
@@ -302,10 +303,29 @@ export default function HomePosts() {
             header={[<PostsSortBar key="header" />]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
+                const showSortHint =
+                  siteHasPosts &&
+                  suggestedPostSort !== undefined &&
+                  postSort !== suggestedPostSort;
+
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing to see here</span>
+                      {showSortHint ? (
+                        <span>
+                          No posts for &ldquo;{postSort}&rdquo; sort. Try
+                          switching to{" "}
+                          <button
+                            className="not-italic underline"
+                            onClick={() => setPostSort(suggestedPostSort)}
+                          >
+                            &ldquo;{suggestedPostSort}&rdquo;
+                          </button>
+                          .
+                        </span>
+                      ) : (
+                        <span>Nothing to see here</span>
+                      )}
                     </div>
                     <></>
                   </ContentGutters>

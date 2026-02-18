@@ -6,7 +6,7 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
 import { VirtualList } from "../components/virtual-list";
-import { useMostRecentPost, usePosts } from "../lib/api";
+import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import {
@@ -69,7 +69,8 @@ export default function MultiCommunityFeedPosts() {
 
   const feed = useMultiCommunityFeedFromStore(apId);
 
-  const postSort = useFiltersStore((s) => s.postSort);
+  const { postSort, suggestedPostSort } = useAvailableSorts();
+  const setPostSort = useFiltersStore((s) => s.setPostSort);
   const posts = usePosts({
     multiCommunityFeedApId: apId,
     multiCommunityFeedId: feed?.id,
@@ -197,8 +198,7 @@ export default function MultiCommunityFeedPosts() {
             fullscreen
             scrollHost
             data={
-              isBlocked ||
-              (data.length === 0 && !posts.isRefetching && !posts.isPending)
+              isBlocked || (data.length === 0 && !posts.isFetching)
                 ? [NO_ITEMS]
                 : data
             }
@@ -220,14 +220,31 @@ export default function MultiCommunityFeedPosts() {
             ]}
             renderItem={({ item }) => {
               if (item === NO_ITEMS) {
+                const showSortHint =
+                  !isBlocked &&
+                  suggestedPostSort !== undefined &&
+                  postSort !== suggestedPostSort;
+
                 return (
                   <ContentGutters>
                     <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>
-                        {isBlocked
-                          ? `You have ${apId} blocked`
-                          : "Nothing to see here"}
-                      </span>
+                      {isBlocked ? (
+                        <span>You have {apId} blocked</span>
+                      ) : showSortHint ? (
+                        <span>
+                          No posts for &ldquo;{postSort}&rdquo; sort. Try
+                          switching to{" "}
+                          <button
+                            className="not-italic underline"
+                            onClick={() => setPostSort(suggestedPostSort)}
+                          >
+                            &ldquo;{suggestedPostSort}&rdquo;
+                          </button>
+                          .
+                        </span>
+                      ) : (
+                        <span>Nothing to see here</span>
+                      )}
                     </div>
                     <></>
                   </ContentGutters>
@@ -243,7 +260,7 @@ export default function MultiCommunityFeedPosts() {
             estimatedItemSize={475}
             refresh={refresh}
             placeholder={
-              posts.isPending ? (
+              posts.isFetching ? (
                 <ContentGutters className="px-0">
                   <PostCardSkeleton />
                   <></>

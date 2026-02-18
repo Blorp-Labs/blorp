@@ -140,11 +140,7 @@ export default function SavedContent() {
             key={type === "comments" ? "comments" : type + postSort}
             fullscreen
             scrollHost
-            data={
-              data.length === 0 && !posts.isRefetching && !posts.isPending
-                ? [NO_ITEMS]
-                : data
-            }
+            data={data.length === 0 && !posts.isFetching ? [NO_ITEMS] : data}
             header={[
               <ContentGutters
                 className="max-md:hidden"
@@ -199,7 +195,7 @@ export default function SavedContent() {
             stickyIndicies={[0]}
             refresh={refetch}
             placeholder={
-              posts.isPending ? (
+              posts.isFetching ? (
                 <ContentGutters className="px-0">
                   <PostCardSkeleton />
                   <></>

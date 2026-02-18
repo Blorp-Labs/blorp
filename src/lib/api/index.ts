@@ -2605,11 +2605,19 @@ export function useAvailableSorts() {
       };
     },
   });
+  const postSorts = query.data?.postSorts;
+  const suggestedPostSort = postSorts?.includes("Active")
+    ? "Active"
+    : postSorts?.includes("Hot")
+      ? "Hot"
+      : undefined;
+
   return {
     commentSort: ensureValue(query.data?.commentSorts, commentSort),
     commentSorts: query.data?.commentSorts,
     postSort: ensureValue(query.data?.postSorts, postSort),
-    postSorts: query.data?.postSorts,
+    postSorts,
+    suggestedPostSort,
     communitySort: ensureValue(query.data?.communitySorts, communitySort),
     communitySorts: query.data?.communitySorts,
   };
