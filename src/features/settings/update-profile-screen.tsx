@@ -1,11 +1,11 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
 import { getAccountSite, parseAccountInfo, useAuth } from "@/src/stores/auth";
-import NotFound from "../not-found";
+import { Page } from "../../components/page";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { useState } from "react";
@@ -77,29 +77,29 @@ export default function SettingsPage() {
 
   const updateUserSettings = useUpdateUserSettings();
   const removeUserAvatar = useRemoveUserAvatar();
-
-  if (!account) {
-    return <NotFound />;
-  }
-
-  const { person } = parseAccountInfo(account);
-  const slug = person?.slug;
   const history = useHistory();
 
+  const { person } = account
+    ? parseAccountInfo(account)
+    : { person: undefined };
+  const slug = person?.slug;
+
   const handleSubmit = () => {
-    updateUserSettings
-      .mutateAsync({
-        account,
-        form: {
-          bio,
-          email,
-        },
-      })
-      .then(() => history.goBack());
+    if (account) {
+      updateUserSettings
+        .mutateAsync({
+          account,
+          form: {
+            bio,
+            email,
+          },
+        })
+        .then(() => history.goBack());
+    }
   };
 
   return (
-    <IonPage>
+    <Page notFound={!account}>
       <PageTitle>{slug ?? "Person"}</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -123,20 +123,26 @@ export default function SettingsPage() {
               </label>
               <FileUpload
                 placeholder={person?.avatar}
-                onDrop={(file) =>
-                  updateUserSettings.mutate({
-                    account,
-                    form: {
-                      avatar: file,
-                    },
-                  })
-                }
+                onDrop={(file) => {
+                  if (account) {
+                    updateUserSettings.mutate({
+                      account,
+                      form: {
+                        avatar: file,
+                      },
+                    });
+                  }
+                }}
                 imgClassName="w-24 h-24 rounded-full"
               />
               {person?.avatar && (
                 <Button
                   variant="outline"
-                  onClick={() => removeUserAvatar.mutate(account)}
+                  onClick={() => {
+                    if (account) {
+                      removeUserAvatar.mutate(account);
+                    }
+                  }}
                 >
                   Remove avatar
                 </Button>
@@ -184,6 +190,6 @@ export default function SettingsPage() {
           </div>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

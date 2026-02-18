@@ -28,13 +28,7 @@ import { getAccountSite, useAmIAdmin, useAuth } from "../stores/auth";
 import { VirtualList } from "../components/virtual-list";
 import { PostReportProvider } from "../components/posts/post-report";
 import { usePostsStore } from "../stores/posts";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
@@ -44,7 +38,7 @@ import {
   useMedia,
   useTheme,
 } from "../lib/hooks";
-import { NotFound } from "./not-found";
+import { Page } from "../components/page";
 import { CommentSkeleton } from "../components/comments/comment-skeleton";
 import { useLinkContext } from "../routing/link-context";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
@@ -343,16 +337,16 @@ export default function Post() {
     ([path]) => commentReplyParent?.includes(path) ?? false,
   );
 
-  if (!decodedApId || (postQuery.isError && !post)) {
-    return <NotFound apId={decodedApId} />;
-  }
-
   const postCreatorId = post?.creatorId;
 
   const showMobileReply = post && !commentPath && media.maxMd;
 
   return (
-    <IonPage ref={pageElement.ref}>
+    <Page
+      ref={pageElement.ref}
+      notFound={!decodedApId || (postQuery.isError && !post)}
+      notFoundApId={decodedApId}
+    >
       <PageTitle>{post?.title ?? "Post"}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -449,7 +443,7 @@ export default function Post() {
                 <>
                   <MemoedPostComment
                     highlightCommentId={parentComment.highlightCommentId}
-                    postApId={decodedApId}
+                    postApId={decodedApId!}
                     postLocked={locked}
                     queryKeyParentId={parentId}
                     commentTree={item[1]}
@@ -500,6 +494,6 @@ export default function Post() {
           )}
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

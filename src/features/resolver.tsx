@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import NotFound from "./not-found";
+import { Page } from "../components/page";
 import { useHistory, useLocation } from "react-router";
 import { useResolveObject } from "../lib/api";
 import { resolveRoute } from "../routing";
@@ -49,5 +49,5 @@ export default function ApResolver() {
     }
   }, [replace, data?.post, data?.community, data?.user]);
 
-  return <NotFound />;
+  return <Page notFound />;
 }

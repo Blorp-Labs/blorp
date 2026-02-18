@@ -4,7 +4,6 @@ import {
   IonContent,
   IonHeader,
   IonToolbar,
-  useIonRouter,
 } from "@ionic/react";
 import { useRequireAuth } from "./auth-context";
 import { ContentGutters } from "./gutters";
@@ -15,6 +14,7 @@ import { ToolbarTitle } from "./toolbar/toolbar-title";
 import { ToolbarBackButton } from "./toolbar/toolbar-back-button";
 import { usePathname } from "../routing/hooks";
 import { STACK_ROOT_PATHS } from "../routing/routes";
+import { NotFoundPageContent } from "../features/not-found";
 
 function LoginRequiredPageContent() {
   const requireAuth = useRequireAuth();
@@ -48,17 +48,34 @@ function LoginRequiredPageContent() {
 export function Page({
   children,
   requireLogin,
+  notFound,
+  notFoundApId,
+  notFoundCommunitySlug,
+  ref,
   ...props
 }: {
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   requireLogin?: boolean;
+  notFound?: boolean;
+  notFoundApId?: string;
+  notFoundCommunitySlug?: string;
+  ref?: React.Ref<HTMLElement | undefined | null>;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const needsLogin = requireLogin && !isLoggedIn;
   return (
-    <DefaultIonPage {...props}>
-      {needsLogin ? <LoginRequiredPageContent /> : children}
+    <DefaultIonPage ref={ref} {...props}>
+      {needsLogin ? (
+        <LoginRequiredPageContent />
+      ) : notFound ? (
+        <NotFoundPageContent
+          apId={notFoundApId}
+          communitySlug={notFoundCommunitySlug}
+        />
+      ) : (
+        children
+      )}
     </DefaultIonPage>
   );
 }

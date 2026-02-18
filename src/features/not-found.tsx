@@ -10,11 +10,7 @@ import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import {
-  useResolveObject,
-  useResolveObjectAcrossAccounts,
-  useSite,
-} from "../lib/api";
+import { useResolveObject, useResolveObjectAcrossAccounts } from "../lib/api";
 import { getAccountSite, parseAccountInfo, useAuth } from "../stores/auth";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
@@ -266,16 +262,15 @@ function CrossInstanceResolver({
   );
 }
 
-export function NotFound({
+export function NotFoundPageContent({
   apId,
   communitySlug,
 }: {
   apId?: string;
-
   communitySlug?: string;
 }) {
   return (
-    <IonPage>
+    <>
       <IonHeader>
         <IonToolbar>
           <ToolbarButtons side="left">
@@ -297,6 +292,20 @@ export function NotFound({
           )}
         </ContentGutters>
       </IonContent>
+    </>
+  );
+}
+
+export function NotFound({
+  apId,
+  communitySlug,
+}: {
+  apId?: string;
+  communitySlug?: string;
+}) {
+  return (
+    <IonPage>
+      <NotFoundPageContent apId={apId} communitySlug={communitySlug} />
     </IonPage>
   );
 }

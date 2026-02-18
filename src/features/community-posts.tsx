@@ -18,13 +18,7 @@ import {
 } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
 import { useUpdateRecentCommunity } from "../stores/recent-communities";
@@ -49,7 +43,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
-import { NotFound } from "./not-found";
+import { Page } from "../components/page";
 
 const EMPTY_ARR: never[] = [];
 
@@ -126,12 +120,11 @@ export default function CommunityPosts() {
     setRefreshing(false);
   };
 
-  if (communityQuery.isError && !community) {
-    return <NotFound communitySlug={communityName} />;
-  }
-
   return (
-    <IonPage>
+    <Page
+      notFound={communityQuery.isError && !community}
+      notFoundCommunitySlug={communityName}
+    >
       <PageTitle>{communityName}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -311,6 +304,6 @@ export default function CommunityPosts() {
           )}
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }
