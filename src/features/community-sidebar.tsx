@@ -5,7 +5,6 @@ import _ from "lodash";
 import {
   IonContent,
   IonHeader,
-  IonPage,
   IonRefresher,
   IonRefresherContent,
   IonToolbar,
@@ -23,7 +22,7 @@ import { useMedia } from "../lib/hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { useCommunityFromStore } from "../stores/communities";
-import NotFound from "./not-found";
+import { Page } from "../components/page";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -44,12 +43,11 @@ export default function CommunityFeed() {
 
   useUpdateRecentCommunity(community);
 
-  if (communityQuery.isError && !community) {
-    return <NotFound communitySlug={communityName} />;
-  }
-
   return (
-    <IonPage>
+    <Page
+      notFound={communityQuery.isError && !community}
+      notFoundCommunitySlug={communityName}
+    >
       <PageTitle>{communityName}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -100,6 +98,6 @@ export default function CommunityFeed() {
           <></>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

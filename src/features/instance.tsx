@@ -1,5 +1,5 @@
 import { ContentGutters } from "@/src/components/gutters";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
 import z from "zod";
 import { useConfirmationAlert, useUrlSearchState } from "../lib/hooks";
@@ -9,7 +9,7 @@ import { useAuth } from "../stores/auth";
 import { useHistory } from "react-router";
 import { resolveRoute } from "../routing";
 import { env } from "../env";
-import NotFound from "./not-found";
+import { Page } from "../components/page";
 
 function compareHosts(a: string, b: string) {
   try {
@@ -96,12 +96,8 @@ export default function Instance() {
     updateSelectedAccount,
   ]);
 
-  if (env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE) {
-    return <NotFound />;
-  }
-
   return (
-    <IonPage>
+    <Page notFound={Boolean(env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE)}>
       <PageTitle />
       <IonHeader>
         <IonToolbar />
@@ -122,6 +118,6 @@ export default function Instance() {
           </div>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

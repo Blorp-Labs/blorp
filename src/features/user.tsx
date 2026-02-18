@@ -16,7 +16,7 @@ import { useLinkContext } from "../routing/link-context";
 import { useProfilesStore } from "../stores/profiles";
 import { usePostsStore } from "../stores/posts";
 import { Link, resolveRoute, useParams } from "@/src/routing/index";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
@@ -40,7 +40,7 @@ import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
-import { NotFound } from "./not-found";
+import { Page } from "../components/page";
 
 const NO_ITEMS = "NO_ITEMS";
 type Item = string;
@@ -176,12 +176,8 @@ export default function User() {
     }
   }, [data?.pages, type]);
 
-  if (personQuery.isError && !person) {
-    return <NotFound apId={actorId} />;
-  }
-
   return (
-    <IonPage>
+    <Page notFound={personQuery.isError && !person} notFoundApId={actorId}>
       <PageTitle>{person?.slug ?? "Person"}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -284,6 +280,6 @@ export default function User() {
           <PersonSidebar person={person} />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

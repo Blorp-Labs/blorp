@@ -1,11 +1,11 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
 import { getAccountSite, parseAccountInfo, useAuth } from "@/src/stores/auth";
-import NotFound from "../not-found";
+import { Page } from "../../components/page";
 import { PersonCard } from "@/src/components/person/person-card";
 import { CommunityCard } from "@/src/components/communities/community-card";
 import { useBlockCommunity, useBlockPerson } from "@/src/lib/api";
@@ -19,15 +19,15 @@ import { useCommunitiesStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
 
 export default function SettingsPage() {
-  const getConfirmation = useConfirmationAlert();
+  const _getConfirmation = useConfirmationAlert();
 
   const { index: indexStr } = useParams("/settings/manage-blocks/:index");
   const index = parseInt(indexStr);
 
   const account = useAuth((s) => s.accounts[index]);
 
-  const blockCommunity = useBlockCommunity({ account });
-  const blockPerson = useBlockPerson({ account });
+  const _blockCommunity = useBlockCommunity({ account });
+  const _blockPerson = useBlockPerson({ account });
 
   const site = account ? getAccountSite(account) : null;
 
@@ -51,15 +51,13 @@ export default function SettingsPage() {
     ),
   );
 
-  if (!account) {
-    return <NotFound />;
-  }
-
-  const { person } = parseAccountInfo(account);
+  const { person } = account
+    ? parseAccountInfo(account)
+    : { person: undefined };
   const slug = person?.slug;
 
   return (
-    <IonPage>
+    <Page notFound={!account}>
       <PageTitle>{slug ?? "Person"}</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -180,6 +178,6 @@ export default function SettingsPage() {
         {/*   </div> */}
         {/* </ContentGutters> */}
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }
