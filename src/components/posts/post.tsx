@@ -8,6 +8,7 @@ import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
 import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
+  PostEmojiReactions,
   PostShareButton,
   PostVoting,
   useDoubleTapPostLike,
@@ -39,7 +40,6 @@ import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { Button } from "../ui/button";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
@@ -522,12 +522,13 @@ function LargePostCard({
       )}
       <div
         className={cn(
-          "flex flex-row items-center justify-end gap-2.5 pt-1",
+          "flex flex-row items-center justify-end gap-2 pt-1",
           leftHandedMode && "flex-row-reverse",
         )}
       >
         <PostShareButton postApId={apId} />
         <div className="flex-1" />
+        <PostEmojiReactions apId={apId} />
         <PostCommentsButton postApId={apId} />
         <PostVoting apId={apId} />
       </div>
@@ -717,6 +718,7 @@ export function SmallPostCard({
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} />
+          <PostEmojiReactions apId={apId} />
           <PostVoting apId={apId} />
         </div>
       </div>

@@ -41,3 +41,19 @@ export function apIdFromCommunitySlug(slug: string): string | undefined {
   if (!name || !host) return undefined;
   return `https://${host}/c/${name}`;
 }
+
+export function getCommentEmojiReaction(comment: Schemas.Comment | undefined) {
+  if (!comment) {
+    return null;
+  }
+  return comment.optimisticMyEmojiReaction ?? comment.myEmojiReaction;
+}
+
+export function getPostEmojiReaction(post: Schemas.Post | undefined) {
+  if (!post) return null;
+  return post.optimisticMyEmojiReaction ?? post.myEmojiReaction;
+}
+
+export function getCommentMyVote(comment: Schemas.Comment) {
+  return comment.optimisticMyVote ?? comment.myVote;
+}
