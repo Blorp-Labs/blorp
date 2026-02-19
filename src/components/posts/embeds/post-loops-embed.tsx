@@ -5,7 +5,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { FiPlay } from "react-icons/fi";
 import { cn } from "@/src/lib/utils";
-import { ABOVE_LINK_OVERLAY } from "./config";
+import { ABOVE_LINK_OVERLAY } from "../config";
 
 const getVideo = async (url: string) => {
   if (isTauri()) {

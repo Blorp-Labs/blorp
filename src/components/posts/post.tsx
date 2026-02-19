@@ -4,7 +4,10 @@ import { useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
-import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
+import {
+  PostArticleEmbed,
+  PostArticleMiniEmbed,
+} from "./embeds/post-article-embed";
 import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
@@ -14,7 +17,7 @@ import {
 } from "./post-buttons";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
-import { PostLoopsEmbed } from "./post-loops-embed";
+import { PostLoopsEmbed } from "./embeds/post-loops-embed";
 import { YouTubeVideoEmbed } from "../youtube";
 import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
