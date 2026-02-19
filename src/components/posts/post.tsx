@@ -794,7 +794,9 @@ function ExtraSmallPostCard({
       )}
 
       <div
-        className={cn("flex-1 flex flex-col gap-1 max-md:py-2 max-md:px-3.5")}
+        className={cn(
+          "w-full flex-1 flex flex-col gap-1 max-md:py-2 max-md:px-3.5",
+        )}
       >
         <Link
           id={titleId}
