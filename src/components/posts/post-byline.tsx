@@ -284,7 +284,6 @@ export function PostByline({
     <>
       <span className="font-medium text-foreground">c/{communityName}</span>
       <i>@{communityHost}</i>
-      <RelativeTime time={post.createdAt} className="ml-2" />
     </>
   );
 
@@ -316,24 +315,27 @@ export function PostByline({
 
       <div className="flex flex-col text-muted-foreground min-w-0 overflow-hidden">
         {showCommunity && (
-          <CommunityHoverCard communityName={post.communitySlug}>
-            {communityName ? (
-              <Link
-                to={`${linkCtx.root}c/:communityName`}
-                params={{
-                  communityName: post.communitySlug,
-                }}
-                className={cn(
-                  "text-xs hover:underline block truncate",
-                  ABOVE_LINK_OVERLAY,
-                )}
-              >
-                {communityPart}
-              </Link>
-            ) : (
-              <div className="text-xs truncate">{communityPart}</div>
-            )}
-          </CommunityHoverCard>
+          <div className="text-xs flex flex-row">
+            <CommunityHoverCard communityName={post.communitySlug}>
+              {communityName ? (
+                <Link
+                  to={`${linkCtx.root}c/:communityName`}
+                  params={{
+                    communityName: post.communitySlug,
+                  }}
+                  className={cn(
+                    "hover:underline block truncate",
+                    ABOVE_LINK_OVERLAY,
+                  )}
+                >
+                  {communityPart}
+                </Link>
+              ) : (
+                <div className="truncate">{communityPart}</div>
+              )}
+            </CommunityHoverCard>
+            <RelativeTime time={post.createdAt} className="ml-2" />
+          </div>
         )}
         {showCreator && (
           <div
