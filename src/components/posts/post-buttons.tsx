@@ -142,7 +142,7 @@ export function PostVoting({
   return (
     <div
       className={cn(
-        "flex flex-row items-center border-1 rounded-full",
+        "flex flex-row items-center border-1 rounded-full bg-background",
         variant === "ghost" && "border-transparent",
         className,
       )}

@@ -332,12 +332,16 @@ function LargePostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5",
+        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 group",
         detailView ? "max-md:bg-background" : "relative border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-2 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       <PostByline
         post={post}
         pinned={pinned}
@@ -377,7 +381,7 @@ function LargePostCard({
           communityName: post.communitySlug,
           post: encodedApId,
         }}
-        className="gap-2 flex flex-col after:absolute after:inset-0 after:content-[''] after:z-[1]"
+        className="gap-2 flex flex-col after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]"
         disable={detailView}
       >
         <span
@@ -607,13 +611,17 @@ export function SmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex md:py-2",
+        "flex-1 gap-2.5 flex group relative md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
         className,
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       {embed?.thumbnail && showImage && (
         <Link
           to={
@@ -700,7 +708,7 @@ export function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 after:content-[''] after:z-[1]",
+            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
@@ -775,16 +783,18 @@ function ExtraSmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex md:py-2",
+        "flex-1 gap-2.5 flex group relative md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       <div
-        className={cn(
-          "relative flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
-        )}
+        className={cn("flex-1 flex flex-col gap-1 max-md:py-2 max-md:px-3.5")}
       >
         <Link
           id={titleId}

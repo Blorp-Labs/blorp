@@ -313,7 +313,7 @@ export function PostByline({
         </Avatar>
       )}
 
-      <div className="flex flex-col text-muted-foreground min-w-0 overflow-hidden">
+      <div className="flex flex-col text-muted-foreground min-w-0 overflow-hidden relative">
         {showCommunity && (
           <div className="text-xs flex flex-row">
             <CommunityHoverCard communityName={post.communitySlug}>
@@ -340,7 +340,7 @@ export function PostByline({
         {showCreator && (
           <div
             className={cn(
-              "flex flex-row text-xs text-muted-foreground gap-2 items-center h-5",
+              "flex flex-row text-xs text-muted-foreground gap-2 items-center h-5 relative",
               !showCommunity && "text-foreground",
             )}
           >
