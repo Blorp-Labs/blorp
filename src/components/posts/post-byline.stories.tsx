@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { PostByline } from "./post-byline";
-import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { useAuth } from "@/src/stores/auth";
 import { usePostsStore } from "@/src/stores/posts";

@@ -40,7 +40,6 @@ import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { Button } from "../ui/button";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
@@ -234,8 +233,7 @@ function CrossPosts({
   const linkCtx = useLinkContext();
   return (
     <span className="text-brand text-sm flex flex-row items-center gap-x-2 gap-y-1 flex-wrap">
-      <LuRepeat2 />
-      {crossPosts?.map(({ apId, communitySlug }) => (
+      {crossPosts?.map(({ apId, communitySlug }, index) => (
         <Link
           key={apId}
           to={`${linkCtx.root}c/:communityName/posts/:post`}
@@ -243,8 +241,9 @@ function CrossPosts({
             post: encodeApId(apId),
             communityName: communitySlug,
           }}
-          className="hover:underline line-clamp-1"
+          className="hover:underline truncate max-w-full"
         >
+          {index === 0 && <LuRepeat2 className="inline mr-1" />}
           {communitySlug}
         </Link>
       ))}
@@ -333,7 +332,7 @@ function LargePostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 overflow-x-hidden",
+        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5",
         detailView ? "max-md:bg-background" : "relative border-b",
       )}
       aria-labelledby={titleId}
@@ -365,7 +364,7 @@ function LargePostCard({
       )}
 
       {flairs && flairs.length > 0 && (
-        <div className="relative z-[2] flex flex-row gap-1">
+        <div className="relative z-[2] flex flex-row flex-wrap gap-1">
           {flairs.map((flair, index) => (
             <Flair key={flair?.id ?? index} flair={flair} />
           ))}
@@ -383,7 +382,7 @@ function LargePostCard({
       >
         <span
           className={twMerge(
-            "relative z-[2] text-xl font-medium select-text",
+            "relative z-[2] text-xl font-medium select-text break-words",
             !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
@@ -608,7 +607,7 @@ export function SmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        "flex-1 gap-2.5 flex md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
         className,
       )}
@@ -686,7 +685,7 @@ export function SmallPostCard({
         />
 
         {flairs && flairs.length > 0 && (
-          <div className="relative z-[2] flex flex-row">
+          <div className="relative z-[2] flex flex-row gap-1 flex-wrap">
             {flairs.map((flair, index) => (
               <Flair key={flair?.id ?? index} flair={flair} size="sm" />
             ))}
@@ -707,7 +706,7 @@ export function SmallPostCard({
         >
           <span
             className={cn(
-              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text",
+              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text break-words",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -776,7 +775,7 @@ function ExtraSmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        "flex-1 gap-2.5 flex md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
@@ -801,7 +800,7 @@ function ExtraSmallPostCard({
         >
           <span
             className={cn(
-              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text",
+              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text break-words",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -817,6 +816,7 @@ function ExtraSmallPostCard({
         >
           <PostByline
             hideImage={media.maxMd}
+            className="min-w-0 flex-1 overflow-hidden"
             post={post}
             pinned={pinned}
             showCreator={

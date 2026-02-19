@@ -7,6 +7,7 @@ import { usePostsStore } from "@/src/stores/posts";
 import { useEffect } from "react";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
+import { useFlairsStore } from "@/src/stores/flairs";
 
 const textPost = api.getPost({
   variant: "text",
@@ -41,6 +42,43 @@ const vimeoPost = api.getPost({
   post: { id: api.randomDbId() },
 });
 
+const postFlairs = [
+  api.getFlair({ title: "Bug", backgroundColor: "#ef4444", color: "#ffffff" }),
+  api.getFlair({
+    title: "Feature Request",
+    backgroundColor: "#3b82f6",
+    color: "#ffffff",
+  }),
+];
+const postWithFlairs = api.getPost({
+  variant: "text",
+  post: {
+    id: api.randomDbId(),
+    flairs: postFlairs.map((f) => ({ id: f.id })),
+  },
+});
+
+const postWithCrossPosts = api.getPost({
+  variant: "text",
+  post: {
+    id: api.randomDbId(),
+    crossPosts: [
+      {
+        apId: "https://blorpblorp.xyz/post/1001",
+        communitySlug: "news@lemmy.world",
+      },
+      {
+        apId: "https://blorpblorp.xyz/post/1002",
+        communitySlug: "technology@beehaw.org",
+      },
+      {
+        apId: "https://blorpblorp.xyz/post/1003",
+        communitySlug: "worldnews@feddit.de",
+      },
+    ],
+  },
+});
+
 const POSTS = [
   textPost,
   imgPost,
@@ -50,12 +88,15 @@ const POSTS = [
   videoPost,
   loopsPost,
   vimeoPost,
+  postWithFlairs,
+  postWithCrossPosts,
 ];
 
 function LoadData() {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cachePosts = usePostsStore((s) => s.cachePosts);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
 
   useEffect(() => {
     cacheProfiles(
@@ -66,7 +107,8 @@ function LoadData() {
       getCachePrefixer(),
       POSTS.map((p) => p.post),
     );
-  }, [cachePosts, cacheProfiles, getCachePrefixer]);
+    cacheFlairs(getCachePrefixer(), postFlairs);
+  }, [cachePosts, cacheProfiles, getCachePrefixer, cacheFlairs]);
 
   return null;
 }
@@ -132,5 +174,18 @@ export const LoopsPost: Story = {
 export const VimeoPost: Story = {
   args: {
     apId: vimeoPost.post.apId,
+  },
+};
+
+export const WithFlairs: Story = {
+  args: {
+    apId: postWithFlairs.post.apId,
+  },
+};
+
+export const WithCrossPosts: Story = {
+  args: {
+    apId: postWithCrossPosts.post.apId,
+    detailView: true,
   },
 };

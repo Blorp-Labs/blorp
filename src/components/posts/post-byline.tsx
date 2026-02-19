@@ -314,7 +314,7 @@ export function PostByline({
         </Avatar>
       )}
 
-      <div className="flex flex-col text-muted-foreground">
+      <div className="flex flex-col text-muted-foreground min-w-0 overflow-hidden">
         {showCommunity && (
           <CommunityHoverCard communityName={post.communitySlug}>
             {communityName ? (
@@ -323,12 +323,15 @@ export function PostByline({
                 params={{
                   communityName: post.communitySlug,
                 }}
-                className={cn("text-xs hover:underline", ABOVE_LINK_OVERLAY)}
+                className={cn(
+                  "text-xs hover:underline block truncate",
+                  ABOVE_LINK_OVERLAY,
+                )}
               >
                 {communityPart}
               </Link>
             ) : (
-              <div className="text-xs">{communityPart}</div>
+              <div className="text-xs truncate">{communityPart}</div>
             )}
           </CommunityHoverCard>
         )}
@@ -345,7 +348,10 @@ export function PostByline({
                 params={{
                   userId: encodedCreatorApId,
                 }}
-                className={cn("hover:underline", ABOVE_LINK_OVERLAY)}
+                className={cn(
+                  "hover:underline min-w-0 truncate",
+                  ABOVE_LINK_OVERLAY,
+                )}
               >
                 <span className="sr-only">u/</span>
                 {creatorName}
