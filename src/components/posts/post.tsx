@@ -362,13 +362,15 @@ function LargePostCard({
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
-        <div className="relative z-[2]">
+        <div className={ABOVE_LINK_OVERLAY}>
           <CrossPosts key={apId} crossPosts={post.crossPosts} />
         </div>
       )}
 
       {flairs && flairs.length > 0 && (
-        <div className="relative z-[2] flex flex-row flex-wrap gap-1">
+        <div
+          className={cn("flex flex-row flex-wrap gap-1", ABOVE_LINK_OVERLAY)}
+        >
           {flairs.map((flair, index) => (
             <Flair key={flair?.id ?? index} flair={flair} />
           ))}
@@ -386,7 +388,8 @@ function LargePostCard({
       >
         <span
           className={twMerge(
-            "relative z-[2] text-xl font-medium select-text break-words",
+            "relative text-xl font-medium select-text break-words",
+            ABOVE_LINK_OVERLAY,
             !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
@@ -400,7 +403,8 @@ function LargePostCard({
           embed?.type === "text" && (
             <p
               className={cn(
-                "relative z-[2] text-sm line-clamp-3 leading-relaxed",
+                "text-sm line-clamp-3 leading-relaxed",
+                ABOVE_LINK_OVERLAY,
                 post.read && "text-muted-foreground",
               )}
               id={bodyId}
@@ -411,7 +415,7 @@ function LargePostCard({
       </Link>
 
       {showImage && embed.thumbnail && (
-        <div className="relative z-[2]">
+        <div className={ABOVE_LINK_OVERLAY}>
           <Link
             to={
               featuredContext === "home"
@@ -525,7 +529,7 @@ function LargePostCard({
         !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
 
       {detailView && post.body && !post.deleted && !post.removed && (
-        <div className="relative z-[2] flex-1" {...doubeTapLike}>
+        <div className={cn("flex-1", ABOVE_LINK_OVERLAY)} {...doubeTapLike}>
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
@@ -693,7 +697,13 @@ export function SmallPostCard({
         />
 
         {flairs && flairs.length > 0 && (
-          <div className="relative z-[2] flex flex-row gap-1 flex-wrap">
+          <div
+            className={cn(
+              "relative flex flex-row gap-1 flex-wrap",
+
+              ABOVE_LINK_OVERLAY,
+            )}
+          >
             {flairs.map((flair, index) => (
               <Flair key={flair?.id ?? index} flair={flair} size="sm" />
             ))}
@@ -714,7 +724,8 @@ export function SmallPostCard({
         >
           <span
             className={cn(
-              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text break-words",
+              "relative line-clamp-2 md:line-clamp-3 select-text break-words",
+              ABOVE_LINK_OVERLAY,
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -812,7 +823,8 @@ function ExtraSmallPostCard({
         >
           <span
             className={cn(
-              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text break-words",
+              "relative line-clamp-2 md:line-clamp-3 select-text break-words",
+              ABOVE_LINK_OVERLAY,
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
