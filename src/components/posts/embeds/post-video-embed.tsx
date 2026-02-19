@@ -1,5 +1,7 @@
 import { useMedia } from "@/src/lib/hooks";
 import ReactPlayer from "react-player";
+import { cn } from "@/src/lib/utils";
+import { ABOVE_LINK_OVERLAY } from "../config";
 
 const VIDEO_STYLE = {
   width: "100%",
@@ -29,7 +31,12 @@ export function PostVideoEmbed({
 }) {
   const media = useMedia();
   return (
-    <div className="max-md:-mx-3.5 relative overflow-hidden md:rounded-md">
+    <div
+      className={cn(
+        "max-md:-mx-3.5 relative overflow-hidden md:rounded-md",
+        ABOVE_LINK_OVERLAY,
+      )}
+    >
       <ReactPlayer
         style={{
           ...VIDEO_STYLE,

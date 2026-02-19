@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { useVotePostPoll } from "@/src/lib/api/post-mutations";
 import { useRequireAuth } from "../../auth-context";
 import { useAuth } from "@/src/stores/auth";
+import { ABOVE_LINK_OVERLAY } from "../config";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {
@@ -73,7 +74,10 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
           vote.mutate({ postId: post.id, choiceId: myChoices }),
         );
       }}
-      className="p-2 border rounded-md flex flex-col gap-1"
+      className={cn(
+        "p-2 border rounded-md flex flex-col gap-1",
+        ABOVE_LINK_OVERLAY,
+      )}
     >
       {post.poll.mode === "multiple" && (
         <div className="flex flex-col gap-2">

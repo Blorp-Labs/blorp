@@ -38,6 +38,7 @@ import { Badge } from "../ui/badge";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
+import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { Button } from "../ui/button";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
@@ -333,7 +334,7 @@ function LargePostCard({
       data-testid="post-card"
       className={cn(
         "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 overflow-x-hidden",
-        detailView ? "max-md:bg-background" : "border-b",
+        detailView ? "max-md:bg-background" : "relative border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
@@ -358,11 +359,13 @@ function LargePostCard({
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
-        <CrossPosts key={apId} crossPosts={post.crossPosts} />
+        <div className="relative z-[2]">
+          <CrossPosts key={apId} crossPosts={post.crossPosts} />
+        </div>
       )}
 
       {flairs && flairs.length > 0 && (
-        <div className="flex flex-row gap-1">
+        <div className="relative z-[2] flex flex-row gap-1">
           {flairs.map((flair, index) => (
             <Flair key={flair?.id ?? index} flair={flair} />
           ))}
@@ -375,12 +378,12 @@ function LargePostCard({
           communityName: post.communitySlug,
           post: encodedApId,
         }}
-        className="gap-2 flex flex-col"
+        className="gap-2 flex flex-col after:absolute after:inset-0 after:content-[''] after:z-[1]"
         disable={detailView}
       >
         <span
           className={twMerge(
-            "text-xl font-medium select-text",
+            "relative z-[2] text-xl font-medium select-text",
             !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
@@ -394,7 +397,7 @@ function LargePostCard({
           embed?.type === "text" && (
             <p
               className={cn(
-                "text-sm line-clamp-3 leading-relaxed",
+                "relative z-[2] text-sm line-clamp-3 leading-relaxed",
                 post.read && "text-muted-foreground",
               )}
               id={bodyId}
@@ -405,7 +408,7 @@ function LargePostCard({
       </Link>
 
       {showImage && embed.thumbnail && (
-        <div className="relative">
+        <div className="relative z-[2]">
           <Link
             to={
               featuredContext === "home"
@@ -508,7 +511,10 @@ function LargePostCard({
           />
         )}
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
-        <YouTubeVideoEmbed url={embed.embedUrl} />
+        <YouTubeVideoEmbed
+          url={embed.embedUrl}
+          className={ABOVE_LINK_OVERLAY}
+        />
       )}
       {embed?.type === "bandcamp" &&
         embed.embedUrl &&
@@ -516,7 +522,7 @@ function LargePostCard({
         !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
 
       {detailView && post.body && !post.deleted && !post.removed && (
-        <div className="flex-1" {...doubeTapLike}>
+        <div className="relative z-[2] flex-1" {...doubeTapLike}>
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
@@ -526,10 +532,10 @@ function LargePostCard({
           leftHandedMode && "flex-row-reverse",
         )}
       >
-        <PostShareButton postApId={apId} />
+        <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostCommentsButton postApId={apId} />
-        <PostVoting apId={apId} />
+        <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
       </div>
     </article>
   );
@@ -654,7 +660,7 @@ export function SmallPostCard({
 
       <div
         className={cn(
-          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          "relative flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
           !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
@@ -680,7 +686,7 @@ export function SmallPostCard({
         />
 
         {flairs && flairs.length > 0 && (
-          <div className="flex flex-row">
+          <div className="relative z-[2] flex flex-row">
             {flairs.map((flair, index) => (
               <Flair key={flair?.id ?? index} flair={flair} size="sm" />
             ))}
@@ -695,13 +701,13 @@ export function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight",
+            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3 select-text",
+              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -716,8 +722,8 @@ export function SmallPostCard({
           )}
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
-          <PostCommentsButton postApId={apId} />
-          <PostVoting apId={apId} />
+          <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+          <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
     </article>
@@ -778,7 +784,7 @@ function ExtraSmallPostCard({
     >
       <div
         className={cn(
-          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
+          "relative flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
         )}
       >
         <Link
@@ -789,13 +795,13 @@ function ExtraSmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm after:absolute after:inset-0 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3 select-text",
+              "relative z-[2] line-clamp-2 md:line-clamp-3 select-text",
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -829,11 +835,18 @@ function ExtraSmallPostCard({
             canMod={canMod}
             isMod={modApIds?.includes(post.creatorApId)}
             showActions={false}
-            className="mr-auto overflow-hidden"
           />
 
-          <PostCommentsButton postApId={apId} variant="ghost" />
-          <PostVoting apId={apId} variant="ghost" className="-mr-2" />
+          <PostCommentsButton
+            postApId={apId}
+            variant="ghost"
+            className={ABOVE_LINK_OVERLAY}
+          />
+          <PostVoting
+            apId={apId}
+            variant="ghost"
+            className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
+          />
         </div>
       </div>
     </article>

@@ -262,9 +262,11 @@ export function ActionMenu<V extends string>({
 
 export function EllipsisActionMenu({
   fixRightAlignment,
+  buttonClassName,
   ...props
 }: Omit<ActionMenuProps, "trigger" | "triggerAsChild"> & {
   fixRightAlignment?: boolean;
+  buttonClassName?: string;
 }) {
   return (
     <ActionMenu
@@ -273,7 +275,7 @@ export function EllipsisActionMenu({
         <Button
           size="icon"
           variant="ghost"
-          className={cn(fixRightAlignment && "-mr-2")}
+          className={cn(fixRightAlignment && "-mr-2", buttonClassName)}
           aria-label="Comment actions"
         >
           <IoEllipsisHorizontal size={16} />

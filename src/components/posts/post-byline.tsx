@@ -11,8 +11,7 @@ import {
 import { openUrl } from "@/src/lib/linking";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import {
   Avatar,
   AvatarFallback,
@@ -43,6 +42,7 @@ import {
   useLockPost,
   useSavePost,
 } from "@/src/lib/api/post-mutations";
+import { ABOVE_LINK_OVERLAY } from "./config";
 
 export function usePostActions({
   post,
@@ -229,16 +229,12 @@ export function PostActionButtion({
   const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
   const actions = usePostActions({ post, canMod, tag });
   return (
-    <ActionMenu
+    <EllipsisActionMenu
       header="Post"
       align="end"
       actions={actions}
-      trigger={
-        <IoEllipsisHorizontal
-          className="text-muted-foreground"
-          aria-label="Post actions"
-        />
-      }
+      fixRightAlignment
+      buttonClassName={ABOVE_LINK_OVERLAY}
     />
   );
 }
@@ -248,7 +244,6 @@ export function PostByline({
   pinned,
   showCommunity,
   showCreator,
-  onNavigate,
   isMod = false,
   canMod = false,
   showActions = true,
@@ -259,7 +254,6 @@ export function PostByline({
   pinned: boolean;
   showCommunity?: boolean;
   showCreator?: boolean;
-  onNavigate?: () => void;
   isMod?: boolean;
   canMod?: boolean;
   showActions?: boolean;
@@ -329,8 +323,7 @@ export function PostByline({
                 params={{
                   communityName: post.communitySlug,
                 }}
-                className="text-xs"
-                onClickCapture={onNavigate}
+                className={cn("text-xs hover:underline", ABOVE_LINK_OVERLAY)}
               >
                 {communityPart}
               </Link>
@@ -352,7 +345,7 @@ export function PostByline({
                 params={{
                   userId: encodedCreatorApId,
                 }}
-                onClickCapture={onNavigate}
+                className={cn("hover:underline", ABOVE_LINK_OVERLAY)}
               >
                 <span className="sr-only">u/</span>
                 {creatorName}

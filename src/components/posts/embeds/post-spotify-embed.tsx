@@ -1,5 +1,6 @@
 import { cn } from "@/src/lib/utils";
 import { useMemo } from "react";
+import { ABOVE_LINK_OVERLAY } from "../config";
 
 export function SpotifyEmbed({ url }: { url: string }) {
   const embedUrl = useMemo(() => {
@@ -12,6 +13,7 @@ export function SpotifyEmbed({ url }: { url: string }) {
         url.includes("playlist")
           ? "max-md:aspect-square md:aspect-video"
           : "h-[152px] md:h-[232px]",
+        ABOVE_LINK_OVERLAY,
       )}
       src={"https://open.spotify.com/embed/" + embedUrl}
     />

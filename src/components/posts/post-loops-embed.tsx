@@ -5,6 +5,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { FiPlay } from "react-icons/fi";
 import { cn } from "@/src/lib/utils";
+import { ABOVE_LINK_OVERLAY } from "./config";
 
 const getVideo = async (url: string) => {
   if (isTauri()) {
@@ -48,7 +49,9 @@ export function PostLoopsEmbed({
   const linkOut = !Capacitor.isNativePlatform() && !isTauri();
 
   const content = (
-    <div className="bg-muted max-md:contents relative">
+    <div
+      className={cn("bg-muted max-md:contents relative", ABOVE_LINK_OVERLAY)}
+    >
       <div className="aspect-[9/16] md:max-w-xs mx-auto relative max-md:-mx-3.5">
         {!src && thumbnail && (
           <img
@@ -89,7 +92,12 @@ export function PostLoopsEmbed({
   );
 
   return linkOut ? (
-    <a href={url} target="_blank" rel="noopener noreferrer">
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={ABOVE_LINK_OVERLAY}
+    >
       {content}
     </a>
   ) : (
