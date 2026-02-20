@@ -71,8 +71,21 @@ import { useFlairs } from "../stores/flairs";
 import { Page } from "../components/page";
 import { SimpleSelect } from "../components/ui/simple-select";
 import { Trash } from "../components/icons";
+import { Separator } from "../components/ui/separator";
 
 dayjs.extend(localizedFormat);
+
+const POLL_UNIT_OPTIONS: {
+  value: Forms.PollInput["endUnit"];
+  label: string;
+}[] = [
+  { value: "minutes", label: "Minutes" },
+  { value: "hours", label: "Hours" },
+  { value: "days", label: "Days" },
+  { value: "weeks", label: "Weeks" },
+  { value: "months", label: "Months" },
+  { value: "permanent", label: "Permanent" },
+];
 
 const EMPTY_ARR: never[] = [];
 
@@ -298,7 +311,8 @@ export function CreatePost() {
     supportsPollCreation(softwareInfo) || draft.type === "poll";
 
   const DEFAULT_POLL: Forms.PollInput = {
-    endDays: 7,
+    endAmount: 7,
+    endUnit: "days",
     mode: "single",
     localOnly: false,
     choices: [
@@ -651,6 +665,7 @@ export function CreatePost() {
                   onFocus={() => setEditingBody(true)}
                   onBlur={() => setEditingBody(false)}
                   hideMenu={!editingBody && draft.type !== "text"}
+                  onChageEditorType={() => setEditingBody(true)}
                 />
               </div>
 
@@ -664,7 +679,7 @@ export function CreatePost() {
                         placeholder={`Option ${i + 1}`}
                         value={choice.text}
                         onChange={(e) => patchPollChoice(i, e.target.value)}
-                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10"
+                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10 pr-0.5"
                         endAdornment={
                           (draft.poll?.choices.length ?? 0) > 2 && (
                             <Button
@@ -687,7 +702,7 @@ export function CreatePost() {
                     </Button>
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-3">
                     <div className="flex flex-col gap-2">
                       <Label>Voting Mode</Label>
                       <SimpleSelect
@@ -707,23 +722,44 @@ export function CreatePost() {
                       />
                     </div>
 
+                    <Separator className="flex-1" />
+
                     <div className="flex flex-col gap-2">
-                      <Label>Poll Duration (days)</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        step="any"
-                        value={draft.poll?.endDays ?? 7}
-                        onChange={(e) =>
-                          draft.poll &&
-                          patchDraft(draftId, {
-                            poll: {
-                              ...draft.poll,
-                              endDays: parseFloat(e.target.value),
-                            },
-                          })
-                        }
-                      />
+                      <Label>Poll Duration</Label>
+                      <div className="flex gap-2">
+                        {draft.poll?.endUnit !== "permanent" && (
+                          <Input
+                            type="number"
+                            min="1"
+                            step="any"
+                            value={draft.poll?.endAmount ?? 7}
+                            className="w-20"
+                            onChange={(e) =>
+                              draft.poll &&
+                              patchDraft(draftId, {
+                                poll: {
+                                  ...draft.poll,
+                                  endAmount: parseFloat(e.target.value),
+                                },
+                              })
+                            }
+                          />
+                        )}
+                        <SimpleSelect
+                          options={POLL_UNIT_OPTIONS}
+                          value={POLL_UNIT_OPTIONS.find(
+                            (o) => o.value === (draft.poll?.endUnit ?? "days"),
+                          )}
+                          onChange={(o) =>
+                            draft.poll &&
+                            patchDraft(draftId, {
+                              poll: { ...draft.poll, endUnit: o.value },
+                            })
+                          }
+                          valueGetter={(o) => o.value}
+                          labelGetter={(o) => o.label}
+                        />
+                      </div>
                     </div>
                   </div>
                 </>
