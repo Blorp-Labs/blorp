@@ -548,6 +548,7 @@ export function CreatePost() {
                 {draft.type === "poll" && (
                   <div className="flex items-center gap-1.5">
                     <Checkbox
+                      id={`${id}-local`}
                       checked={draft.poll?.localOnly ?? false}
                       onCheckedChange={(v) =>
                         draft.poll &&
@@ -556,7 +557,7 @@ export function CreatePost() {
                         })
                       }
                     />
-                    <Label>Local voting only</Label>
+                    <Label htmlFor={`${id}-local`}>Local voting only</Label>
                   </div>
                 )}
               </div>
@@ -633,7 +634,8 @@ export function CreatePost() {
                     {...getRootProps()}
                     className={cn(
                       "border-2 border-dashed flex flex-col items-center justify-center gap-2 p-1 px-2 cursor-pointer rounded-md self-start text-sm",
-                      draft.type === "media" && "md:min-h-32 self-stretch p-2",
+                      draft.type === "media" &&
+                        "md:min-h-32 self-stretch p-2 text-base",
                     )}
                   >
                     <input id={`${id}-media`} {...getInputProps()} />
@@ -674,7 +676,9 @@ export function CreatePost() {
                   placeholder="Write something..."
                   onFocus={() => setEditingBody(true)}
                   onBlur={() => setEditingBody(false)}
-                  hideMenu={!editingBody && draft.type !== "text"}
+                  hideMenu={
+                    !editingBody && draft.type !== "text" && !draft.body?.trim()
+                  }
                 />
               </div>
 
