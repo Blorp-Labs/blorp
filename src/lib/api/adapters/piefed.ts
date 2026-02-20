@@ -1448,6 +1448,21 @@ export class PieFedApi
         url: form.url,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,
+        ...(form.poll
+          ? {
+              poll: {
+                end_poll: form.poll.endDate,
+                mode: form.poll.mode,
+                local_only: form.poll.localOnly,
+                choices: form.poll.choices.map((c) => ({
+                  id: c.id,
+                  choice_text: c.text,
+                  sort_order: c.sortOrder,
+                  num_votes: 0,
+                })),
+              },
+            }
+          : {}),
       });
       if (form.flairs) {
         const { flairs } = await this.getCommunity({
@@ -1484,6 +1499,21 @@ export class PieFedApi
         url: form.url ?? undefined,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,
+        ...(form.poll
+          ? {
+              poll: {
+                end_poll: form.poll.endDate,
+                mode: form.poll.mode,
+                local_only: form.poll.localOnly,
+                choices: form.poll.choices.map((c) => ({
+                  id: c.id,
+                  choice_text: c.text,
+                  sort_order: c.sortOrder,
+                  num_votes: 0,
+                })),
+              },
+            }
+          : {}),
       });
       const flairLookup = getFlairLookup(flairs);
       const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
