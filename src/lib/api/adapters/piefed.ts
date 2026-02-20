@@ -628,6 +628,25 @@ function convertModlogResponsePieFed(
   );
 }
 
+const POLL_UNIT_MS: Record<string, number> = {
+  minutes: 60 * 1000,
+  hours: 60 * 60 * 1000,
+  days: 24 * 60 * 60 * 1000,
+  weeks: 7 * 24 * 60 * 60 * 1000,
+  months: 30 * 24 * 60 * 60 * 1000,
+};
+
+function pollEndDate(poll: Forms.PollInput): string {
+  if (poll.endUnit === "permanent") {
+    return new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  }
+  return new Date(
+    Date.now() +
+      poll.endAmount *
+        (POLL_UNIT_MS[poll.endUnit] ?? POLL_UNIT_MS["days"] ?? 0),
+  ).toISOString();
+}
+
 export class PieFedApi
   implements ApiBlueprint<ReturnType<typeof createClient>>
 {
@@ -1451,9 +1470,7 @@ export class PieFedApi
         ...(form.poll
           ? {
               poll: {
-                end_poll: new Date(
-                  Date.now() + form.poll.endDays * 24 * 60 * 60 * 1000,
-                ).toISOString(),
+                end_poll: pollEndDate(form.poll),
                 mode: form.poll.mode,
                 local_only: form.poll.localOnly,
                 choices: form.poll.choices.map((c) => ({
@@ -1503,9 +1520,7 @@ export class PieFedApi
         ...(form.poll
           ? {
               poll: {
-                end_poll: new Date(
-                  Date.now() + form.poll.endDays * 24 * 60 * 60 * 1000,
-                ).toISOString(),
+                end_poll: pollEndDate(form.poll),
                 mode: form.poll.mode,
                 local_only: form.poll.localOnly,
                 choices: form.poll.choices.map((c) => ({
