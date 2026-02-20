@@ -474,7 +474,7 @@ export function CreatePost() {
               onClickDraft={() => setShowDrafts(false)}
             />
           ) : (
-            <div className="flex flex-col gap-4 md:gap-5 max-md:pt-3 md:py-6">
+            <div className="flex flex-col gap-5 max-md:pt-3 md:py-6">
               {isEdit && !canEdit && (
                 <span className="bg-amber-500/30 text-amber-500 py-2 px-3 rounded-lg">
                   {postOwner
@@ -563,7 +563,7 @@ export function CreatePost() {
               </div>
 
               {flairs && flairs.length > 0 && (
-                <div className="gap-1 flex flex-col">
+                <div className="gap-px flex flex-col">
                   <Label
                     htmlFor={`${id}-flair`}
                     className={cn(!draft.flairs?.length && "sr-only")}
@@ -596,7 +596,7 @@ export function CreatePost() {
               )}
 
               {draft.type === "link" && (
-                <div className="gap-2 flex flex-col">
+                <div className="gap-1 flex flex-col">
                   <Label htmlFor={`${id}-link`}>Link</Label>
                   <Input
                     id={`${id}-link`}
@@ -611,13 +611,13 @@ export function CreatePost() {
                 </div>
               )}
 
-              <div className="gap-1 flex flex-col">
+              <div className="flex flex-col">
                 <Label htmlFor={`${id}-title`}>Title</Label>
                 <Input
                   id={`${id}-title`}
                   placeholder="Title"
                   value={draft.title ?? ""}
-                  className="text-xl! font-medium"
+                  className="text-2xl! font-bold"
                   wrapperClassName="border-0 -mx-3 w-auto"
                   onInput={(e) =>
                     patchDraft(draftId, {
@@ -661,26 +661,6 @@ export function CreatePost() {
                   </div>
                 </div>
               )}
-
-              <div className="gap-2 flex flex-col flex-1">
-                <Label htmlFor={`${id}-body`}>Body</Label>
-                <MarkdownEditor
-                  id={`${id}-body`}
-                  content={draft.body ?? ""}
-                  onChange={(body) =>
-                    patchDraft(draftId, {
-                      body,
-                    })
-                  }
-                  className="md:border md:rounded-lg md:shadow-xs max-md:-mx-3.5 max-md:flex-1"
-                  placeholder="Write something..."
-                  onFocus={() => setEditingBody(true)}
-                  onBlur={() => setEditingBody(false)}
-                  hideMenu={
-                    !editingBody && draft.type !== "text" && !draft.body?.trim()
-                  }
-                />
-              </div>
 
               {draft.type === "poll" && (
                 <>
@@ -731,7 +711,7 @@ export function CreatePost() {
                           })
                         }
                         valueGetter={(opt) => opt}
-                        labelGetter={(opt) => _.capitalize(opt)}
+                        labelGetter={(opt) => `${_.capitalize(opt)} choice`}
                       />
                     </div>
 
@@ -777,6 +757,26 @@ export function CreatePost() {
                   </div>
                 </>
               )}
+
+              <div className="gap-2 flex flex-col flex-1">
+                <Label htmlFor={`${id}-body`}>Body</Label>
+                <MarkdownEditor
+                  id={`${id}-body`}
+                  content={draft.body ?? ""}
+                  onChange={(body) =>
+                    patchDraft(draftId, {
+                      body,
+                    })
+                  }
+                  className="md:border md:rounded-lg md:shadow-xs max-md:-mx-3.5 max-md:flex-1"
+                  placeholder="Write something..."
+                  onFocus={() => setEditingBody(true)}
+                  onBlur={() => setEditingBody(false)}
+                  hideMenu={
+                    !editingBody && draft.type !== "text" && !draft.body?.trim()
+                  }
+                />
+              </div>
 
               {getPostButton("self-end max-md:hidden")}
             </div>
