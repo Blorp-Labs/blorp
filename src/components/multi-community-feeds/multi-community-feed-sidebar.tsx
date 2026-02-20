@@ -157,6 +157,7 @@ function useCommunityActions({
   const shareActions = useShareActions("feed", {
     type: "multi-community-feed",
     route,
+    apId,
   });
   return [...shareActions];
 }

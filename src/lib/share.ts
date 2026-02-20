@@ -262,7 +262,7 @@ export type ShareEntityContext =
     }
   | { type: "community"; apId: string; slug: string; route: string }
   | { type: "person"; apId: string; slug: string; route: string }
-  | { type: "multi-community-feed"; route: string };
+  | { type: "multi-community-feed"; route: string; apId: string };
 
 function resolveShareUrl(
   mode: ShareLinkType,
@@ -277,7 +277,7 @@ function resolveShareUrl(
 
     case "instance": {
       if (entity.type === "multi-community-feed") {
-        return null;
+        return entity.apId;
       }
       if (!instance) return null;
       if (entity.type === "community") {
@@ -296,7 +296,7 @@ function resolveShareUrl(
 
     case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
-        return null;
+        return entity.apId;
       }
       if (entity.type === "community") {
         return `https://threadiverse.link/c/${entity.slug}`;
