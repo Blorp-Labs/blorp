@@ -735,6 +735,7 @@ export function MarkdownEditor({
   autoFocus: autoFocusDefault,
   placeholder,
   onFocus,
+  onBlur,
   onChageEditorType,
   onSubmit,
   footer,
@@ -747,6 +748,7 @@ export function MarkdownEditor({
   autoFocus?: boolean;
   placeholder?: string;
   onFocus?: () => void;
+  onBlur?: () => void;
   onChageEditorType?: () => void;
   onSubmit?: () => void;
   footer?: React.ReactNode;
@@ -772,6 +774,7 @@ export function MarkdownEditor({
           placeholder={placeholder}
           onFocus={onFocus}
           onSubmit={onSubmit}
+          onBlur={onBlur}
           id={id}
           hideMenu={hideMenu}
         />
@@ -788,6 +791,7 @@ export function MarkdownEditor({
           placeholder={placeholder}
           onFocus={onFocus}
           onSubmit={onSubmit}
+          onBlur={onBlur}
           id={id}
           hideMenu={hideMenu}
         />
