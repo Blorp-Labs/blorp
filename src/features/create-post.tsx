@@ -17,8 +17,11 @@ import {
   useLinkMetadata,
   useListCommunities,
   useSearch,
+  useSoftware,
   useUploadImage,
 } from "../lib/api";
+import { supportsPollCreation } from "../lib/api/adapters/support";
+import { Forms } from "../lib/api/adapters/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -287,6 +290,46 @@ export function CreatePost() {
     isEdit && post?.data.creatorApId && myUserId === post.data.creatorApId;
   const postOwner = post?.data.creatorSlug;
 
+  const softwareInfo = useSoftware();
+  const { software } = softwareInfo;
+  const showPollOption =
+    supportsPollCreation(softwareInfo) || draft.type === "poll";
+
+  const DEFAULT_POLL: Forms.PollInput = {
+    endDate: dayjs().add(7, "days").toISOString(),
+    mode: "single",
+    localOnly: false,
+    choices: [
+      { id: 0, text: "", sortOrder: 0 },
+      { id: 0, text: "", sortOrder: 1 },
+    ],
+  };
+
+  const patchPollChoice = (index: number, text: string) => {
+    if (!draft.poll) return;
+    const choices = draft.poll.choices.map((c, i) =>
+      i === index ? { ...c, text } : c,
+    );
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
+  const addPollChoice = () => {
+    if (!draft.poll) return;
+    const choices = [
+      ...draft.poll.choices,
+      { id: 0, text: "", sortOrder: draft.poll.choices.length },
+    ];
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
+  const removePollChoice = (index: number) => {
+    if (!draft.poll) return;
+    const choices = draft.poll.choices
+      .filter((_, i) => i !== index)
+      .map((c, i) => ({ ...c, sortOrder: i }));
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
   const uploadImage = useUploadImage();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -359,7 +402,11 @@ export function CreatePost() {
           // TODO: handle incomplete post data
         }
       }}
-      disabled={!draft.communitySlug || (isEdit && !canEdit)}
+      disabled={
+        !draft.communitySlug ||
+        (isEdit && !canEdit) ||
+        (draft.type === "poll" && software === "lemmy")
+      }
       loading={
         isEdit
           ? editPost.isPending || editPost.isSuccess
@@ -441,16 +488,30 @@ export function CreatePost() {
                 value={draft.type}
                 onValueChange={(val) => {
                   if (val) {
-                    patchDraft(draftId, {
-                      type: val as "text" | "media" | "link",
-                    });
+                    const patch: Partial<Draft> = {
+                      type: val as Draft["type"],
+                    };
+                    if (val === "poll" && !draft.poll) {
+                      patch.poll = DEFAULT_POLL;
+                    }
+                    patchDraft(draftId, patch);
                   }
                 }}
               >
                 <ToggleGroupItem value="text">Text</ToggleGroupItem>
                 <ToggleGroupItem value="media">Image</ToggleGroupItem>
                 <ToggleGroupItem value="link">Link</ToggleGroupItem>
+                {showPollOption && (
+                  <ToggleGroupItem value="poll">Poll</ToggleGroupItem>
+                )}
               </ToggleGroup>
+
+              {draft.type === "poll" && software === "lemmy" && (
+                <p className="text-sm text-destructive">
+                  Lemmy doesn't support polls. Switch to a different post type
+                  or use a PieFed account.
+                </p>
+              )}
 
               <div className="gap-2 flex items-center">
                 <Checkbox
@@ -536,6 +597,101 @@ export function CreatePost() {
                         {draft.thumbnailUrl && " to replace"}
                       </p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {draft.type === "poll" && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Label>Poll Options</Label>
+                    {draft.poll?.choices.map((choice, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input
+                          placeholder={`Option ${i + 1}`}
+                          value={choice.text}
+                          onChange={(e) => patchPollChoice(i, e.target.value)}
+                        />
+                        {(draft.poll?.choices.length ?? 0) > 2 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removePollChoice(i)}
+                          >
+                            ×
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="self-start"
+                      onClick={addPollChoice}
+                    >
+                      + Add Option
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label>Poll End Date</Label>
+                    <input
+                      type="datetime-local"
+                      value={
+                        draft.poll?.endDate
+                          ? dayjs(draft.poll.endDate).format("YYYY-MM-DDTHH:mm")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        draft.poll &&
+                        patchDraft(draftId, {
+                          poll: {
+                            ...draft.poll,
+                            endDate: new Date(e.target.value).toISOString(),
+                          },
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label>Voting Mode</Label>
+                    <ToggleGroup
+                      type="single"
+                      variant="outline"
+                      size="sm"
+                      value={draft.poll?.mode ?? "single"}
+                      onValueChange={(val) =>
+                        val &&
+                        draft.poll &&
+                        patchDraft(draftId, {
+                          poll: {
+                            ...draft.poll,
+                            mode: val as "single" | "multiple",
+                          },
+                        })
+                      }
+                    >
+                      <ToggleGroupItem value="single">
+                        Single choice
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="multiple">
+                        Multiple choice
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={draft.poll?.localOnly ?? false}
+                      onCheckedChange={(v) =>
+                        draft.poll &&
+                        patchDraft(draftId, {
+                          poll: { ...draft.poll, localOnly: !!v },
+                        })
+                      }
+                    />
+                    <Label>Local only (don't federate)</Label>
                   </div>
                 </div>
               )}
