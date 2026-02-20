@@ -565,6 +565,7 @@ export function CreatePost() {
                 <div className="gap-1 flex flex-col">
                   <Label htmlFor={`${id}-flair`}>Flair</Label>
                   <MultiSelect
+                    id={`${id}-flair`}
                     onChange={(values) => {
                       patchDraft(draftId, {
                         flairs: values,
@@ -583,7 +584,7 @@ export function CreatePost() {
                     placeholder="Flair"
                     renderOption={(opt) => <Flair flair={opt.value} />}
                     buttonVariant="ghost"
-                    buttonClassName="rounded-full pl-2! -mx-3"
+                    buttonClassName="rounded-full -mx-3"
                   />
                 </div>
               )}

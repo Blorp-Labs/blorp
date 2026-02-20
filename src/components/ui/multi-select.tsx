@@ -24,6 +24,7 @@ interface MultiSelectProps<V> {
   keyExtractor: (opt: V) => string | number;
   buttonVariant?: ComponentProps<typeof Button>["variant"];
   buttonClassName?: string;
+  id?: string;
 }
 
 export function MultiSelect<V>({
@@ -35,6 +36,7 @@ export function MultiSelect<V>({
   keyExtractor,
   buttonVariant = "outline",
   buttonClassName,
+  id,
 }: MultiSelectProps<V>) {
   const selected = value
     .map((value) =>
@@ -46,6 +48,7 @@ export function MultiSelect<V>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          id={id}
           variant={buttonVariant}
           className={cn("rounded-md", buttonClassName)}
         >
