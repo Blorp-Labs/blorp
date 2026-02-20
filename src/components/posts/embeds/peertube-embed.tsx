@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { cn } from "@/src/lib/utils";
+import { ABOVE_LINK_OVERLAY } from "../config";
 
 export function PeerTubeEmbed({ url }: { url: string }) {
   const embedUrl = useMemo(() => {
@@ -8,7 +10,7 @@ export function PeerTubeEmbed({ url }: { url: string }) {
   }, [url]);
   return (
     <iframe
-      className="aspect-video rounded-lg"
+      className={cn("aspect-video rounded-lg", ABOVE_LINK_OVERLAY)}
       src={embedUrl}
       allowFullScreen
     />

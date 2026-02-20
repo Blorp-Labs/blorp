@@ -11,8 +11,7 @@ import {
 import { openUrl } from "@/src/lib/linking";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import {
   Avatar,
   AvatarFallback,
@@ -43,6 +42,7 @@ import {
   useLockPost,
   useSavePost,
 } from "@/src/lib/api/post-mutations";
+import { ABOVE_LINK_OVERLAY } from "./config";
 
 export function usePostActions({
   post,
@@ -229,16 +229,12 @@ export function PostActionButtion({
   const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
   const actions = usePostActions({ post, canMod, tag });
   return (
-    <ActionMenu
+    <EllipsisActionMenu
       header="Post"
       align="end"
       actions={actions}
-      trigger={
-        <IoEllipsisHorizontal
-          className="text-muted-foreground"
-          aria-label="Post actions"
-        />
-      }
+      fixRightAlignment
+      buttonClassName={ABOVE_LINK_OVERLAY}
     />
   );
 }
@@ -248,7 +244,6 @@ export function PostByline({
   pinned,
   showCommunity,
   showCreator,
-  onNavigate,
   isMod = false,
   canMod = false,
   showActions = true,
@@ -259,7 +254,6 @@ export function PostByline({
   pinned: boolean;
   showCommunity?: boolean;
   showCreator?: boolean;
-  onNavigate?: () => void;
   isMod?: boolean;
   canMod?: boolean;
   showActions?: boolean;
@@ -290,7 +284,6 @@ export function PostByline({
     <>
       <span className="font-medium text-foreground">c/{communityName}</span>
       <i>@{communityHost}</i>
-      <RelativeTime time={post.createdAt} className="ml-2" />
     </>
   );
 
@@ -320,29 +313,34 @@ export function PostByline({
         </Avatar>
       )}
 
-      <div className="flex flex-col text-muted-foreground">
+      <div className="flex flex-col text-muted-foreground min-w-0 relative">
         {showCommunity && (
-          <CommunityHoverCard communityName={post.communitySlug}>
-            {communityName ? (
-              <Link
-                to={`${linkCtx.root}c/:communityName`}
-                params={{
-                  communityName: post.communitySlug,
-                }}
-                className="text-xs"
-                onClickCapture={onNavigate}
-              >
-                {communityPart}
-              </Link>
-            ) : (
-              <div className="text-xs">{communityPart}</div>
-            )}
-          </CommunityHoverCard>
+          <div className="text-xs flex flex-row">
+            <CommunityHoverCard communityName={post.communitySlug}>
+              {communityName ? (
+                <Link
+                  to={`${linkCtx.root}c/:communityName`}
+                  params={{
+                    communityName: post.communitySlug,
+                  }}
+                  className={cn(
+                    "hover:underline block truncate",
+                    ABOVE_LINK_OVERLAY,
+                  )}
+                >
+                  {communityPart}
+                </Link>
+              ) : (
+                <div className="truncate">{communityPart}</div>
+              )}
+            </CommunityHoverCard>
+            <RelativeTime time={post.createdAt} className="ml-2" />
+          </div>
         )}
         {showCreator && (
           <div
             className={cn(
-              "flex flex-row text-xs text-muted-foreground gap-2 items-center h-5",
+              "flex flex-row text-xs text-muted-foreground gap-2 items-center h-5 relative",
               !showCommunity && "text-foreground",
             )}
           >
@@ -352,7 +350,10 @@ export function PostByline({
                 params={{
                   userId: encodedCreatorApId,
                 }}
-                onClickCapture={onNavigate}
+                className={cn(
+                  "hover:underline min-w-0 truncate",
+                  ABOVE_LINK_OVERLAY,
+                )}
               >
                 <span className="sr-only">u/</span>
                 {creatorName}

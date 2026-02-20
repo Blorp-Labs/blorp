@@ -4,7 +4,10 @@ import { useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
-import { PostArticleEmbed, PostArticleMiniEmbed } from "./post-article-embed";
+import {
+  PostArticleEmbed,
+  PostArticleMiniEmbed,
+} from "./embeds/post-article-embed";
 import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
@@ -14,7 +17,7 @@ import {
 } from "./post-buttons";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
-import { PostLoopsEmbed } from "./post-loops-embed";
+import { PostLoopsEmbed } from "./embeds/post-loops-embed";
 import { YouTubeVideoEmbed } from "../youtube";
 import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
@@ -38,8 +41,8 @@ import { Badge } from "../ui/badge";
 import { removeMd } from "../markdown/remove-md";
 import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
+import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { Button } from "../ui/button";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
@@ -233,8 +236,7 @@ function CrossPosts({
   const linkCtx = useLinkContext();
   return (
     <span className="text-brand text-sm flex flex-row items-center gap-x-2 gap-y-1 flex-wrap">
-      <LuRepeat2 />
-      {crossPosts?.map(({ apId, communitySlug }) => (
+      {crossPosts?.map(({ apId, communitySlug }, index) => (
         <Link
           key={apId}
           to={`${linkCtx.root}c/:communityName/posts/:post`}
@@ -242,8 +244,9 @@ function CrossPosts({
             post: encodeApId(apId),
             communityName: communitySlug,
           }}
-          className="hover:underline line-clamp-1"
+          className="hover:underline truncate max-w-full"
         >
+          {index === 0 && <LuRepeat2 className="inline mr-1" />}
           {communitySlug}
         </Link>
       ))}
@@ -332,12 +335,16 @@ function LargePostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 overflow-x-hidden",
-        detailView ? "max-md:bg-background" : "border-b",
+        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 group",
+        detailView ? "max-md:bg-background" : "relative border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-2 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       <PostByline
         post={post}
         pinned={pinned}
@@ -358,11 +365,15 @@ function LargePostCard({
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
-        <CrossPosts key={apId} crossPosts={post.crossPosts} />
+        <div className={ABOVE_LINK_OVERLAY}>
+          <CrossPosts key={apId} crossPosts={post.crossPosts} />
+        </div>
       )}
 
       {flairs && flairs.length > 0 && (
-        <div className="flex flex-row gap-1">
+        <div
+          className={cn("flex flex-row flex-wrap gap-1", ABOVE_LINK_OVERLAY)}
+        >
           {flairs.map((flair, index) => (
             <Flair key={flair?.id ?? index} flair={flair} />
           ))}
@@ -375,12 +386,13 @@ function LargePostCard({
           communityName: post.communitySlug,
           post: encodedApId,
         }}
-        className="gap-2 flex flex-col"
+        className="gap-2 flex flex-col after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]"
         disable={detailView}
       >
         <span
           className={twMerge(
-            "text-xl font-medium select-text",
+            "relative text-xl font-medium select-text break-words",
+            ABOVE_LINK_OVERLAY,
             !detailView && post.read && "text-muted-foreground",
           )}
           id={titleId}
@@ -395,6 +407,7 @@ function LargePostCard({
             <p
               className={cn(
                 "text-sm line-clamp-3 leading-relaxed",
+                ABOVE_LINK_OVERLAY,
                 post.read && "text-muted-foreground",
               )}
               id={bodyId}
@@ -405,7 +418,7 @@ function LargePostCard({
       </Link>
 
       {showImage && embed.thumbnail && (
-        <div className="relative">
+        <div className={ABOVE_LINK_OVERLAY}>
           <Link
             to={
               featuredContext === "home"
@@ -508,7 +521,10 @@ function LargePostCard({
           />
         )}
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
-        <YouTubeVideoEmbed url={embed.embedUrl} />
+        <YouTubeVideoEmbed
+          url={embed.embedUrl}
+          className={ABOVE_LINK_OVERLAY}
+        />
       )}
       {embed?.type === "bandcamp" &&
         embed.embedUrl &&
@@ -516,7 +532,7 @@ function LargePostCard({
         !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
 
       {detailView && post.body && !post.deleted && !post.removed && (
-        <div className="flex-1" {...doubeTapLike}>
+        <div className={cn("flex-1", ABOVE_LINK_OVERLAY)} {...doubeTapLike}>
           <MarkdownRenderer markdown={post.body} className="pt-2" id={bodyId} />
         </div>
       )}
@@ -526,10 +542,10 @@ function LargePostCard({
           leftHandedMode && "flex-row-reverse",
         )}
       >
-        <PostShareButton postApId={apId} />
+        <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostCommentsButton postApId={apId} />
-        <PostVoting apId={apId} />
+        <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
       </div>
     </article>
   );
@@ -602,13 +618,17 @@ export function SmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        "flex-1 gap-2.5 flex group relative md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
         className,
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       {embed?.thumbnail && showImage && (
         <Link
           to={
@@ -654,7 +674,7 @@ export function SmallPostCard({
 
       <div
         className={cn(
-          "flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
+          "relative flex-1 flex flex-col gap-0.5 md:gap-1 overflow-hidden max-md:py-2 max-md:pr-3.5",
           !showImage && !showArticle && "max-md:pl-3.5",
         )}
       >
@@ -680,7 +700,13 @@ export function SmallPostCard({
         />
 
         {flairs && flairs.length > 0 && (
-          <div className="flex flex-row">
+          <div
+            className={cn(
+              "relative flex flex-row gap-1 flex-wrap",
+
+              ABOVE_LINK_OVERLAY,
+            )}
+          >
             {flairs.map((flair, index) => (
               <Flair key={flair?.id ?? index} flair={flair} size="sm" />
             ))}
@@ -695,13 +721,14 @@ export function SmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight",
+            "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3 select-text",
+              "relative line-clamp-2 md:line-clamp-3 select-text break-words",
+              ABOVE_LINK_OVERLAY,
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -716,8 +743,8 @@ export function SmallPostCard({
           )}
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
-          <PostCommentsButton postApId={apId} />
-          <PostVoting apId={apId} />
+          <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+          <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
     </article>
@@ -770,15 +797,19 @@ function ExtraSmallPostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 gap-2.5 flex overflow-x-hidden md:py-2",
+        "flex-1 gap-2.5 flex group relative md:py-2",
         detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
+      {!detailView && (
+        <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
+      )}
+
       <div
         className={cn(
-          "flex-1 flex flex-col gap-1 overflow-hidden max-md:py-2 max-md:px-3.5",
+          "w-full flex-1 flex flex-col gap-1 max-md:py-2 max-md:px-3.5",
         )}
       >
         <Link
@@ -789,13 +820,14 @@ function ExtraSmallPostCard({
             post: encodedApId,
           }}
           className={cn(
-            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm",
+            "gap-2 flex flex-col flex-1 font-medium max-md:text-sm after:absolute after:inset-0 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
         >
           <span
             className={cn(
-              "line-clamp-2 md:line-clamp-3 select-text",
+              "relative line-clamp-2 md:line-clamp-3 select-text break-words",
+              ABOVE_LINK_OVERLAY,
               flairs && flairs.length > 0 && "line-clamp-1 md:line-clamp-2",
             )}
           >
@@ -811,6 +843,7 @@ function ExtraSmallPostCard({
         >
           <PostByline
             hideImage={media.maxMd}
+            className="min-w-0 flex-1 overflow-hidden"
             post={post}
             pinned={pinned}
             showCreator={
@@ -829,11 +862,18 @@ function ExtraSmallPostCard({
             canMod={canMod}
             isMod={modApIds?.includes(post.creatorApId)}
             showActions={false}
-            className="mr-auto overflow-hidden"
           />
 
-          <PostCommentsButton postApId={apId} variant="ghost" />
-          <PostVoting apId={apId} variant="ghost" className="-mr-2" />
+          <PostCommentsButton
+            postApId={apId}
+            variant="ghost"
+            className={ABOVE_LINK_OVERLAY}
+          />
+          <PostVoting
+            apId={apId}
+            variant="ghost"
+            className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
+          />
         </div>
       </div>
     </article>

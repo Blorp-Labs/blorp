@@ -6,9 +6,10 @@ import {
 } from "@capacitor/inappbrowser";
 import { isAndroid, isCapacitor, isIos, isTauri } from "@/src/lib/device";
 import { cn } from "@/src/lib/utils";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { MouseEventHandler, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
+import { ABOVE_LINK_OVERLAY } from "../config";
 
 function getDisplayUrl(url: string) {
   try {
@@ -184,7 +185,7 @@ export function PostArticleEmbed({
       style={{
         display: !url ? "none" : undefined,
       }}
-      className="flex flex-col"
+      className={cn("flex flex-col", ABOVE_LINK_OVERLAY)}
     >
       {thumbnail && showImage && (
         <div className="relative aspect-video overflow-hidden">

@@ -238,7 +238,7 @@ export function PostCommentsButton({
       <Button
         size="sm"
         variant={variant}
-        className={cn("text-md font-normal", className)}
+        className={cn("text-md font-normal bg-transparent", className)}
         asChild
       >
         <Link
@@ -261,7 +261,7 @@ export function PostCommentsButton({
         size="sm"
         variant="outline"
         onClick={onClick}
-        className={cn("text-md font-normal", className)}
+        className={cn("text-md font-normal bg-transparent", className)}
       >
         <TbMessageCirclePlus className="scale-115" />
         {postView?.commentsCount}
@@ -337,7 +337,7 @@ export function PostShareButton({
         <Button
           size="sm"
           variant="outline"
-          className={cn("text-md font-normal", className)}
+          className={cn("text-md font-normal bg-transparent", className)}
           asChild
         >
           <div>

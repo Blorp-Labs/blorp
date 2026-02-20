@@ -28,6 +28,18 @@ const absoluteTime = () =>
 const relativeTime = () =>
   dayjs().utc().subtract(1, "hour").format("YYYY-MM-DDTHH:mm:ss.SSS[000]Z");
 
+export function getFlair(overrides?: Partial<Schemas.Flair>): Schemas.Flair {
+  const id = overrides?.id ?? randomDbId();
+  return {
+    id,
+    apId: `${API_ROOT}/flair/${id}`,
+    title: "Test Flair",
+    backgroundColor: null,
+    color: null,
+    ...overrides,
+  };
+}
+
 export function getPerson(overrides?: Partial<Schemas.Person>): Schemas.Person {
   const id = overrides?.id ?? PERSON_ID;
   const apId = `${API_ROOT}/u/${id}`;
@@ -110,7 +122,7 @@ export function getPost(config?: {
 
   switch (config?.variant) {
     case "text": {
-      post.body = BODY_TEXT;
+      post.body = config?.post?.body ?? BODY_TEXT;
       break;
     }
     case "image": {
