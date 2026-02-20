@@ -646,6 +646,8 @@ export function CreatePost() {
                   id={`${id}-title`}
                   placeholder="Title"
                   value={draft.title ?? ""}
+                  className="text-xl! font-medium"
+                  wrapperClassName="border-0 p-0"
                   onInput={(e) =>
                     patchDraft(draftId, {
                       title: e.currentTarget.value ?? "",
@@ -669,7 +671,6 @@ export function CreatePost() {
                   onFocus={() => setEditingBody(true)}
                   onBlur={() => setEditingBody(false)}
                   hideMenu={!editingBody && draft.type !== "text"}
-                  onChageEditorType={() => setEditingBody(true)}
                 />
               </div>
 
