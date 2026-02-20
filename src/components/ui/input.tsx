@@ -46,7 +46,7 @@ function Input({
       />
 
       {endAdornment && (
-        <div className="ms-2 flex shrink-0 items-center text-muted-foreground">
+        <div className="ms-2 flex shrink-0 items-center text-muted-foreground text-base">
           {endAdornment}
         </div>
       )}

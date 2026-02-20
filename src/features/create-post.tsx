@@ -1,6 +1,6 @@
 import { ContentGutters } from "../components/gutters";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
@@ -69,6 +69,8 @@ import { Flair } from "../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { useFlairs } from "../stores/flairs";
 import { Page } from "../components/page";
+import { SimpleSelect } from "../components/ui/simple-select";
+import { Trash } from "../components/icons";
 
 dayjs.extend(localizedFormat);
 
@@ -296,7 +298,7 @@ export function CreatePost() {
     supportsPollCreation(softwareInfo) || draft.type === "poll";
 
   const DEFAULT_POLL: Forms.PollInput = {
-    endDate: dayjs().add(7, "days").toISOString(),
+    endDays: 7,
     mode: "single",
     localOnly: false,
     choices: [
@@ -540,7 +542,7 @@ export function CreatePost() {
                         })
                       }
                     />
-                    <Label>Local only (don't federate)</Label>
+                    <Label>Local voting only</Label>
                   </div>
                 )}
               </div>
@@ -648,90 +650,83 @@ export function CreatePost() {
                   placeholder="Write something..."
                   onFocus={() => setEditingBody(true)}
                   onBlur={() => setEditingBody(false)}
-                  hideMenu={!editingBody}
+                  hideMenu={!editingBody && draft.type !== "text"}
                 />
               </div>
 
               {draft.type === "poll" && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
+                <>
+                  <div className="flex flex-col gap-1">
                     <Label>Poll Options</Label>
                     {draft.poll?.choices.map((choice, i) => (
-                      <div key={i} className="flex gap-2">
-                        <Input
-                          placeholder={`Option ${i + 1}`}
-                          value={choice.text}
-                          onChange={(e) => patchPollChoice(i, e.target.value)}
-                        />
-                        {(draft.poll?.choices.length ?? 0) > 2 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removePollChoice(i)}
-                          >
-                            ×
-                          </Button>
-                        )}
-                      </div>
+                      <Input
+                        key={i}
+                        placeholder={`Option ${i + 1}`}
+                        value={choice.text}
+                        onChange={(e) => patchPollChoice(i, e.target.value)}
+                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10"
+                        endAdornment={
+                          (draft.poll?.choices.length ?? 0) > 2 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePollChoice(i)}
+                            >
+                              <Trash />
+                            </Button>
+                          )
+                        }
+                      />
                     ))}
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="self-start"
+                      className="w-full rounded-t-none rounded-b-lg h-10"
                       onClick={addPollChoice}
                     >
                       + Add Option
                     </Button>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label>Poll End Date</Label>
-                    <input
-                      type="datetime-local"
-                      value={
-                        draft.poll?.endDate
-                          ? dayjs(draft.poll.endDate).format("YYYY-MM-DDTHH:mm")
-                          : ""
-                      }
-                      onChange={(e) =>
-                        draft.poll &&
-                        patchDraft(draftId, {
-                          poll: {
-                            ...draft.poll,
-                            endDate: new Date(e.target.value).toISOString(),
-                          },
-                        })
-                      }
-                    />
-                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-2">
+                      <Label>Voting Mode</Label>
+                      <SimpleSelect
+                        options={["single", "multiple"] as const}
+                        value={draft.poll?.mode ?? "single"}
+                        onChange={(mode) =>
+                          draft.poll &&
+                          patchDraft(draftId, {
+                            poll: {
+                              ...draft.poll,
+                              mode: mode,
+                            },
+                          })
+                        }
+                        valueGetter={(opt) => opt}
+                        labelGetter={(opt) => _.capitalize(opt)}
+                      />
+                    </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label>Voting Mode</Label>
-                    <ToggleGroup
-                      type="single"
-                      variant="outline"
-                      size="sm"
-                      value={draft.poll?.mode ?? "single"}
-                      onValueChange={(val) =>
-                        val &&
-                        draft.poll &&
-                        patchDraft(draftId, {
-                          poll: {
-                            ...draft.poll,
-                            mode: val as "single" | "multiple",
-                          },
-                        })
-                      }
-                    >
-                      <ToggleGroupItem value="single">
-                        Single choice
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="multiple">
-                        Multiple choice
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                    <div className="flex flex-col gap-2">
+                      <Label>Poll Duration (days)</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        step="any"
+                        value={draft.poll?.endDays ?? 7}
+                        onChange={(e) =>
+                          draft.poll &&
+                          patchDraft(draftId, {
+                            poll: {
+                              ...draft.poll,
+                              endDays: parseFloat(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               {getPostButton("self-end max-md:hidden")}

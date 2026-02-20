@@ -1771,14 +1771,15 @@ export class PieFedApi implements ApiBlueprint<null> {
       ...(form.poll
         ? {
             poll: {
-              end_poll: form.poll.endDate,
+              end_poll: new Date(
+                Date.now() + form.poll.endDays * 24 * 60 * 60 * 1000,
+              ).toISOString(),
               mode: form.poll.mode,
               local_only: form.poll.localOnly,
               choices: form.poll.choices.map((c) => ({
                 id: c.id,
                 choice_text: c.text,
                 sort_order: c.sortOrder,
-                num_votes: 0,
               })),
             },
           }
@@ -1823,7 +1824,9 @@ export class PieFedApi implements ApiBlueprint<null> {
       ...(form.poll
         ? {
             poll: {
-              end_poll: form.poll.endDate,
+              end_poll: new Date(
+                Date.now() + form.poll.endDays * 24 * 60 * 60 * 1000,
+              ).toISOString(),
               mode: form.poll.mode,
               local_only: form.poll.localOnly,
               choices: form.poll.choices.map((c) => ({
