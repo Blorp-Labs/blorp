@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 import _ from "lodash";
+import { env } from "../env";
 
 type PostCardStyle = "small" | "large" | "extra-small";
 
@@ -24,6 +25,17 @@ export const POST_CARD_STYLE_OPTIONS: {
   },
 ];
 
+export type ShareLinkType = "blorp" | "instance" | "threadiverse.link";
+
+export const SHARE_LINK_TYPE_OPTIONS: {
+  label: string;
+  value: ShareLinkType;
+}[] = [
+  { value: "blorp", label: `${env.REACT_APP_NAME} (${window.location.host})` },
+  { value: "threadiverse.link", label: "threadiverse.link" },
+  { value: "instance", label: "My Instance" },
+];
+
 type SettingsStore = {
   postCardStyle: PostCardStyle;
   setPostCardStyle: (newVal: PostCardStyle) => any;
@@ -39,6 +51,8 @@ type SettingsStore = {
   setHideRead: (newVal: boolean) => any;
   hideBotPosts: boolean;
   setHideBotPosts: (newVal: boolean) => any;
+  shareLinkType: ShareLinkType | null;
+  setShareLinkType: (newVal: ShareLinkType) => any;
   filterKeywords: string[];
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
@@ -53,6 +67,7 @@ const INIT_STATE = {
   showMarkdown: false,
   hideRead: false,
   hideBotPosts: false,
+  shareLinkType: null,
   filterKeywords: [],
 } satisfies Partial<SettingsStore>;
 
@@ -71,6 +86,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setShowMarkdown: (showMarkdown) => set({ showMarkdown }),
       setHideRead: (hideRead) => set({ hideRead }),
       setHideBotPosts: (hideBotPosts) => set({ hideBotPosts }),
+      setShareLinkType: (shareLinkType) => set({ shareLinkType }),
       setFilterKeywords: (update) => {
         const filterKeywords = [...get().filterKeywords];
         filterKeywords[update.index] = update.keyword;
@@ -90,7 +106,13 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: "settings",
       storage: createStorage<SettingsStore>(),
-      version: 0,
+      version: 1,
+      migrate: (persisted: any, version: number) => {
+        if (version === 0) {
+          persisted.shareLinkType = null;
+        }
+        return persisted;
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<SettingsStore>;
         return {

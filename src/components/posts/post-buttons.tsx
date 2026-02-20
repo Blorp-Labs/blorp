@@ -284,10 +284,16 @@ function usePostShareActions({
   const shareActions = useShareActions(
     "post",
     post
-      ? resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
-          communityName: post.communitySlug,
-          post: encodeApId(post.apId),
-        })
+      ? {
+          type: "post",
+          id: post.id,
+          apId: post.apId,
+          communitySlug: post.communitySlug,
+          route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
+            communityName: post.communitySlug,
+            post: encodeApId(post.apId),
+          }),
+        }
       : null,
   );
 

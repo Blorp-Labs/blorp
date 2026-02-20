@@ -154,7 +154,11 @@ function useCommunityActions({
   const route = resolveRoute(`${linkCtx.root}f/:apId`, {
     apId,
   });
-  const shareActions = useShareActions("community", route);
+  const shareActions = useShareActions("feed", {
+    type: "multi-community-feed",
+    route,
+    apId,
+  });
   return [...shareActions];
 }
 
