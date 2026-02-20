@@ -159,7 +159,7 @@ function CommunityItem({ communitySlug }: { communitySlug: string }) {
   const description = community?.communityView.description;
   return (
     <Link
-      className="border py-1 px-2 rounded-lg h-24"
+      className="border py-1 px-2 rounded-lg h-24 hover:bg-accent/75"
       to="/communities/c/:communityName"
       params={{ communityName: communitySlug }}
     >
@@ -211,7 +211,7 @@ function CommunitiesSwiper({
   };
   return (
     <div>
-      <div className="flex flex-row items-center justify-between mb-2">
+      <div className="flex flex-row items-center justify-between">
         <button
           className={cn("font-bold capitalize", ContentGutters.mobilePadding)}
           onClick={() => ref.current?.swiper.slideTo(0)}
@@ -238,7 +238,7 @@ function CommunitiesSwiper({
           >
             <Swiper
               className={cn(
-                "md:-mx-14! md:px-14!",
+                "md:-mx-14! md:px-14! py-2!",
                 ContentGutters.mobilePadding,
               )}
               ref={ref}
@@ -314,7 +314,7 @@ function FeedSwiper({
 
   return (
     <div>
-      <div className="flex flex-row items-center justify-between mb-2">
+      <div className="flex flex-row items-center justify-between">
         <h2 className={cn("font-bold", ContentGutters.mobilePadding)}>
           Multi Community Feeds
         </h2>
@@ -338,7 +338,7 @@ function FeedSwiper({
           >
             <Swiper
               className={cn(
-                "md:-mx-14! md:px-14!",
+                "md:-mx-14! md:px-14! py-2!",
                 ContentGutters.mobilePadding,
               )}
               ref={ref}
@@ -361,9 +361,9 @@ function FeedSwiper({
                   {group.map((feed) => (
                     <div
                       key={feed.apId}
-                      className="border py-2 px-2 rounded-lg h-[88px]"
+                      className="border rounded-lg h-[88px] hover:bg-accent/75"
                     >
-                      <FeedCard {...feed} expand />
+                      <FeedCard {...feed} expand className="p-2" />
                     </div>
                   ))}
                 </SwiperSlide>
@@ -477,7 +477,7 @@ export default function Communities() {
 
         {listingType !== "Subscribed" && listingType !== "ModeratorView" && (
           <ContentGutters noMobilePadding>
-            <div className="flex flex-col gap-4 md:gap-6 pb-8 max-md:pt-3">
+            <div className="flex flex-col gap-3 md:gap-5 pb-8 max-md:pt-3">
               <SortControlBar className="max-md:hidden" />
 
               {featuredSorts?.map((sort) =>
