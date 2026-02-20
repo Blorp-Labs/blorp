@@ -563,7 +563,12 @@ export function CreatePost() {
 
               {flairs && flairs.length > 0 && (
                 <div className="gap-1 flex flex-col">
-                  <Label htmlFor={`${id}-flair`}>Flair</Label>
+                  <Label
+                    htmlFor={`${id}-flair`}
+                    className={cn(!draft.flairs?.length && "sr-only")}
+                  >
+                    Post Flair
+                  </Label>
                   <MultiSelect
                     id={`${id}-flair`}
                     onChange={(values) => {
@@ -581,10 +586,10 @@ export function CreatePost() {
                       })) ?? []
                     }
                     keyExtractor={(val) => val.apId ?? val.title}
-                    placeholder="Flair"
+                    placeholder="Add Post Flair"
                     renderOption={(opt) => <Flair flair={opt.value} />}
                     buttonVariant="ghost"
-                    buttonClassName="rounded-full -mx-3"
+                    buttonClassName="rounded-full -mx-3 px-2"
                   />
                 </div>
               )}
@@ -627,8 +632,8 @@ export function CreatePost() {
                   <div
                     {...getRootProps()}
                     className={cn(
-                      "border-2 border-dashed flex flex-col items-center justify-center gap-2 p-2 cursor-pointer rounded-md",
-                      draft.type === "media" && "md:min-h-32",
+                      "border-2 border-dashed flex flex-col items-center justify-center gap-2 p-1 px-2 cursor-pointer rounded-md self-start text-sm",
+                      draft.type === "media" && "md:min-h-32 self-stretch p-2",
                     )}
                   >
                     <input id={`${id}-media`} {...getInputProps()} />
