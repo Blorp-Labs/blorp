@@ -360,6 +360,8 @@ export function CreatePost() {
     resetEditPost();
   }, [draftId, resetCreatePost, resetEditPost]);
 
+  const [editingBody, setEditingBody] = useState(false);
+
   const linkMetadata = useLinkMetadata();
 
   const parseUrl = (url: string) => {
@@ -513,17 +515,34 @@ export function CreatePost() {
                 </p>
               )}
 
-              <div className="gap-2 flex items-center">
-                <Checkbox
-                  id={`${id}-nsfw`}
-                  checked={draft.nsfw ?? false}
-                  onCheckedChange={(nsfw) =>
-                    patchDraft(draftId, {
-                      nsfw: nsfw === true,
-                    })
-                  }
-                />
-                <Label htmlFor={`${id}-nsfw`}>NSFW</Label>
+              <div className="flex gap-5">
+                <div className="gap-1.5 flex items-center">
+                  <Checkbox
+                    id={`${id}-nsfw`}
+                    checked={draft.nsfw ?? false}
+                    onCheckedChange={(nsfw) =>
+                      patchDraft(draftId, {
+                        nsfw: nsfw === true,
+                      })
+                    }
+                  />
+                  <Label htmlFor={`${id}-nsfw`}>NSFW</Label>
+                </div>
+
+                {draft.type === "poll" && (
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      checked={draft.poll?.localOnly ?? false}
+                      onCheckedChange={(v) =>
+                        draft.poll &&
+                        patchDraft(draftId, {
+                          poll: { ...draft.poll, localOnly: !!v },
+                        })
+                      }
+                    />
+                    <Label>Local only (don't federate)</Label>
+                  </div>
+                )}
               </div>
 
               {flairs && flairs.length > 0 && (
@@ -600,6 +619,38 @@ export function CreatePost() {
                   </div>
                 </div>
               )}
+
+              <div className="gap-2 flex flex-col">
+                <Label htmlFor={`${id}-title`}>Title</Label>
+                <Input
+                  id={`${id}-title`}
+                  placeholder="Title"
+                  value={draft.title ?? ""}
+                  onInput={(e) =>
+                    patchDraft(draftId, {
+                      title: e.currentTarget.value ?? "",
+                    })
+                  }
+                />
+              </div>
+
+              <div className="gap-2 flex flex-col flex-1">
+                <Label htmlFor={`${id}-body`}>Body</Label>
+                <MarkdownEditor
+                  id={`${id}-body`}
+                  content={draft.body ?? ""}
+                  onChange={(body) =>
+                    patchDraft(draftId, {
+                      body,
+                    })
+                  }
+                  className="md:border md:rounded-lg md:shadow-xs max-md:-mx-3.5 max-md:flex-1"
+                  placeholder="Write something..."
+                  onFocus={() => setEditingBody(true)}
+                  onBlur={() => setEditingBody(false)}
+                  hideMenu={!editingBody}
+                />
+              </div>
 
               {draft.type === "poll" && (
                 <div className="flex flex-col gap-4">
@@ -680,51 +731,10 @@ export function CreatePost() {
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={draft.poll?.localOnly ?? false}
-                      onCheckedChange={(v) =>
-                        draft.poll &&
-                        patchDraft(draftId, {
-                          poll: { ...draft.poll, localOnly: !!v },
-                        })
-                      }
-                    />
-                    <Label>Local only (don't federate)</Label>
-                  </div>
                 </div>
               )}
 
-              <div className="gap-2 flex flex-col">
-                <Label htmlFor={`${id}-title`}>Title</Label>
-                <Input
-                  id={`${id}-title`}
-                  placeholder="Title"
-                  value={draft.title ?? ""}
-                  onInput={(e) =>
-                    patchDraft(draftId, {
-                      title: e.currentTarget.value ?? "",
-                    })
-                  }
-                />
-              </div>
-
-              <div className="gap-2 flex flex-col flex-1">
-                <Label htmlFor={`${id}-body`}>Body</Label>
-                <MarkdownEditor
-                  id={`${id}-body`}
-                  content={draft.body ?? ""}
-                  onChange={(body) =>
-                    patchDraft(draftId, {
-                      body,
-                    })
-                  }
-                  className="md:border md:rounded-lg md:shadow-xs max-md:-mx-3.5 max-md:flex-1"
-                  placeholder="Write something..."
-                />
-                {getPostButton("self-end max-md:hidden")}
-              </div>
+              {getPostButton("self-end max-md:hidden")}
             </div>
           )}
 
