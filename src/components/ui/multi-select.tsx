@@ -6,8 +6,9 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { isNotNil } from "@/src/lib/utils";
+import { cn, isNotNil } from "@/src/lib/utils";
 import { Fragment } from "react/jsx-runtime";
+import { ComponentProps } from "react";
 
 interface Option<V> {
   value: V;
@@ -21,6 +22,8 @@ interface MultiSelectProps<V> {
   placeholder?: string;
   renderOption: (opt: Option<V>) => React.ReactNode;
   keyExtractor: (opt: V) => string | number;
+  buttonVariant?: ComponentProps<typeof Button>["variant"];
+  buttonClassName?: string;
 }
 
 export function MultiSelect<V>({
@@ -30,6 +33,8 @@ export function MultiSelect<V>({
   placeholder,
   renderOption,
   keyExtractor,
+  buttonVariant = "outline",
+  buttonClassName,
 }: MultiSelectProps<V>) {
   const selected = value
     .map((value) =>
@@ -40,7 +45,10 @@ export function MultiSelect<V>({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="rounded-md">
+        <Button
+          variant={buttonVariant}
+          className={cn("rounded-md", buttonClassName)}
+        >
           {selected.length === 0 && placeholder && (
             <span className="text-muted-foreground font-normal">
               {placeholder}
