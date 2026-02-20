@@ -1765,9 +1765,24 @@ export class PieFedApi implements ApiBlueprint<null> {
     const res = await this.put("/post", {
       post_id,
       title: form.title,
-      url: form.url,
+      url: form.poll ? undefined : form.url,
       body: form.body,
       nsfw: form.nsfw ?? false,
+      ...(form.poll
+        ? {
+            poll: {
+              end_poll: form.poll.endDate,
+              mode: form.poll.mode,
+              local_only: form.poll.localOnly,
+              choices: form.poll.choices.map((c) => ({
+                id: c.id,
+                choice_text: c.text,
+                sort_order: c.sortOrder,
+                num_votes: 0,
+              })),
+            },
+          }
+        : {}),
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
@@ -1805,6 +1820,21 @@ export class PieFedApi implements ApiBlueprint<null> {
       url: form.url ?? undefined,
       body: form.body ?? undefined,
       nsfw: form.nsfw ?? false,
+      ...(form.poll
+        ? {
+            poll: {
+              end_poll: form.poll.endDate,
+              mode: form.poll.mode,
+              local_only: form.poll.localOnly,
+              choices: form.poll.choices.map((c) => ({
+                id: c.id,
+                choice_text: c.text,
+                sort_order: c.sortOrder,
+                num_votes: 0,
+              })),
+            },
+          }
+        : {}),
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);

@@ -25,3 +25,7 @@ export function supportsFeeds({ software, softwareVersion }: Software) {
 export function supportsMarkCommentAsAnswer({ software }: Software) {
   return software === "piefed";
 }
+
+export function supportsPollCreation({ software }: Software) {
+  return software === "piefed";
+}
