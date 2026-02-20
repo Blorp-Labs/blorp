@@ -592,7 +592,8 @@ export namespace Forms {
   }
 
   export interface PollInput {
-    endDays: number; // days from now until the poll expires
+    endAmount: number;
+    endUnit: "minutes" | "hours" | "days" | "weeks" | "months" | "permanent";
     mode: "single" | "multiple"; // matches postPollSchema.mode
     localOnly: boolean; // matches postPollSchema.localOnly
     choices: PollChoiceInput[];

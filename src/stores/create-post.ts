@@ -74,7 +74,8 @@ export function postToDraft(
     flairs: flairs ?? undefined,
     poll: post.poll
       ? {
-          endDays: Math.max(1, dayjs(post.poll.endDate).diff(dayjs(), "day")),
+          endAmount: Math.max(1, dayjs(post.poll.endDate).diff(dayjs(), "day")),
+          endUnit: "days",
           mode: post.poll.mode,
           localOnly: post.poll.localOnly,
           choices: post.poll.choices.map((c, i) => ({
