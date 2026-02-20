@@ -562,7 +562,7 @@ export function CreatePost() {
               </div>
 
               {flairs && flairs.length > 0 && (
-                <div className="gap-2 flex flex-col">
+                <div className="gap-1 flex flex-col">
                   <Label htmlFor={`${id}-flair`}>Flair</Label>
                   <MultiSelect
                     onChange={(values) => {
@@ -582,6 +582,8 @@ export function CreatePost() {
                     keyExtractor={(val) => val.apId ?? val.title}
                     placeholder="Flair"
                     renderOption={(opt) => <Flair flair={opt.value} />}
+                    buttonVariant="ghost"
+                    buttonClassName="rounded-full pl-2! -mx-3"
                   />
                 </div>
               )}
@@ -601,6 +603,22 @@ export function CreatePost() {
                   />
                 </div>
               )}
+
+              <div className="gap-1 flex flex-col">
+                <Label htmlFor={`${id}-title`}>Title</Label>
+                <Input
+                  id={`${id}-title`}
+                  placeholder="Title"
+                  value={draft.title ?? ""}
+                  className="text-xl! font-medium"
+                  wrapperClassName="border-0 -mx-3 w-auto"
+                  onInput={(e) =>
+                    patchDraft(draftId, {
+                      title: e.currentTarget.value ?? "",
+                    })
+                  }
+                />
+              </div>
 
               {(draft.type === "media" || draft.type === "link") && (
                 <div className="gap-2 flex flex-col">
@@ -635,22 +653,6 @@ export function CreatePost() {
                   </div>
                 </div>
               )}
-
-              <div className="gap-2 flex flex-col">
-                <Label htmlFor={`${id}-title`}>Title</Label>
-                <Input
-                  id={`${id}-title`}
-                  placeholder="Title"
-                  value={draft.title ?? ""}
-                  className="text-xl! font-medium"
-                  wrapperClassName="border-0 p-0"
-                  onInput={(e) =>
-                    patchDraft(draftId, {
-                      title: e.currentTarget.value ?? "",
-                    })
-                  }
-                />
-              </div>
 
               <div className="gap-2 flex flex-col flex-1">
                 <Label htmlFor={`${id}-body`}>Body</Label>
