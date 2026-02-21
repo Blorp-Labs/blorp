@@ -56,6 +56,8 @@ type SettingsStore = {
   filterKeywords: string[];
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
+  paginationMode: "infinite" | "pages";
+  setPaginationMode: (mode: "infinite" | "pages") => void;
   reset: () => void;
 };
 
@@ -69,6 +71,7 @@ const INIT_STATE = {
   hideBotPosts: false,
   shareLinkType: null,
   filterKeywords: [],
+  paginationMode: "infinite",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -97,6 +100,7 @@ export const useSettingsStore = create<SettingsStore>()(
       pruneFiltersKeywords: () => {
         set({ filterKeywords: pruneFilterKeywords(get().filterKeywords) });
       },
+      setPaginationMode: (paginationMode) => set({ paginationMode }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
@@ -106,10 +110,13 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: "settings",
       storage: createStorage<SettingsStore>(),
-      version: 1,
+      version: 2,
       migrate: (persisted: any, version: number) => {
         if (version === 0) {
           persisted.shareLinkType = null;
+        }
+        if (version <= 1) {
+          persisted.paginationMode = "infinite";
         }
         return persisted;
       },
