@@ -18,7 +18,7 @@ export type PaginationControlsProps = {
   isFetchingNextPage: boolean;
 };
 
-function getVisiblePages(
+export function getVisiblePages(
   current: number,
   total: number,
 ): (number | "ellipsis")[] {
