@@ -9,9 +9,14 @@ import {
   PaginationPrevious,
 } from "./ui/pagination";
 import { ContentGutters } from "./gutters";
-import { type PaginationControlsProps } from "../lib/hooks/use-pagination";
 
-export type { PaginationControlsProps };
+export type PaginationControlsProps = {
+  currentPage: number;
+  discoveredPageCount: number;
+  hasNextPage: boolean;
+  onPageChange: (page: number) => void;
+  isFetchingNextPage: boolean;
+};
 
 function getVisiblePages(
   current: number,

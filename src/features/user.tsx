@@ -9,7 +9,6 @@ import { MarkdownRenderer } from "../components/markdown/renderer";
 import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
 import { decodeApId, encodeApId } from "../lib/api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
@@ -44,10 +43,6 @@ import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
 import { Page } from "../components/page";
-
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
-type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -119,8 +114,6 @@ const Comment = memo(function Comment({ path }: { path: string }) {
   );
 });
 
-const EMPTY_ARR: never[] = [];
-
 export default function User() {
   const media = useMedia();
   const linkCtx = useLinkContext();
@@ -150,7 +143,7 @@ export default function User() {
     }
   }, [actorId, personQuery.data?.apId, history, linkCtx.root]);
 
-  const { refetch, data, isFetching } = query;
+  const { refetch, data: queryData, isFetching } = query;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const person = useProfilesStore((s) =>
@@ -160,7 +153,7 @@ export default function User() {
   const isBlocked = useIsPersonBlocked(person?.apId);
 
   const postsPagination = usePagination({
-    pages: data?.pages,
+    pages: queryData?.pages,
     getItems: (p) => p.posts,
     fetchNextPage: query.fetchNextPage,
     hasNextPage: query.hasNextPage ?? false,
@@ -170,7 +163,7 @@ export default function User() {
   });
 
   const commentsPagination = usePagination({
-    pages: data?.pages,
+    pages: queryData?.pages,
     getItems: (p) => p.comments,
     fetchNextPage: query.fetchNextPage,
     hasNextPage: query.hasNextPage ?? false,
@@ -182,26 +175,13 @@ export default function User() {
   const activePagination =
     type === "Posts" ? postsPagination : commentsPagination;
 
-  const listData: Item[] = useMemo(() => {
+  const data = useMemo(() => {
     if (type === "Posts") {
-      const unique = _.uniq(postsPagination.flatData);
-      if ((unique.length === 0 && !isFetching) || isBlocked) return [NO_ITEMS];
-      if (paginationMode === "pages") return [...unique, PAGINATION];
-      return unique;
+      return _.uniq(postsPagination.flatData);
     } else {
-      const unique = _.uniq(commentsPagination.flatData);
-      if ((unique.length === 0 && !isFetching) || isBlocked) return [NO_ITEMS];
-      if (paginationMode === "pages") return [...unique, PAGINATION];
-      return unique;
+      return _.uniq(commentsPagination.flatData);
     }
-  }, [
-    type,
-    postsPagination.flatData,
-    commentsPagination.flatData,
-    isFetching,
-    isBlocked,
-    paginationMode,
-  ]);
+  }, [type, postsPagination.flatData, commentsPagination.flatData]);
 
   return (
     <Page notFound={personQuery.isError && !person} notFoundApId={actorId}>
@@ -230,10 +210,10 @@ export default function User() {
       </IonHeader>
       <IonContent scrollY={false}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={type === "Comments" ? "comments" : type + postSort}
             scrollHost
-            data={listData}
+            data={data}
             header={[
               <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
               <ContentGutters
@@ -259,27 +239,21 @@ export default function User() {
                 <></>
               </ContentGutters>,
             ]}
+            noItems={(data.length === 0 && !isFetching) || isBlocked}
+            noItemsComponent={
+              <ContentGutters>
+                <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                  <span>
+                    {isBlocked
+                      ? `You have ${person?.slug} blocked`
+                      : "Nothing to see here"}
+                  </span>
+                </div>
+                <></>
+              </ContentGutters>
+            }
+            paginationControls={activePagination.paginationControls}
             renderItem={({ item }) => {
-              if (item === PAGINATION) {
-                return (
-                  <PaginationControls {...activePagination.paginationProps} />
-                );
-              }
-              if (item === NO_ITEMS) {
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>
-                        {isBlocked
-                          ? `You have ${person?.slug} blocked`
-                          : "Nothing to see here"}
-                      </span>
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-
               if (type === "Posts") {
                 return <Post apId={item} />;
               }

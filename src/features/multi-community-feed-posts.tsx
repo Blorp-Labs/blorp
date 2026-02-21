@@ -6,7 +6,6 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
@@ -47,10 +46,6 @@ import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
-
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
-type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -94,7 +89,7 @@ export default function MultiCommunityFeedPosts() {
     isRefetching,
   } = posts;
 
-  const { flatData, onEndReached, paginationProps } = usePagination({
+  const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
     getItems: (p) => p.posts,
     fetchNextPage,
@@ -104,13 +99,7 @@ export default function MultiCommunityFeedPosts() {
     listKey: postSort,
   });
 
-  const data: Item[] = useMemo(() => {
-    const unique = _.uniq(flatData);
-    if (isBlocked || (unique.length === 0 && !posts.isFetching))
-      return [NO_ITEMS];
-    if (paginationMode === "pages") return [...unique, PAGINATION];
-    return unique;
-  }, [flatData, posts.isFetching, paginationMode, isBlocked]);
+  const data = useMemo(() => _.uniq(flatData), [flatData]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -210,7 +199,7 @@ export default function MultiCommunityFeedPosts() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={postSort}
             fullscreen
             scrollHost
@@ -231,43 +220,36 @@ export default function MultiCommunityFeedPosts() {
                 )}
               </Fragment>,
             ]}
-            renderItem={({ item }) => {
-              if (item === PAGINATION) {
-                return <PaginationControls {...paginationProps} />;
-              }
-              if (item === NO_ITEMS) {
-                const showSortHint =
-                  !isBlocked &&
-                  suggestedPostSort !== undefined &&
-                  postSort !== suggestedPostSort;
-
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      {isBlocked ? (
-                        <span>You have {apId} blocked</span>
-                      ) : showSortHint ? (
-                        <span>
-                          No posts for &ldquo;{postSort}&rdquo; sort. Try
-                          switching to{" "}
-                          <button
-                            className="not-italic underline"
-                            onClick={() => setPostSort(suggestedPostSort)}
-                          >
-                            &ldquo;{suggestedPostSort}&rdquo;
-                          </button>
-                          .
-                        </span>
-                      ) : (
-                        <span>Nothing to see here</span>
-                      )}
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-              return <Post apId={item} featuredContext="community" />;
-            }}
+            noItems={isBlocked || (data.length === 0 && !posts.isFetching)}
+            noItemsComponent={
+              <ContentGutters>
+                <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                  {isBlocked ? (
+                    <span>You have {apId} blocked</span>
+                  ) : suggestedPostSort !== undefined &&
+                    postSort !== suggestedPostSort ? (
+                    <span>
+                      No posts for &ldquo;{postSort}&rdquo; sort. Try switching
+                      to{" "}
+                      <button
+                        className="not-italic underline"
+                        onClick={() => setPostSort(suggestedPostSort)}
+                      >
+                        &ldquo;{suggestedPostSort}&rdquo;
+                      </button>
+                      .
+                    </span>
+                  ) : (
+                    <span>Nothing to see here</span>
+                  )}
+                </div>
+                <></>
+              </ContentGutters>
+            }
+            paginationControls={paginationControls}
+            renderItem={({ item }) => (
+              <Post apId={item} featuredContext="community" />
+            )}
             onEndReached={onEndReached}
             estimatedItemSize={475}
             refresh={refresh}

@@ -10,7 +10,6 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
@@ -47,10 +46,6 @@ import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
-
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
-type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -103,7 +98,7 @@ export default function CommunityPosts() {
     isRefetching,
   } = posts;
 
-  const { flatData, onEndReached, paginationProps } = usePagination({
+  const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
     getItems: (p) => p.posts,
     fetchNextPage,
@@ -113,13 +108,7 @@ export default function CommunityPosts() {
     listKey: postSort,
   });
 
-  const data: Item[] = useMemo(() => {
-    const unique = _.uniq(flatData);
-    if (isBlocked || (unique.length === 0 && !posts.isFetching))
-      return [NO_ITEMS];
-    if (paginationMode === "pages") return [...unique, PAGINATION];
-    return unique;
-  }, [flatData, posts.isFetching, paginationMode, isBlocked]);
+  const data = useMemo(() => _.uniq(flatData), [flatData]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -222,7 +211,7 @@ export default function CommunityPosts() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={postSort}
             fullscreen
             scrollHost
@@ -246,52 +235,41 @@ export default function CommunityPosts() {
                 )}
               </Fragment>,
             ]}
-            renderItem={({ item }) => {
-              if (item === PAGINATION) {
-                return <PaginationControls {...paginationProps} />;
-              }
-              if (item === NO_ITEMS) {
-                const communityHasPosts =
-                  (community?.communityView?.postCount ?? 0) > 0;
-                const showSortHint =
-                  !isBlocked &&
-                  communityHasPosts &&
-                  suggestedPostSort !== undefined &&
-                  postSort !== suggestedPostSort;
-
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      {isBlocked ? (
-                        <span>You have {communityName} blocked</span>
-                      ) : showSortHint ? (
-                        <span>
-                          No posts for &ldquo;{postSort}&rdquo; sort. Try
-                          switching to{" "}
-                          <button
-                            className="not-italic underline"
-                            onClick={() => setPostSort(suggestedPostSort)}
-                          >
-                            &ldquo;{suggestedPostSort}&rdquo;
-                          </button>
-                          .
-                        </span>
-                      ) : (
-                        <span>Nothing to see here</span>
-                      )}
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-              return (
-                <Post
-                  apId={item}
-                  featuredContext="community"
-                  modApIds={modApIds}
-                />
-              );
-            }}
+            noItems={isBlocked || (data.length === 0 && !posts.isFetching)}
+            noItemsComponent={
+              <ContentGutters>
+                <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                  {isBlocked ? (
+                    <span>You have {communityName} blocked</span>
+                  ) : (community?.communityView?.postCount ?? 0) > 0 &&
+                    suggestedPostSort !== undefined &&
+                    postSort !== suggestedPostSort ? (
+                    <span>
+                      No posts for &ldquo;{postSort}&rdquo; sort. Try switching
+                      to{" "}
+                      <button
+                        className="not-italic underline"
+                        onClick={() => setPostSort(suggestedPostSort)}
+                      >
+                        &ldquo;{suggestedPostSort}&rdquo;
+                      </button>
+                      .
+                    </span>
+                  ) : (
+                    <span>Nothing to see here</span>
+                  )}
+                </div>
+                <></>
+              </ContentGutters>
+            }
+            paginationControls={paginationControls}
+            renderItem={({ item }) => (
+              <Post
+                apId={item}
+                featuredContext="community"
+                modApIds={modApIds}
+              />
+            )}
             onEndReached={onEndReached}
             estimatedItemSize={475}
             refresh={refresh}

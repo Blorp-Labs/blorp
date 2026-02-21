@@ -21,7 +21,6 @@ import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
 import { useMemo } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
@@ -58,16 +57,9 @@ import { getAccountSite, useAuth } from "../stores/auth";
 import { Checkbox } from "../components/ui/checkbox";
 import { PersonHoverCard } from "../components/person/person-hover-card";
 
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
 type Item =
-  | typeof NO_ITEMS
-  | typeof PAGINATION
   | { id: string; reply: Schemas.Reply }
-  | {
-      id: string;
-      mention: Schemas.Mention;
-    }
+  | { id: string; mention: Schemas.Mention }
   | { id: string; postReport: Schemas.PostReport }
   | { id: string; commentReport: Schemas.CommentReport };
 
@@ -644,13 +636,7 @@ export default function Inbox() {
   ]);
 
   // For merged tabs, use combined mergedData directly. For single-query tabs, use pagination flatData.
-  const activeItems = isMergedTab ? mergedData : activePagination.flatData;
-  const displayData: Item[] = useMemo(() => {
-    if (activeItems.length === 0 && !isFetching) return [NO_ITEMS];
-    if (!isMergedTab && paginationMode === "pages")
-      return [...activeItems, PAGINATION];
-    return activeItems;
-  }, [activeItems, isFetching, isMergedTab, paginationMode]);
+  const displayData = isMergedTab ? mergedData : activePagination.flatData;
 
   const hasUnreadReply = !!replies.data?.pages
     .flatMap((pages) => pages.replies)
@@ -781,41 +767,33 @@ export default function Inbox() {
           ]}
           stickyIndicies={[0]}
           data={displayData}
+          noItems={displayData.length === 0 && !isFetching}
+          noItemsComponent={
+            <ContentGutters>
+              <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                <span>No {type !== "all" ? type : "notifications"}</span>
+              </div>
+              <></>
+            </ContentGutters>
+          }
+          paginationControls={
+            isMergedTab ? undefined : activePagination.paginationControls
+          }
           renderItem={({ item }) => {
-            if (item === PAGINATION) {
-              return (
-                <PaginationControls {...activePagination.paginationProps} />
-              );
-            }
-            if (item === NO_ITEMS) {
-              return (
-                <ContentGutters>
-                  <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                    <span>No {type !== "all" ? type : "notifications"}</span>
-                  </div>
-                  <></>
-                </ContentGutters>
-              );
-            }
-
             if ("commentReport" in item) {
-              const commentReport = item.commentReport;
-              return <CommentReport commentReport={commentReport} />;
+              return <CommentReport commentReport={item.commentReport} />;
             }
 
             if ("postReport" in item) {
-              const postReport = item.postReport;
-              return <PostReport postReport={postReport} />;
+              return <PostReport postReport={item.postReport} />;
             }
 
             if ("reply" in item) {
-              const reply = item.reply;
-              return <Reply replyView={reply} />;
+              return <Reply replyView={item.reply} />;
             }
 
             if ("mention" in item) {
-              const mention = item.mention;
-              return <Mention mention={mention} />;
+              return <Mention mention={item.mention} />;
             }
 
             return null;

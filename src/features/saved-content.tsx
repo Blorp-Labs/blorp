@@ -6,7 +6,6 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { memo, useMemo } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import { useAvailableSorts, useComments, usePosts } from "../lib/api";
@@ -27,10 +26,6 @@ import z from "zod";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
-type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -113,26 +108,13 @@ export default function SavedContent() {
   const activePagination =
     type === "posts" ? postsPagination : commentsPagination;
 
-  const data: Item[] = useMemo(() => {
+  const data = useMemo(() => {
     if (type === "posts") {
-      const unique = _.uniq(postsPagination.flatData);
-      if (unique.length === 0 && !posts.isFetching) return [NO_ITEMS];
-      if (paginationMode === "pages") return [...unique, PAGINATION];
-      return unique;
+      return _.uniq(postsPagination.flatData);
     } else {
-      const unique = _.uniq(commentsPagination.flatData);
-      if (unique.length === 0 && !comments.isFetching) return [NO_ITEMS];
-      if (paginationMode === "pages") return [...unique, PAGINATION];
-      return unique;
+      return _.uniq(commentsPagination.flatData);
     }
-  }, [
-    type,
-    postsPagination.flatData,
-    commentsPagination.flatData,
-    posts.isFetching,
-    comments.isFetching,
-    paginationMode,
-  ]);
+  }, [type, postsPagination.flatData, commentsPagination.flatData]);
 
   return (
     <IonPage>
@@ -168,7 +150,7 @@ export default function SavedContent() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={type === "comments" ? "comments" : type + postSort}
             fullscreen
             scrollHost
@@ -195,23 +177,20 @@ export default function SavedContent() {
                 <></>
               </ContentGutters>,
             ]}
+            noItems={
+              data.length === 0 &&
+              !(type === "posts" ? posts.isFetching : comments.isFetching)
+            }
+            noItemsComponent={
+              <ContentGutters>
+                <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                  <span>Nothing saved yet</span>
+                </div>
+                <></>
+              </ContentGutters>
+            }
+            paginationControls={activePagination.paginationControls}
             renderItem={({ item }) => {
-              if (item === PAGINATION) {
-                return (
-                  <PaginationControls {...activePagination.paginationProps} />
-                );
-              }
-              if (item === NO_ITEMS) {
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing saved yet</span>
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-
               if (type === "posts") {
                 return <Post apId={item} />;
               }

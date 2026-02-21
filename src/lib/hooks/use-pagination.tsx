@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useIonRouter } from "@ionic/react";
 import { dispatchScrollEvent } from "../scroll-events";
+import {
+  PaginationControls,
+  PaginationControlsProps,
+} from "../../components/pagination-controls";
 
-export type PaginationControlsProps = {
-  currentPage: number;
-  discoveredPageCount: number;
-  hasNextPage: boolean;
-  onPageChange: (page: number) => void;
-  isFetchingNextPage: boolean;
-};
+export type { PaginationControlsProps };
 
 function useRouterSafe() {
   try {
@@ -37,7 +35,7 @@ export function usePagination<Page, Item>({
 }): {
   flatData: Item[];
   onEndReached?: () => void;
-  paginationProps: PaginationControlsProps;
+  paginationControls: ReactNode;
 } {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [pendingNextPage, setPendingNextPage] = useState(false);
@@ -103,13 +101,7 @@ export function usePagination<Page, Item>({
     return {
       flatData,
       onEndReached,
-      paginationProps: {
-        currentPage: 0,
-        discoveredPageCount: 1,
-        hasNextPage,
-        onPageChange: () => {},
-        isFetchingNextPage,
-      },
+      paginationControls: undefined,
     };
   }
 
@@ -132,12 +124,14 @@ export function usePagination<Page, Item>({
   return {
     flatData,
     onEndReached: undefined,
-    paginationProps: {
-      currentPage: safeIndex,
-      discoveredPageCount,
-      hasNextPage,
-      onPageChange,
-      isFetchingNextPage,
-    },
+    paginationControls: (
+      <PaginationControls
+        currentPage={safeIndex}
+        discoveredPageCount={discoveredPageCount}
+        hasNextPage={hasNextPage}
+        onPageChange={onPageChange}
+        isFetchingNextPage={isFetchingNextPage}
+      />
+    ),
   };
 }

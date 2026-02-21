@@ -35,12 +35,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { PaginationControls } from "../components/pagination-controls";
 import { useSettingsStore } from "../stores/settings";
-
-const NO_ITEMS = "NO_ITEMS";
-const PAGINATION = "__PAGINATION__" as const;
-type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -208,7 +203,7 @@ export default function HomePosts() {
     isRefetching,
   } = posts;
 
-  const { flatData, onEndReached, paginationProps } = usePagination({
+  const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
     getItems: (p) => p.posts,
     fetchNextPage,
@@ -218,12 +213,7 @@ export default function HomePosts() {
     listKey: postSort + listingType,
   });
 
-  const data: Item[] = useMemo(() => {
-    const unique = _.uniq(flatData);
-    if (unique.length === 0 && !posts.isFetching) return [NO_ITEMS];
-    if (paginationMode === "pages") return [...unique, PAGINATION];
-    return unique;
-  }, [flatData, posts.isFetching, paginationMode]);
+  const data = useMemo(() => _.uniq(flatData), [flatData]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -305,7 +295,7 @@ export default function HomePosts() {
       </IonHeader>
       <WrappedIonContent>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             listKey={postSort + listingType}
             onFocusChange={setFocused}
             ref={scrollRef}
@@ -318,41 +308,33 @@ export default function HomePosts() {
               </ContentGutters>
             }
             header={[<PostsSortBar key="header" />]}
-            renderItem={({ item }) => {
-              if (item === PAGINATION) {
-                return <PaginationControls {...paginationProps} />;
-              }
-              if (item === NO_ITEMS) {
-                const showSortHint =
-                  siteHasPosts &&
+            noItems={data.length === 0 && !posts.isFetching}
+            noItemsComponent={
+              <ContentGutters>
+                <div className="flex-1 italic text-muted-foreground p-6 text-center">
+                  {siteHasPosts &&
                   suggestedPostSort !== undefined &&
-                  postSort !== suggestedPostSort;
-
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      {showSortHint ? (
-                        <span>
-                          No posts for &ldquo;{postSort}&rdquo; sort. Try
-                          switching to{" "}
-                          <button
-                            className="not-italic underline"
-                            onClick={() => setPostSort(suggestedPostSort)}
-                          >
-                            &ldquo;{suggestedPostSort}&rdquo;
-                          </button>
-                          .
-                        </span>
-                      ) : (
-                        <span>Nothing to see here</span>
-                      )}
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-              return <Post key={item} apId={item} />;
-            }}
+                  postSort !== suggestedPostSort ? (
+                    <span>
+                      No posts for &ldquo;{postSort}&rdquo; sort. Try switching
+                      to{" "}
+                      <button
+                        className="not-italic underline"
+                        onClick={() => setPostSort(suggestedPostSort)}
+                      >
+                        &ldquo;{suggestedPostSort}&rdquo;
+                      </button>
+                      .
+                    </span>
+                  ) : (
+                    <span>Nothing to see here</span>
+                  )}
+                </div>
+                <></>
+              </ContentGutters>
+            }
+            paginationControls={paginationControls}
+            renderItem={({ item }) => <Post key={item} apId={item} />}
             scrollHost
             fullscreen
             onEndReached={onEndReached}
