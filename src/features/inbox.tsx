@@ -20,6 +20,9 @@ import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
 import { useMemo } from "react";
+import { usePagination } from "../lib/hooks/use-pagination";
+import { PaginationControls } from "../components/pagination-controls";
+import { useSettingsStore } from "../stores/settings";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { useConfirmationAlert, useMedia } from "../lib/hooks";
@@ -56,8 +59,10 @@ import { Checkbox } from "../components/ui/checkbox";
 import { PersonHoverCard } from "../components/person/person-hover-card";
 
 const NO_ITEMS = "NO_ITEMS";
+const PAGINATION = "__PAGINATION__" as const;
 type Item =
   | typeof NO_ITEMS
+  | typeof PAGINATION
   | { id: string; reply: Schemas.Reply }
   | {
       id: string;
@@ -455,8 +460,11 @@ function Reply({
 export default function Inbox() {
   const media = useMedia();
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
   const type = useInboxStore((s) => s.inboxType);
   const setType = useInboxStore((s) => s.setInboxType);
+
+  const isMergedTab = type === "all" || type === "unread";
 
   const replies = useReplies({
     unreadOnly: type === "unread",
@@ -467,6 +475,66 @@ export default function Inbox() {
   const postReports = usePostReportsQuery();
   const commentReports = useCommentReportsQuery();
 
+  const repliesPagination = usePagination({
+    pages: replies.data?.pages,
+    getItems: (p) => p.replies.map((reply) => ({ reply, id: `r${reply.id}` })),
+    fetchNextPage: replies.fetchNextPage,
+    hasNextPage: replies.hasNextPage ?? false,
+    isFetchingNextPage: replies.isFetchingNextPage,
+    mode: isMergedTab ? "infinite" : paginationMode,
+    listKey: type,
+  });
+
+  const mentionsPagination = usePagination({
+    pages: mentions.data?.pages,
+    getItems: (p) =>
+      p.mentions.map((mention) => ({ mention, id: `m${mention.id}` })),
+    fetchNextPage: mentions.fetchNextPage,
+    hasNextPage: mentions.hasNextPage ?? false,
+    isFetchingNextPage: mentions.isFetchingNextPage,
+    mode: isMergedTab ? "infinite" : paginationMode,
+    listKey: type,
+  });
+
+  const postReportsPagination = usePagination({
+    pages: postReports.data?.pages,
+    getItems: (p) =>
+      p.postReports.map((postReport) => ({
+        postReport,
+        id: `pr${postReport.id}`,
+      })),
+    fetchNextPage: postReports.fetchNextPage,
+    hasNextPage: postReports.hasNextPage ?? false,
+    isFetchingNextPage: postReports.isFetchingNextPage,
+    mode: isMergedTab ? "infinite" : paginationMode,
+    listKey: type,
+  });
+
+  const commentReportsPagination = usePagination({
+    pages: commentReports.data?.pages,
+    getItems: (p) =>
+      p.commentReports.map((commentReport) => ({
+        commentReport,
+        id: `cr${commentReport.id}`,
+      })),
+    fetchNextPage: commentReports.fetchNextPage,
+    hasNextPage: commentReports.hasNextPage ?? false,
+    isFetchingNextPage: commentReports.isFetchingNextPage,
+    mode: isMergedTab ? "infinite" : paginationMode,
+    listKey: type,
+  });
+
+  const activePagination =
+    type === "replies"
+      ? repliesPagination
+      : type === "mentions"
+        ? mentionsPagination
+        : type === "post-reports"
+          ? postReportsPagination
+          : type === "comment-reports"
+            ? commentReportsPagination
+            : repliesPagination;
+
   // This updates in the background,
   // but calling it here ensures the
   // count is updated when the user visits
@@ -475,8 +543,8 @@ export default function Inbox() {
 
   const markAllRead = useMarkAllRead();
 
-  const { data, isFetching } = useMemo(() => {
-    const data: (
+  const { mergedData, isFetching } = useMemo(() => {
+    const mergedData: (
       | { id: string; reply: Schemas.Reply }
       | { id: string; mention: Schemas.Mention }
       | { id: string; postReport: Schemas.PostReport }
@@ -489,7 +557,7 @@ export default function Inbox() {
       replies.data &&
       (type === "replies" || type === "all" || type === "unread")
     ) {
-      data.push(
+      mergedData.push(
         ...replies.data.pages
           .flatMap((p) => p.replies)
           .map((reply) => ({
@@ -504,7 +572,7 @@ export default function Inbox() {
       mentions.data &&
       (type === "mentions" || type === "all" || type === "unread")
     ) {
-      data.push(
+      mergedData.push(
         ...(mentions.data?.pages
           .flatMap((p) => p.mentions)
           .map((mention) => ({
@@ -516,7 +584,7 @@ export default function Inbox() {
     }
 
     if (postReports.data && type === "post-reports") {
-      data.push(
+      mergedData.push(
         ...(postReports.data.pages
           .flatMap((p) => p.postReports)
           .map((postReport) => ({
@@ -528,7 +596,7 @@ export default function Inbox() {
     }
 
     if (commentReports.data && type === "comment-reports") {
-      data.push(
+      mergedData.push(
         ...(commentReports.data.pages
           .flatMap((p) => p.commentReports)
           .map((commentReport) => ({
@@ -539,7 +607,7 @@ export default function Inbox() {
       isFetching = isFetching || commentReports.isFetching;
     }
 
-    data.sort((a, b) => {
+    mergedData.sort((a, b) => {
       const aPublished =
         "reply" in a
           ? a.reply.createdAt
@@ -560,7 +628,7 @@ export default function Inbox() {
     });
 
     return {
-      data: _.uniqBy(data, "id"),
+      mergedData: _.uniqBy(mergedData, "id"),
       isFetching,
     };
   }, [
@@ -574,6 +642,15 @@ export default function Inbox() {
     commentReports.data,
     commentReports.isFetching,
   ]);
+
+  // For merged tabs, use combined mergedData directly. For single-query tabs, use pagination flatData.
+  const activeItems = isMergedTab ? mergedData : activePagination.flatData;
+  const displayData: Item[] = useMemo(() => {
+    if (activeItems.length === 0 && !isFetching) return [NO_ITEMS];
+    if (!isMergedTab && paginationMode === "pages")
+      return [...activeItems, PAGINATION];
+    return activeItems;
+  }, [activeItems, isFetching, isMergedTab, paginationMode]);
 
   const hasUnreadReply = !!replies.data?.pages
     .flatMap((pages) => pages.replies)
@@ -703,8 +780,13 @@ export default function Inbox() {
             </ContentGutters>,
           ]}
           stickyIndicies={[0]}
-          data={data.length === 0 && !isFetching ? [NO_ITEMS] : data}
+          data={displayData}
           renderItem={({ item }) => {
+            if (item === PAGINATION) {
+              return (
+                <PaginationControls {...activePagination.paginationProps} />
+              );
+            }
             if (item === NO_ITEMS) {
               return (
                 <ContentGutters>
@@ -738,22 +820,18 @@ export default function Inbox() {
 
             return null;
           }}
-          onEndReached={() => {
-            if (
-              !replies.isFetchingNextPage &&
-              replies.hasNextPage &&
-              (type === "all" || type === "replies")
-            ) {
-              replies.fetchNextPage();
-            }
-            if (
-              !mentions.isFetchingNextPage &&
-              mentions.hasNextPage &&
-              (type === "all" || type === "mentions")
-            ) {
-              mentions.fetchNextPage();
-            }
-          }}
+          onEndReached={
+            isMergedTab
+              ? () => {
+                  if (!replies.isFetchingNextPage && replies.hasNextPage) {
+                    replies.fetchNextPage();
+                  }
+                  if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
+                    mentions.fetchNextPage();
+                  }
+                }
+              : activePagination.onEndReached
+          }
           estimatedItemSize={375}
           scrollHost
           refresh={replies.refetch}

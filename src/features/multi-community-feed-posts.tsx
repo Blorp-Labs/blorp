@@ -5,6 +5,9 @@ import {
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
+import { usePagination } from "../lib/hooks/use-pagination";
+import { PaginationControls } from "../components/pagination-controls";
+import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
@@ -45,10 +48,9 @@ import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 
-const EMPTY_ARR: never[] = [];
-
 const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+const PAGINATION = "__PAGINATION__" as const;
+type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -69,16 +71,13 @@ export default function MultiCommunityFeedPosts() {
 
   const feed = useMultiCommunityFeedFromStore(apId);
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSorts();
   const setPostSort = useFiltersStore((s) => s.setPostSort);
   const posts = usePosts({
     multiCommunityFeedApId: apId,
     multiCommunityFeedId: feed?.id,
   });
-  const data = useMemo(
-    () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
-    [posts.data],
-  );
 
   const mostRecentPost = useMostRecentPost("community", {
     multiCommunityFeedApId: apId,
@@ -94,6 +93,24 @@ export default function MultiCommunityFeedPosts() {
     refetch,
     isRefetching,
   } = posts;
+
+  const { flatData, onEndReached, paginationProps } = usePagination({
+    pages: posts.data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    mode: paginationMode,
+    listKey: postSort,
+  });
+
+  const data: Item[] = useMemo(() => {
+    const unique = _.uniq(flatData);
+    if (isBlocked || (unique.length === 0 && !posts.isFetching))
+      return [NO_ITEMS];
+    if (paginationMode === "pages") return [...unique, PAGINATION];
+    return unique;
+  }, [flatData, posts.isFetching, paginationMode, isBlocked]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -197,11 +214,7 @@ export default function MultiCommunityFeedPosts() {
             key={postSort}
             fullscreen
             scrollHost
-            data={
-              isBlocked || (data.length === 0 && !posts.isFetching)
-                ? [NO_ITEMS]
-                : data
-            }
+            data={data}
             stickyIndicies={[1]}
             header={[
               <Fragment key="community-header">
@@ -219,6 +232,9 @@ export default function MultiCommunityFeedPosts() {
               </Fragment>,
             ]}
             renderItem={({ item }) => {
+              if (item === PAGINATION) {
+                return <PaginationControls {...paginationProps} />;
+              }
               if (item === NO_ITEMS) {
                 const showSortHint =
                   !isBlocked &&
@@ -252,11 +268,7 @@ export default function MultiCommunityFeedPosts() {
               }
               return <Post apId={item} featuredContext="community" />;
             }}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            onEndReached={onEndReached}
             estimatedItemSize={475}
             refresh={refresh}
             placeholder={

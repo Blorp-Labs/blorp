@@ -4623,6 +4623,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-slot@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "@radix-ui/react-slot@npm:1.2.4"
+  dependencies:
+    "@radix-ui/react-compose-refs": "npm:1.1.2"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/8b719bb934f1ae5ac0e37214783085c17c2f1080217caf514c1c6cc3d9ca56c7e19d25470b26da79aa6e605ab36589edaade149b76f5fc0666f1063e2fc0a0dc
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-switch@npm:1.2.6":
   version: 1.2.6
   resolution: "@radix-ui/react-switch@npm:1.2.6"
@@ -7902,6 +7917,7 @@ __metadata:
     "@number-flow/react": "npm:^0.5.10"
     "@panzoom/panzoom": "patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch"
     "@playwright/test": "npm:^1.57.0"
+    "@radix-ui/react-slot": "npm:^1.2.4"
     "@storybook/addon-a11y": "npm:^10.2.10"
     "@storybook/addon-docs": "npm:^10.2.10"
     "@storybook/react-vite": "npm:^10.2.10"

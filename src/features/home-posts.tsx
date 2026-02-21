@@ -34,11 +34,13 @@ import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
-
-const EMPTY_ARR: never[] = [];
+import { usePagination } from "../lib/hooks/use-pagination";
+import { PaginationControls } from "../components/pagination-controls";
+import { useSettingsStore } from "../stores/settings";
 
 const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+const PAGINATION = "__PAGINATION__" as const;
+type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -186,14 +188,12 @@ export default function HomePosts() {
   const listingType = useFiltersStore((s) => s.listingType);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
+
   const posts = usePosts({
     sort: postSort,
     type: listingType,
   });
-  const data = useMemo(
-    () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
-    [posts.data],
-  );
 
   const mostRecentPost = useMostRecentPost("local", {
     sort: postSort,
@@ -207,6 +207,23 @@ export default function HomePosts() {
     refetch,
     isRefetching,
   } = posts;
+
+  const { flatData, onEndReached, paginationProps } = usePagination({
+    pages: posts.data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    mode: paginationMode,
+    listKey: postSort + listingType,
+  });
+
+  const data: Item[] = useMemo(() => {
+    const unique = _.uniq(flatData);
+    if (unique.length === 0 && !posts.isFetching) return [NO_ITEMS];
+    if (paginationMode === "pages") return [...unique, PAGINATION];
+    return unique;
+  }, [flatData, posts.isFetching, paginationMode]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -293,7 +310,7 @@ export default function HomePosts() {
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
-            data={data.length === 0 && !posts.isFetching ? [NO_ITEMS] : data}
+            data={data}
             placeholder={
               <ContentGutters className="px-0">
                 <PostCardSkeleton />
@@ -302,6 +319,9 @@ export default function HomePosts() {
             }
             header={[<PostsSortBar key="header" />]}
             renderItem={({ item }) => {
+              if (item === PAGINATION) {
+                return <PaginationControls {...paginationProps} />;
+              }
               if (item === NO_ITEMS) {
                 const showSortHint =
                   siteHasPosts &&
@@ -335,11 +355,7 @@ export default function HomePosts() {
             }}
             scrollHost
             fullscreen
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            onEndReached={onEndReached}
             onScroll={scrollAnimation.scrollHandler}
             refresh={refreshFeed}
           />

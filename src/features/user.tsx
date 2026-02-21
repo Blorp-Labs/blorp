@@ -8,6 +8,9 @@ import {
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
+import { usePagination } from "../lib/hooks/use-pagination";
+import { PaginationControls } from "../components/pagination-controls";
+import { useSettingsStore } from "../stores/settings";
 import { decodeApId, encodeApId } from "../lib/api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
@@ -43,7 +46,8 @@ import { cn } from "../lib/utils";
 import { Page } from "../components/page";
 
 const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+const PAGINATION = "__PAGINATION__" as const;
+type Item = string | typeof PAGINATION;
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -130,6 +134,7 @@ export default function User() {
     z.enum(["Posts", "Comments"]),
   );
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort } = useAvailableSorts();
   const personQuery = usePersonDetails({ actorId });
   const query = usePersonFeed({ apIdOrUsername: actorId, type });
@@ -145,14 +150,7 @@ export default function User() {
     }
   }, [actorId, personQuery.data?.apId, history, linkCtx.root]);
 
-  const {
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch,
-    data,
-    isFetching,
-  } = query;
+  const { refetch, data, isFetching } = query;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const person = useProfilesStore((s) =>
@@ -161,20 +159,49 @@ export default function User() {
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 
-  const listData = useMemo(() => {
-    const commentViews =
-      _.uniq(data?.pages.map((res) => res.comments).flat()) ?? EMPTY_ARR;
+  const postsPagination = usePagination({
+    pages: data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    isFetchingNextPage: query.isFetchingNextPage,
+    mode: paginationMode,
+    listKey: "posts" + postSort,
+  });
 
-    const postIds =
-      _.uniq(data?.pages.flatMap((res) => res.posts)) ?? EMPTY_ARR;
+  const commentsPagination = usePagination({
+    pages: data?.pages,
+    getItems: (p) => p.comments,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    isFetchingNextPage: query.isFetchingNextPage,
+    mode: paginationMode,
+    listKey: "comments",
+  });
 
-    switch (type) {
-      case "Posts":
-        return postIds;
-      case "Comments":
-        return commentViews;
+  const activePagination =
+    type === "Posts" ? postsPagination : commentsPagination;
+
+  const listData: Item[] = useMemo(() => {
+    if (type === "Posts") {
+      const unique = _.uniq(postsPagination.flatData);
+      if ((unique.length === 0 && !isFetching) || isBlocked) return [NO_ITEMS];
+      if (paginationMode === "pages") return [...unique, PAGINATION];
+      return unique;
+    } else {
+      const unique = _.uniq(commentsPagination.flatData);
+      if ((unique.length === 0 && !isFetching) || isBlocked) return [NO_ITEMS];
+      if (paginationMode === "pages") return [...unique, PAGINATION];
+      return unique;
     }
-  }, [data?.pages, type]);
+  }, [
+    type,
+    postsPagination.flatData,
+    commentsPagination.flatData,
+    isFetching,
+    isBlocked,
+    paginationMode,
+  ]);
 
   return (
     <Page notFound={personQuery.isError && !person} notFoundApId={actorId}>
@@ -206,11 +233,7 @@ export default function User() {
           <VirtualList<Item>
             key={type === "Comments" ? "comments" : type + postSort}
             scrollHost
-            data={
-              (listData.length === 0 && !isFetching) || isBlocked
-                ? [NO_ITEMS]
-                : listData
-            }
+            data={listData}
             header={[
               <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
               <ContentGutters
@@ -237,6 +260,11 @@ export default function User() {
               </ContentGutters>,
             ]}
             renderItem={({ item }) => {
+              if (item === PAGINATION) {
+                return (
+                  <PaginationControls {...activePagination.paginationProps} />
+                );
+              }
               if (item === NO_ITEMS) {
                 return (
                   <ContentGutters>
@@ -258,11 +286,7 @@ export default function User() {
 
               return <Comment path={item} />;
             }}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            onEndReached={activePagination.onEndReached}
             stickyIndicies={[1]}
             estimatedItemSize={475}
             refresh={refetch}
