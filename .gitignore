@@ -51,3 +51,6 @@ storybook-static/
 *.provisionprofile
 Entitlements.plist
 release/
+
+# Claude
+.claude/plans/
