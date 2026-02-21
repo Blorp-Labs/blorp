@@ -1509,9 +1509,9 @@ export class PieFedApi implements ApiBlueprint<null> {
           ? 1
           : _.parseInt(form.pageCursor) + 1;
 
-      const hasMorePosts = posts.length > this.limit;
-      const hasMoreCommunities = communities.length > this.limit;
-      const hasMoreUsers = users.length > this.limit;
+      const hasMorePosts = posts.length >= this.limit;
+      const hasMoreCommunities = communities.length >= this.limit;
+      const hasMoreUsers = users.length >= this.limit;
 
       const hasNextCursor = hasMorePosts || hasMoreCommunities || hasMoreUsers;
 

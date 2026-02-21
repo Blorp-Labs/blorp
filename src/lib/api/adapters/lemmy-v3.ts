@@ -1345,7 +1345,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         options,
       );
       const postReports = post_reports.map(convertPostReport);
-      const hasMore = post_reports.length <= this.limit;
+      const hasMore = post_reports.length >= this.limit;
       return {
         postReports,
         users: _.compact(
@@ -1385,7 +1385,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         options,
       );
       const commentReports = comment_reports.map(convertCommentReport);
-      const hasMore = comment_reports.length <= this.limit;
+      const hasMore = comment_reports.length >= this.limit;
       return {
         commentReports,
         users: _.compact(
