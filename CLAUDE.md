@@ -14,26 +14,26 @@ Blorp is a multi-platform client for [Lemmy](https://join-lemmy.org/) and [PieFe
 
 ## Platforms
 
-| Platform | Technology | Build |
-|----------|-----------|-------|
-| Web | Vite | `yarn build` |
-| macOS | Tauri 2 | `yarn build:tauri` or `scripts/build-release.sh` |
-| iOS | Capacitor 7 | `yarn build` then Xcode |
-| Android | Capacitor 7 | `yarn build` then Android Studio |
+| Platform | Technology  | Build                                            |
+| -------- | ----------- | ------------------------------------------------ |
+| Web      | Vite        | `yarn build`                                     |
+| macOS    | Tauri 2     | `yarn build:tauri` or `scripts/build-release.sh` |
+| iOS      | Capacitor 7 | `yarn build` then Xcode                          |
+| Android  | Capacitor 7 | `yarn build` then Android Studio                 |
 
 Tauri is only used for macOS. Capacitor handles iOS and Android. Web runs as a standalone Vite app.
 
 ## Commands
 
-| Command | Purpose |
-|---------|---------|
-| `yarn dev` | Start Vite dev server |
-| `yarn build` | Production build (Vite + Capacitor sync) |
-| `yarn test` | Run Vitest unit tests |
-| `yarn test:ts` | TypeScript type check (`tsc --noEmit`) |
-| `yarn lint` | Lint via oxlint |
-| `yarn test:e2e` | Playwright E2E tests (requires `yarn build` first) |
-| `yarn storybook` | Component Storybook |
+| Command          | Purpose                                            |
+| ---------------- | -------------------------------------------------- |
+| `yarn dev`       | Start Vite dev server                              |
+| `yarn build`     | Production build (Vite + Capacitor sync)           |
+| `yarn test`      | Run Vitest unit tests                              |
+| `yarn test:ts`   | TypeScript type check (`tsc --noEmit`)             |
+| `yarn lint`      | Lint via oxlint                                    |
+| `yarn test:e2e`  | Playwright E2E tests (requires `yarn build` first) |
+| `yarn storybook` | Component Storybook                                |
 
 Run `yarn test:ts` periodically during development. Run `yarn lint` to check for lint issues.
 
@@ -123,6 +123,10 @@ Ionic provides the app shell (pages, tabs, menus, gestures, safe areas). ShadCN/
 - Follow existing patterns — look at nearby components for reference.
 - Keep PRs focused. Clean up code you touch, but don't expand the diff into unrelated files.
 - Fix lint warnings only in code you're already modifying.
+
+### React hooks
+
+- **Never call hooks after a conditional return.** All hook calls (`useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, custom hooks, etc.) must come before any early `return` statement in a component or hook. When adding a new hook to existing code, scan upward for early returns. When adding a new early return, scan downward for hook calls that would become conditional.
 
 ### Libraries
 

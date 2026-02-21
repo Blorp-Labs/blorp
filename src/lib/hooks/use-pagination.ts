@@ -70,6 +70,32 @@ export function usePagination<Page, Item>({
     prevPagesLengthRef.current = newLength;
   }, [pages?.length, pendingNextPage, router]);
 
+  // Pages mode: prefetch the next page while the user is reading the current one
+  const discoveredPageCount = pages?.length ?? 0;
+  const safeIndex = Math.min(
+    currentPageIndex,
+    Math.max(0, discoveredPageCount - 1),
+  );
+  useEffect(() => {
+    if (
+      mode === "pages" &&
+      safeIndex === discoveredPageCount - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !pendingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    mode,
+    safeIndex,
+    discoveredPageCount,
+    hasNextPage,
+    isFetchingNextPage,
+    pendingNextPage,
+    fetchNextPage,
+  ]);
+
   if (mode === "infinite") {
     const flatData = pages ? pages.flatMap(getItems) : [];
     const onEndReached =
@@ -88,11 +114,6 @@ export function usePagination<Page, Item>({
   }
 
   // Pages mode
-  const discoveredPageCount = pages?.length ?? 0;
-  const safeIndex = Math.min(
-    currentPageIndex,
-    Math.max(0, discoveredPageCount - 1),
-  );
   const flatData = pages && pages[safeIndex] ? getItems(pages[safeIndex]) : [];
 
   const onPageChange = (page: number) => {
