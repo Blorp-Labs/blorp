@@ -269,7 +269,7 @@ export function useCommentActions({
         ]
       : []),
     ...(route ? shareActions : []),
-    ...(isPostAuthor && commentView && software === "piefed"
+    ...((isPostAuthor || canMod) && commentView && software === "piefed"
       ? [
           {
             text: answer ? "Unmark as answer" : "Mark as answer",
