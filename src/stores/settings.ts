@@ -110,16 +110,7 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: "settings",
       storage: createStorage<SettingsStore>(),
-      version: 2,
-      migrate: (persisted: any, version: number) => {
-        if (version === 0) {
-          persisted.shareLinkType = null;
-        }
-        if (version <= 1) {
-          persisted.paginationMode = "infinite";
-        }
-        return persisted;
-      },
+      version: 1,
       merge: (p: any, current) => {
         const persisted = p as Partial<SettingsStore>;
         return {

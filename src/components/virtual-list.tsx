@@ -1,4 +1,11 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import {
   useVirtualizer,
   VirtualItem,
@@ -169,15 +176,16 @@ function VirtualListInternal<T>({
 
   const focused = useElementHasFocus(scrollRef);
 
-  useEffect(() => onFocusChange?.(focused), [focused]);
+  const onFocusChangeEffectEvent = useEffectEvent(onFocusChange ?? _.noop);
+  useEffect(() => onFocusChangeEffectEvent?.(focused), [focused]);
 
+  const showPaginationControls = paginationControls && !noItems;
   const headerLen = header?.length ?? 0;
   // noItems takes priority over data/placeholders: render exactly one slot for noItemsComponent
   const baseDataCount = noItems
     ? 1
     : dataLen || (placeholder ? numPlaceholders : 0);
-  let count =
-    headerLen + baseDataCount + (paginationControls && !noItems ? 1 : 0);
+  const count = headerLen + baseDataCount + (showPaginationControls ? 1 : 0);
   const rowVirtualizer = useVirtualizer({
     count,
     overscan,
