@@ -146,7 +146,7 @@ export const TextSmall: Story = {
 export const TextExtraSmall: Story = {
   args: {
     apId: textPost.post.apId,
-    postCardStyle: "small",
+    postCardStyle: "extra-small",
   },
 };
 
