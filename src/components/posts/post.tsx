@@ -1,6 +1,6 @@
 import { usePostsStore } from "@/src/stores/posts";
 import { useLinkContext } from "../../routing/link-context";
-import { useSettingsStore } from "@/src/stores/settings";
+import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/lib/api/utils";
 import { Link } from "@/src/routing/index";
@@ -58,6 +58,7 @@ export interface PostProps {
   detailView?: boolean;
   featuredContext?: "community" | "home" | "user" | "search" | "feed";
   modApIds?: string[];
+  postCardStyle?: PostCardStyle;
 }
 
 export function PostCardSkeleton(props: {
@@ -884,7 +885,8 @@ export function PostCard(props: PostProps) {
   const showNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
 
-  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+  const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
+  const postCardStyle = props.postCardStyle ?? globalPostCardStyle;
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const post = usePostsStore(

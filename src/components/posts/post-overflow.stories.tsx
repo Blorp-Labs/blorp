@@ -6,7 +6,6 @@ import { usePostsStore } from "@/src/stores/posts";
 import { useEffect } from "react";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
-import { useSettingsStore } from "@/src/stores/settings";
 import { useFlairsStore } from "@/src/stores/flairs";
 
 // Long unbroken string — stress-tests break-words / overflow clipping
@@ -163,161 +162,131 @@ type Story = StoryObj<typeof PostCard>;
 // ─── Unbroken title ───────────────────────────────────────────────────────────
 
 export const UnbrokenTitleLarge: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "large" });
-      return <Story />;
-    },
-  ],
-  args: { apId: unbrokenTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: unbrokenTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "large",
+  },
 };
 
 export const UnbrokenTitleSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: unbrokenTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: unbrokenTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "small",
+  },
 };
 
 export const UnbrokenTitleExtraSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "extra-small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: unbrokenTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: unbrokenTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "extra-small",
+  },
 };
 
 // ─── Realistic multi-word title ───────────────────────────────────────────────
 
 export const LoremTitleLarge: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "large" });
-      return <Story />;
-    },
-  ],
-  args: { apId: loremTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: loremTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "large",
+  },
 };
 
 export const LoremTitleSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: loremTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: loremTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "small",
+  },
 };
 
 export const LoremTitleExtraSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "extra-small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: loremTitlePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: loremTitlePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "extra-small",
+  },
 };
 
 // ─── Long creator name (featuredContext="community" → shows creator) ───────────
 
 export const LongCreatorNameLarge: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "large" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCreatorNamePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: longCreatorNamePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "large",
+  },
 };
 
 export const LongCreatorNameSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCreatorNamePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: longCreatorNamePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "small",
+  },
 };
 
 export const LongCreatorNameExtraSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "extra-small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCreatorNamePost.post.apId, featuredContext: "community" },
+  args: {
+    apId: longCreatorNamePost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "extra-small",
+  },
 };
 
 // ─── Long community name (featuredContext="user" → shows community) ────────────
 
 export const LongCommunityNameLarge: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "large" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCommunityNamePost.post.apId, featuredContext: "user" },
+  args: {
+    apId: longCommunityNamePost.post.apId,
+    featuredContext: "user",
+    postCardStyle: "large",
+  },
 };
 
 export const LongCommunityNameSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCommunityNamePost.post.apId, featuredContext: "user" },
+  args: {
+    apId: longCommunityNamePost.post.apId,
+    featuredContext: "user",
+    postCardStyle: "small",
+  },
 };
 
 export const LongCommunityNameExtraSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "extra-small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: longCommunityNamePost.post.apId, featuredContext: "user" },
+  args: {
+    apId: longCommunityNamePost.post.apId,
+    featuredContext: "user",
+    postCardStyle: "extra-small",
+  },
 };
 
 // ─── Many flairs (all card styles) ───────────────────────────────────────────
 
 export const ManyFlairsLarge: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "large" });
-      return <Story />;
-    },
-  ],
-  args: { apId: manyFlairsPost.post.apId, featuredContext: "community" },
+  args: {
+    apId: manyFlairsPost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "large",
+  },
 };
 
 export const ManyFlairsSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: manyFlairsPost.post.apId, featuredContext: "community" },
+  args: {
+    apId: manyFlairsPost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "small",
+  },
 };
 
 export const ManyFlairsExtraSmall: Story = {
-  decorators: [
-    (Story) => {
-      useSettingsStore.setState({ postCardStyle: "extra-small" });
-      return <Story />;
-    },
-  ],
-  args: { apId: manyFlairsPost.post.apId, featuredContext: "community" },
+  args: {
+    apId: manyFlairsPost.post.apId,
+    featuredContext: "community",
+    postCardStyle: "extra-small",
+  },
 };
 
 // ─── Cross post overflow (detail view only — cross posts never show in list) ──
@@ -326,6 +295,7 @@ export const LongCrossPostCommunity: Story = {
   args: {
     apId: longCrossPostCommunityPost.post.apId,
     detailView: true,
+    postCardStyle: "large",
   },
 };
 
@@ -333,5 +303,6 @@ export const ManyCrossPosts: Story = {
   args: {
     apId: manyCrossPostsPost.post.apId,
     detailView: true,
+    postCardStyle: "large",
   },
 };

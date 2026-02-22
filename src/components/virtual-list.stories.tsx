@@ -24,7 +24,8 @@ const PAGE_SIZE = 5;
 const PAGES = Array.from({ length: 10 }, (_, i) =>
   Array.from({ length: PAGE_SIZE }, (_, j) =>
     api.getPost({
-      variant: j % 2 === 0 ? "text" : "image",
+      // variant: j % 2 === 0 ? "text" : "image",
+      variant: "text",
       post: {
         id: api.randomDbId(),
         title: `This is a test post ${i * PAGE_SIZE + (j + 1)}`,
@@ -72,13 +73,41 @@ export const Placeholder: Story = {
   },
 };
 
-export const PostFeed: Story = {
+export const LargePostFeed: Story = {
   args: {
     className: "h-[500px]",
     data: POST_FEED.map((p) => p.post.apId),
     renderItem: ({ item }) => (
       <div className="md:px-2">
-        <PostCard apId={item as string} />
+        <PostCard apId={item as string} postCardStyle="large" />
+      </div>
+    ),
+    numPlaceholders: 200,
+    estimatedItemSize: 24,
+  },
+};
+
+export const SmallPostFeed: Story = {
+  args: {
+    className: "h-[500px]",
+    data: POST_FEED.map((p) => p.post.apId),
+    renderItem: ({ item }) => (
+      <div className="md:px-2">
+        <PostCard apId={item as string} postCardStyle="small" />
+      </div>
+    ),
+    numPlaceholders: 200,
+    estimatedItemSize: 24,
+  },
+};
+
+export const ExtraSmallPostFeed: Story = {
+  args: {
+    className: "h-[500px]",
+    data: POST_FEED.map((p) => p.post.apId),
+    renderItem: ({ item }) => (
+      <div className="md:px-2">
+        <PostCard apId={item as string} postCardStyle="extra-small" />
       </div>
     ),
     numPlaceholders: 200,
@@ -137,7 +166,7 @@ function PaginatedFeed() {
       data={flatData}
       renderItem={({ item }) => (
         <div className="md:px-2">
-          <PostCard apId={item as string} />
+          <PostCard apId={item as string} postCardStyle="extra-small" />
         </div>
       )}
       estimatedItemSize={450}

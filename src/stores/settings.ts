@@ -5,7 +5,7 @@ import { isTest } from "../lib/device";
 import _ from "lodash";
 import { env } from "../env";
 
-type PostCardStyle = "small" | "large" | "extra-small";
+export type PostCardStyle = "small" | "large" | "extra-small";
 
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
