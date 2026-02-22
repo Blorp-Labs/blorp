@@ -43,6 +43,7 @@ import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
 import { Page } from "../components/page";
+import { NoPersonPostsMessage } from "../components/person/no-person-posts-message";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -241,16 +242,10 @@ export default function User() {
             ]}
             noItems={(data.length === 0 && !isFetching) || isBlocked}
             noItemsComponent={
-              <ContentGutters>
-                <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                  <span>
-                    {isBlocked
-                      ? `You have ${person?.slug} blocked`
-                      : "Nothing to see here"}
-                  </span>
-                </div>
-                <></>
-              </ContentGutters>
+              <NoPersonPostsMessage
+                isBlocked={isBlocked}
+                blockedName={person?.slug}
+              />
             }
             paginationControls={activePagination.paginationControls}
             renderItem={({ item }) => {

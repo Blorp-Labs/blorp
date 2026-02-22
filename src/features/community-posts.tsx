@@ -46,6 +46,7 @@ import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
+import { NoPostsMessage } from "../components/posts/no-posts-message";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -237,30 +238,14 @@ export default function CommunityPosts() {
             ]}
             noItems={isBlocked || (data.length === 0 && !posts.isFetching)}
             noItemsComponent={
-              <ContentGutters>
-                <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                  {isBlocked ? (
-                    <span>You have {communityName} blocked</span>
-                  ) : (community?.communityView?.postCount ?? 0) > 0 &&
-                    suggestedPostSort !== undefined &&
-                    postSort !== suggestedPostSort ? (
-                    <span>
-                      No posts for &ldquo;{postSort}&rdquo; sort. Try switching
-                      to{" "}
-                      <button
-                        className="not-italic underline"
-                        onClick={() => setPostSort(suggestedPostSort)}
-                      >
-                        &ldquo;{suggestedPostSort}&rdquo;
-                      </button>
-                      .
-                    </span>
-                  ) : (
-                    <span>Nothing to see here</span>
-                  )}
-                </div>
-                <></>
-              </ContentGutters>
+              <NoPostsMessage
+                isBlocked={isBlocked}
+                blockedName={communityName}
+                postSort={postSort}
+                suggestedPostSort={suggestedPostSort}
+                setPostSort={setPostSort}
+                showSortHint={(community?.communityView?.postCount ?? 0) > 0}
+              />
             }
             paginationControls={paginationControls}
             renderItem={({ item }) => (

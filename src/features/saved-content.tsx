@@ -27,6 +27,17 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 
+function NothingSavedMessage() {
+  return (
+    <ContentGutters>
+      <div className="flex-1 italic text-muted-foreground p-6 text-center">
+        <span>Nothing saved yet</span>
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
+
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
     <PostCard {...props} />
@@ -181,14 +192,7 @@ export default function SavedContent() {
               data.length === 0 &&
               !(type === "posts" ? posts.isFetching : comments.isFetching)
             }
-            noItemsComponent={
-              <ContentGutters>
-                <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                  <span>Nothing saved yet</span>
-                </div>
-                <></>
-              </ContentGutters>
-            }
+            noItemsComponent={<NothingSavedMessage />}
             paginationControls={activePagination.paginationControls}
             renderItem={({ item }) => {
               if (type === "posts") {

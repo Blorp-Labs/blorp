@@ -63,6 +63,17 @@ type Item =
   | { id: string; postReport: Schemas.PostReport }
   | { id: string; commentReport: Schemas.CommentReport };
 
+function NoInboxItemsMessage({ type }: { type: string }) {
+  return (
+    <ContentGutters>
+      <div className="flex-1 italic text-muted-foreground p-6 text-center">
+        <span>No {type !== "all" ? type : "notifications"}</span>
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
+
 function Placeholder() {
   return (
     <ContentGutters>
@@ -768,14 +779,7 @@ export default function Inbox() {
           stickyIndicies={[0]}
           data={displayData}
           noItems={displayData.length === 0 && !isFetching}
-          noItemsComponent={
-            <ContentGutters>
-              <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                <span>No {type !== "all" ? type : "notifications"}</span>
-              </div>
-              <></>
-            </ContentGutters>
-          }
+          noItemsComponent={<NoInboxItemsMessage type={type} />}
           paginationControls={
             isMergedTab ? undefined : activePagination.paginationControls
           }
