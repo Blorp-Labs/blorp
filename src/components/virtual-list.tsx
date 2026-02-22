@@ -176,7 +176,8 @@ function VirtualListInternal<T>({
   const baseDataCount = noItems
     ? 1
     : dataLen || (placeholder ? numPlaceholders : 0);
-  let count = headerLen + baseDataCount + (paginationControls ? 1 : 0);
+  let count =
+    headerLen + baseDataCount + (paginationControls && !noItems ? 1 : 0);
   const rowVirtualizer = useVirtualizer({
     count,
     overscan,
