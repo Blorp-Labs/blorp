@@ -2,7 +2,6 @@ import { describe, test, expect, vi, afterEach } from "vitest";
 import {
   renderHook,
   render,
-  screen,
   fireEvent,
   act,
   cleanup,
@@ -313,8 +312,7 @@ describe("usePagination - pages mode", () => {
     expect(fetchNextPage).toHaveBeenCalled();
   });
 
-  test("advancing to a pending page once it resolves", () => {
-    // Start: 1 page fetched, pending=true after clicking Next
+  test("optimistically advances to next page before data arrives, then shows data", () => {
     const fetchNextPage = vi.fn();
     const { container, rerender } = render(
       <PaginationHarness
@@ -326,7 +324,7 @@ describe("usePagination - pages mode", () => {
       />,
     );
 
-    // Enable Next and click it to enter pending state
+    // Enable Next and click it — page advances immediately even though data isn't ready
     act(() => {
       rerender(
         <PaginationHarness
@@ -340,7 +338,10 @@ describe("usePagination - pages mode", () => {
     });
     fireEvent.click(within(container).getByLabelText("Go to next page"));
 
-    // Simulate the new page arriving
+    // Data not yet fetched — flatData is empty (VirtualList shows placeholders)
+    expect(within(container).getByTestId("flat-data").textContent).toBe("");
+
+    // Simulate the new page arriving — data shows up automatically
     act(() => {
       rerender(
         <PaginationHarness

@@ -38,8 +38,6 @@ export function usePagination<Page, Item>({
   paginationControls: ReactNode;
 } {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [pendingNextPage, setPendingNextPage] = useState(false);
-  const prevPagesLengthRef = useRef(pages?.length ?? 0);
 
   const router = useRouterSafe();
 
@@ -49,48 +47,27 @@ export function usePagination<Page, Item>({
     if (listKeyRef.current !== listKey) {
       listKeyRef.current = listKey;
       setCurrentPageIndex(0);
-      setPendingNextPage(false);
     }
   }, [listKey]);
 
-  // Advance to newly fetched page when pending
-  useEffect(() => {
-    const newLength = pages?.length ?? 0;
-    if (pendingNextPage && newLength > prevPagesLengthRef.current) {
-      const newIndex = newLength - 1;
-      setCurrentPageIndex(newIndex);
-      setPendingNextPage(false);
-      const pathname = router?.routeInfo?.pathname;
-      if (pathname) {
-        dispatchScrollEvent(pathname);
-      }
-    }
-    prevPagesLengthRef.current = newLength;
-  }, [pages?.length, pendingNextPage, router]);
-
   // Pages mode: prefetch the next page while the user is reading the current one
-  const discoveredPageCount = pages?.length ?? 0;
-  const safeIndex = Math.min(
-    currentPageIndex,
-    Math.max(0, discoveredPageCount - 1),
-  );
+  const fetchedPageCount = pages?.length ?? 0;
+  const discoveredPageCount = Math.max(fetchedPageCount, currentPageIndex + 1);
   useEffect(() => {
     if (
       mode === "pages" &&
-      safeIndex === discoveredPageCount - 1 &&
+      currentPageIndex === fetchedPageCount - 1 &&
       hasNextPage &&
-      !isFetchingNextPage &&
-      !pendingNextPage
+      !isFetchingNextPage
     ) {
       fetchNextPage();
     }
   }, [
     mode,
-    safeIndex,
-    discoveredPageCount,
+    currentPageIndex,
+    fetchedPageCount,
     hasNextPage,
     isFetchingNextPage,
-    pendingNextPage,
     fetchNextPage,
   ]);
 
@@ -106,18 +83,17 @@ export function usePagination<Page, Item>({
   }
 
   // Pages mode
-  const flatData = pages && pages[safeIndex] ? getItems(pages[safeIndex]) : [];
+  const flatData =
+    pages && pages[currentPageIndex] ? getItems(pages[currentPageIndex]) : [];
 
   const onPageChange = (page: number) => {
-    if (pages && page < pages.length) {
-      setCurrentPageIndex(page);
-      const pathname = router?.routeInfo?.pathname;
-      if (pathname) {
-        dispatchScrollEvent(pathname);
-      }
-    } else if (page === (pages?.length ?? 0) && hasNextPage) {
+    setCurrentPageIndex(page);
+    if (page >= fetchedPageCount && hasNextPage) {
       fetchNextPage();
-      setPendingNextPage(true);
+    }
+    const pathname = router?.routeInfo?.pathname;
+    if (pathname) {
+      dispatchScrollEvent(pathname);
     }
   };
 
@@ -126,7 +102,7 @@ export function usePagination<Page, Item>({
     onEndReached: undefined,
     paginationControls: (
       <PaginationControls
-        currentPage={safeIndex}
+        currentPage={currentPageIndex}
         discoveredPageCount={discoveredPageCount}
         hasNextPage={hasNextPage}
         onPageChange={onPageChange}
