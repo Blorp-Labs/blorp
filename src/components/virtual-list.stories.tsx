@@ -76,7 +76,11 @@ export const PostFeed: Story = {
   args: {
     className: "h-[500px]",
     data: POST_FEED.map((p) => p.post.apId),
-    renderItem: ({ item }) => <PostCard apId={item as string} />,
+    renderItem: ({ item }) => (
+      <div className="md:px-2">
+        <PostCard apId={item as string} />
+      </div>
+    ),
     numPlaceholders: 200,
     estimatedItemSize: 24,
   },
@@ -131,7 +135,11 @@ function PaginatedFeed() {
     <VirtualList
       className="h-[500px]"
       data={flatData}
-      renderItem={({ item }) => <PostCard apId={item as string} />}
+      renderItem={({ item }) => (
+        <div className="md:px-2">
+          <PostCard apId={item as string} />
+        </div>
+      )}
       estimatedItemSize={450}
       paginationControls={paginationControls}
       onEndReached={onEndReached}
