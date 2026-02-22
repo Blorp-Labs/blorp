@@ -41,6 +41,22 @@ const vimeoPost = api.getPost({
   variant: "vimeo",
   post: { id: api.randomDbId() },
 });
+const peertubePost = api.getPost({
+  variant: "peertube",
+  post: { id: api.randomDbId() },
+});
+const spotifyPost = api.getPost({
+  variant: "spotify",
+  post: { id: api.randomDbId() },
+});
+const bandcampPost = api.getPost({
+  variant: "bandcamp",
+  post: { id: api.randomDbId() },
+});
+const pollPost = api.getPost({
+  variant: "poll",
+  post: { id: api.randomDbId() },
+});
 
 const postFlairs = [
   api.getFlair({ title: "Bug", backgroundColor: "#ef4444", color: "#ffffff" }),
@@ -88,6 +104,10 @@ const POSTS = [
   videoPost,
   loopsPost,
   vimeoPost,
+  peertubePost,
+  spotifyPost,
+  bandcampPost,
+  pollPost,
   postWithFlairs,
   postWithCrossPosts,
 ];
@@ -209,6 +229,34 @@ export const LoopsPost: Story = {
 export const VimeoPost: Story = {
   args: {
     apId: vimeoPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const PeerTube: Story = {
+  args: {
+    apId: peertubePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Spotify: Story = {
+  args: {
+    apId: spotifyPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Bandcamp: Story = {
+  args: {
+    apId: bandcampPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Poll: Story = {
+  args: {
+    apId: pollPost.post.apId,
     postCardStyle: "large",
   },
 };
