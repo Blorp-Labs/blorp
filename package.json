@@ -20,7 +20,7 @@
     "test:e2e": "playwright test",
     "test:ts": "yarn tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build --stats-json"
   },
   "installConfig": {
     "hoistingLimits": "workspaces"
