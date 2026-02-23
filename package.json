@@ -170,7 +170,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "4.0.13",
     "@vitest/ui": "4.0.13",
-    "chromatic": "^11.25.1",
+    "chromatic": "^15.1.1",
     "fetch-mock": "^12.5.3",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
