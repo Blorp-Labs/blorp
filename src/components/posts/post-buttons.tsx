@@ -27,6 +27,11 @@ import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
 import { getPostEmbed } from "@/src/lib/post";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
@@ -114,36 +119,62 @@ export function PostEmojiReactions({
   const addReactionEmoji = useAddPostReactionEmoji();
   const requireAuth = useRequireAuth();
 
-  const reactions = post?.emojiReactions.slice(0, MAX_REACTIONS);
-  if (!reactions || reactions.length === 0) return null;
+  const allReactions = post?.emojiReactions ?? [];
+  const reactions = allReactions.slice(0, MAX_REACTIONS);
+  if (reactions.length === 0) return null;
 
   if (reactions.length > 3) {
     return (
       <div className={cn("flex flex-row gap-1.5", className)}>
-        <Button
-          size="sm"
-          variant="outline"
-          className={cn(
-            "px-2 bg-transparent gap-1",
-            reactions.length > 5 && "gap-0 max-md:text-xs",
-          )}
-        >
-          {reactions.map((emoji) =>
-            emoji.url ? (
-              <img
-                key={emoji.token}
-                src={emoji.url}
-                alt={emoji.token}
-                className={cn(
-                  "size-4 object-contain",
-                  reactions.length > 5 && "max-md:size-3",
-                )}
-              />
-            ) : (
-              <span key={emoji.token}>{emoji.token}</span>
-            ),
-          )}
-        </Button>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className={cn(
+                "px-2 bg-transparent gap-1",
+                reactions.length > 5 && "gap-0 max-md:text-xs",
+              )}
+            >
+              {reactions.map((emoji) =>
+                emoji.url ? (
+                  <img
+                    key={emoji.token}
+                    src={emoji.url}
+                    alt={emoji.token}
+                    className={cn(
+                      "size-4 object-contain",
+                      reactions.length > 5 && "max-md:size-3",
+                    )}
+                  />
+                ) : (
+                  <span key={emoji.token}>{emoji.token}</span>
+                ),
+              )}
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-auto p-2">
+            <div className="flex flex-col gap-1">
+              {allReactions.map((emoji) => (
+                <div
+                  key={emoji.token}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  {emoji.url ? (
+                    <img
+                      src={emoji.url}
+                      alt={emoji.token}
+                      className="size-4 object-contain"
+                    />
+                  ) : (
+                    <span>{emoji.token}</span>
+                  )}
+                  <span>{emoji.count}</span>
+                </div>
+              ))}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       </div>
     );
   }

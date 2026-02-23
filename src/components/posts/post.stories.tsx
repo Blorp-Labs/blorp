@@ -76,12 +76,6 @@ const postWithManyReactions = api.getPost({
       { token: "😂", count: 5 },
       { token: "😮", count: 3 },
       { token: "😢", count: 2 },
-
-      { token: "👍", count: 12 },
-      { token: "❤️", count: 8 },
-      { token: "😂", count: 5 },
-      { token: "😮", count: 3 },
-      { token: "😢", count: 2 },
     ],
   },
 });
