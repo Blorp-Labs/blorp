@@ -133,7 +133,15 @@ export function PostEmojiReactions({
             )
           }
         >
-          {emoji.token}
+          {emoji.url ? (
+            <img
+              src={emoji.url}
+              alt={emoji.token}
+              className="size-4 object-contain"
+            />
+          ) : (
+            emoji.token
+          )}
           <span>{emoji.count}</span>
         </Button>
       ))}

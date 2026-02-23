@@ -56,7 +56,7 @@ export function CommentEmojiReactions({
   className,
   onReact,
 }: {
-  reactions?: { token: string; count: number }[];
+  reactions?: { token: string; count: number; url?: string }[];
   className?: string;
   onReact?: (emoji: string) => void;
 }) {
@@ -71,7 +71,15 @@ export function CommentEmojiReactions({
           className="px-2"
           onClick={() => onReact?.(emoji.token)}
         >
-          {emoji.token}
+          {emoji.url ? (
+            <img
+              src={emoji.url}
+              alt={emoji.token}
+              className="size-4 object-contain"
+            />
+          ) : (
+            emoji.token
+          )}
           <span>{emoji.count}</span>
         </Button>
       ))}

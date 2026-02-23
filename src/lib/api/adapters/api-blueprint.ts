@@ -115,7 +115,13 @@ export const postSchema = z.object({
   poll: postPollSchema.optional(),
   myEmojiReaction: z.string().nullable(),
   optimisticMyEmojiReaction: z.string().nullable().optional(),
-  emojiReactions: z.array(z.object({ token: z.string(), count: z.number() })),
+  emojiReactions: z.array(
+    z.object({
+      token: z.string(),
+      count: z.number(),
+      url: z.string().optional(),
+    }),
+  ),
 });
 const communitySchema = z.object({
   createdAt: z.string(),
@@ -221,7 +227,13 @@ export const commentSchema = z.object({
   optimisticAnswer: z.boolean().optional(),
   myEmojiReaction: z.string().nullable(),
   optimisticMyEmojiReaction: z.string().nullable().optional(),
-  emojiReactions: z.array(z.object({ token: z.string(), count: z.number() })),
+  emojiReactions: z.array(
+    z.object({
+      token: z.string(),
+      count: z.number(),
+      url: z.string().optional(),
+    }),
+  ),
 });
 export const privateMessageSchema = z.object({
   createdAt: z.string(),

@@ -177,6 +177,7 @@ const pieFedEmojiReactionSchema = z.object({
   token: z.string(),
   count: z.number(),
   authors: z.array(z.string()),
+  url: z.string().nullish(),
 });
 
 export const pieFedPostSchema = z.object({
@@ -368,7 +369,11 @@ function extractEmojiReactionData(
     // myEmojiReaction: myReaction?.token ?? null,
     // TODO: find a way to extract your existing emoji reaction
     myEmojiReaction: null,
-    emojiReactions: reactions.map(({ token, count }) => ({ token, count })),
+    emojiReactions: reactions.map(({ token, count, url }) => ({
+      token,
+      count,
+      ...(url ? { url } : {}),
+    })),
   };
 }
 
