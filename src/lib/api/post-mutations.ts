@@ -133,18 +133,7 @@ export function useAddPostReactionEmoji() {
       form: Forms.AddPostReactionEmoji & { postApId: string },
     ) => (await api).addPostReactionEmoji(_.omit(form, ["postApId"])),
     onMutate: ({ emoji, postApId }) => {
-      const getCachePrefix = getCachePrefixer();
-      const prev =
-        usePostsStore.getState().posts[getCachePrefix(postApId)]?.data;
-      const reactions = prev ? [...prev.emojiReactions] : [];
-      if (emoji) {
-        const existing = reactions.find((r) => r.token === emoji);
-        if (!existing) {
-          reactions.push({ token: emoji, count: 1 });
-        }
-      }
-      patchPost(postApId, getCachePrefix, {
-        emojiReactions: reactions,
+      patchPost(postApId, getCachePrefixer(), {
         optimisticMyEmojiReaction: emoji,
       });
     },

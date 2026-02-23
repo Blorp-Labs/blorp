@@ -42,16 +42,20 @@ export function apIdFromCommunitySlug(slug: string): string | undefined {
   return `https://${host}/c/${name}`;
 }
 
-export function getCommentEmojiReaction(comment: Schemas.Comment | undefined) {
-  if (!comment) {
-    return null;
-  }
-  return comment.optimisticMyEmojiReaction ?? comment.myEmojiReaction;
+export function getPostEmojiReactions(post: Schemas.Post) {
+  const reactions = post.emojiReactions;
+  const optimistic = post.optimisticMyEmojiReaction;
+  if (!optimistic) return reactions;
+  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  return [...reactions, { token: optimistic, count: 1 }];
 }
 
-export function getPostEmojiReaction(post: Schemas.Post | undefined) {
-  if (!post) return null;
-  return post.optimisticMyEmojiReaction ?? post.myEmojiReaction;
+export function getCommentEmojiReactions(comment: Schemas.Comment) {
+  const reactions = comment.emojiReactions;
+  const optimistic = comment.optimisticMyEmojiReaction;
+  if (!optimistic) return reactions;
+  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  return [...reactions, { token: optimistic, count: 1 }];
 }
 
 export function getCommentMyVote(comment: Schemas.Comment) {

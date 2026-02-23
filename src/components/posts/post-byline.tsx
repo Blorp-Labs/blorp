@@ -45,10 +45,7 @@ import {
 } from "@/src/lib/api/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
-import {
-  getPostEmojiReaction,
-  getPostMyVote,
-} from "@/src/lib/api/adapters/utils";
+import { getPostMyVote } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 
@@ -72,7 +69,7 @@ export function usePostActions({
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
-  const currentEmoji = getPostEmojiReaction(post);
+  const currentEmoji = post?.optimisticMyEmojiReaction;
   const inputAlert = useInputAlert();
   const { software } = useSoftware();
 

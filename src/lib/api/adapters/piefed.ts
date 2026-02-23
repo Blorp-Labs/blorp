@@ -362,7 +362,6 @@ function extractEmojiReactionData(
 ) {
   const reactions = emojiReactions ?? [];
   return {
-    myEmojiReaction: null,
     emojiReactions: reactions.map(({ token, count, url }) => ({
       token,
       count,

@@ -236,7 +236,6 @@ function convertPost(
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
     flairs: [],
-    myEmojiReaction: null,
     emojiReactions: [],
   };
 }
@@ -270,7 +269,6 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     childCount: counts.child_count,
     saved: commentView.saved,
     answer: false,
-    myEmojiReaction: null,
     emojiReactions: [],
   };
 }

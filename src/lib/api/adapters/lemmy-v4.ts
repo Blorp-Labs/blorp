@@ -365,7 +365,6 @@ function convertPost({
     altText: post.alt_text ?? null,
     flairs: [],
     myVote: post_actions ? (post_actions.vote_is_upvote ? 1 : -1) : undefined,
-    myEmojiReaction: null,
     emojiReactions: [],
   };
 }
@@ -403,7 +402,6 @@ function convertComment(
     childCount: comment.child_count,
     saved: false,
     answer: false,
-    myEmojiReaction: null,
     emojiReactions: [],
   };
 }

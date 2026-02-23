@@ -70,7 +70,7 @@ import { Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
 import {
   commentIsAnswer,
-  getCommentEmojiReaction,
+  getCommentEmojiReactions,
   getCommentMyVote,
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
@@ -117,7 +117,7 @@ export function useCommentActions({
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const addReactionEmoji = useAddCommentReactionEmoji();
-  const currentEmoji = getCommentEmojiReaction(commentView);
+  const currentEmoji = commentView?.optimisticMyEmojiReaction;
   const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
@@ -774,7 +774,11 @@ export function PostComment({
               )}
 
               <CommentEmojiReactions
-                reactions={commentView?.emojiReactions}
+                reactions={
+                  commentView
+                    ? getCommentEmojiReactions(commentView)
+                    : undefined
+                }
                 onReact={(emoji) =>
                   requireAuth().then(() =>
                     addReactionEmoji.mutate({

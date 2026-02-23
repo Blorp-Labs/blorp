@@ -113,7 +113,6 @@ export const postSchema = z.object({
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
   poll: postPollSchema.optional(),
-  myEmojiReaction: z.string().nullable(),
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({
@@ -225,7 +224,6 @@ export const commentSchema = z.object({
   optimisticSaved: z.boolean().optional(),
   answer: z.boolean(),
   optimisticAnswer: z.boolean().optional(),
-  myEmojiReaction: z.string().nullable(),
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({

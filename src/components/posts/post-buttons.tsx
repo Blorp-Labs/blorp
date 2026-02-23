@@ -34,7 +34,10 @@ import {
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import { getPostMyVote } from "@/src/lib/api/adapters/utils";
+import {
+  getPostMyVote,
+  getPostEmojiReactions,
+} from "@/src/lib/api/adapters/utils";
 import { useMedia } from "@/src/lib/hooks";
 import {
   useAddPostReactionEmoji,
@@ -119,7 +122,7 @@ export function PostEmojiReactions({
   const addReactionEmoji = useAddPostReactionEmoji();
   const requireAuth = useRequireAuth();
 
-  const allReactions = post?.emojiReactions ?? [];
+  const allReactions = post ? getPostEmojiReactions(post) : [];
   const reactions = allReactions.slice(0, MAX_REACTIONS);
   if (reactions.length === 0) return null;
 
