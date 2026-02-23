@@ -65,13 +65,7 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
   return useMemo(() => {
     const apis = accounts.map((account) => {
       const { instance, jwt } = account;
-      const site = getAccountSite(account);
-      const api = apiClient({
-        instance,
-        jwt,
-        myApId: site?.me?.apId,
-        myId: site?.me?.id,
-      });
+      const api = apiClient({ instance, jwt });
 
       const queryKeyPrefix: unknown[] = [
         `instance-${instance}`,

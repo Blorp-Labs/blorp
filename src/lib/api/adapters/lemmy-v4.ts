@@ -550,9 +550,6 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   instance: string;
   limit = 50;
 
-  myApId?: string;
-  myId?: number;
-
   private resolveObjectId = _.memoize(
     async (apId: string) => {
       // This shortcut only works for local objects
@@ -586,18 +583,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     instance,
     jwt,
     softwareVersion,
-    myApId,
-    myId,
   }: {
     instance: string;
     jwt?: string;
     softwareVersion: string;
-    myApId?: string;
-    myId?: number;
   }) {
     this.softwareVersion = softwareVersion;
-    this.myApId = myApId;
-    this.myId = myId;
     this.instance = instance;
     this.client = new lemmyV4.LemmyHttp(instance.replace(/\/$/, ""), {
       headers: DEFAULT_HEADERS,
@@ -626,8 +617,6 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       lemmySite.site_view.local_site.enable_downvotes === true;
 
     const me = myUser ? convertPerson(myUser.local_user_view) : null;
-    this.myApId = me?.apId;
-    this.myId = me?.id;
 
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {

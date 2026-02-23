@@ -413,9 +413,6 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   instance: string;
   limit = 50;
 
-  myApId?: string;
-  myId?: number;
-
   private resolveObjectId = _.memoize(
     async (apId: string) =>
       translateErrors(async () => {
@@ -445,18 +442,12 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     instance,
     jwt,
     softwareVersion,
-    myApId,
-    myId,
   }: {
     instance: string;
     jwt?: string;
     softwareVersion: string;
-    myApId?: string;
-    myId?: number;
   }) {
     this.softwareVersion = softwareVersion;
-    this.myApId = myApId;
-    this.myId = myId;
     this.instance = instance.replace(/\/$/, "");
     this.client = new lemmyV3.LemmyHttp(this.instance, {
       headers: DEFAULT_HEADERS,
@@ -501,8 +492,6 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       );
 
       const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
-      this.myApId = me?.apId;
-      this.myId = me?.id;
 
       const admins = lemmySite.admins.map((p) => convertPerson(p));
 

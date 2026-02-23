@@ -712,9 +712,6 @@ export abstract class ApiBlueprint<C> {
   abstract software: Software;
   abstract softwareVersion: string;
 
-  abstract myApId?: string;
-  abstract myId?: number;
-
   abstract getSite(options?: RequestOptions): Promise<{
     site: Schemas.Site;
     communities?: Schemas.Community[];
