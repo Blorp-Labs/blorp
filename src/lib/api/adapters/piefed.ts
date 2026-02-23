@@ -361,11 +361,13 @@ function extractEmojiReactionData(
   myApId?: string,
 ) {
   const reactions = emojiReactions ?? [];
-  const myReaction = myApId
-    ? reactions.find((r) => r.authors.includes(myApId))
-    : undefined;
+  // const myReaction = myApId
+  //   ? reactions.find((r) => r.authors.includes(myApId))
+  //   : undefined;
   return {
-    myEmojiReaction: myReaction?.token ?? null,
+    // myEmojiReaction: myReaction?.token ?? null,
+    // TODO: find a way to extract your existing emoji reaction
+    myEmojiReaction: null,
     emojiReactions: reactions.map(({ token, count }) => ({ token, count })),
   };
 }

@@ -54,15 +54,23 @@ export function useDoubleTapLike(config?: Vote) {
 export function CommentEmojiReactions({
   reactions,
   className,
+  onReact,
 }: {
   reactions?: { token: string; count: number }[];
   className?: string;
+  onReact?: (emoji: string) => void;
 }) {
   if (!reactions || reactions.length === 0) return null;
   return (
     <div className={cn("flex flex-row flex-wrap gap-1.5", className)}>
       {reactions.map((emoji) => (
-        <Button key={emoji.token} size="sm" variant="outline" className="px-2">
+        <Button
+          key={emoji.token}
+          size="sm"
+          variant="outline"
+          className="px-2"
+          onClick={() => onReact?.(emoji.token)}
+        >
           {emoji.token}
           <span>{emoji.count}</span>
         </Button>

@@ -29,8 +29,12 @@ import { getPostEmbed } from "@/src/lib/post";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { getPostMyVote } from "@/src/lib/api/adapters/utils";
 import { useMedia } from "@/src/lib/hooks";
-import { useLikePost } from "@/src/lib/api/post-mutations";
+import {
+  useAddPostReactionEmoji,
+  useLikePost,
+} from "@/src/lib/api/post-mutations";
 import { NumberFlow } from "../number-flow";
 
 export function usePostVoting(apId?: string) {
@@ -105,14 +109,30 @@ export function PostEmojiReactions({
   className?: string;
 }) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const reactions = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(apId)]?.data?.emojiReactions,
-  );
-  if (!reactions || reactions.length === 0) return null;
+  const post = usePostsStore((s) => s.posts[getCachePrefixer()(apId)]?.data);
+  const addReactionEmoji = useAddPostReactionEmoji();
+  const requireAuth = useRequireAuth();
+
+  if (!post?.emojiReactions || post.emojiReactions.length === 0) return null;
   return (
     <div className={cn("flex flex-row flex-wrap gap-1.5", className)}>
-      {reactions.map((emoji) => (
-        <Button key={emoji.token} size="sm" variant="outline" className="px-2">
+      {post.emojiReactions.map((emoji) => (
+        <Button
+          key={emoji.token}
+          size="sm"
+          variant="outline"
+          className="px-2 bg-transparent"
+          onClick={() =>
+            requireAuth().then(() =>
+              addReactionEmoji.mutate({
+                postApId: apId,
+                postId: post.id,
+                emoji: emoji.token,
+                score: getPostMyVote(post) || undefined,
+              }),
+            )
+          }
+        >
           {emoji.token}
           <span>{emoji.count}</span>
         </Button>

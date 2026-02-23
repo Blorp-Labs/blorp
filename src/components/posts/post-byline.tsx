@@ -45,7 +45,10 @@ import {
 } from "@/src/lib/api/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
-import { getPostEmojiReaction } from "@/src/lib/api/adapters/utils";
+import {
+  getPostEmojiReaction,
+  getPostMyVote,
+} from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 
@@ -203,8 +206,7 @@ export function usePostActions({
                       postApId: post.apId,
                       postId: post.id,
                       emoji,
-                      score:
-                        (post.optimisticMyVote ?? post.myVote) || undefined,
+                      score: getPostMyVote(post) || undefined,
                     }),
                   ),
               })),

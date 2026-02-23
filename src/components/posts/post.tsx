@@ -546,8 +546,8 @@ function LargePostCard({
       >
         <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
       </div>
     </article>

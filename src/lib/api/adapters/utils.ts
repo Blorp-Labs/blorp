@@ -57,3 +57,7 @@ export function getPostEmojiReaction(post: Schemas.Post | undefined) {
 export function getCommentMyVote(comment: Schemas.Comment) {
   return comment.optimisticMyVote ?? comment.myVote;
 }
+
+export function getPostMyVote(post: Schemas.Post) {
+  return post.optimisticMyVote ?? post.myVote;
+}

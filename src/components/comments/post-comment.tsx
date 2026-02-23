@@ -576,6 +576,9 @@ export function PostComment({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
+  const requireAuth = useRequireAuth();
+  const addReactionEmoji = useAddCommentReactionEmoji();
+
   const editingState = useCommentEditingState({
     comment: commentView,
   });
@@ -770,7 +773,19 @@ export function PostComment({
                 />
               )}
 
-              <CommentEmojiReactions reactions={commentView?.emojiReactions} />
+              <CommentEmojiReactions
+                reactions={commentView?.emojiReactions}
+                onReact={(emoji) =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      commentId: commentView!.id,
+                      path: commentView!.path,
+                      emoji,
+                      score: getCommentMyVote(commentView!) || undefined,
+                    }),
+                  )
+                }
+              />
 
               <CommentVoting
                 commentView={commentView}
