@@ -21,6 +21,7 @@ import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
 import { NumberFlow } from "../number-flow";
+import { MAX_REACTIONS } from "../posts/config";
 
 type Vote = {
   postId: number;
@@ -60,7 +61,30 @@ export function CommentEmojiReactions({
   className?: string;
   onReact?: (emoji: string) => void;
 }) {
+  reactions = reactions?.slice(0, MAX_REACTIONS);
   if (!reactions || reactions.length === 0) return null;
+
+  if (reactions.length > 4) {
+    return (
+      <div className={cn("flex flex-row gap-1.5", className)}>
+        <Button size="sm" variant="outline" className="px-2 gap-0.5">
+          {reactions.map((emoji) =>
+            emoji.url ? (
+              <img
+                key={emoji.token}
+                src={emoji.url}
+                alt={emoji.token}
+                className="size-4 object-contain"
+              />
+            ) : (
+              <span key={emoji.token}>{emoji.token}</span>
+            ),
+          )}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-row flex-wrap gap-1.5", className)}>
       {reactions.map((emoji) => (

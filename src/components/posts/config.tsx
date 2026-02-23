@@ -6,3 +6,5 @@ export const COMMENT_COLLAPSE_EVENT = "COMMENT_COLLAPSE_EVENT";
  * link's ::after overlay (z-[1]) so they remain independently clickable.
  */
 export const ABOVE_LINK_OVERLAY = "relative z-[2]";
+
+export const MAX_REACTIONS = 10;

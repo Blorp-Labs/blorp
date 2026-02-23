@@ -738,22 +738,6 @@ export function PostComment({
                   getCommentBgClass({ commentView, highlightComment }),
               )}
             >
-              <CommentEmojiReactions
-                reactions={commentView?.emojiReactions}
-                onReact={(emoji) =>
-                  requireAuth().then(() =>
-                    addReactionEmoji.mutate({
-                      commentId: commentView!.id,
-                      path: commentView!.path,
-                      emoji,
-                      score: getCommentMyVote(commentView!) || undefined,
-                    }),
-                  )
-                }
-              />
-
-              <div className="flex-1" />
-
               {saved && (
                 <FaBookmark
                   className={cn(
@@ -788,6 +772,20 @@ export function PostComment({
                   className="z-10"
                 />
               )}
+
+              <CommentEmojiReactions
+                reactions={commentView?.emojiReactions}
+                onReact={(emoji) =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      commentId: commentView!.id,
+                      path: commentView!.path,
+                      emoji,
+                      score: getCommentMyVote(commentView!) || undefined,
+                    }),
+                  )
+                }
+              />
 
               <CommentVoting
                 commentView={commentView}

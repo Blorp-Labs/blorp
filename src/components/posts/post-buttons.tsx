@@ -36,6 +36,7 @@ import {
   useLikePost,
 } from "@/src/lib/api/post-mutations";
 import { NumberFlow } from "../number-flow";
+import { MAX_REACTIONS } from "./config";
 
 export function usePostVoting(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -113,25 +114,60 @@ export function PostEmojiReactions({
   const addReactionEmoji = useAddPostReactionEmoji();
   const requireAuth = useRequireAuth();
 
-  if (!post?.emojiReactions || post.emojiReactions.length === 0) return null;
+  const reactions = post?.emojiReactions.slice(0, MAX_REACTIONS);
+  if (!reactions || reactions.length === 0) return null;
+
+  if (reactions.length > 3) {
+    return (
+      <div className={cn("flex flex-row gap-1.5", className)}>
+        <Button
+          size="sm"
+          variant="outline"
+          className={cn(
+            "px-2 bg-transparent gap-1",
+            reactions.length > 5 && "gap-0 max-md:text-xs",
+          )}
+        >
+          {reactions.map((emoji) =>
+            emoji.url ? (
+              <img
+                key={emoji.token}
+                src={emoji.url}
+                alt={emoji.token}
+                className={cn(
+                  "size-4 object-contain",
+                  reactions.length > 5 && "max-md:size-3",
+                )}
+              />
+            ) : (
+              <span key={emoji.token}>{emoji.token}</span>
+            ),
+          )}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-row flex-wrap gap-1.5", className)}>
-      {post.emojiReactions.map((emoji) => (
+      {reactions.map((emoji) => (
         <Button
           key={emoji.token}
           size="sm"
           variant="outline"
           className="px-2 bg-transparent"
-          onClick={() =>
-            requireAuth().then(() =>
-              addReactionEmoji.mutate({
-                postApId: apId,
-                postId: post.id,
-                emoji: emoji.token,
-                score: getPostMyVote(post) || undefined,
-              }),
-            )
-          }
+          onClick={() => {
+            if (post) {
+              requireAuth().then(() =>
+                addReactionEmoji.mutate({
+                  postApId: apId,
+                  postId: post.id,
+                  emoji: emoji.token,
+                  score: getPostMyVote(post) || undefined,
+                }),
+              );
+            }
+          }}
         >
           {emoji.url ? (
             <img
