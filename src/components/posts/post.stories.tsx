@@ -41,6 +41,22 @@ const vimeoPost = api.getPost({
   variant: "vimeo",
   post: { id: api.randomDbId() },
 });
+const peertubePost = api.getPost({
+  variant: "peertube",
+  post: { id: api.randomDbId() },
+});
+const spotifyPost = api.getPost({
+  variant: "spotify",
+  post: { id: api.randomDbId() },
+});
+const bandcampPost = api.getPost({
+  variant: "bandcamp",
+  post: { id: api.randomDbId() },
+});
+const pollPost = api.getPost({
+  variant: "poll",
+  post: { id: api.randomDbId() },
+});
 
 const postFlairs = [
   api.getFlair({ title: "Bug", backgroundColor: "#ef4444", color: "#ffffff" }),
@@ -88,6 +104,10 @@ const POSTS = [
   videoPost,
   loopsPost,
   vimeoPost,
+  peertubePost,
+  spotifyPost,
+  bandcampPost,
+  pollPost,
   postWithFlairs,
   postWithCrossPosts,
 ];
@@ -129,63 +149,136 @@ const meta: Meta<typeof PostCard> = {
 export default meta;
 type Story = StoryObj<typeof PostCard>;
 
-export const Text: Story = {
+export const TextLarge: Story = {
   args: {
     apId: textPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
-export const Image: Story = {
+export const TextSmall: Story = {
+  args: {
+    apId: textPost.post.apId,
+    postCardStyle: "small",
+  },
+};
+
+export const TextExtraSmall: Story = {
+  args: {
+    apId: textPost.post.apId,
+    postCardStyle: "extra-small",
+  },
+};
+
+export const ImageLarge: Story = {
   args: {
     apId: imgPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
-export const Article: Story = {
+export const ImageSmall: Story = {
+  args: {
+    apId: imgPost.post.apId,
+    postCardStyle: "small",
+  },
+};
+
+export const ArticleLarge: Story = {
   args: {
     apId: articlePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const ArticleSmall: Story = {
+  args: {
+    apId: articlePost.post.apId,
+    postCardStyle: "small",
   },
 };
 
 export const YouTube: Story = {
   args: {
     apId: youtubePost.post.apId,
+    postCardStyle: "large",
   },
 };
 
 export const SoundCloud: Story = {
   args: {
     apId: soundcloudPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
 export const VideoPost: Story = {
   args: {
     apId: videoPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
 export const LoopsPost: Story = {
   args: {
     apId: loopsPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
 export const VimeoPost: Story = {
   args: {
     apId: vimeoPost.post.apId,
+    postCardStyle: "large",
   },
 };
 
-export const WithFlairs: Story = {
+export const PeerTube: Story = {
+  args: {
+    apId: peertubePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Spotify: Story = {
+  args: {
+    apId: spotifyPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Bandcamp: Story = {
+  args: {
+    apId: bandcampPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const Poll: Story = {
+  args: {
+    apId: pollPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const WithFlairsLarge: Story = {
   args: {
     apId: postWithFlairs.post.apId,
+    postCardStyle: "large",
   },
 };
 
-export const WithCrossPosts: Story = {
+export const WithFlairsSmall: Story = {
+  args: {
+    apId: postWithFlairs.post.apId,
+    postCardStyle: "small",
+  },
+};
+
+export const WithCrossPostsLarge: Story = {
   args: {
     apId: postWithCrossPosts.post.apId,
     detailView: true,
+    postCardStyle: "large",
   },
 };

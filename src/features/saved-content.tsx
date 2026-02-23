@@ -5,6 +5,8 @@ import {
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
 import { memo, useMemo } from "react";
+import { usePagination } from "../lib/hooks/use-pagination";
+import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import { useAvailableSorts, useComments, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
@@ -25,10 +27,16 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 
-const EMPTY_ARR: never[] = [];
-
-const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+function NothingSavedMessage() {
+  return (
+    <ContentGutters>
+      <div className="flex-1 italic text-muted-foreground p-6 text-center">
+        <span>Nothing saved yet</span>
+      </div>
+      <></>
+    </ContentGutters>
+  );
+}
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -72,6 +80,8 @@ export default function SavedContent() {
     z.enum(["posts", "comments"]),
   );
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
+
   const comments = useComments({
     savedOnly: true,
     maxDepth: undefined,
@@ -84,23 +94,38 @@ export default function SavedContent() {
     type: "All",
   });
 
-  const { hasNextPage, fetchNextPage, isFetchingNextPage, refetch } = posts;
+  const { refetch } = posts;
+
+  const postsPagination = usePagination({
+    pages: posts.data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage: posts.fetchNextPage,
+    hasNextPage: posts.hasNextPage ?? false,
+    isFetchingNextPage: posts.isFetchingNextPage,
+    mode: paginationMode,
+    listKey: "posts" + postSort,
+  });
+
+  const commentsPagination = usePagination({
+    pages: comments.data?.pages,
+    getItems: (p) => p.comments,
+    fetchNextPage: comments.fetchNextPage,
+    hasNextPage: comments.hasNextPage ?? false,
+    isFetchingNextPage: comments.isFetchingNextPage,
+    mode: paginationMode,
+    listKey: "comments",
+  });
+
+  const activePagination =
+    type === "posts" ? postsPagination : commentsPagination;
 
   const data = useMemo(() => {
-    const commentViews =
-      _.uniq(comments.data?.pages.map((res) => res.comments).flat()) ??
-      EMPTY_ARR;
-
-    const postIds =
-      _.uniq(posts.data?.pages.flatMap((res) => res.posts)) ?? EMPTY_ARR;
-
-    switch (type) {
-      case "posts":
-        return postIds;
-      case "comments":
-        return commentViews;
+    if (type === "posts") {
+      return _.uniq(postsPagination.flatData);
+    } else {
+      return _.uniq(commentsPagination.flatData);
     }
-  }, [posts.data?.pages, comments.data?.pages, type]);
+  }, [type, postsPagination.flatData, commentsPagination.flatData]);
 
   return (
     <IonPage>
@@ -136,11 +161,11 @@ export default function SavedContent() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={type === "comments" ? "comments" : type + postSort}
             fullscreen
             scrollHost
-            data={data.length === 0 && !posts.isFetching ? [NO_ITEMS] : data}
+            data={data}
             header={[
               <ContentGutters
                 className="max-md:hidden"
@@ -163,18 +188,13 @@ export default function SavedContent() {
                 <></>
               </ContentGutters>,
             ]}
+            noItems={
+              data.length === 0 &&
+              !(type === "posts" ? posts.isFetching : comments.isFetching)
+            }
+            noItemsComponent={<NothingSavedMessage />}
+            paginationControls={activePagination.paginationControls}
             renderItem={({ item }) => {
-              if (item === NO_ITEMS) {
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      <span>Nothing saved yet</span>
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-
               if (type === "posts") {
                 return <Post apId={item} />;
               }
@@ -186,11 +206,7 @@ export default function SavedContent() {
                 </ContentGutters>
               );
             }}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            onEndReached={activePagination.onEndReached}
             estimatedItemSize={475}
             stickyIndicies={[0]}
             refresh={refetch}

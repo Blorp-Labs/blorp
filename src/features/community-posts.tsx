@@ -9,6 +9,8 @@ import {
 } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
+import { usePagination } from "../lib/hooks/use-pagination";
+import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
   useAvailableSorts,
@@ -44,11 +46,7 @@ import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
-
-const EMPTY_ARR: never[] = [];
-
-const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+import { NoPostsMessage } from "../components/posts/no-posts-message";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -72,14 +70,11 @@ export default function CommunityPosts() {
     [communityNameEncoded],
   );
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSorts();
   const posts = usePosts({
     communitySlug: communityName,
   });
-  const data = useMemo(
-    () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
-    [posts.data],
-  );
 
   const mostRecentPost = useMostRecentPost("community", {
     communitySlug: communityName,
@@ -103,6 +98,18 @@ export default function CommunityPosts() {
     refetch,
     isRefetching,
   } = posts;
+
+  const { flatData, onEndReached, paginationControls } = usePagination({
+    pages: posts.data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    mode: paginationMode,
+    listKey: postSort,
+  });
+
+  const data = useMemo(() => _.uniq(flatData), [flatData]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -205,15 +212,11 @@ export default function CommunityPosts() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             key={postSort}
             fullscreen
             scrollHost
-            data={
-              isBlocked || (data.length === 0 && !posts.isFetching)
-                ? [NO_ITEMS]
-                : data
-            }
+            data={data}
             stickyIndicies={[1]}
             header={[
               <Fragment key="community-header">
@@ -233,54 +236,26 @@ export default function CommunityPosts() {
                 )}
               </Fragment>,
             ]}
-            renderItem={({ item }) => {
-              if (item === NO_ITEMS) {
-                const communityHasPosts =
-                  (community?.communityView?.postCount ?? 0) > 0;
-                const showSortHint =
-                  !isBlocked &&
-                  communityHasPosts &&
-                  suggestedPostSort !== undefined &&
-                  postSort !== suggestedPostSort;
-
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      {isBlocked ? (
-                        <span>You have {communityName} blocked</span>
-                      ) : showSortHint ? (
-                        <span>
-                          No posts for &ldquo;{postSort}&rdquo; sort. Try
-                          switching to{" "}
-                          <button
-                            className="not-italic underline"
-                            onClick={() => setPostSort(suggestedPostSort)}
-                          >
-                            &ldquo;{suggestedPostSort}&rdquo;
-                          </button>
-                          .
-                        </span>
-                      ) : (
-                        <span>Nothing to see here</span>
-                      )}
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-              return (
-                <Post
-                  apId={item}
-                  featuredContext="community"
-                  modApIds={modApIds}
-                />
-              );
-            }}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            noItems={isBlocked || (data.length === 0 && !posts.isFetching)}
+            noItemsComponent={
+              <NoPostsMessage
+                isBlocked={isBlocked}
+                blockedName={communityName}
+                postSort={postSort}
+                suggestedPostSort={suggestedPostSort}
+                setPostSort={setPostSort}
+                showSortHint={(community?.communityView?.postCount ?? 0) > 0}
+              />
+            }
+            paginationControls={paginationControls}
+            renderItem={({ item }) => (
+              <Post
+                apId={item}
+                featuredContext="community"
+                modApIds={modApIds}
+              />
+            )}
+            onEndReached={onEndReached}
             estimatedItemSize={475}
             refresh={refresh}
             placeholder={

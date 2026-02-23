@@ -34,11 +34,9 @@ import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
-
-const EMPTY_ARR: never[] = [];
-
-const NO_ITEMS = "NO_ITEMS";
-type Item = string;
+import { usePagination } from "../lib/hooks/use-pagination";
+import { useSettingsStore } from "../stores/settings";
+import { NoPostsMessage } from "../components/posts/no-posts-message";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -186,14 +184,12 @@ export default function HomePosts() {
   const listingType = useFiltersStore((s) => s.listingType);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
+
   const posts = usePosts({
     sort: postSort,
     type: listingType,
   });
-  const data = useMemo(
-    () => _.uniq(posts.data?.pages.flatMap((p) => p.posts)) ?? EMPTY_ARR,
-    [posts.data],
-  );
 
   const mostRecentPost = useMostRecentPost("local", {
     sort: postSort,
@@ -207,6 +203,18 @@ export default function HomePosts() {
     refetch,
     isRefetching,
   } = posts;
+
+  const { flatData, onEndReached, paginationControls } = usePagination({
+    pages: posts.data?.pages,
+    getItems: (p) => p.posts,
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    mode: paginationMode,
+    listKey: postSort + listingType,
+  });
+
+  const data = useMemo(() => _.uniq(flatData), [flatData]);
 
   const mostRecentPostApId = mostRecentPost?.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -288,12 +296,12 @@ export default function HomePosts() {
       </IonHeader>
       <WrappedIonContent>
         <PostReportProvider>
-          <VirtualList<Item>
+          <VirtualList
             listKey={postSort + listingType}
             onFocusChange={setFocused}
             ref={scrollRef}
             estimatedItemSize={450}
-            data={data.length === 0 && !posts.isFetching ? [NO_ITEMS] : data}
+            data={data}
             placeholder={
               <ContentGutters className="px-0">
                 <PostCardSkeleton />
@@ -301,45 +309,20 @@ export default function HomePosts() {
               </ContentGutters>
             }
             header={[<PostsSortBar key="header" />]}
-            renderItem={({ item }) => {
-              if (item === NO_ITEMS) {
-                const showSortHint =
-                  siteHasPosts &&
-                  suggestedPostSort !== undefined &&
-                  postSort !== suggestedPostSort;
-
-                return (
-                  <ContentGutters>
-                    <div className="flex-1 italic text-muted-foreground p-6 text-center">
-                      {showSortHint ? (
-                        <span>
-                          No posts for &ldquo;{postSort}&rdquo; sort. Try
-                          switching to{" "}
-                          <button
-                            className="not-italic underline"
-                            onClick={() => setPostSort(suggestedPostSort)}
-                          >
-                            &ldquo;{suggestedPostSort}&rdquo;
-                          </button>
-                          .
-                        </span>
-                      ) : (
-                        <span>Nothing to see here</span>
-                      )}
-                    </div>
-                    <></>
-                  </ContentGutters>
-                );
-              }
-              return <Post key={item} apId={item} />;
-            }}
+            noItems={data.length === 0 && !posts.isFetching}
+            noItemsComponent={
+              <NoPostsMessage
+                postSort={postSort}
+                suggestedPostSort={suggestedPostSort}
+                setPostSort={setPostSort}
+                showSortHint={siteHasPosts}
+              />
+            }
+            paginationControls={paginationControls}
+            renderItem={({ item }) => <Post key={item} apId={item} />}
             scrollHost
             fullscreen
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
+            onEndReached={onEndReached}
             onScroll={scrollAnimation.scrollHandler}
             refresh={refreshFeed}
           />

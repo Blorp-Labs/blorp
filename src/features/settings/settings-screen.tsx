@@ -283,6 +283,9 @@ export default function SettingsPage() {
   const setFilterKeywords = useSettingsStore((s) => s.setFilterKeywords);
   const pruneFiltersKeywords = useSettingsStore((s) => s.pruneFiltersKeywords);
 
+  const paginationMode = useSettingsStore((s) => s.paginationMode);
+  const setPaginationMode = useSettingsStore((s) => s.setPaginationMode);
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -333,6 +336,29 @@ export default function SettingsPage() {
                 >
                   Reduce vibration (haptics)
                 </IonToggle>
+              </SectionItem>
+              <SectionItem>
+                <label htmlFor={`${id}-pagination-mode`}>Scroll style</label>
+                <Select
+                  value={paginationMode}
+                  onValueChange={(val) =>
+                    setPaginationMode(val as "infinite" | "pages")
+                  }
+                >
+                  <SelectTrigger
+                    className="w-[160px]"
+                    id={`${id}-pagination-mode`}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Scroll style</SelectLabel>
+                      <SelectItem value="infinite">Infinite scroll</SelectItem>
+                      <SelectItem value="pages">Manual pages</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </SectionItem>
             </Section>
 

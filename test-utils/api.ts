@@ -68,10 +68,12 @@ export function getPost(config?: {
     | "loops"
     | "text"
     | "spotify"
+    | "bandcamp"
     | "soundcloud"
     | "vimeo"
     | "generic-video"
-    | "peertube";
+    | "peertube"
+    | "poll";
   post?: Partial<Schemas.Post>;
   /* postView?: PartialDeep<Omit<PostView, "image_details">>; */
   /* personView?: PartialDeep<PersonView>; */
@@ -167,6 +169,34 @@ export function getPost(config?: {
       post.url = "https://vimeo.com/279580150";
       post.thumbnailUrl =
         "https://lemmy.world/pictrs/image/56252b3c-61b4-4fb9-910c-ca273f6d0593.webp";
+      break;
+    }
+    case "peertube": {
+      post.url =
+        "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd";
+      break;
+    }
+    case "spotify": {
+      post.url = "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh";
+      break;
+    }
+    case "bandcamp": {
+      post.embedVideoUrl =
+        "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
+      break;
+    }
+    case "poll": {
+      post.poll = {
+        choices: [
+          { id: 1, text: "Option A", numVotes: 12 },
+          { id: 2, text: "Option B", numVotes: 7 },
+          { id: 3, text: "Option C", numVotes: 4 },
+          { id: 4, text: "Option D", numVotes: 1 },
+        ],
+        endDate: "2046-02-22T00:00:00.000000Z",
+        localOnly: false,
+        mode: "single",
+      };
       break;
     }
   }

@@ -1,4 +1,11 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import {
   useVirtualizer,
   VirtualItem,
@@ -125,6 +132,9 @@ function VirtualListInternal<T>({
   numPlaceholders = 25,
   header,
   listKey,
+  noItems,
+  noItemsComponent,
+  paginationControls,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -140,6 +150,9 @@ function VirtualListInternal<T>({
   numPlaceholders?: number;
   header?: ReactNode[];
   listKey?: string;
+  noItems?: boolean;
+  noItemsComponent?: ReactNode;
+  paginationControls?: ReactNode;
 }) {
   const index = useRef(0);
   const offset = useRef(0);
@@ -163,13 +176,16 @@ function VirtualListInternal<T>({
 
   const focused = useElementHasFocus(scrollRef);
 
-  useEffect(() => onFocusChange?.(focused), [focused]);
+  const onFocusChangeEffectEvent = useEffectEvent(onFocusChange ?? _.noop);
+  useEffect(() => onFocusChangeEffectEvent?.(focused), [focused]);
 
-  let count = dataLen || (placeholder ? numPlaceholders : 0);
-  if (header) {
-    count += header.length;
-  }
+  const showPaginationControls = paginationControls && !noItems;
   const headerLen = header?.length ?? 0;
+  // noItems takes priority over data/placeholders: render exactly one slot for noItemsComponent
+  const baseDataCount = noItems
+    ? 1
+    : dataLen || (placeholder ? numPlaceholders : 0);
+  const count = headerLen + baseDataCount + (showPaginationControls ? 1 : 0);
   const rowVirtualizer = useVirtualizer({
     count,
     overscan,
@@ -276,13 +292,13 @@ function VirtualListInternal<T>({
     >
       {/* Only the visible items in the virtualizer, manually positioned to be in view */}
       {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        let index = virtualItem.index;
-        if (header) {
-          index -= header.length;
-        }
-        const item = data?.[index];
-
-        const showHeader = header && virtualItem.index < header?.length;
+        const showHeader = header && virtualItem.index < headerLen;
+        const isPaginationItem =
+          !!paginationControls &&
+          virtualItem.index === headerLen + baseDataCount;
+        const localIndex = virtualItem.index - headerLen;
+        const item =
+          !showHeader && !isPaginationItem ? data?.[localIndex] : undefined;
 
         const isStuck = isActiveSticky(virtualItem.index);
 
@@ -309,14 +325,15 @@ function VirtualListInternal<T>({
                   }
             }
           >
-            {item
-              ? renderItem?.({
-                  item,
-                  index,
-                })
-              : showHeader
-                ? header[virtualItem.index]
-                : placeholder}
+            {showHeader
+              ? header[virtualItem.index]
+              : isPaginationItem
+                ? paginationControls
+                : item
+                  ? renderItem({ item, index: localIndex })
+                  : noItems
+                    ? noItemsComponent
+                    : placeholder}
           </div>
         );
       })}
@@ -353,6 +370,9 @@ export function VirtualList<T>({
   fullscreen?: boolean;
   scrollHost?: boolean;
   listKey?: string;
+  noItems?: boolean;
+  noItemsComponent?: ReactNode;
+  paginationControls?: ReactNode;
 }) {
   const media = useMedia();
   const focused = useRef(false);

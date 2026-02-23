@@ -4623,6 +4623,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-slot@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "@radix-ui/react-slot@npm:1.2.4"
+  dependencies:
+    "@radix-ui/react-compose-refs": "npm:1.1.2"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/8b719bb934f1ae5ac0e37214783085c17c2f1080217caf514c1c6cc3d9ca56c7e19d25470b26da79aa6e605ab36589edaade149b76f5fc0666f1063e2fc0a0dc
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-switch@npm:1.2.6":
   version: 1.2.6
   resolution: "@radix-ui/react-switch@npm:1.2.6"
@@ -7902,6 +7917,7 @@ __metadata:
     "@number-flow/react": "npm:^0.5.10"
     "@panzoom/panzoom": "patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch"
     "@playwright/test": "npm:^1.57.0"
+    "@radix-ui/react-slot": "npm:^1.2.4"
     "@storybook/addon-a11y": "npm:^10.2.10"
     "@storybook/addon-docs": "npm:^10.2.10"
     "@storybook/react-vite": "npm:^10.2.10"
@@ -7958,7 +7974,7 @@ __metadata:
     browser-image-compression: "npm:^2.0.2"
     canvas-confetti: "npm:^1.9.3"
     capacitor-plugin-safe-area: "npm:^4.0.0"
-    chromatic: "npm:^11.25.1"
+    chromatic: "npm:^15.1.1"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     cmdk: "npm:^1.1.1"
@@ -8448,25 +8464,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chromatic@npm:^11.25.1":
-  version: 11.25.1
-  resolution: "chromatic@npm:11.25.1"
-  peerDependencies:
-    "@chromatic-com/cypress": ^0.*.* || ^1.0.0
-    "@chromatic-com/playwright": ^0.*.* || ^1.0.0
-  peerDependenciesMeta:
-    "@chromatic-com/cypress":
-      optional: true
-    "@chromatic-com/playwright":
-      optional: true
-  bin:
-    chroma: dist/bin.js
-    chromatic: dist/bin.js
-    chromatic-cli: dist/bin.js
-  checksum: 10c0/869939cf65ddc4c606ac982cbbaba63d3d6cbc8082e24f04f74ee6a5e3979cdec49e8fab2549f87e8cfa8127c15dbda1f86371306642bdabcb43ee9cff46ceae
-  languageName: node
-  linkType: hard
-
 "chromatic@npm:^13.3.4":
   version: 13.3.5
   resolution: "chromatic@npm:13.3.5"
@@ -8483,6 +8480,25 @@ __metadata:
     chromatic: dist/bin.js
     chromatic-cli: dist/bin.js
   checksum: 10c0/58b3d7984db000f8c7b605788569a24c3f3cd41bb6b2d3a94f18acc9ff11ce6c6881f795c8390a94ff721ccfcf8a2d7942e78a54a1f70294a7b3d35ccc382154
+  languageName: node
+  linkType: hard
+
+"chromatic@npm:^15.1.1":
+  version: 15.1.1
+  resolution: "chromatic@npm:15.1.1"
+  peerDependencies:
+    "@chromatic-com/cypress": ^0.*.* || ^1.0.0
+    "@chromatic-com/playwright": ^0.*.* || ^1.0.0
+  peerDependenciesMeta:
+    "@chromatic-com/cypress":
+      optional: true
+    "@chromatic-com/playwright":
+      optional: true
+  bin:
+    chroma: dist/bin.js
+    chromatic: dist/bin.js
+    chromatic-cli: dist/bin.js
+  checksum: 10c0/c7d68fe4d8979c29e7d1f10064c36aa44f2bcd76b01bd3fe7cfb5d4e81e92df22fb8968e19cf4fd6c8ad3049ce748b2dd04b38a4b7f7a5a233b2b10a1005e872
   languageName: node
   linkType: hard
 

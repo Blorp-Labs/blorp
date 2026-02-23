@@ -5,7 +5,7 @@ import { isTest } from "../lib/device";
 import _ from "lodash";
 import { env } from "../env";
 
-type PostCardStyle = "small" | "large" | "extra-small";
+export type PostCardStyle = "small" | "large" | "extra-small";
 
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
@@ -56,6 +56,8 @@ type SettingsStore = {
   filterKeywords: string[];
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
+  paginationMode: "infinite" | "pages";
+  setPaginationMode: (mode: "infinite" | "pages") => void;
   reset: () => void;
 };
 
@@ -69,6 +71,7 @@ const INIT_STATE = {
   hideBotPosts: false,
   shareLinkType: null,
   filterKeywords: [],
+  paginationMode: "infinite",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -97,6 +100,7 @@ export const useSettingsStore = create<SettingsStore>()(
       pruneFiltersKeywords: () => {
         set({ filterKeywords: pruneFilterKeywords(get().filterKeywords) });
       },
+      setPaginationMode: (paginationMode) => set({ paginationMode }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
@@ -107,12 +111,6 @@ export const useSettingsStore = create<SettingsStore>()(
       name: "settings",
       storage: createStorage<SettingsStore>(),
       version: 1,
-      migrate: (persisted: any, version: number) => {
-        if (version === 0) {
-          persisted.shareLinkType = null;
-        }
-        return persisted;
-      },
       merge: (p: any, current) => {
         const persisted = p as Partial<SettingsStore>;
         return {

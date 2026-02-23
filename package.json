@@ -20,7 +20,7 @@
     "test:e2e": "playwright test",
     "test:ts": "yarn tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build --stats-json"
   },
   "installConfig": {
     "hoistingLimits": "workspaces"
@@ -45,6 +45,7 @@
     "@ionic/react-router": "^8.5.7",
     "@number-flow/react": "^0.5.10",
     "@panzoom/panzoom": "patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch",
+    "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/pacer": "^0.14.0",
     "@tanstack/query-broadcast-client-experimental": "5.83.1",
@@ -169,7 +170,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "4.0.13",
     "@vitest/ui": "4.0.13",
-    "chromatic": "^11.25.1",
+    "chromatic": "^15.1.1",
     "fetch-mock": "^12.5.3",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
