@@ -124,6 +124,11 @@ Ionic provides the app shell (pages, tabs, menus, gestures, safe areas). ShadCN/
 - Keep PRs focused. Clean up code you touch, but don't expand the diff into unrelated files.
 - Fix lint warnings only in code you're already modifying.
 
+### TypeScript
+
+- **Prefer `satisfies` over `as` for type assertions.** Use `as` only when you need to override the inferred type (e.g., narrowing `unknown`), not just to annotate it.
+- **Avoid nested ternary operators.** When branching over multiple cases, prefer a `switch` statement or a lookup object. A single ternary is fine; nesting them is a last resort.
+
 ### React hooks
 
 - **Never call hooks after a conditional return.** All hook calls (`useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, custom hooks, etc.) must come before any early `return` statement in a component or hook. When adding a new hook to existing code, scan upward for early returns. When adding a new early return, scan downward for hook calls that would become conditional.

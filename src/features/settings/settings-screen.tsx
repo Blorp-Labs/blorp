@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { SimpleSelect } from "@/src/components/ui/simple-select";
 import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
 
 const version =
@@ -365,23 +366,24 @@ export default function SettingsPage() {
                 </Select>
               </SectionItem>
               <SectionItem>
-                <label htmlFor={`${id}-dark-mode`}>Appearance</label>
-                <Select
+                <label>Appearance</label>
+                <SimpleSelect
+                  options={["system", "light", "dark"] satisfies DarkMode[]}
                   value={darkMode}
-                  onValueChange={(val) => setDarkMode(val as DarkMode)}
-                >
-                  <SelectTrigger className="w-[160px]" id={`${id}-dark-mode`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectGroup>
-                      <SelectLabel>Appearance</SelectLabel>
-                      <SelectItem value="system">System default</SelectItem>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  onChange={setDarkMode}
+                  valueGetter={(o) => o}
+                  labelGetter={(o) => {
+                    switch (o) {
+                      case "system":
+                        return "System default";
+                      case "dark":
+                        return "Dark";
+                      case "light":
+                        return "Light";
+                    }
+                  }}
+                  className="w-[160px]"
+                />
               </SectionItem>
             </Section>
 
