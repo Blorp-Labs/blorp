@@ -121,7 +121,7 @@ export const usePostsStore = create<SortsStore>()(
     {
       name: "posts",
       storage: createStorage<SortsStore>(),
-      version: 5,
+      version: 6,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
