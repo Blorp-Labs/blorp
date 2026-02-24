@@ -2085,7 +2085,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       ...comment_reply_view,
       saved: null,
       creator_banned_from_community: null,
-    } as any);
+    });
   }
 
   async blockPerson(form: Forms.BlockPerson) {

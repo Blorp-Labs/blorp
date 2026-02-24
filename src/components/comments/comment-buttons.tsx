@@ -67,8 +67,8 @@ export function CommentEmojiReactions({
   onReact?: (emoji: string) => void;
 }) {
   const allReactions = reactions ?? [];
+  if (allReactions.length === 0) return null;
   const truncated = allReactions.slice(0, MAX_REACTIONS);
-  if (truncated.length === 0) return null;
 
   if (truncated.length > 4) {
     return (

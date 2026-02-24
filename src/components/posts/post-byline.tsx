@@ -179,16 +179,6 @@ export function usePostActions({
           });
         }),
     },
-    {
-      text: "View post source",
-      onClick: async () => {
-        try {
-          openUrl(post.apId);
-        } catch {
-          // TODO: handle error
-        }
-      },
-    },
     ...(software === "piefed"
       ? [
           {
@@ -227,6 +217,16 @@ export function usePostActions({
           },
         ]
       : []),
+    {
+      text: "View post source",
+      onClick: async () => {
+        try {
+          openUrl(post.apId);
+        } catch {
+          // TODO: handle error
+        }
+      },
+    },
     ...(isMyPost
       ? [
           {

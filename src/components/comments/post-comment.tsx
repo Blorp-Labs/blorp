@@ -318,6 +318,16 @@ export function useCommentActions({
           },
         ]
       : []),
+    {
+      text: saved ? "Unsave comment" : "Save comment",
+      onClick: () =>
+        requireAuth().then(() => {
+          saveComment.mutateAsync({
+            commentId: commentView.id,
+            save: !saved,
+          });
+        }),
+    },
     ...((isPostAuthor || canMod) && commentView && software === "piefed"
       ? [
           {
@@ -331,16 +341,6 @@ export function useCommentActions({
           },
         ]
       : []),
-    {
-      text: saved ? "Unsave comment" : "Save comment",
-      onClick: () =>
-        requireAuth().then(() => {
-          saveComment.mutateAsync({
-            commentId: commentView.id,
-            save: !saved,
-          });
-        }),
-    },
     ...(isMyComment
       ? [
           {
