@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import {
+  DarkMode,
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
@@ -286,6 +287,9 @@ export default function SettingsPage() {
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const setPaginationMode = useSettingsStore((s) => s.setPaginationMode);
 
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  const setDarkMode = useSettingsStore((s) => s.setDarkMode);
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -356,6 +360,25 @@ export default function SettingsPage() {
                       <SelectLabel>Scroll style</SelectLabel>
                       <SelectItem value="infinite">Infinite scroll</SelectItem>
                       <SelectItem value="pages">Manual pages</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </SectionItem>
+              <SectionItem>
+                <label htmlFor={`${id}-dark-mode`}>Appearance</label>
+                <Select
+                  value={darkMode}
+                  onValueChange={(val) => setDarkMode(val as DarkMode)}
+                >
+                  <SelectTrigger className="w-[160px]" id={`${id}-dark-mode`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Appearance</SelectLabel>
+                      <SelectItem value="system">System default</SelectItem>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

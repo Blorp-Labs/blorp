@@ -1,8 +1,6 @@
 import { useSyncExternalStore } from "react";
 import _ from "lodash";
-
-// themeStore.ts
-type Theme = "light" | "dark";
+import { useSettingsStore } from "../../stores/settings";
 
 // create the MQL once
 const mql: Partial<MediaQueryList> & { matches: boolean } = _.isFunction(
@@ -82,10 +80,16 @@ function getThemeSnapshot(): Theme {
  *   );
  * }
  */
-export function useTheme() {
-  return useSyncExternalStore(
+export type Theme = "light" | "dark";
+
+export function useTheme(): Theme {
+  const darkModeSetting = useSettingsStore((s) => s.darkMode);
+  const systemTheme = useSyncExternalStore(
     subscribeTheme,
     getThemeSnapshot,
     getThemeSnapshot,
   );
+  if (darkModeSetting === "dark") return "dark";
+  if (darkModeSetting === "light") return "light";
+  return systemTheme;
 }

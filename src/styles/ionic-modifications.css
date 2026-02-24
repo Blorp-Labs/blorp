@@ -3,6 +3,7 @@
   --ion-color-primary: var(--color-muted-foreground);
   --ion-toolbar-background: white;
   --ion-tab-bar-background: white;
+  --ion-text-color: var(--shad-foreground);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -10,6 +11,22 @@
     --ion-background-color: black;
     --ion-toolbar-background: black;
     --ion-tab-bar-background: black;
+  }
+}
+
+/* Force dark */
+html:root[data-dark-mode="dark"] {
+  --ion-background-color: black;
+  --ion-toolbar-background: black;
+  --ion-tab-bar-background: black;
+}
+
+/* Force light */
+@media (prefers-color-scheme: dark) {
+  html:root[data-dark-mode="light"] {
+    --ion-background-color: white;
+    --ion-toolbar-background: white;
+    --ion-tab-bar-background: white;
   }
 }
 

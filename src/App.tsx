@@ -1,7 +1,9 @@
 import { IonApp } from "@ionic/react";
 import { setupIonicReact } from "@ionic/react";
 import _ from "lodash";
+import { useEffect } from "react";
 import Router from "./routing/Router";
+import { useSettingsStore } from "./stores/settings";
 import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
@@ -38,9 +40,23 @@ function RefreshNotificationCount() {
   return null;
 }
 
+function DarkModeEffect() {
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  useEffect(() => {
+    const html = document.documentElement;
+    if (darkMode === "system") {
+      html.removeAttribute("data-dark-mode");
+    } else {
+      html.setAttribute("data-dark-mode", darkMode);
+    }
+  }, [darkMode]);
+  return null;
+}
+
 export default function App() {
   return (
     <IonApp>
+      <DarkModeEffect />
       <TanstackQueryProvider>
         <AuthProvider>
           <PostRemoveProvider>
