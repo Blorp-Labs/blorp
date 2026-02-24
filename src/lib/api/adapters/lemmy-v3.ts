@@ -236,6 +236,7 @@ function convertPost(
     nsfw: post.nsfw || community.nsfw,
     altText: post.alt_text ?? null,
     flairs: [],
+    emojiReactions: [],
   };
 }
 function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
@@ -268,6 +269,7 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     childCount: counts.child_count,
     saved: commentView.saved,
     answer: false,
+    emojiReactions: [],
   };
 }
 function convertPrivateMessage(
@@ -1222,6 +1224,16 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   }
 
   async markCommentAsAnswer() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addCommentReactionEmoji() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
+  async addPostReactionEmoji() {
     throw Errors.NOT_IMPLEMENTED;
     return {} as any;
   }

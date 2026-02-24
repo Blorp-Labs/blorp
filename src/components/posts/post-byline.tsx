@@ -41,8 +41,13 @@ import {
   useFeaturePost,
   useLockPost,
   useSavePost,
+  useAddPostReactionEmoji,
 } from "@/src/lib/api/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
+import { useSoftware } from "@/src/lib/api/index";
+import { getPostMyVote } from "@/src/lib/api/adapters/utils";
+import { useInputAlert } from "@/src/lib/hooks/index";
+import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 
 export function usePostActions({
   post,
@@ -63,6 +68,9 @@ export function usePostActions({
   const lockPost = useLockPost();
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost();
+  const addReactionEmoji = useAddPostReactionEmoji();
+  const inputAlert = useInputAlert();
+  const { software } = useSoftware();
 
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
@@ -171,6 +179,44 @@ export function usePostActions({
           });
         }),
     },
+    ...(software === "piefed"
+      ? [
+          {
+            text: "React",
+            actions: [
+              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
+                text: emoji,
+                onClick: () =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      postApId: post.apId,
+                      postId: post.id,
+                      emoji,
+                      score: getPostMyVote(post) || undefined,
+                    }),
+                  ),
+              })),
+              {
+                text: "Other...",
+                onClick: async () => {
+                  try {
+                    await requireAuth();
+                    const emoji = await inputAlert({
+                      header: "React with emoji",
+                      placeholder: "Enter an emoji",
+                    });
+                    addReactionEmoji.mutate({
+                      postApId: post.apId,
+                      postId: post.id,
+                      emoji,
+                    });
+                  } catch {}
+                },
+              },
+            ],
+          },
+        ]
+      : []),
     {
       text: "View post source",
       onClick: async () => {

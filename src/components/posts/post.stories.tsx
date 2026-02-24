@@ -58,6 +58,28 @@ const pollPost = api.getPost({
   post: { id: api.randomDbId() },
 });
 
+const postWithSingleReaction = api.getPost({
+  variant: "text",
+  post: {
+    id: api.randomDbId(),
+    emojiReactions: [{ token: "👍", count: 12 }],
+  },
+});
+
+const postWithManyReactions = api.getPost({
+  variant: "text",
+  post: {
+    id: api.randomDbId(),
+    emojiReactions: [
+      { token: "👍", count: 12 },
+      { token: "❤️", count: 8 },
+      { token: "😂", count: 5 },
+      { token: "😮", count: 3 },
+      { token: "😢", count: 2 },
+    ],
+  },
+});
+
 const postFlairs = [
   api.getFlair({ title: "Bug", backgroundColor: "#ef4444", color: "#ffffff" }),
   api.getFlair({
@@ -110,6 +132,8 @@ const POSTS = [
   pollPost,
   postWithFlairs,
   postWithCrossPosts,
+  postWithSingleReaction,
+  postWithManyReactions,
 ];
 
 function LoadData() {
@@ -279,6 +303,20 @@ export const WithCrossPostsLarge: Story = {
   args: {
     apId: postWithCrossPosts.post.apId,
     detailView: true,
+    postCardStyle: "large",
+  },
+};
+
+export const WithSingleReaction: Story = {
+  args: {
+    apId: postWithSingleReaction.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const WithManyReactionsTruncated: Story = {
+  args: {
+    apId: postWithManyReactions.post.apId,
     postCardStyle: "large",
   },
 };

@@ -113,6 +113,14 @@ export const postSchema = z.object({
   saved: z.boolean(),
   optimisticSaved: z.boolean().optional(),
   poll: postPollSchema.optional(),
+  optimisticMyEmojiReaction: z.string().nullable().optional(),
+  emojiReactions: z.array(
+    z.object({
+      token: z.string(),
+      count: z.number(),
+      url: z.string().optional(),
+    }),
+  ),
 });
 const communitySchema = z.object({
   createdAt: z.string(),
@@ -216,6 +224,14 @@ export const commentSchema = z.object({
   optimisticSaved: z.boolean().optional(),
   answer: z.boolean(),
   optimisticAnswer: z.boolean().optional(),
+  optimisticMyEmojiReaction: z.string().nullable().optional(),
+  emojiReactions: z.array(
+    z.object({
+      token: z.string(),
+      count: z.number(),
+      url: z.string().optional(),
+    }),
+  ),
 });
 export const privateMessageSchema = z.object({
   createdAt: z.string(),
@@ -629,6 +645,18 @@ export namespace Forms {
     answer: boolean;
   };
 
+  export type AddCommentReactionEmoji = {
+    commentId: number;
+    emoji: string | null;
+    score?: number;
+  };
+
+  export type AddPostReactionEmoji = {
+    postId: number;
+    emoji: string | null;
+    score?: number;
+  };
+
   export type BlockPerson = {
     personId: number;
     block: boolean;
@@ -861,6 +889,14 @@ export abstract class ApiBlueprint<C> {
   abstract markCommentAsAnswer(
     form: Forms.MarkCommentAsAnswer,
   ): Promise<Schemas.Comment>;
+
+  abstract addCommentReactionEmoji(
+    form: Forms.AddCommentReactionEmoji,
+  ): Promise<Schemas.Comment>;
+
+  abstract addPostReactionEmoji(
+    form: Forms.AddPostReactionEmoji,
+  ): Promise<Schemas.Post>;
 
   abstract getLinkMetadata(
     form: Forms.GetLinkMetadata,

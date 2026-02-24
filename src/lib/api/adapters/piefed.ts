@@ -173,6 +173,13 @@ export const piefedPostPoll = z.object({
   my_votes: z.array(z.number()).nullish(),
 });
 
+const pieFedEmojiReactionSchema = z.object({
+  token: z.string(),
+  count: z.number(),
+  authors: z.array(z.string()),
+  url: z.string().nullish(),
+});
+
 export const pieFedPostSchema = z.object({
   alt_text: z.string().nullable().optional(),
   ap_id: z.string(),
@@ -196,6 +203,7 @@ export const pieFedPostSchema = z.object({
   //user_id: z.number(),
   locked: z.boolean().nullish(),
   poll: piefedPostPoll.nullish(),
+  emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
 });
 
 export const pieFedPostViewSchema = z.object({
@@ -334,6 +342,7 @@ export const pieFedCommentSchema = z.object({
   removed: z.boolean(),
   //user_id: z.number(),
   locked: z.boolean().nullish(),
+  emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
 });
 
 export const pieFedCommentCountsSchema = z.object({
@@ -345,12 +354,29 @@ export const pieFedCommentCountsSchema = z.object({
   upvotes: z.number(),
 });
 
+function extractEmojiReactionData(
+  emojiReactions:
+    | z.infer<typeof pieFedEmojiReactionSchema>[]
+    | undefined
+    | null,
+) {
+  const reactions = emojiReactions ?? [];
+  return {
+    emojiReactions: reactions.map(({ token, count, url }) => ({
+      token,
+      count,
+      ...(url ? { url } : {}),
+    })),
+  };
+}
+
 type PieFedCommentChildView = {
   comment: z.infer<typeof pieFedCommentSchema>;
   counts: z.infer<typeof pieFedCommentCountsSchema>;
   creator: z.infer<typeof pieFedPersonSchema>;
   my_vote: number;
   replies: PieFedCommentChildView[];
+  emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[] | null;
 };
 
 const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
@@ -362,6 +388,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     replies: z.array(pieFedCommentChildSchema),
     creator_banned_from_community: z.boolean().nullish(),
     saved: z.boolean().nullable().optional(),
+    emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
   }),
 );
 
@@ -530,6 +557,7 @@ function convertPost({
     altText: post.alt_text ?? null,
     flairs: postView.flair_list?.map((flair) => ({ id: flair.id })) ?? null,
     poll: postView.post.poll ? convertPoll(postView.post.poll) : undefined,
+    ...extractEmojiReactionData(post.emoji_reactions),
   };
 }
 
@@ -653,6 +681,7 @@ function convertComment(
     childCount: counts.child_count,
     saved: commentView.saved ?? false,
     answer: comment.answer ?? false,
+    ...extractEmojiReactionData(comment.emoji_reactions),
   };
 }
 
@@ -1252,7 +1281,10 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
 
       return {
-        post: convertPost({ postView: post_view, crossPosts: cross_posts }),
+        post: convertPost({
+          postView: post_view,
+          crossPosts: cross_posts,
+        }),
         community_view: convertCommunity(community_view, "partial"),
         creator: convertPerson({ person: post_view.creator }, "partial"),
         flairs: post_view.flair_list?.map(convertFlair),
@@ -1288,6 +1320,17 @@ export class PieFedApi implements ApiBlueprint<null> {
       console.log(err);
       throw err;
     }
+  }
+
+  async addPostReactionEmoji(form: Forms.AddPostReactionEmoji) {
+    await this.post("/post/like", {
+      post_id: form.postId,
+      emoji: form.emoji,
+      score: !form.score ? 1 : form.score,
+    });
+    const json = await this.get("/post", { id: form.postId });
+    const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
+    return convertPost({ postView: data.post_view });
   }
 
   async votePostPoll(form: Forms.PostPollVote) {
@@ -1370,7 +1413,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           .parse(json);
 
         return {
-          comments: comments.map(convertComment),
+          comments: comments.map((c) => convertComment(c)),
           creators: comments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
@@ -1402,7 +1445,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         const flattenedComments = flattenCommentViews(comments);
 
         return {
-          comments: flattenedComments.map(convertComment),
+          comments: flattenedComments.map((c) => convertComment(c)),
           creators: flattenedComments.map(({ creator }) =>
             convertPerson({ person: creator }, "partial"),
           ),
@@ -1436,6 +1479,20 @@ export class PieFedApi implements ApiBlueprint<null> {
       console.log(err);
       throw err;
     }
+  }
+
+  async addCommentReactionEmoji(form: Forms.AddCommentReactionEmoji) {
+    await this.post("/comment/like", {
+      comment_id: form.commentId,
+      emoji: form.emoji,
+      // PieFed requires a score of -1 or 1 to react
+      score: !form.score ? 1 : form.score,
+    });
+    const json = await this.get("/comment", { id: form.commentId });
+    const data = z
+      .object({ comment_view: pieFedCommentViewSchema })
+      .parse(json);
+    return convertComment(data.comment_view);
   }
 
   async saveComment(form: Forms.SaveComment): Promise<Schemas.Comment> {
@@ -1529,7 +1586,7 @@ export class PieFedApi implements ApiBlueprint<null> {
           ],
           (c) => c.apId,
         ),
-        comments: comments?.map(convertComment) ?? [],
+        comments: comments?.map((c) => convertComment(c as any)) ?? [],
         users: _.uniqBy(
           [
             ...users.map((p) => convertPerson(p, "partial")),
@@ -1694,7 +1751,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
-        comments: comments?.map(convertComment) ?? [],
+        comments: comments?.map((c) => convertComment(c)) ?? [],
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
@@ -1729,7 +1786,9 @@ export class PieFedApi implements ApiBlueprint<null> {
           flairs: selectedFlairs?.map((f) => _.pick(f, ["id"])) ?? null,
         };
       }
-      return { ...convertPost({ postView: data.post_view }) };
+      return {
+        ...convertPost({ postView: data.post_view }),
+      };
     } catch (err) {
       console.error(err);
       throw err;
@@ -1879,7 +1938,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         replies: replies.map(convertReply),
-        comments: replies.map(convertComment),
+        comments: replies.map((c) => convertComment(c as any)),
         profiles: replies.map((r) =>
           convertPerson({ person: r.creator }, "partial"),
         ),
@@ -1912,7 +1971,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return {
         mentions: replies.map(convertMention),
-        comments: replies.map(convertComment),
+        comments: replies.map((c) => convertComment(c as any)),
         profiles: _.unionBy(
           replies.map((r) => convertPerson({ person: r.creator }, "partial")),
           (p) => p.apId,

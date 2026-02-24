@@ -1,6 +1,7 @@
 import { MarkdownRenderer } from "../markdown/renderer";
 import _ from "lodash";
 import {
+  CommentEmojiReactions,
   CommentReplyButton,
   CommentVoting,
   useDoubleTapLike,
@@ -13,6 +14,7 @@ import {
 import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
+  useAddCommentReactionEmoji,
   useBlockPerson,
   useDeleteComment,
   useLockComment,
@@ -66,7 +68,12 @@ import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
-import { commentIsAnswer } from "@/src/lib/api/adapters/utils";
+import {
+  commentIsAnswer,
+  getCommentEmojiReactions,
+  getCommentMyVote,
+} from "@/src/lib/api/adapters/utils";
+import { useInputAlert } from "@/src/lib/hooks/index";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -84,6 +91,8 @@ const useDetailsStore = create<StoreState>((set) => ({
     }));
   },
 }));
+
+export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 
 export function useCommentActions({
   commentView,
@@ -107,6 +116,8 @@ export function useCommentActions({
 
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
+  const addReactionEmoji = useAddCommentReactionEmoji();
+  const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -269,16 +280,41 @@ export function useCommentActions({
         ]
       : []),
     ...(route ? shareActions : []),
-    ...((isPostAuthor || canMod) && commentView && software === "piefed"
+    ...(software === "piefed" && commentView
       ? [
           {
-            text: answer ? "Unmark as answer" : "Mark as answer",
-            onClick: () =>
-              markCommentAsAnswer.mutate({
-                path: commentView.path,
-                commentId: commentView.id,
-                answer: !answer,
-              }),
+            text: "React",
+            actions: [
+              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
+                text: emoji,
+                onClick: () =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                      score: getCommentMyVote(commentView) ?? undefined,
+                    }),
+                  ),
+              })),
+              {
+                text: "Other...",
+                onClick: async () => {
+                  try {
+                    await requireAuth();
+                    const emoji = await inputAlert({
+                      header: "React with emoji",
+                      placeholder: "Enter an emoji",
+                    });
+                    addReactionEmoji.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      emoji,
+                    });
+                  } catch {}
+                },
+              },
+            ],
           },
         ]
       : []),
@@ -292,6 +328,19 @@ export function useCommentActions({
           });
         }),
     },
+    ...((isPostAuthor || canMod) && commentView && software === "piefed"
+      ? [
+          {
+            text: answer ? "Unmark as answer" : "Mark as answer",
+            onClick: () =>
+              markCommentAsAnswer.mutate({
+                path: commentView.path,
+                commentId: commentView.id,
+                answer: !answer,
+              }),
+          },
+        ]
+      : []),
     ...(isMyComment
       ? [
           {
@@ -513,6 +562,9 @@ export function PostComment({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
+  const requireAuth = useRequireAuth();
+  const addReactionEmoji = useAddCommentReactionEmoji();
+
   const editingState = useCommentEditingState({
     comment: commentView,
   });
@@ -536,6 +588,8 @@ export function PostComment({
     postCreatorId,
   });
 
+  const bgOnParent = sorted.length === 0 && !replyState;
+
   const bodyRenderer = commentView && (
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
@@ -544,7 +598,9 @@ export function PostComment({
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
-          className={getCommentBgClass({ commentView, highlightComment })}
+          className={cn(
+            !bgOnParent && getCommentBgClass({ commentView, highlightComment }),
+          )}
         />
       )}
     </>
@@ -557,8 +613,7 @@ export function PostComment({
         "flex-1",
         level === 0 && "max-md:px-3.5 pb-2 bg-background",
         level === 0 && !singleCommentThread && "border-t",
-        sorted.length === 0 &&
-          getCommentBgClass({ commentView, highlightComment }),
+        bgOnParent && getCommentBgClass({ commentView, highlightComment }),
       )}
     >
       {singleCommentThread && level === 0 && (
@@ -625,7 +680,8 @@ export function PostComment({
               level === 0 && "pt-3",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
-              getCommentBgClass({ commentView, highlightComment }),
+              !bgOnParent &&
+                getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
             actorSlug={commentView.creatorSlug}
@@ -662,9 +718,10 @@ export function PostComment({
           {commentView && (
             <div
               className={cn(
-                "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1",
+                "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1 pt-1",
                 leftHandedMode && "flex-row-reverse",
-                getCommentBgClass({ commentView, highlightComment }),
+                !bgOnParent &&
+                  getCommentBgClass({ commentView, highlightComment }),
               )}
             >
               {saved && (
@@ -675,7 +732,6 @@ export function PostComment({
                   )}
                 />
               )}
-
               <ActionMenu
                 actions={actions}
                 trigger={
@@ -690,7 +746,6 @@ export function PostComment({
                 }
                 triggerAsChild
               />
-
               {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
                   onClick={() =>
@@ -703,6 +758,25 @@ export function PostComment({
                   className="z-10"
                 />
               )}
+
+              <CommentEmojiReactions
+                reactions={
+                  commentView
+                    ? getCommentEmojiReactions(commentView)
+                    : undefined
+                }
+                onReact={(emoji) =>
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      commentId: commentView!.id,
+                      path: commentView!.path,
+                      emoji,
+                      score: getCommentMyVote(commentView!) || undefined,
+                    }),
+                  )
+                }
+              />
+
               <CommentVoting
                 commentView={commentView}
                 className={cn("z-10", leftHandedMode ? "-ml-2.5" : "-mr-2.5")}

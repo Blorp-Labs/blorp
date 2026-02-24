@@ -27,11 +27,24 @@ import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
 import { getPostEmbed } from "@/src/lib/post";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import {
+  getPostMyVote,
+  getPostEmojiReactions,
+} from "@/src/lib/api/adapters/utils";
 import { useMedia } from "@/src/lib/hooks";
-import { useLikePost } from "@/src/lib/api/post-mutations";
+import {
+  useAddPostReactionEmoji,
+  useLikePost,
+} from "@/src/lib/api/post-mutations";
 import { NumberFlow } from "../number-flow";
+import { MAX_REACTIONS } from "./config";
 
 export function usePostVoting(apId?: string) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -95,6 +108,115 @@ export function useDoubleTapPostLike(config?: {
       voting?.vote(config);
     }
   });
+}
+
+export function PostEmojiReactions({
+  apId,
+  className,
+}: {
+  apId: string;
+  className?: string;
+}) {
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const post = usePostsStore((s) => s.posts[getCachePrefixer()(apId)]?.data);
+  const addReactionEmoji = useAddPostReactionEmoji();
+  const requireAuth = useRequireAuth();
+
+  const allReactions = post ? getPostEmojiReactions(post) : [];
+  const reactions = allReactions.slice(0, MAX_REACTIONS);
+  if (reactions.length === 0) return null;
+
+  if (reactions.length > 3) {
+    return (
+      <div className={cn("flex flex-row gap-1.5", className)}>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className={cn(
+                "px-2 bg-transparent gap-1",
+                reactions.length > 5 && "gap-0 max-md:text-xs",
+              )}
+            >
+              {reactions.map((emoji) =>
+                emoji.url ? (
+                  <img
+                    key={emoji.token}
+                    src={emoji.url}
+                    alt={emoji.token}
+                    className={cn(
+                      "size-4 object-contain",
+                      reactions.length > 5 && "max-md:size-3",
+                    )}
+                  />
+                ) : (
+                  <span key={emoji.token}>{emoji.token}</span>
+                ),
+              )}
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-auto p-2">
+            <div className="flex flex-col gap-1">
+              {allReactions.map((emoji) => (
+                <div
+                  key={emoji.token}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  {emoji.url ? (
+                    <img
+                      src={emoji.url}
+                      alt={emoji.token}
+                      className="size-4 object-contain"
+                    />
+                  ) : (
+                    <span>{emoji.token}</span>
+                  )}
+                  <span>{emoji.count}</span>
+                </div>
+              ))}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex flex-row flex-wrap gap-1.5", className)}>
+      {reactions.map((emoji) => (
+        <Button
+          key={emoji.token}
+          size="sm"
+          variant="outline"
+          className="px-2 bg-transparent"
+          onClick={() => {
+            if (post) {
+              requireAuth().then(() =>
+                addReactionEmoji.mutate({
+                  postApId: apId,
+                  postId: post.id,
+                  emoji: emoji.token,
+                  score: getPostMyVote(post) || undefined,
+                }),
+              );
+            }
+          }}
+        >
+          {emoji.url ? (
+            <img
+              src={emoji.url}
+              alt={emoji.token}
+              className="size-4 object-contain"
+            />
+          ) : (
+            emoji.token
+          )}
+          <span>{emoji.count}</span>
+        </Button>
+      ))}
+    </div>
+  );
 }
 
 export function PostVoting({
@@ -348,7 +470,7 @@ export function PostShareButton({
         >
           <div>
             <Share className="scale-110" />
-            Share
+            <span className="max-md:hidden">Share</span>
           </div>
         </Button>
       }

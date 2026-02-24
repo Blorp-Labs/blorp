@@ -41,3 +41,27 @@ export function apIdFromCommunitySlug(slug: string): string | undefined {
   if (!name || !host) return undefined;
   return `https://${host}/c/${name}`;
 }
+
+export function getPostEmojiReactions(post: Schemas.Post) {
+  const reactions = post.emojiReactions;
+  const optimistic = post.optimisticMyEmojiReaction;
+  if (!optimistic) return reactions;
+  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  return [...reactions, { token: optimistic, count: 1 }];
+}
+
+export function getCommentEmojiReactions(comment: Schemas.Comment) {
+  const reactions = comment.emojiReactions;
+  const optimistic = comment.optimisticMyEmojiReaction;
+  if (!optimistic) return reactions;
+  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  return [...reactions, { token: optimistic, count: 1 }];
+}
+
+export function getCommentMyVote(comment: Schemas.Comment) {
+  return comment.optimisticMyVote ?? comment.myVote;
+}
+
+export function getPostMyVote(post: Schemas.Post) {
+  return post.optimisticMyVote ?? post.myVote;
+}

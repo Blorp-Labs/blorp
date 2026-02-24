@@ -11,6 +11,7 @@ import {
 import { PostActionButtion, PostByline } from "./post-byline";
 import {
   PostCommentsButton,
+  PostEmojiReactions,
   PostShareButton,
   PostVoting,
   useDoubleTapPostLike,
@@ -539,12 +540,13 @@ function LargePostCard({
       )}
       <div
         className={cn(
-          "flex flex-row items-center justify-end gap-2.5 pt-1",
+          "flex flex-row items-center justify-end gap-2 pt-1",
           leftHandedMode && "flex-row-reverse",
         )}
       >
         <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
+        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
         <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
       </div>
@@ -745,6 +747,7 @@ export function SmallPostCard({
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
           <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
           <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
