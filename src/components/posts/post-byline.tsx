@@ -69,7 +69,6 @@ export function usePostActions({
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
-  const currentEmoji = post?.optimisticMyEmojiReaction;
   const inputAlert = useInputAlert();
   const { software } = useSoftware();
 
@@ -207,19 +206,6 @@ export function usePostActions({
                     }),
                   ),
               })),
-              ...(currentEmoji
-                ? [
-                    {
-                      text: "Clear reaction",
-                      onClick: () =>
-                        addReactionEmoji.mutate({
-                          postApId: post.apId,
-                          postId: post.id,
-                          emoji: null,
-                        }),
-                    },
-                  ]
-                : []),
               {
                 text: "Other...",
                 onClick: async () => {

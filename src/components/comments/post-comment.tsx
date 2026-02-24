@@ -117,7 +117,6 @@ export function useCommentActions({
   const saveComment = useSaveComment(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const addReactionEmoji = useAddCommentReactionEmoji();
-  const currentEmoji = commentView?.optimisticMyEmojiReaction;
   const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
@@ -298,19 +297,6 @@ export function useCommentActions({
                     }),
                   ),
               })),
-              ...(currentEmoji
-                ? [
-                    {
-                      text: "Clear reaction",
-                      onClick: () =>
-                        addReactionEmoji.mutate({
-                          path: commentView.path,
-                          commentId: commentView.id,
-                          emoji: null,
-                        }),
-                    },
-                  ]
-                : []),
               {
                 text: "Other...",
                 onClick: async () => {
