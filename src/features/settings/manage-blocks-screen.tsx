@@ -1,6 +1,6 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonAlert } from "@ionic/react";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -15,6 +15,10 @@ import { useProfilesStore } from "@/src/stores/profiles";
 import { useShallow } from "zustand/shallow";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
+import { useBlockPerson, useBlockCommunity } from "@/src/lib/api";
+import { Button } from "@/src/components/ui/button";
+import { PersonBadge } from "@/src/components/person/person-badge";
+import { X } from "@/src/components/icons";
 
 export default function SettingsPage() {
   const { index: indexStr } = useParams("/settings/manage-blocks/:index");
@@ -48,6 +52,11 @@ export default function SettingsPage() {
     ? parseAccountInfo(account)
     : { person: undefined };
   const slug = person?.slug;
+
+  const [alrt] = useIonAlert();
+
+  const blockPerson = useBlockPerson({ account });
+  const blockCommunity = useBlockCommunity({ account });
 
   return (
     <Page notFound={!account}>
@@ -89,87 +98,85 @@ export default function SettingsPage() {
             if ("avatar" in item) {
               return (
                 <ContentGutters className="py-0.5">
-                  <PersonCard
-                    actorId={item.apId}
-                    account={account}
-                    size="sm"
-                    disableLink
-                    disableHover
-                  />
+                  <div className="flex items-center gap-2">
+                    <PersonCard
+                      actorId={item.apId}
+                      account={account}
+                      size="sm"
+                      disableLink
+                      disableHover
+                    />
+                    <PersonBadge person={item} size="sm" />
+                    <div className="flex-1" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        alrt({
+                          message: `Unblock ${item.slug}`,
+                          buttons: [
+                            { text: "Cancel", role: "cancel" },
+                            {
+                              text: "OK",
+                              role: "confirm",
+                              handler: () =>
+                                blockPerson.mutate({
+                                  personId: item.id,
+                                  block: false,
+                                }),
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      <span className="sr-only">Unblock</span>
+                      <X />
+                    </Button>
+                  </div>
                 </ContentGutters>
               );
             }
 
             return (
               <ContentGutters className="py-0.5">
-                <CommunityCard
-                  size="sm"
-                  communitySlug={item.slug}
-                  disableLink
-                  account={account}
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <CommunityCard
+                      size="sm"
+                      communitySlug={item.slug}
+                      disableLink
+                      account={account}
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      alrt({
+                        message: `Unblock ${item.slug}`,
+                        buttons: [
+                          { text: "Cancel", role: "cancel" },
+                          {
+                            text: "OK",
+                            role: "confirm",
+                            handler: () =>
+                              blockCommunity.mutate({
+                                communityId: item.id,
+                                block: false,
+                              }),
+                          },
+                        ],
+                      })
+                    }
+                  >
+                    <span className="sr-only">Unblock</span>
+                    <X />
+                  </Button>
+                </div>
               </ContentGutters>
             );
           }}
         />
-
-        {/* <ContentGutters className="pt-4 max-md:px-3.5"> */}
-        {/*   <div className="flex flex-col gap-8"> */}
-        {/*     <Section title="BLOCKED USERS"> */}
-        {/*       {blockedPersons?.map((p) => { */}
-        {/*         return ( */}
-        {/*           <SectionItem */}
-        {/*             key={p.apId} */}
-        {/*             onClick={() => */}
-        {/*               getConfirmation({ */}
-        {/*                 message: `Unblock ${p.slug}`, */}
-        {/*               }).then(() => */}
-        {/*                 blockPerson.mutate({ */}
-        {/*                   personId: p.id, */}
-        {/*                   block: false, */}
-        {/*                 }), */}
-        {/*               ) */}
-        {/*             } */}
-        {/*           > */}
-        {/*             <PersonCard */}
-        {/*               actorId={p.apId} */}
-        {/*               account={account} */}
-        {/*               size="sm" */}
-        {/*               disableLink */}
-        {/*             /> */}
-        {/*           </SectionItem> */}
-        {/*         ); */}
-        {/*       })} */}
-        {/*     </Section> */}
-        {/**/}
-        {/*     <Section title="BLOCKED COMMUNITIES"> */}
-        {/*       {blockedCommunities?.map((c) => { */}
-        {/*         return ( */}
-        {/*           <SectionItem */}
-        {/*             key={c.apId} */}
-        {/*             onClick={() => */}
-        {/*               getConfirmation({ */}
-        {/*                 message: `Unblock ${c.slug}`, */}
-        {/*               }).then(() => */}
-        {/*                 blockCommunity.mutate({ */}
-        {/*                   communityId: c.id, */}
-        {/*                   block: false, */}
-        {/*                 }), */}
-        {/*               ) */}
-        {/*             } */}
-        {/*           > */}
-        {/*             <CommunityCard */}
-        {/*               size="sm" */}
-        {/*               communitySlug={c.slug} */}
-        {/*               disableLink */}
-        {/*               account={account} */}
-        {/*             /> */}
-        {/*           </SectionItem> */}
-        {/*         ); */}
-        {/*       })} */}
-        {/*     </Section> */}
-        {/*   </div> */}
-        {/* </ContentGutters> */}
       </IonContent>
     </Page>
   );

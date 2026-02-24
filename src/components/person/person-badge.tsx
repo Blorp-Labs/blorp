@@ -1,9 +1,18 @@
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import { Badge } from "../ui/badge";
+import { Badge, badgeVariants } from "../ui/badge";
 import { useIsAdmin } from "@/src/stores/auth";
 import { Robot, ShieldCheckmark } from "../icons";
+import { VariantProps } from "class-variance-authority";
 
-export function PersonBadge({ person }: { person?: Schemas.Person }) {
+type BadgeSize = VariantProps<typeof badgeVariants>["size"];
+
+export function PersonBadge({
+  person,
+  size,
+}: {
+  person?: Schemas.Person;
+  size?: BadgeSize;
+}) {
   const isAdmin = useIsAdmin(person?.apId);
 
   if (!person) {
@@ -11,16 +20,24 @@ export function PersonBadge({ person }: { person?: Schemas.Person }) {
   }
 
   if (person.isBanned) {
-    return <Badge variant="destructive">Banned</Badge>;
+    return (
+      <Badge variant="destructive" size={size}>
+        Banned
+      </Badge>
+    );
   }
 
   if (person.deleted) {
-    return <Badge variant="destructive">Deleted</Badge>;
+    return (
+      <Badge variant="destructive" size={size}>
+        Deleted
+      </Badge>
+    );
   }
 
   if (isAdmin) {
     return (
-      <Badge variant="brand">
+      <Badge variant="brand" size={size}>
         <ShieldCheckmark />
         ADMIN
       </Badge>
@@ -29,7 +46,7 @@ export function PersonBadge({ person }: { person?: Schemas.Person }) {
 
   if (person.isBot) {
     return (
-      <Badge variant="brand-secondary">
+      <Badge variant="brand-secondary" size={size}>
         <Robot />
         Bot
       </Badge>

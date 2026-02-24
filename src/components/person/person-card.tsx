@@ -56,13 +56,8 @@ export function PersonCard({
         <AvatarFallback>{p?.slug?.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
-      <div className="flex flex-col">
-        <span
-          className={cn(
-            "text-sm overflow-hidden overflow-ellipsis",
-            size === "sm" && "text-xs",
-          )}
-        >
+      <div className="flex flex-col min-w-0">
+        <span className={cn("text-sm truncate", size === "sm" && "text-xs")}>
           {name}
           <span className="text-muted-foreground italic">@{host}</span>
         </span>
@@ -91,7 +86,7 @@ export function PersonCard({
       <div
         data-testid="person-card"
         className={cn(
-          "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
+          "flex flex-row gap-2 items-center min-w-0 h-12 text-foreground",
           size === "sm" && "h-9",
           size === "xs" && "h-6",
           className,
@@ -116,7 +111,7 @@ export function PersonCard({
         userId: encodeApId(actorId),
       }}
       className={cn(
-        "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
+        "flex flex-row gap-2 items-center min-w-0 h-12 text-foreground",
         size === "sm" && "h-9",
         size === "xs" && "h-6",
         className,
