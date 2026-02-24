@@ -37,7 +37,14 @@ export function isEmptyDraft(draft: Draft) {
     "createdAt",
     "communitySlug",
     "communityApId",
+    "poll",
   ]);
+  if (
+    draft.poll &&
+    draft.poll.choices.map((c) => c.text.trim()).join("") !== ""
+  ) {
+    return false;
+  }
   for (const id in fields) {
     const field = fields[id as keyof typeof fields];
     if (_.isArray(field)) {

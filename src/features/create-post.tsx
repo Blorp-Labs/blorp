@@ -664,15 +664,15 @@ export function CreatePost() {
 
               {draft.type === "poll" && (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <Label>Poll Options</Label>
+                  <div className="flex flex-col">
+                    <Label className="mb-2">Poll Options</Label>
                     {draft.poll?.choices.map((choice, i) => (
                       <Input
                         key={i}
                         placeholder={`Option ${i + 1}`}
                         value={choice.text}
                         onChange={(e) => patchPollChoice(i, e.target.value)}
-                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10 pr-0.5"
+                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10 pr-0.5 -mb-px bg-background focus-within:z-1"
                         endAdornment={
                           (draft.poll?.choices.length ?? 0) > 2 && (
                             <Button
