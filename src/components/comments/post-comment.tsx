@@ -425,7 +425,7 @@ function Byline({
           params={{
             userId: encodeApId(actorId),
           }}
-          className="text-base overflow-ellipsis flex flex-row overflow-x-hidden items-center"
+          className="text-base overflow-ellipsis flex flex-row overflow-x-hidden items-center hover:underline"
         >
           <span className="font-medium text-xs">{name}</span>
           {tag ? (
@@ -437,21 +437,20 @@ function Byline({
               @{host}
             </span>
           )}
-          <CommentCreatorBadge
-            postCreatorId={postCreatorId}
-            comment={comment}
-            isMod={isMod}
-            className="ml-2"
-          />
-          {profileView && (
-            <CakeDay
-              className="text-brand ml-2"
-              date={profileView.createdAt}
-              isNewAccount={isAdmin ? false : undefined}
-            />
-          )}
         </Link>
       </PersonHoverCard>
+      <CommentCreatorBadge
+        postCreatorId={postCreatorId}
+        comment={comment}
+        isMod={isMod}
+      />
+      {profileView && (
+        <CakeDay
+          className="text-brand"
+          date={profileView.createdAt}
+          isNewAccount={isAdmin ? false : undefined}
+        />
+      )}
       <span className="text-muted-foreground text-xs">•</span>
       <RelativeTime
         time={publishedDate}
