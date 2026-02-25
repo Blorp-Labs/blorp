@@ -3,7 +3,7 @@ import { setupIonicReact } from "@ionic/react";
 import _ from "lodash";
 import { useEffect } from "react";
 import Router from "./routing/Router";
-import { useSettingsStore } from "./stores/settings";
+import { useTheme } from "./lib/hooks/use-theme";
 import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
@@ -41,15 +41,10 @@ function RefreshNotificationCount() {
 }
 
 function DarkModeEffect() {
-  const darkMode = useSettingsStore((s) => s.darkMode);
+  const theme = useTheme();
   useEffect(() => {
-    const html = document.documentElement;
-    if (darkMode === "system") {
-      html.removeAttribute("data-dark-mode");
-    } else {
-      html.setAttribute("data-dark-mode", darkMode);
-    }
-  }, [darkMode]);
+    document.documentElement.setAttribute("data-dark-mode", theme);
+  }, [theme]);
   return null;
 }
 

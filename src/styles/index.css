@@ -23,9 +23,6 @@
 }
 
 @custom-variant dark (
-  @media (prefers-color-scheme: dark) {
-    html:not([data-dark-mode="light"]) &
-  },
   &:where(.dark, .dark *),
   html[data-dark-mode="dark"] &
 );
