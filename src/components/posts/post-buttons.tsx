@@ -253,7 +253,11 @@ export function PostVoting({
             postId,
           })
         }
-        className={cn("text-md font-normal", isUpvoted && "text-brand")}
+        className={cn(
+          "text-md font-normal",
+          isUpvoted && "text-brand",
+          className,
+        )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
         {abbriviateNumber(score)}
