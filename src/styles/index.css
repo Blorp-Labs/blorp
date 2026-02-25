@@ -109,6 +109,10 @@
   }
 }
 
+.dark {
+  @apply text-foreground;
+}
+
 .dark,
 html:root[data-dark-mode="dark"] {
   --brand: #ff1fbb;
