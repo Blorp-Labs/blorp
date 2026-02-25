@@ -1,0 +1,4 @@
+app_identifier ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"]
+apple_id "your-apple-id@example.com"   # replace
+itc_team_id "your-itc-team-id"         # numeric App Store Connect team ID
+team_id "LTS4T488BH"
