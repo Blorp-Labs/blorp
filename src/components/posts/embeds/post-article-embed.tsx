@@ -185,7 +185,7 @@ export function PostArticleEmbed({
       style={{
         display: !url ? "none" : undefined,
       }}
-      className={cn("flex flex-col", ABOVE_LINK_OVERLAY)}
+      className={cn("flex flex-col group/article", ABOVE_LINK_OVERLAY)}
     >
       {thumbnail && showImage && (
         <div className="relative aspect-video overflow-hidden">
@@ -209,7 +209,7 @@ export function PostArticleEmbed({
 
           {url && (
             <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
-              <span className="truncate text-ellipsis flex-1">
+              <span className="truncate text-ellipsis flex-1 group-hover/article:underline">
                 {getDisplayUrl(url).displayUrl}
               </span>
               <FaExternalLinkAlt className="text-sm" />
@@ -223,7 +223,7 @@ export function PostArticleEmbed({
             "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
           )}
         >
-          <span className="truncate text-ellipsis">
+          <span className="truncate text-ellipsis group-hover/article:underline">
             {getDisplayUrl(url).displayUrl}
           </span>
           <FaExternalLinkAlt className="text-sm" />

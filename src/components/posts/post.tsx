@@ -431,7 +431,7 @@ function LargePostCard({
               communityName: post.communitySlug,
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
-            className="max-md:-mx-3.5 flex flex-col relative overflow-hidden"
+            className="max-md:-mx-3.5 flex flex-col relative overflow-hidden cursor-zoom-in"
           >
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
