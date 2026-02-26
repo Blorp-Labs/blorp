@@ -22,6 +22,8 @@ jobs:
         run: corepack enable && yarn install --immutable
 
       - name: Build web assets + cap sync
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: yarn build
 
       - uses: ruby/setup-ruby@v1
