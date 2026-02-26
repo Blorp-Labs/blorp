@@ -89,7 +89,11 @@ platform :android do
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
       json_key_data: ENV["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"],
       package_name: "xyz.blorpblorp.app",
-      release_status: "draft"
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
     )
 
     # Build signed APK for GitHub Release attachment
