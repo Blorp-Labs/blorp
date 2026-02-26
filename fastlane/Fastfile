@@ -64,6 +64,7 @@ platform :ios do
     )
     upload_to_testflight(
       ipa: "ios/build/Blorp.ipa",
+      app_identifier: "xyz.blorpblorp.app",
       skip_waiting_for_build_processing: true
     )
   end
