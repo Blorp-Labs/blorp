@@ -14,7 +14,7 @@ export type CommunityPartial = Pick<
 >;
 
 export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
-  type: "text" | "media" | "link";
+  type: "text" | "media" | "link" | "poll";
   createdAt: number;
 }
 
@@ -37,7 +37,14 @@ export function isEmptyDraft(draft: Draft) {
     "createdAt",
     "communitySlug",
     "communityApId",
+    "poll",
   ]);
+  if (
+    draft.poll &&
+    draft.poll.choices.map((c) => c.text.trim()).join("") !== ""
+  ) {
+    return false;
+  }
   for (const id in fields) {
     const field = fields[id as keyof typeof fields];
     if (_.isArray(field)) {
@@ -60,12 +67,31 @@ export function postToDraft(
     body: post.body ?? "",
     communitySlug: post.communitySlug,
     createdAt: dayjs(post.createdAt).toDate().valueOf(),
-    type: post.url ? "link" : post.thumbnailUrl ? "media" : "text",
+    type: post.url
+      ? "link"
+      : post.thumbnailUrl
+        ? "media"
+        : post.poll
+          ? "poll"
+          : "text",
     apId: post.apId,
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,
     flairs: flairs ?? undefined,
+    poll: post.poll
+      ? {
+          endAmount: Math.max(1, dayjs(post.poll.endDate).diff(dayjs(), "day")),
+          endUnit: "days",
+          mode: post.poll.mode,
+          localOnly: post.poll.localOnly,
+          choices: post.poll.choices.map((c, i) => ({
+            id: c.id,
+            text: c.text,
+            sortOrder: i,
+          })),
+        }
+      : undefined,
   };
 }
 
@@ -98,6 +124,10 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
       break;
     case "media":
       post.url = post.thumbnailUrl;
+      break;
+    case "poll":
+      post.url = null;
+      post.thumbnailUrl = null;
       break;
     case "link":
   }
@@ -138,6 +168,21 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
       break;
     case "media":
       post.url = post.thumbnailUrl;
+      break;
+    case "poll":
+      post.url = null;
+      post.thumbnailUrl = null;
+      if (post.poll) {
+        let maxId = Math.max(0, ...post.poll.choices.map((c) => c.id));
+        post.poll = {
+          ...post.poll,
+          choices: post.poll.choices.map((c, i) => ({
+            ...c,
+            id: c.id ?? ++maxId,
+            sortOrder: i,
+          })),
+        };
+      }
       break;
     case "link":
   }
