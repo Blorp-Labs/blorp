@@ -1,6 +1,23 @@
 default_platform(:ios)
 
 platform :ios do
+  desc "One-time local setup: create certs and profiles in the Match repo"
+  lane :setup_match do
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+    match(
+      type: "appstore",
+      app_identifier: ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"],
+      readonly: false,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+  end
+
   desc "Build and upload to TestFlight"
   lane :beta do
     app_store_connect_api_key(

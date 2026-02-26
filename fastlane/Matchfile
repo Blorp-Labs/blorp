@@ -1,5 +1,5 @@
-git_url "https://github.com/your-org/blorp-certs.git"   # replace
+git_url ENV["MATCH_GIT_URL"]
 storage_mode "git"
 type "appstore"
 app_identifier ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"]
-username "your-apple-id@example.com"   # replace
+username ENV["APPLE_ID"]
