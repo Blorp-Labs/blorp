@@ -48,3 +48,11 @@ jobs:
           MATCH_KEYCHAIN_NAME: login
           MATCH_KEYCHAIN_PASSWORD: ""
         run: bundle exec fastlane ios beta
+
+      - name: Upload gym log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gym-log
+          path: ~/Library/Logs/gym/
+          retention-days: 5
