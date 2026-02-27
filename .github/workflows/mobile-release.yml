@@ -182,6 +182,7 @@ jobs:
         run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
 
       - name: Create, notarize and staple .pkg
+        timeout-minutes: 20
         env:
           PRODUCTBUILD_SIGNING_IDENTITY: ${{ secrets.PRODUCTBUILD_SIGNING_IDENTITY }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -198,7 +199,8 @@ jobs:
             --key /tmp/notary-key.p8 \
             --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_ID" \
-            --wait
+            --wait \
+            --verbose
           rm /tmp/notary-key.p8
           xcrun stapler staple release/Mac-Installer.pkg
 
