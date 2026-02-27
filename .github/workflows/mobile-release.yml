@@ -179,19 +179,27 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
 
-      - name: Create, notarize and staple .pkg
-        timeout-minutes: 20
+      - name: Create .pkg
+        timeout-minutes: 5
         env:
           PRODUCTBUILD_SIGNING_IDENTITY: ${{ secrets.PRODUCTBUILD_SIGNING_IDENTITY }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings -lut 7200 build.keychain
           mkdir -p release
           xcrun productbuild \
             --sign "$PRODUCTBUILD_SIGNING_IDENTITY" \
             --component "./src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app" /Applications \
             release/Mac-Installer.pkg
+          echo "productbuild done"
+
+      - name: Notarize .pkg
+        timeout-minutes: 15
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
           xcrun notarytool submit release/Mac-Installer.pkg \
             --key /tmp/notary-key.p8 \
@@ -200,7 +208,10 @@ jobs:
             --wait \
             --verbose
           rm /tmp/notary-key.p8
-          xcrun stapler staple release/Mac-Installer.pkg
+
+      - name: Staple .pkg
+        timeout-minutes: 5
+        run: xcrun stapler staple release/Mac-Installer.pkg
 
       - name: Collect updater artifacts
         run: |
