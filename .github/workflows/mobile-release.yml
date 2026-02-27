@@ -119,3 +119,107 @@ jobs:
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 90
           if-no-files-found: warn
+
+  tauri:
+    name: macOS – Build, Sign & Notarize
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install JS dependencies
+        run: corepack enable && yarn install --immutable
+
+      - name: Build web assets
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: yarn vite build && yarn cp-package-json
+
+      - name: Install Rust (universal targets)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Import Developer ID certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/productbuild
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          rm certificate.p12
+
+      - name: Build Tauri app (universal)
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
+
+      - name: Create, notarize and staple .pkg
+        env:
+          PRODUCTBUILD_SIGNING_IDENTITY: ${{ secrets.PRODUCTBUILD_SIGNING_IDENTITY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
+          mkdir -p release
+          xcrun productbuild \
+            --sign "$PRODUCTBUILD_SIGNING_IDENTITY" \
+            --component "./src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app" /Applications \
+            release/Mac-Installer.pkg
+          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
+          xcrun notarytool submit release/Mac-Installer.pkg \
+            --key /tmp/notary-key.p8 \
+            --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --wait
+          rm /tmp/notary-key.p8
+          xcrun stapler staple release/Mac-Installer.pkg
+
+      - name: Collect updater artifacts
+        run: |
+          cp src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz release/Mac-Blorp.app.tar.gz
+          version=$(jq -r .version package.json)
+          sig=$(< "src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz.sig")
+          cat > release/latest.json <<EOF
+          {
+            "version": "$version",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "$sig",
+                "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
+              },
+              "darwin-x86_64": {
+                "signature": "$sig",
+                "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
+              }
+            }
+          }
+          EOF
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release-${{ github.ref_name }}
+          path: release/
+          retention-days: 90
+          if-no-files-found: error
