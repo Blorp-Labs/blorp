@@ -200,7 +200,7 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
-          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
+          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENT" | tr -d ' \n\r\t' | base64 --decode > /tmp/notary-key.p8
           xcrun notarytool submit release/Mac-Installer.pkg \
             --key /tmp/notary-key.p8 \
             --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
