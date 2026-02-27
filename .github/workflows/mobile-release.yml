@@ -165,15 +165,13 @@ jobs:
           echo "$APPLE_CERTIFICATE" | base64 --decode > application.p12
           security import application.p12 -k build.keychain \
             -P "$APPLE_CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign \
-            -T /usr/bin/productbuild
+            -A
           rm application.p12
           echo "$APPLE_INSTALLER_CERTIFICATE" | base64 --decode > installer.p12
           security import installer.p12 -k build.keychain \
             -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign \
-            -T /usr/bin/productbuild
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+            -A
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
           rm installer.p12
 
       - name: Build Tauri app (universal)
