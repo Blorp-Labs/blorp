@@ -212,7 +212,7 @@ jobs:
       - name: Staple .pkg
         timeout-minutes: 5
         run: |
-          sleep 30
+          sleep 60
           xcrun stapler staple release/Mac-Installer.pkg
 
       - name: Collect updater artifacts
