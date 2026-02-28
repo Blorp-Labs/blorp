@@ -403,6 +403,284 @@ function convertCommentReport(
   };
 }
 
+function convertModlogPersonV3(person: lemmyV3.Person | undefined) {
+  if (!person) {
+    return { id: null, apId: null, slug: null };
+  }
+  return {
+    id: person.id,
+    apId: person.actor_id,
+    slug: createSlug({ apId: person.actor_id, name: person.name }).slug,
+  };
+}
+
+function convertModlogCommunityV3(
+  community: lemmyV3.Community | null | undefined,
+) {
+  if (!community) {
+    return { id: null, apId: null, slug: null };
+  }
+  return {
+    id: community.id,
+    apId: community.actor_id,
+    slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
+  };
+}
+
+function convertModlogResponseV3(
+  response: lemmyV3.GetModlogResponse,
+): Schemas.ModlogItem[] {
+  const baseItem = {
+    userId: null,
+    userApId: null,
+    userSlug: null,
+    communityId: null,
+    communityApId: null,
+    communitySlug: null,
+    postId: null,
+    postApId: null,
+    postTitle: null,
+    commentId: null,
+    commentApId: null,
+    commentContent: null,
+  } satisfies Partial<Schemas.ModlogItem>;
+
+  function modFields(person: lemmyV3.Person | undefined) {
+    const p = convertModlogPersonV3(person);
+    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+  }
+
+  function userFields(person: lemmyV3.Person | undefined) {
+    const p = convertModlogPersonV3(person);
+    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+  }
+
+  function communityFields(community: lemmyV3.Community | null | undefined) {
+    const c = convertModlogCommunityV3(community);
+    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+  }
+
+  function postFields(post: lemmyV3.Post) {
+    return { postId: post.id, postApId: post.ap_id, postTitle: post.name };
+  }
+
+  function commentFields(comment: lemmyV3.Comment) {
+    return {
+      commentId: comment.id,
+      commentApId: comment.ap_id,
+      commentContent: comment.content,
+    };
+  }
+
+  const items: Schemas.ModlogItem[] = [];
+
+  for (const view of response.removed_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_post.id,
+      actionType: "removed_post",
+      isAdminAction: false,
+      createdAt: view.mod_remove_post.when_,
+      reason: view.mod_remove_post.reason ?? null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.locked_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_lock_post.id,
+      actionType: "locked_post",
+      isAdminAction: false,
+      createdAt: view.mod_lock_post.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.featured_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_feature_post.id,
+      actionType: "featured_post",
+      isAdminAction: false,
+      createdAt: view.mod_feature_post.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.removed_comments) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_comment.id,
+      actionType: "removed_comment",
+      isAdminAction: false,
+      createdAt: view.mod_remove_comment.when_,
+      reason: view.mod_remove_comment.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.commenter),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+      ...commentFields(view.comment),
+    });
+  }
+
+  for (const view of response.removed_communities) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_community.id,
+      actionType: "removed_community",
+      isAdminAction: false,
+      createdAt: view.mod_remove_community.when_,
+      reason: view.mod_remove_community.reason ?? null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.banned_from_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban_from_community.id,
+      actionType: "banned_from_community",
+      isAdminAction: false,
+      createdAt: view.mod_ban_from_community.when_,
+      reason: view.mod_ban_from_community.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.banned) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban.id,
+      actionType: "banned",
+      isAdminAction: false,
+      createdAt: view.mod_ban.when_,
+      reason: view.mod_ban.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
+    });
+  }
+
+  for (const view of response.added_to_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add_community.id,
+      actionType: "added_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_add_community.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.transferred_to_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_transfer_community.id,
+      actionType: "transferred_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_transfer_community.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.added) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add.id,
+      actionType: "added_admin",
+      isAdminAction: true,
+      createdAt: view.mod_add.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+    });
+  }
+
+  for (const view of response.admin_purged_persons) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_person.id,
+      actionType: "admin_purged_person",
+      isAdminAction: true,
+      createdAt: view.admin_purge_person.when_,
+      reason: view.admin_purge_person.reason ?? null,
+      ...modFields(view.admin),
+    });
+  }
+
+  for (const view of response.admin_purged_communities) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_community.id,
+      actionType: "admin_purged_community",
+      isAdminAction: true,
+      createdAt: view.admin_purge_community.when_,
+      reason: view.admin_purge_community.reason ?? null,
+      ...modFields(view.admin),
+    });
+  }
+
+  for (const view of response.admin_purged_posts) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_post.id,
+      actionType: "admin_purged_post",
+      isAdminAction: true,
+      createdAt: view.admin_purge_post.when_,
+      reason: view.admin_purge_post.reason ?? null,
+      ...modFields(view.admin),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.admin_purged_comments) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_comment.id,
+      actionType: "admin_purged_comment",
+      isAdminAction: true,
+      createdAt: view.admin_purge_comment.when_,
+      reason: view.admin_purge_comment.reason ?? null,
+      ...modFields(view.admin),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.hidden_communities) {
+    items.push({
+      ...baseItem,
+      id: view.mod_hide_community.id,
+      actionType: "hidden_community",
+      isAdminAction: true,
+      createdAt: view.mod_hide_community.when_,
+      reason: view.mod_hide_community.reason ?? null,
+      ...modFields(view.admin),
+      ...communityFields(view.community),
+    });
+  }
+
+  return items.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
   softwareVersion: string;
@@ -1473,6 +1751,34 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         imageUrl: metadata.image,
         embedVideoUrl: metadata.embed_video_url,
       };
+    });
+  }
+
+  async getModlog(form: Forms.GetModlog, options: RequestOptions) {
+    return translateErrors(async () => {
+      let community_id: number | undefined;
+      if (form.communitySlug) {
+        const { community } = await this.getCommunity(
+          { slug: form.communitySlug },
+          options,
+        );
+        community_id = community.id;
+      }
+      const page =
+        !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
+          ? 1
+          : _.parseInt(form.pageCursor) + 1;
+
+      const response = await this.client.getModlog(
+        { community_id, page, limit: this.limit },
+        options,
+      );
+
+      const items = convertModlogResponseV3(response);
+      const hasNextPage = Object.values(response).some(
+        (arr) => Array.isArray(arr) && arr.length >= this.limit,
+      );
+      return { items, nextCursor: hasNextPage ? String(page) : null };
     });
   }
 

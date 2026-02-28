@@ -17,6 +17,7 @@ import {
   DocumentsOutline,
   LockClosedOutline,
   ScrollTextOutline,
+  Shield,
   SidebarOutline,
 } from "../components/icons";
 import { useLinkContext } from "./link-context";
@@ -370,6 +371,10 @@ export function MainSidebar() {
                 to={`${linkCtx.root}sidebar`}
               >
                 Sidebar
+              </SidebarLink>
+
+              <SidebarLink icon={<Shield />} to={`${linkCtx.root}modlog`}>
+                Modlog
               </SidebarLink>
 
               <Separator className="mt-3" />

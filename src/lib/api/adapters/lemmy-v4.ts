@@ -1493,6 +1493,68 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     };
   }
 
+  async getModlog(form: Forms.GetModlog, options: RequestOptions) {
+    let community_id: number | undefined;
+    if (form.communitySlug) {
+      const { community } = await this.getCommunity(
+        { slug: form.communitySlug },
+        options,
+      );
+      community_id = community.id;
+    }
+    const response = await this.client.getModlog(
+      {
+        community_id,
+        page_cursor:
+          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+        limit: this.limit,
+      },
+      options,
+    );
+    return {
+      items: response.items.map(
+        (view: lemmyV4.ModlogView): Schemas.ModlogItem => ({
+          id: view.modlog.id,
+          actionType: view.modlog.kind,
+          isAdminAction: view.modlog.kind.startsWith("admin_"),
+          createdAt: view.modlog.published_at,
+          reason: view.modlog.reason ?? null,
+          modId: view.moderator?.id ?? null,
+          modApId: view.moderator?.ap_id ?? null,
+          modSlug: view.moderator
+            ? createSlug({
+                apId: view.moderator.ap_id,
+                name: view.moderator.name,
+              }).slug
+            : null,
+          userId: view.target_person?.id ?? null,
+          userApId: view.target_person?.ap_id ?? null,
+          userSlug: view.target_person
+            ? createSlug({
+                apId: view.target_person.ap_id,
+                name: view.target_person.name,
+              }).slug
+            : null,
+          communityId: view.target_community?.id ?? null,
+          communityApId: view.target_community?.ap_id ?? null,
+          communitySlug: view.target_community
+            ? createSlug({
+                apId: view.target_community.ap_id,
+                name: view.target_community.name,
+              }).slug
+            : null,
+          postId: view.target_post?.id ?? null,
+          postApId: view.target_post?.ap_id ?? null,
+          postTitle: view.target_post?.name ?? null,
+          commentId: view.target_comment?.id ?? null,
+          commentApId: view.target_comment?.ap_id ?? null,
+          commentContent: view.target_comment?.content ?? null,
+        }),
+      ),
+      nextCursor: response.next_page ?? null,
+    };
+  }
+
   getPostSorts() {
     return POST_SORTS;
   }

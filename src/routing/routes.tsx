@@ -52,6 +52,8 @@ export const routeDefs = {
   ...buildRoute("/home/c/:communityName", communityNameSchema),
   ...buildRoute("/home/c/:communityName/s", searchSchema),
   ...buildRoute("/home/c/:communityName/sidebar", communityNameSchema),
+  ...buildRoute("/home/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/home/modlog"),
   ...buildRoute("/home/c/:communityName/posts/:post", postCommentSchema),
   ...buildRoute("/home/lightbox", lightBoxFeedSchema),
   ...buildRoute("/home/c/:communityName/lightbox", lightBoxFeedSchema),
@@ -73,6 +75,8 @@ export const routeDefs = {
   ...buildRoute("/communities/c/:communityName", communityNameSchema),
   ...buildRoute("/communities/c/:communityName/s", searchSchema),
   ...buildRoute("/communities/c/:communityName/sidebar", communityNameSchema),
+  ...buildRoute("/communities/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/communities/modlog"),
   ...buildRoute("/communities/c/:communityName/posts/:post", postCommentSchema),
   ...buildRoute(
     "/communities/c/:communityName/posts/:post/comments/:comment",
@@ -96,6 +100,8 @@ export const routeDefs = {
   ...buildRoute("/inbox/c/:communityName", communityNameSchema),
   ...buildRoute("/inbox/c/:communityName/s", searchSchema),
   ...buildRoute("/inbox/c/:communityName/sidebar", communityNameSchema),
+  ...buildRoute("/inbox/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/inbox/modlog"),
   ...buildRoute("/inbox/c/:communityName/posts/:post", postCommentSchema),
   ...buildRoute(
     "/inbox/c/:communityName/posts/:post/comments/:comment",

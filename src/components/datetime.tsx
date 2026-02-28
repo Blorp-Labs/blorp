@@ -12,7 +12,7 @@ export function DateTime({
     return null;
   }
   return (
-    <time dateTime={date.toISOString()} {...rest}>
+    <time dateTime={date.toISOString()} title={date.format("LLLL")} {...rest}>
       {rest.children ?? date.format("ll")}
     </time>
   );

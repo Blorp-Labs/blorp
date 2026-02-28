@@ -797,6 +797,233 @@ export function flattenCommentViews(
   return result;
 }
 
+function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
+  const baseItem = {
+    userId: null,
+    userApId: null,
+    userSlug: null,
+    communityId: null,
+    communityApId: null,
+    communitySlug: null,
+    postId: null,
+    postApId: null,
+    postTitle: null,
+    commentId: null,
+    commentApId: null,
+    commentContent: null,
+  } satisfies Partial<Schemas.ModlogItem>;
+
+  const items: Schemas.ModlogItem[] = [];
+
+  function convertModlogPersonPieFed(
+    person:
+      | { actor_id: string; user_name: string; id: number }
+      | null
+      | undefined,
+  ) {
+    if (!person) {
+      return { id: null, apId: null, slug: null };
+    }
+    return {
+      id: person.id,
+      apId: person.actor_id,
+      slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
+    };
+  }
+
+  function convertModlogCommunityPieFed(
+    community:
+      | { actor_id: string; name: string; id: number }
+      | null
+      | undefined,
+  ) {
+    if (!community) {
+      return { id: null, apId: null, slug: null };
+    }
+    return {
+      id: community.id,
+      apId: community.actor_id,
+      slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
+    };
+  }
+
+  function piefedModFields(person: any) {
+    const p = convertModlogPersonPieFed(person);
+    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+  }
+
+  function piefedUserFields(person: any) {
+    const p = convertModlogPersonPieFed(person);
+    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+  }
+
+  function piefedCommunityFields(community: any) {
+    const c = convertModlogCommunityPieFed(community);
+    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+  }
+
+  function piefedPostFields(post: any) {
+    return {
+      postId: post?.id ?? null,
+      postApId: post?.ap_id ?? null,
+      postTitle: post?.title ?? null,
+    };
+  }
+
+  function piefedCommentFields(comment: any) {
+    return {
+      commentId: comment?.id ?? null,
+      commentApId: comment?.ap_id ?? null,
+      commentContent: comment?.body ?? null,
+    };
+  }
+
+  for (const view of (json.removed_posts ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_post.id,
+      actionType: "removed_post",
+      isAdminAction: false,
+      createdAt: view.mod_remove_post.when_,
+      reason: view.mod_remove_post.reason ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
+    });
+  }
+
+  for (const view of (json.locked_posts ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_lock_post.id,
+      actionType: "locked_post",
+      isAdminAction: false,
+      createdAt: view.mod_lock_post.when_,
+      reason: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
+    });
+  }
+
+  for (const view of (json.featured_posts ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_feature_post.id,
+      actionType: "featured_post",
+      isAdminAction: false,
+      createdAt: view.mod_feature_post.when_,
+      reason: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
+    });
+  }
+
+  for (const view of (json.removed_comments ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_comment.id,
+      actionType: "removed_comment",
+      isAdminAction: false,
+      createdAt: view.mod_remove_comment.when_,
+      reason: view.mod_remove_comment.reason ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.commenter),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
+      ...piefedCommentFields(view.comment),
+    });
+  }
+
+  for (const view of (json.removed_communities ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_community.id,
+      actionType: "removed_community",
+      isAdminAction: false,
+      createdAt: view.mod_remove_community.when_,
+      reason: view.mod_remove_community.reason ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community ?? null),
+    });
+  }
+
+  for (const view of (json.banned_from_community ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban_from_community.id,
+      actionType: "banned_from_community",
+      isAdminAction: false,
+      createdAt: view.mod_ban_from_community.when_,
+      reason: view.mod_ban_from_community.reason ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.banned_person),
+      ...piefedCommunityFields(view.community),
+    });
+  }
+
+  for (const view of (json.banned ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban.id,
+      actionType: "banned",
+      isAdminAction: false,
+      createdAt: view.mod_ban.when_,
+      reason: view.mod_ban.reason ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.banned_person),
+    });
+  }
+
+  for (const view of (json.added_to_community ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add_community.id,
+      actionType: "added_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_add_community.when_,
+      reason: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
+      ...piefedCommunityFields(view.community),
+    });
+  }
+
+  for (const view of (json.transferred_to_community ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_transfer_community.id,
+      actionType: "transferred_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_transfer_community.when_,
+      reason: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
+      ...piefedCommunityFields(view.community),
+    });
+  }
+
+  for (const view of (json.added ?? []) as any[]) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add.id,
+      actionType: "added_admin",
+      isAdminAction: true,
+      createdAt: view.mod_add.when_,
+      reason: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
+    });
+  }
+
+  // TODO: implement admin_purged_* conversion once example data is available
+
+  return items.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
 export class PieFedApi implements ApiBlueprint<null> {
   software = Software.PIEFED;
   softwareVersion: string;
@@ -2280,6 +2507,33 @@ export class PieFedApi implements ApiBlueprint<null> {
         return {};
       }
     }
+  }
+
+  async getModlog(form: Forms.GetModlog, options: RequestOptions) {
+    let community_id: number | undefined;
+    if (form.communitySlug) {
+      const { community } = await this.getCommunity(
+        { slug: form.communitySlug },
+        options,
+      );
+      community_id = community.id;
+    }
+    const page =
+      !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
+        ? 1
+        : _.parseInt(form.pageCursor) + 1;
+
+    const json = await this.get(
+      "/modlog",
+      { ...(community_id ? { community_id } : {}), page, limit: this.limit },
+      options,
+    );
+
+    const items = convertModlogResponsePieFed(json);
+    const hasNextPage = Object.values(json).some(
+      (arr) => Array.isArray(arr) && arr.length >= this.limit,
+    );
+    return { items, nextCursor: hasNextPage ? String(page) : null };
   }
 
   getPostSorts() {
