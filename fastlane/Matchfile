@@ -1,0 +1,5 @@
+git_url ENV["MATCH_GIT_URL"]
+storage_mode "git"
+type "appstore"
+app_identifier ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"]
+username ENV["APPLE_ID"]

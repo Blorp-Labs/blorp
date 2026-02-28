@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "Blorp"
-version = "1.10.4"
+version = "1.10.5"
 dependencies = [
  "log",
  "serde",

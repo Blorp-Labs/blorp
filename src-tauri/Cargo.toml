@@ -1,6 +1,6 @@
 [package]
 name = "Blorp"
-version = "1.10.4"
+version = "1.10.5"
 description = "Blorp for Lemmy"
 authors = ["you"]
 license = ""
@@ -9,9 +9,9 @@ edition = "2021"
 rust-version = "1.77.2"
 
 [profile.release]
-opt-level = 3   # Optimize for size (or "3" for max performance)
-lto = true        # Enable Link-Time Optimization
-codegen-units = 1 # Forces Rust to optimize better
+opt-level = 3
+lto = "thin"
+codegen-units = 4
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

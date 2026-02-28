@@ -1,0 +1,102 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "One-time local setup: create certs and profiles in the Match repo"
+  lane :setup_match do
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+    match(
+      type: "appstore",
+      app_identifier: ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"],
+      readonly: false,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    setup_ci
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+    match(
+      type: "appstore",
+      app_identifier: ["xyz.blorpblorp.app", "xyz.blorpblorp.app.widgets"],
+      readonly: true,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/App/App.xcodeproj",
+      targets: ["App"],
+      code_sign_identity: "iPhone Distribution",
+      profile_name: "match AppStore xyz.blorpblorp.app"
+    )
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/App/App.xcodeproj",
+      targets: ["WidgetsExtension"],
+      code_sign_identity: "iPhone Distribution",
+      profile_name: "match AppStore xyz.blorpblorp.app.widgets"
+    )
+    build_app(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "App",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "ios/build",
+      output_name: "Blorp.ipa",
+      export_options: {
+        provisioningProfiles: {
+          "xyz.blorpblorp.app" => "match AppStore xyz.blorpblorp.app",
+          "xyz.blorpblorp.app.widgets" => "match AppStore xyz.blorpblorp.app.widgets"
+        }
+      }
+    )
+    upload_to_testflight(
+      ipa: "ios/build/Blorp.ipa",
+      app_identifier: "xyz.blorpblorp.app",
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
+
+platform :android do
+  desc "Build signed AAB + APK, upload AAB to Play Store internal track"
+  lane :deploy do
+    signing_props = {
+      "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+      "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+      "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+      "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
+    }
+
+    # Build AAB for Play Store
+    gradle(task: "bundle", build_type: "Release", project_dir: "android/", properties: signing_props)
+
+    # Upload AAB to Play Store internal track
+    upload_to_play_store(
+      track: "internal",
+      aab: "android/app/build/outputs/bundle/release/app-release.aab",
+      json_key_data: ENV["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"],
+      package_name: "xyz.blorpblorp.app",
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    # Build signed APK for GitHub Release attachment
+    gradle(task: "assemble", build_type: "Release", project_dir: "android/", properties: signing_props)
+  end
+end
