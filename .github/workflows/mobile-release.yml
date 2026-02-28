@@ -201,12 +201,23 @@ jobs:
           APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
           printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
-          xcrun notarytool submit release/Mac-Installer.pkg \
+          notary_output=$(xcrun notarytool submit release/Mac-Installer.pkg \
             --key /tmp/notary-key.p8 \
             --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_ID" \
             --wait \
-            --verbose
+            --verbose 2>&1)
+          echo "$notary_output"
+          submission_id=$(echo "$notary_output" | grep "^  id:" | head -1 | awk '{print $2}')
+          if ! echo "$notary_output" | grep -q "  status: Accepted"; then
+            echo "Notarization failed — fetching rejection log for $submission_id"
+            xcrun notarytool log "$submission_id" \
+              --key /tmp/notary-key.p8 \
+              --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+              --key-id "$APP_STORE_CONNECT_KEY_ID" || true
+            rm /tmp/notary-key.p8
+            exit 1
+          fi
           rm /tmp/notary-key.p8
 
       - name: Staple .pkg
