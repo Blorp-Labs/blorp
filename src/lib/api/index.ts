@@ -2412,6 +2412,29 @@ export function useBlockPerson(options?: { account?: Account; apId?: string }) {
   });
 }
 
+export function useBlockInstance(options?: { account?: Account }) {
+  const { account } = options ?? {};
+  const queryClient = useQueryClient();
+  const { api } = useApiClients(account);
+  const accountsQueryKey = useRefreshAuthKey();
+  return useMutation({
+    mutationFn: async (form: Forms.BlockInstance) =>
+      (await api).blockInstance(form),
+    onError: (err, { block }) => {
+      if (isErrorLike(err)) {
+        toast.error(extractErrorContent(err));
+      } else {
+        toast.error(`Couldn't ${block ? "block" : "unblock"} instance`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: accountsQueryKey,
+      });
+    },
+  });
+}
+
 export function useBlockCommunity(options?: {
   account?: Account;
   communitySlug?: string;

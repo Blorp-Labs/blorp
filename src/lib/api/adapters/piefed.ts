@@ -96,7 +96,7 @@ export const pieFedCommunitySchema = z.object({
   icon: z.string().nullable().optional(),
   banner: z.string().nullable().optional(),
   id: z.number(),
-  //instance_id: z.number(),
+  instance_id: z.number().optional().nullable(),
   //local: z.boolean(),
   name: z.string(),
   nsfw: z.boolean(),
@@ -142,7 +142,7 @@ export const pieFedPersonSchema = z.object({
   bot: z.boolean(),
   deleted: z.boolean(),
   id: z.number(),
-  //instance_id: z.number(),
+  instance_id: z.number().optional().nullable(),
   //local: z.boolean(),
   published: z.string(),
   //title: z.string().nullable(),
@@ -308,7 +308,12 @@ export const pieFedMyUserSchema = z.object({
     .array(z.object({ community: pieFedCommunitySchema }))
     .optional()
     .nullable(),
-  //instance_blocks: z.array(z.any()).optional(),
+  instance_blocks: z
+    .array(
+      z.object({ instance: z.object({ id: z.number(), domain: z.string() }) }),
+    )
+    .optional()
+    .nullable(),
   local_user_view: pieFedLocalUserViewSchema.optional().nullable(),
   moderates: z
     .array(z.object({ community: pieFedCommunitySchema }))
@@ -520,6 +525,7 @@ function convertPost({
     // TODO: see if this exists
     urlContentType: null,
     creatorId: creator.id,
+    creatorInstanceId: creator.instance_id ?? null,
     createdAt: post.published,
     isBannedFromCommunity: postView.creator_banned_from_community ?? false,
     id: post.id,
@@ -575,6 +581,7 @@ function convertCommunity(
     createdAt: communityView.community.published,
     id: communityView.community.id,
     apId: communityView.community.actor_id,
+    instanceId: communityView.community.instance_id ?? null,
     slug: createSlug({
       apId: communityView.community.actor_id,
       name: communityView.community.name,
@@ -662,6 +669,7 @@ function convertComment(
     body: comment.body,
     creatorId: creator.id,
     creatorApId: creator.actor_id,
+    creatorInstanceId: creator.instance_id ?? null,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
     isBannedFromCommunity: commentView.creator_banned_from_community ?? false,
@@ -997,6 +1005,11 @@ export class PieFedApi implements ApiBlueprint<null> {
         shrinkBlockedPerson(convertPerson({ person: block.target }, "partial")),
       );
 
+      const instanceBlocks = pieFedSite.my_user?.instance_blocks?.map((b) => ({
+        id: b.instance.id,
+        domain: b.instance.domain,
+      }));
+
       const admins = pieFedSite.admins.map((p) => convertPerson(p, "full"));
       const nsfwVisibility =
         pieFedSite.my_user?.local_user_view?.local_user.nsfw_visibility?.toLowerCase();
@@ -1024,6 +1037,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         follows: follows?.map((c) => c.slug) ?? null,
         personBlocks: personBlocks?.map((p) => p.apId) ?? null,
         communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
+        instanceBlocks: instanceBlocks ?? null,
         applicationQuestion: null,
         registrationMode: pieFedSite.site.registration_mode,
         showNsfw:
@@ -2101,6 +2115,13 @@ export class PieFedApi implements ApiBlueprint<null> {
   async blockCommunity(form: Forms.BlockCommunity) {
     await this.post("/community/block", {
       community_id: form.communityId,
+      block: form.block,
+    });
+  }
+
+  async blockInstance(form: Forms.BlockInstance) {
+    await this.post("/site/block", {
+      instance_id: form.instanceId,
       block: form.block,
     });
   }

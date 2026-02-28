@@ -16,6 +16,7 @@ import { RelativeTime } from "../relative-time";
 import {
   useAddCommentReactionEmoji,
   useBlockPerson,
+  useBlockInstance,
   useDeleteComment,
   useLockComment,
   useMarkCommentAsAnswer,
@@ -43,6 +44,7 @@ import {
   getAccountSite,
   useAuth,
   useIsAdmin,
+  useIsInstanceBlocked,
   useIsPersonBlocked,
 } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
@@ -129,12 +131,16 @@ export function useCommentActions({
   const requireAuth = useRequireAuth();
 
   const blockPerson = useBlockPerson();
+  const blockInstance = useBlockInstance();
 
   const deleteComment = useDeleteComment();
   const lockComment = useLockComment();
 
   const tagUser = useTagUser();
   const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
+  const isInstanceBlocked = useIsInstanceBlocked(
+    commentView?.creatorInstanceId,
+  );
 
   const router = useIonRouter();
 
@@ -261,6 +267,44 @@ export function useCommentActions({
                 },
                 danger: true,
               },
+              ...(commentView.creatorInstanceId
+                ? [
+                    {
+                      text: isInstanceBlocked
+                        ? "Unblock instance"
+                        : "Block instance",
+                      onClick: async () => {
+                        try {
+                          await requireAuth();
+                          const deferred = new Deferred();
+                          const domain = new URL(commentView.creatorApId)
+                            .hostname;
+                          alrt({
+                            message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                            buttons: [
+                              {
+                                text: "Cancel",
+                                role: "cancel",
+                                handler: () => deferred.reject(),
+                              },
+                              {
+                                text: "OK",
+                                role: "confirm",
+                                handler: () => deferred.resolve(),
+                              },
+                            ],
+                          });
+                          await deferred.promise;
+                          blockInstance.mutate({
+                            instanceId: commentView.creatorInstanceId!,
+                            block: !isInstanceBlocked,
+                          });
+                        } catch {}
+                      },
+                      danger: true,
+                    },
+                  ]
+                : []),
             ],
           },
         ]

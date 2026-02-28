@@ -1,4 +1,4 @@
-import { useBlockPerson } from "@/src/lib/api/index";
+import { useBlockPerson, useBlockInstance } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -6,6 +6,7 @@ import {
   useAuth,
   getAccountActorId,
   useIsPersonBlocked,
+  useIsInstanceBlocked,
   useIsAdmin,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
@@ -78,6 +79,8 @@ export function usePostActions({
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
   const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
+  const isInstanceBlocked = useIsInstanceBlocked(post.creatorInstanceId);
+  const blockInstance = useBlockInstance();
 
   const encodedApId = encodeApId(post.apId);
   const tagUser = useTagUser();
@@ -164,6 +167,43 @@ export function usePostActions({
                 },
                 danger: true,
               },
+              ...(post.creatorInstanceId
+                ? [
+                    {
+                      text: isInstanceBlocked
+                        ? "Unblock instance"
+                        : "Block instance",
+                      onClick: async () => {
+                        try {
+                          await requireAuth();
+                          const deferred = new Deferred();
+                          const domain = new URL(post.creatorApId).hostname;
+                          alrt({
+                            message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                            buttons: [
+                              {
+                                text: "Cancel",
+                                role: "cancel",
+                                handler: () => deferred.reject(),
+                              },
+                              {
+                                text: "OK",
+                                role: "confirm",
+                                handler: () => deferred.resolve(),
+                              },
+                            ],
+                          });
+                          await deferred.promise;
+                          blockInstance.mutate({
+                            instanceId: post.creatorInstanceId!,
+                            block: !isInstanceBlocked,
+                          });
+                        } catch {}
+                      },
+                      danger: true,
+                    },
+                  ]
+                : []),
             ],
           },
         ]
