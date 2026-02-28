@@ -210,10 +210,21 @@ jobs:
           rm /tmp/notary-key.p8
 
       - name: Staple .pkg
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
-          sleep 60
-          xcrun stapler staple release/Mac-Installer.pkg
+          for i in $(seq 1 10); do
+            echo "Staple attempt $i/10..."
+            if xcrun stapler staple release/Mac-Installer.pkg; then
+              echo "Staple succeeded"
+              break
+            fi
+            if [ "$i" -eq 10 ]; then
+              echo "All staple attempts failed"
+              exit 1
+            fi
+            echo "Ticket not yet available, waiting 30s..."
+            sleep 30
+          done
 
       - name: Collect updater artifacts
         run: |
