@@ -283,6 +283,7 @@ export const pieFedLocalUserSchema = z.object({
   //default_sort_type: z.string(),
   //show_bot_accounts: z.boolean(),
   show_nsfw: z.boolean(),
+  nsfw_visibility: z.string().nullish(),
   //show_read_posts: z.boolean(),
   //show_scores: z.boolean(),
 });
@@ -997,6 +998,8 @@ export class PieFedApi implements ApiBlueprint<null> {
       );
 
       const admins = pieFedSite.admins.map((p) => convertPerson(p, "full"));
+      const nsfwVisibility =
+        pieFedSite.my_user?.local_user_view?.local_user.nsfw_visibility?.toLowerCase();
 
       const site = {
         privateInstance: false,
@@ -1025,7 +1028,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         registrationMode: pieFedSite.site.registration_mode,
         showNsfw:
           pieFedSite.my_user?.local_user_view?.local_user.show_nsfw ?? false,
-        blurNsfw: true,
+        blurNsfw: nsfwVisibility !== "show",
         enablePostDownvotes: pieFedSite.site.enable_downvotes,
         enableCommentDownvotes: pieFedSite.site.enable_downvotes,
         software: this.software,
