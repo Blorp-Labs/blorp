@@ -1365,6 +1365,8 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       bio: form.bio,
       display_name: form.displayName,
       email: form.email,
+      show_nsfw: form.showNsfw,
+      blur_nsfw: form.blurNsfw,
     });
   }
 

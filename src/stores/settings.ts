@@ -62,6 +62,13 @@ type SettingsStore = {
   setPaginationMode: (mode: "infinite" | "pages") => void;
   darkMode: DarkMode;
   setDarkMode: (mode: DarkMode) => void;
+  // App stores (e.g. iOS) may prohibit showing NSFW settings by default.
+  // We track whether any account ever had NSFW enabled so users can
+  // re-enable it in-app after turning it off, without needing to go to
+  // the web interface. The flag is set automatically when getSite() finds
+  // an account with showNsfw=true, and is never cleared programmatically.
+  nsfwPreviouslyEnabled: boolean;
+  setNsfwPreviouslyEnabled: (value: boolean) => void;
   reset: () => void;
 };
 
@@ -77,6 +84,7 @@ const INIT_STATE = {
   filterKeywords: [],
   paginationMode: "infinite",
   darkMode: "system",
+  nsfwPreviouslyEnabled: false,
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -107,6 +115,8 @@ export const useSettingsStore = create<SettingsStore>()(
       },
       setPaginationMode: (paginationMode) => set({ paginationMode }),
       setDarkMode: (darkMode) => set({ darkMode }),
+      setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
+        set({ nsfwPreviouslyEnabled }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);

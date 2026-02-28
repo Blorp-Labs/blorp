@@ -688,6 +688,8 @@ export namespace Forms {
     bio?: string;
     displayName?: string;
     email?: string;
+    showNsfw?: boolean;
+    blurNsfw?: boolean;
   };
 
   export type ResolveObject = {

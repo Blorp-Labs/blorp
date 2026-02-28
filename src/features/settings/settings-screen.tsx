@@ -7,7 +7,12 @@ import {
   useSettingsStore,
 } from "@/src/stores/settings";
 import { useLogout, useSoftware } from "@/src/lib/api/index";
-import { Account, parseAccountInfo, useAuth } from "@/src/stores/auth";
+import {
+  Account,
+  getAccountSite,
+  parseAccountInfo,
+  useAuth,
+} from "@/src/stores/auth";
 import { useRequireAuth } from "@/src/components/auth-context";
 import { ContentGutters } from "@/src/components/gutters";
 import _ from "lodash";
@@ -75,7 +80,14 @@ function AccountCard({
     <Section title={`ACCOUNT ${accountIndex + 1}`}>
       {person && (
         <SectionItem unstyled>
-          <PersonCard actorId={person.apId} account={account} size="sm" />
+          <div className="flex items-center justify-between w-full">
+            <PersonCard actorId={person.apId} account={account} size="sm" />
+            {getAccountSite(account)?.showNsfw && (
+              <span className="text-xs px-1.5 py-0.5 bg-destructive/10 text-destructive rounded-full font-medium">
+                NSFW
+              </span>
+            )}
+          </div>
         </SectionItem>
       )}
 
@@ -86,7 +98,7 @@ function AccountCard({
               index: String(accountIndex),
             })}
           >
-            Update Profile
+            Update Profile / Account Settings
             <FiChevronRight className="text-xl" />
           </SectionItem>
 

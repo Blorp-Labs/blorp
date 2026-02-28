@@ -2171,6 +2171,12 @@ export class PieFedApi implements ApiBlueprint<null> {
       bio: form.bio,
       display_name: form.displayName,
       email: form.email,
+      nsfw_visibility: form.showNsfw
+        ? form.blurNsfw
+          ? "Blur"
+          : "Show"
+        : "Hide",
+      show_nsfw: form.showNsfw ?? false,
     });
   }
 

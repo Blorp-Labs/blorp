@@ -1,6 +1,6 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToggle, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -17,6 +17,8 @@ import { useDropzone } from "react-dropzone";
 import { cn } from "@/src/lib/utils";
 import { Input } from "@/src/components/ui/input";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
+import { isCapacitor, isIos } from "@/src/lib/device";
+import { useSettingsStore } from "@/src/stores/settings";
 
 function FileUpload({
   placeholder,
@@ -75,6 +77,18 @@ export default function SettingsPage() {
   const [_bio, setBio] = useState<string>();
   const bio = _bio ?? site?.me?.bio ?? "";
 
+  const [_showNsfw, setShowNsfw] = useState<boolean>();
+  const showNsfw = _showNsfw ?? site?.showNsfw ?? false;
+
+  const [_blurNsfw, setBlurNsfw] = useState<boolean>();
+  const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
+
+  const nsfwPreviouslyEnabled = useSettingsStore(
+    (s) => s.nsfwPreviouslyEnabled,
+  );
+  const canShowNsfwSetting =
+    !(isCapacitor() && isIos()) || nsfwPreviouslyEnabled;
+
   const updateUserSettings = useUpdateUserSettings();
   const removeUserAvatar = useRemoveUserAvatar();
   const history = useHistory();
@@ -92,6 +106,8 @@ export default function SettingsPage() {
           form: {
             bio,
             email,
+            showNsfw,
+            blurNsfw,
           },
         })
         .then(() => history.goBack());
@@ -184,6 +200,36 @@ export default function SettingsPage() {
                   onChange={(md) => setBio(md)}
                 />
               </div>
+
+              {canShowNsfwSetting && (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <IonToggle
+                      className="flex-1 font-light"
+                      checked={showNsfw}
+                      onIonChange={(e) => {
+                        setShowNsfw(e.detail.checked);
+                        if (e.detail.checked) {
+                          setBlurNsfw(true);
+                        }
+                      }}
+                    >
+                      Show NSFW content
+                    </IonToggle>
+                  </div>
+                  {showNsfw && (
+                    <div className="flex flex-col gap-1">
+                      <IonToggle
+                        className="flex-1 font-light"
+                        checked={blurNsfw}
+                        onIonChange={(e) => setBlurNsfw(e.detail.checked)}
+                      >
+                        Blur NSFW images
+                      </IonToggle>
+                    </div>
+                  )}
+                </>
+              )}
 
               <Button variant="outline">Save profile</Button>
             </form>
