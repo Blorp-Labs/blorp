@@ -427,70 +427,56 @@ function convertModlogCommunityV3(
   };
 }
 
-const NULL_FIELDS: Pick<
-  Schemas.ModlogItem,
-  | "userId"
-  | "userApId"
-  | "userSlug"
-  | "communityId"
-  | "communityApId"
-  | "communitySlug"
-  | "postId"
-  | "postApId"
-  | "postTitle"
-  | "commentId"
-  | "commentApId"
-  | "commentContent"
-> = {
-  userId: null,
-  userApId: null,
-  userSlug: null,
-  communityId: null,
-  communityApId: null,
-  communitySlug: null,
-  postId: null,
-  postApId: null,
-  postTitle: null,
-  commentId: null,
-  commentApId: null,
-  commentContent: null,
-};
-
-function modFields(person: lemmyV3.Person | undefined) {
-  const p = convertModlogPersonV3(person);
-  return { modId: p.id, modApId: p.apId, modSlug: p.slug };
-}
-
-function userFields(person: lemmyV3.Person | undefined) {
-  const p = convertModlogPersonV3(person);
-  return { userId: p.id, userApId: p.apId, userSlug: p.slug };
-}
-
-function communityFields(community: lemmyV3.Community | null | undefined) {
-  const c = convertModlogCommunityV3(community);
-  return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
-}
-
-function postFields(post: lemmyV3.Post) {
-  return { postId: post.id, postApId: post.ap_id, postTitle: post.name };
-}
-
-function commentFields(comment: lemmyV3.Comment) {
-  return {
-    commentId: comment.id,
-    commentApId: comment.ap_id,
-    commentContent: comment.content,
-  };
-}
-
 function convertModlogResponseV3(
   response: lemmyV3.GetModlogResponse,
 ): Schemas.ModlogItem[] {
+  const baseItem = {
+    userId: null,
+    userApId: null,
+    userSlug: null,
+    communityId: null,
+    communityApId: null,
+    communitySlug: null,
+    postId: null,
+    postApId: null,
+    postTitle: null,
+    commentId: null,
+    commentApId: null,
+    commentContent: null,
+  } satisfies Partial<Schemas.ModlogItem>;
+
+  function modFields(person: lemmyV3.Person | undefined) {
+    const p = convertModlogPersonV3(person);
+    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+  }
+
+  function userFields(person: lemmyV3.Person | undefined) {
+    const p = convertModlogPersonV3(person);
+    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+  }
+
+  function communityFields(community: lemmyV3.Community | null | undefined) {
+    const c = convertModlogCommunityV3(community);
+    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+  }
+
+  function postFields(post: lemmyV3.Post) {
+    return { postId: post.id, postApId: post.ap_id, postTitle: post.name };
+  }
+
+  function commentFields(comment: lemmyV3.Comment) {
+    return {
+      commentId: comment.id,
+      commentApId: comment.ap_id,
+      commentContent: comment.content,
+    };
+  }
+
   const items: Schemas.ModlogItem[] = [];
 
   for (const view of response.removed_posts) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_remove_post.id,
       actionType: "removed_post",
       isAdminAction: false,
@@ -504,7 +490,7 @@ function convertModlogResponseV3(
 
   for (const view of response.locked_posts) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_lock_post.id,
       actionType: "locked_post",
       isAdminAction: false,
@@ -518,7 +504,7 @@ function convertModlogResponseV3(
 
   for (const view of response.featured_posts) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_feature_post.id,
       actionType: "featured_post",
       isAdminAction: false,
@@ -532,7 +518,7 @@ function convertModlogResponseV3(
 
   for (const view of response.removed_comments) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_remove_comment.id,
       actionType: "removed_comment",
       isAdminAction: false,
@@ -548,7 +534,7 @@ function convertModlogResponseV3(
 
   for (const view of response.removed_communities) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_remove_community.id,
       actionType: "removed_community",
       isAdminAction: false,
@@ -561,7 +547,7 @@ function convertModlogResponseV3(
 
   for (const view of response.banned_from_community) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_ban_from_community.id,
       actionType: "banned_from_community",
       isAdminAction: false,
@@ -575,7 +561,7 @@ function convertModlogResponseV3(
 
   for (const view of response.banned) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_ban.id,
       actionType: "banned",
       isAdminAction: false,
@@ -588,7 +574,7 @@ function convertModlogResponseV3(
 
   for (const view of response.added_to_community) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_add_community.id,
       actionType: "added_to_community",
       isAdminAction: false,
@@ -602,7 +588,7 @@ function convertModlogResponseV3(
 
   for (const view of response.transferred_to_community) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_transfer_community.id,
       actionType: "transferred_to_community",
       isAdminAction: false,
@@ -616,7 +602,7 @@ function convertModlogResponseV3(
 
   for (const view of response.added) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_add.id,
       actionType: "added_admin",
       isAdminAction: true,
@@ -629,7 +615,7 @@ function convertModlogResponseV3(
 
   for (const view of response.admin_purged_persons) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.admin_purge_person.id,
       actionType: "admin_purged_person",
       isAdminAction: true,
@@ -641,7 +627,7 @@ function convertModlogResponseV3(
 
   for (const view of response.admin_purged_communities) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.admin_purge_community.id,
       actionType: "admin_purged_community",
       isAdminAction: true,
@@ -653,7 +639,7 @@ function convertModlogResponseV3(
 
   for (const view of response.admin_purged_posts) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.admin_purge_post.id,
       actionType: "admin_purged_post",
       isAdminAction: true,
@@ -666,7 +652,7 @@ function convertModlogResponseV3(
 
   for (const view of response.admin_purged_comments) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.admin_purge_comment.id,
       actionType: "admin_purged_comment",
       isAdminAction: true,
@@ -679,7 +665,7 @@ function convertModlogResponseV3(
 
   for (const view of response.hidden_communities) {
     items.push({
-      ...NULL_FIELDS,
+      ...baseItem,
       id: view.mod_hide_community.id,
       actionType: "hidden_community",
       isAdminAction: true,
