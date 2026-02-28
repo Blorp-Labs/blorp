@@ -172,6 +172,7 @@ jobs:
             -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" \
             -A
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          security set-keychain-settings build.keychain
           rm installer.p12
 
       - name: Build Tauri app (universal)
