@@ -826,280 +826,205 @@ function convertModlogCommunityPieFed(
   };
 }
 
+const PIEFED_NULL_FIELDS: Pick<
+  Schemas.ModlogItem,
+  | "userId"
+  | "userApId"
+  | "userSlug"
+  | "communityId"
+  | "communityApId"
+  | "communitySlug"
+  | "postId"
+  | "postApId"
+  | "postTitle"
+  | "commentId"
+  | "commentApId"
+  | "commentContent"
+> = {
+  userId: null,
+  userApId: null,
+  userSlug: null,
+  communityId: null,
+  communityApId: null,
+  communitySlug: null,
+  postId: null,
+  postApId: null,
+  postTitle: null,
+  commentId: null,
+  commentApId: null,
+  commentContent: null,
+};
+
+function piefedModFields(person: any) {
+  const p = convertModlogPersonPieFed(person);
+  return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+}
+
+function piefedUserFields(person: any) {
+  const p = convertModlogPersonPieFed(person);
+  return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+}
+
+function piefedCommunityFields(community: any) {
+  const c = convertModlogCommunityPieFed(community);
+  return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+}
+
+function piefedPostFields(post: any) {
+  return {
+    postId: post?.id ?? null,
+    postApId: post?.ap_id ?? null,
+    postTitle: post?.title ?? null,
+  };
+}
+
+function piefedCommentFields(comment: any) {
+  return {
+    commentId: comment?.id ?? null,
+    commentApId: comment?.ap_id ?? null,
+    commentContent: comment?.body ?? null,
+  };
+}
+
 function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
   const items: Schemas.ModlogItem[] = [];
 
   for (const view of (json.removed_posts ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_remove_post.id,
       actionType: "removed_post",
       isAdminAction: false,
       createdAt: view.mod_remove_post.when_,
       reason: view.mod_remove_post.reason ?? null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: null,
-      userApId: null,
-      userSlug: null,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: view.post?.id ?? null,
-      postApId: view.post?.ap_id ?? null,
-      postTitle: view.post?.title ?? null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
     });
   }
 
   for (const view of (json.locked_posts ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_lock_post.id,
       actionType: "locked_post",
       isAdminAction: false,
       createdAt: view.mod_lock_post.when_,
       reason: null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: null,
-      userApId: null,
-      userSlug: null,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: view.post?.id ?? null,
-      postApId: view.post?.ap_id ?? null,
-      postTitle: view.post?.title ?? null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
     });
   }
 
   for (const view of (json.featured_posts ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_feature_post.id,
       actionType: "featured_post",
       isAdminAction: false,
       createdAt: view.mod_feature_post.when_,
       reason: null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: null,
-      userApId: null,
-      userSlug: null,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: view.post?.id ?? null,
-      postApId: view.post?.ap_id ?? null,
-      postTitle: view.post?.title ?? null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
     });
   }
 
   for (const view of (json.removed_comments ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
-    const user = convertModlogPersonPieFed(view.commenter);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_remove_comment.id,
       actionType: "removed_comment",
       isAdminAction: false,
       createdAt: view.mod_remove_comment.when_,
       reason: view.mod_remove_comment.reason ?? null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: view.post?.id ?? null,
-      postApId: view.post?.ap_id ?? null,
-      postTitle: view.post?.title ?? null,
-      commentId: view.comment?.id ?? null,
-      commentApId: view.comment?.ap_id ?? null,
-      commentContent: view.comment?.body ?? null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.commenter),
+      ...piefedCommunityFields(view.community),
+      ...piefedPostFields(view.post),
+      ...piefedCommentFields(view.comment),
     });
   }
 
   for (const view of (json.removed_communities ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community ?? null);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_remove_community.id,
       actionType: "removed_community",
       isAdminAction: false,
       createdAt: view.mod_remove_community.when_,
       reason: view.mod_remove_community.reason ?? null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: null,
-      userApId: null,
-      userSlug: null,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedCommunityFields(view.community ?? null),
     });
   }
 
   for (const view of (json.banned_from_community ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
-    const user = convertModlogPersonPieFed(view.banned_person);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_ban_from_community.id,
       actionType: "banned_from_community",
       isAdminAction: false,
       createdAt: view.mod_ban_from_community.when_,
       reason: view.mod_ban_from_community.reason ?? null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.banned_person),
+      ...piefedCommunityFields(view.community),
     });
   }
 
   for (const view of (json.banned ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const user = convertModlogPersonPieFed(view.banned_person);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_ban.id,
       actionType: "banned",
       isAdminAction: false,
       createdAt: view.mod_ban.when_,
       reason: view.mod_ban.reason ?? null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: null,
-      communityApId: null,
-      communitySlug: null,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.banned_person),
     });
   }
 
   for (const view of (json.added_to_community ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
-    const user = convertModlogPersonPieFed(view.modded_person);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_add_community.id,
       actionType: "added_to_community",
       isAdminAction: false,
       createdAt: view.mod_add_community.when_,
       reason: null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
+      ...piefedCommunityFields(view.community),
     });
   }
 
   for (const view of (json.transferred_to_community ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const community = convertModlogCommunityPieFed(view.community);
-    const user = convertModlogPersonPieFed(view.modded_person);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_transfer_community.id,
       actionType: "transferred_to_community",
       isAdminAction: false,
       createdAt: view.mod_transfer_community.when_,
       reason: null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: community.id,
-      communityApId: community.apId,
-      communitySlug: community.slug,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
+      ...piefedCommunityFields(view.community),
     });
   }
 
   for (const view of (json.added ?? []) as any[]) {
-    const mod = convertModlogPersonPieFed(view.moderator);
-    const user = convertModlogPersonPieFed(view.modded_person);
     items.push({
+      ...PIEFED_NULL_FIELDS,
       id: view.mod_add.id,
       actionType: "added_admin",
       isAdminAction: true,
       createdAt: view.mod_add.when_,
       reason: null,
-      modId: mod.id,
-      modApId: mod.apId,
-      modSlug: mod.slug,
-      userId: user.id,
-      userApId: user.apId,
-      userSlug: user.slug,
-      communityId: null,
-      communityApId: null,
-      communitySlug: null,
-      postId: null,
-      postApId: null,
-      postTitle: null,
-      commentId: null,
-      commentApId: null,
-      commentContent: null,
+      ...piefedModFields(view.moderator),
+      ...piefedUserFields(view.modded_person),
     });
   }
 
