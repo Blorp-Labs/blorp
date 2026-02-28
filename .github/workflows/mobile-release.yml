@@ -4,12 +4,12 @@ on:
   push:
     # Trigger only on tags like "v1.2.3"
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   ios:
     name: iOS – Build & Upload to TestFlight
-    runs-on: macos-15
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
