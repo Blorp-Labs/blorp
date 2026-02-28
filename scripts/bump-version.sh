@@ -11,6 +11,11 @@ NEW_VER=$2
 ROOT=${3:-.}
 
 # 0) Ensure no uncommitted changes
+if ! git -C "$ROOT" diff-index --quiet HEAD --; then
+  echo "✖ You have uncommitted changes in $ROOT. Please commit or stash them before running this script."
+  exit 1
+fi
+
 echo "Bumping version from $OLD_VER → $NEW_VER in $ROOT …"
 
 # 1) JSON files (package.json, capacitor.config.json)
@@ -71,3 +76,19 @@ fi
 
 # 6) Cleanup .bak files
 find "$ROOT" -type f -name "*.bak" -delete
+
+# 7) Commit, tag, and push
+git -C "$ROOT" add -u
+git -C "$ROOT" commit -m "chore: bump version to $NEW_VER"
+echo "  ✔ Committed changes"
+
+git -C "$ROOT" tag -a "v$NEW_VER" -m "v$NEW_VER"
+echo "  ✔ Created annotation tag v$NEW_VER"
+
+git -C "$ROOT" push
+echo "  ✔ Pushed commit to origin"
+
+git -C "$ROOT" push origin "v$NEW_VER"
+echo "  ✔ Pushed tag v$NEW_VER to origin"
+
+echo "✅ Done!"
