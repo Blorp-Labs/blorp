@@ -25,7 +25,7 @@ platform :ios do
       key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
       key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: false,
+      is_key_content_base64: true,
       in_house: false
     )
     match(
