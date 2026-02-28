@@ -3,6 +3,7 @@ import { useModlog, useCommunity } from "../lib/api";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useParams } from "@/src/routing/index";
 import { useLinkContext } from "../routing/link-context";
+import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -59,9 +60,12 @@ export default function CommunityModlog() {
         <IonToolbar>
           <ToolbarButtons side="left">
             <ToolbarBackButton />
-            <ToolbarTitle numRightIcons={0} size="sm">
+            <ToolbarTitle numRightIcons={1} size="sm">
               {`Modlog — ${communityName}`}
             </ToolbarTitle>
+          </ToolbarButtons>
+          <ToolbarButtons side="right">
+            <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
       </IonHeader>
