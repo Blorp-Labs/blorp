@@ -12,6 +12,8 @@ import { PersonCard } from "@/src/components/person/person-card";
 import { Sidebar, SidebarContent } from "@/src/components/sidebar";
 import { useSidebarStore } from "@/src/stores/sidebars";
 import { AggregateBadges } from "../aggregates";
+import { Link } from "@/src/routing/index";
+import { useLinkContext } from "@/src/routing/link-context";
 
 function InstanceSidebar({ asPage }: { asPage?: boolean }) {
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
@@ -143,11 +145,19 @@ function InstanceAdmins({ asPage }: { asPage?: boolean }) {
 }
 
 export function LocalSererSidebar() {
+  const linkCtx = useLinkContext();
+
   return (
     <Sidebar>
       <SidebarContent>
         <InstanceSidebar />
         <InstanceAdmins />
+        <Separator />
+        <div className="p-3">
+          <Link to={`${linkCtx.root}modlog`} className="text-brand text-sm">
+            Modlog
+          </Link>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

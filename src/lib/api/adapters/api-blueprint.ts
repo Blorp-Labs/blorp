@@ -346,6 +346,34 @@ export const commentReportSchema = z.object({
   reason: z.string(),
 });
 
+export const modlogItemSchema = z.object({
+  id: z.number(),
+  actionType: z.string(),
+  isAdminAction: z.boolean(),
+  createdAt: z.string(),
+  reason: z.string().nullable(),
+
+  modId: z.number().nullable(),
+  modApId: z.string().nullable(),
+  modSlug: z.string().nullable(),
+
+  userId: z.number().nullable(),
+  userApId: z.string().nullable(),
+  userSlug: z.string().nullable(),
+
+  communityId: z.number().nullable(),
+  communityApId: z.string().nullable(),
+  communitySlug: z.string().nullable(),
+
+  postId: z.number().nullable(),
+  postApId: z.string().nullable(),
+  postTitle: z.string().nullable(),
+
+  commentId: z.number().nullable(),
+  commentApId: z.string().nullable(),
+  commentContent: z.string().nullable(),
+});
+
 export const slugSchema = z.custom<`${string}@${string}`>((val) => {
   return /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val);
 });
@@ -404,6 +432,7 @@ export namespace Schemas {
 
   export type PostReport = z.infer<typeof postReportSchema>;
   export type CommentReport = z.infer<typeof commentReportSchema>;
+  export type ModlogItem = z.infer<typeof modlogItemSchema>;
 }
 
 export namespace Forms {
@@ -707,6 +736,14 @@ export namespace Forms {
   export type ResolveObject = {
     q: string;
   };
+
+  export type GetModlog = {
+    communitySlug?: string;
+    pageCursor?: string;
+    actionType?: string;
+    modPersonId?: number;
+    otherPersonId?: number;
+  };
 }
 
 type Paginated = {
@@ -972,6 +1009,11 @@ export abstract class ApiBlueprint<C> {
     form: Forms.ResolveObject,
     options?: RequestOptions,
   ): Promise<Schemas.ResolveObject>;
+
+  abstract getModlog(
+    form: Forms.GetModlog,
+    options: RequestOptions,
+  ): Promise<{ items: Schemas.ModlogItem[]; nextCursor: string | null }>;
 
   abstract getPostSorts(): readonly string[];
   abstract getCommentSorts(): readonly string[];
