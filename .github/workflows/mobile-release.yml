@@ -2,9 +2,6 @@ name: Mobile Release
 
 on:
   push:
-    # Trigger only on tags like "v1.2.3"
-    tags:
-      - 'v*'
 
 jobs:
   ios:
@@ -58,215 +55,215 @@ jobs:
           path: ~/Library/Logs/gym/
           retention-days: 5
 
-  android:
-    name: Android – Build & Upload to Play Store + GitHub Release
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          cache: "yarn"
-
-      - name: Install JS dependencies
-        run: corepack enable && yarn install --immutable
-
-      - name: Build web assets + cap sync
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-        run: yarn build
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
-
-      - name: Decode Android keystore
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/blorp-release.keystore"
-
-      - name: Build AAB + APK and upload to Play Store
-        env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/blorp-release.keystore
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-        run: bundle exec fastlane android deploy
-
-      - name: Upload AAB as Actions artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-aab-${{ github.ref_name }}
-          path: android/app/build/outputs/bundle/release/app-release.aab
-          retention-days: 90
-          if-no-files-found: warn
-
-      - name: Upload APK as Actions artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk-${{ github.ref_name }}
-          path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 90
-          if-no-files-found: warn
-
-  tauri:
-    name: macOS – Build, Sign & Notarize
-    runs-on: macos-15
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          cache: "yarn"
-
-      - name: Install JS dependencies
-        run: corepack enable && yarn install --immutable
-
-      - name: Build web assets
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-        run: yarn vite build && yarn cp-package-json
-
-      - name: Install Rust (universal targets)
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
-
-      - name: Cache Rust build
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-
-      - name: Import Developer ID certificates
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_INSTALLER_CERTIFICATE: ${{ secrets.APPLE_INSTALLER_CERTIFICATE }}
-          APPLE_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_PASSWORD }}
-        run: |
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          echo "$APPLE_CERTIFICATE" | base64 --decode > application.p12
-          security import application.p12 -k build.keychain \
-            -P "$APPLE_CERTIFICATE_PASSWORD" \
-            -A
-          rm application.p12
-          echo "$APPLE_INSTALLER_CERTIFICATE" | base64 --decode > installer.p12
-          security import installer.p12 -k build.keychain \
-            -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" \
-            -A
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-          security set-keychain-settings build.keychain
-          rm installer.p12
-
-      - name: Build Tauri app (universal)
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-        run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
-
-      - name: Create .pkg
-        timeout-minutes: 5
-        env:
-          PRODUCTBUILD_SIGNING_IDENTITY: ${{ secrets.PRODUCTBUILD_SIGNING_IDENTITY }}
-        run: |
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings -lut 7200 build.keychain
-          mkdir -p release
-          xcrun productbuild \
-            --sign "$PRODUCTBUILD_SIGNING_IDENTITY" \
-            --component "./src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app" /Applications \
-            release/Mac-Installer.pkg
-          echo "productbuild done"
-
-      - name: Notarize .pkg
-        timeout-minutes: 15
-        env:
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-        run: |
-          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
-          notary_output=$(xcrun notarytool submit release/Mac-Installer.pkg \
-            --key /tmp/notary-key.p8 \
-            --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_ID" \
-            --wait \
-            --verbose 2>&1)
-          echo "$notary_output"
-          submission_id=$(echo "$notary_output" | grep "^  id:" | head -1 | awk '{print $2}')
-          if ! echo "$notary_output" | grep -q "  status: Accepted"; then
-            echo "Notarization failed — fetching rejection log for $submission_id"
-            xcrun notarytool log "$submission_id" \
-              --key /tmp/notary-key.p8 \
-              --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-              --key-id "$APP_STORE_CONNECT_KEY_ID" || true
-            rm /tmp/notary-key.p8
-            exit 1
-          fi
-          rm /tmp/notary-key.p8
-
-      - name: Staple .pkg
-        timeout-minutes: 10
-        run: |
-          for i in $(seq 1 10); do
-            echo "Staple attempt $i/10..."
-            if xcrun stapler staple release/Mac-Installer.pkg; then
-              echo "Staple succeeded"
-              break
-            fi
-            if [ "$i" -eq 10 ]; then
-              echo "All staple attempts failed"
-              exit 1
-            fi
-            echo "Ticket not yet available, waiting 30s..."
-            sleep 30
-          done
-
-      - name: Collect updater artifacts
-        run: |
-          cp src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz release/Mac-Blorp.app.tar.gz
-          version=$(jq -r .version package.json)
-          sig=$(< "src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz.sig")
-          cat > release/latest.json <<EOF
-          {
-            "version": "$version",
-            "platforms": {
-              "darwin-aarch64": {
-                "signature": "$sig",
-                "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
-              },
-              "darwin-x86_64": {
-                "signature": "$sig",
-                "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
-              }
-            }
-          }
-          EOF
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-release-${{ github.ref_name }}
-          path: release/
-          retention-days: 90
-          if-no-files-found: error
+  # android:
+  #   name: Android – Build & Upload to Play Store + GitHub Release
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 45
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20.x"
+  #         cache: "yarn"
+  #
+  #     - name: Install JS dependencies
+  #       run: corepack enable && yarn install --immutable
+  #
+  #     - name: Build web assets + cap sync
+  #       env:
+  #         NODE_OPTIONS: "--max-old-space-size=4096"
+  #       run: yarn build
+  #
+  #     - uses: actions/setup-java@v4
+  #       with:
+  #         distribution: temurin
+  #         java-version: "21"
+  #         cache: gradle
+  #
+  #     - uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.3"
+  #         bundler-cache: true
+  #
+  #     - name: Decode Android keystore
+  #       env:
+  #         ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  #       run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/blorp-release.keystore"
+  #
+  #     - name: Build AAB + APK and upload to Play Store
+  #       env:
+  #         ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/blorp-release.keystore
+  #         ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+  #         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+  #         ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  #         GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+  #       run: bundle exec fastlane android deploy
+  #
+  #     - name: Upload AAB as Actions artifact
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-aab-${{ github.ref_name }}
+  #         path: android/app/build/outputs/bundle/release/app-release.aab
+  #         retention-days: 90
+  #         if-no-files-found: warn
+  #
+  #     - name: Upload APK as Actions artifact
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-apk-${{ github.ref_name }}
+  #         path: android/app/build/outputs/apk/release/app-release.apk
+  #         retention-days: 90
+  #         if-no-files-found: warn
+  #
+  # tauri:
+  #   name: macOS – Build, Sign & Notarize
+  #   runs-on: macos-15
+  #   timeout-minutes: 90
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20.x"
+  #         cache: "yarn"
+  #
+  #     - name: Install JS dependencies
+  #       run: corepack enable && yarn install --immutable
+  #
+  #     - name: Build web assets
+  #       env:
+  #         NODE_OPTIONS: "--max-old-space-size=4096"
+  #       run: yarn vite build && yarn cp-package-json
+  #
+  #     - name: Install Rust (universal targets)
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         targets: aarch64-apple-darwin,x86_64-apple-darwin
+  #
+  #     - name: Cache Rust build
+  #       uses: Swatinem/rust-cache@v2
+  #       with:
+  #         workspaces: src-tauri
+  #
+  #     - name: Import Developer ID certificates
+  #       env:
+  #         APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+  #         APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+  #         APPLE_INSTALLER_CERTIFICATE: ${{ secrets.APPLE_INSTALLER_CERTIFICATE }}
+  #         APPLE_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_PASSWORD }}
+  #       run: |
+  #         security create-keychain -p "" build.keychain
+  #         security default-keychain -s build.keychain
+  #         security unlock-keychain -p "" build.keychain
+  #         echo "$APPLE_CERTIFICATE" | base64 --decode > application.p12
+  #         security import application.p12 -k build.keychain \
+  #           -P "$APPLE_CERTIFICATE_PASSWORD" \
+  #           -A
+  #         rm application.p12
+  #         echo "$APPLE_INSTALLER_CERTIFICATE" | base64 --decode > installer.p12
+  #         security import installer.p12 -k build.keychain \
+  #           -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" \
+  #           -A
+  #         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+  #         security set-keychain-settings build.keychain
+  #         rm installer.p12
+  #
+  #     - name: Build Tauri app (universal)
+  #       env:
+  #         TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+  #         APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+  #       run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
+  #
+  #     - name: Create .pkg
+  #       timeout-minutes: 5
+  #       env:
+  #         PRODUCTBUILD_SIGNING_IDENTITY: ${{ secrets.PRODUCTBUILD_SIGNING_IDENTITY }}
+  #       run: |
+  #         security unlock-keychain -p "" build.keychain
+  #         security set-keychain-settings -lut 7200 build.keychain
+  #         mkdir -p release
+  #         xcrun productbuild \
+  #           --sign "$PRODUCTBUILD_SIGNING_IDENTITY" \
+  #           --component "./src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app" /Applications \
+  #           release/Mac-Installer.pkg
+  #         echo "productbuild done"
+  #
+  #     - name: Notarize .pkg
+  #       timeout-minutes: 15
+  #       env:
+  #         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+  #         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+  #         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+  #       run: |
+  #         printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > /tmp/notary-key.p8
+  #         notary_output=$(xcrun notarytool submit release/Mac-Installer.pkg \
+  #           --key /tmp/notary-key.p8 \
+  #           --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+  #           --key-id "$APP_STORE_CONNECT_KEY_ID" \
+  #           --wait \
+  #           --verbose 2>&1)
+  #         echo "$notary_output"
+  #         submission_id=$(echo "$notary_output" | grep "^  id:" | head -1 | awk '{print $2}')
+  #         if ! echo "$notary_output" | grep -q "  status: Accepted"; then
+  #           echo "Notarization failed — fetching rejection log for $submission_id"
+  #           xcrun notarytool log "$submission_id" \
+  #             --key /tmp/notary-key.p8 \
+  #             --issuer "$APP_STORE_CONNECT_ISSUER_ID" \
+  #             --key-id "$APP_STORE_CONNECT_KEY_ID" || true
+  #           rm /tmp/notary-key.p8
+  #           exit 1
+  #         fi
+  #         rm /tmp/notary-key.p8
+  #
+  #     - name: Staple .pkg
+  #       timeout-minutes: 10
+  #       run: |
+  #         for i in $(seq 1 10); do
+  #           echo "Staple attempt $i/10..."
+  #           if xcrun stapler staple release/Mac-Installer.pkg; then
+  #             echo "Staple succeeded"
+  #             break
+  #           fi
+  #           if [ "$i" -eq 10 ]; then
+  #             echo "All staple attempts failed"
+  #             exit 1
+  #           fi
+  #           echo "Ticket not yet available, waiting 30s..."
+  #           sleep 30
+  #         done
+  #
+  #     - name: Collect updater artifacts
+  #       run: |
+  #         cp src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz release/Mac-Blorp.app.tar.gz
+  #         version=$(jq -r .version package.json)
+  #         sig=$(< "src-tauri/target/universal-apple-darwin/release/bundle/macos/Blorp.app.tar.gz.sig")
+  #         cat > release/latest.json <<EOF
+  #         {
+  #           "version": "$version",
+  #           "platforms": {
+  #             "darwin-aarch64": {
+  #               "signature": "$sig",
+  #               "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
+  #             },
+  #             "darwin-x86_64": {
+  #               "signature": "$sig",
+  #               "url": "https://github.com/Blorp-Labs/blorp/releases/download/v$version/Mac-Blorp.app.tar.gz"
+  #             }
+  #           }
+  #         }
+  #         EOF
+  #
+  #     - name: Upload macOS artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: macos-release-${{ github.ref_name }}
+  #         path: release/
+  #         retention-days: 90
+  #         if-no-files-found: error
