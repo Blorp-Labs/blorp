@@ -23,8 +23,8 @@
 }
 
 @custom-variant dark (
-  @media (prefers-color-scheme: dark),
-  &:where(.dark, .dark *)
+  &:where(.dark, .dark *),
+  html[data-dark-mode="dark"] &
 );
 
 :root {
@@ -110,6 +110,11 @@
 }
 
 .dark {
+  @apply text-foreground;
+}
+
+.dark,
+html:root[data-dark-mode="dark"] {
   --brand: #ff1fbb;
   --brand-secondary: #876cff;
 
@@ -145,8 +150,46 @@
   --shad-sidebar-accent-foreground: oklch(0.985 0 0);
   --shad-sidebar-border: oklch(1 0 0 / 10%);
   --shad-sidebar-ring: oklch(0.552 0.016 285.938);
+}
 
-  @apply text-foreground;
+/* Force light (system may be dark — override the media query) */
+@media (prefers-color-scheme: dark) {
+  html:root[data-dark-mode="light"] {
+    --brand: #d40091;
+    --brand-secondary: #4123d0;
+
+    --shad-background: oklch(1 0 0);
+    --shad-foreground: oklch(0.141 0.005 285.823);
+    --shad-card: oklch(1 0 0);
+    --shad-card-foreground: oklch(0.141 0.005 285.823);
+    --shad-popover: oklch(1 0 0);
+    --shad-popover-foreground: oklch(0.141 0.005 285.823);
+    --shad-primary: oklch(0.21 0.006 285.885);
+    --shad-primary-foreground: oklch(0.985 0 0);
+    --shad-secondary: oklch(0.967 0.001 286.375);
+    --shad-secondary-foreground: oklch(0.21 0.006 285.885);
+    --shad-muted: oklch(0.967 0.001 286.375);
+    --shad-muted-foreground: oklch(0.552 0.016 285.938);
+    --shad-accent: oklch(0.967 0.001 286.375);
+    --shad-accent-foreground: oklch(0.21 0.006 285.885);
+    --shad-destructive: oklch(0.577 0.245 27.325);
+    --shad-border: oklch(0.92 0.004 286.32);
+    --shad-input: oklch(0.92 0.004 286.32);
+    --shad-ring: oklch(0.705 0.015 286.067);
+    --shad-chart-1: oklch(0.646 0.222 41.116);
+    --shad-chart-2: oklch(0.6 0.118 184.704);
+    --shad-chart-3: oklch(0.398 0.07 227.392);
+    --shad-chart-4: oklch(0.828 0.189 84.429);
+    --shad-chart-5: oklch(0.769 0.188 70.08);
+    --shad-sidebar: oklch(0.985 0 0);
+    --shad-sidebar-foreground: oklch(0.141 0.005 285.823);
+    --shad-sidebar-primary: oklch(0.21 0.006 285.885);
+    --shad-sidebar-primary-foreground: oklch(0.985 0 0);
+    --shad-sidebar-accent: oklch(0.967 0.001 286.375);
+    --shad-sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+    --shad-sidebar-border: oklch(0.92 0.004 286.32);
+    --shad-sidebar-ring: oklch(0.705 0.015 286.067);
+  }
 }
 
 @theme inline {

@@ -1,7 +1,9 @@
 import { IonApp } from "@ionic/react";
 import { setupIonicReact } from "@ionic/react";
 import _ from "lodash";
+import { useEffect } from "react";
 import Router from "./routing/Router";
+import { useTheme } from "./lib/hooks/use-theme";
 import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
@@ -38,9 +40,18 @@ function RefreshNotificationCount() {
   return null;
 }
 
+function DarkModeEffect() {
+  const theme = useTheme();
+  useEffect(() => {
+    document.documentElement.setAttribute("data-dark-mode", theme);
+  }, [theme]);
+  return null;
+}
+
 export default function App() {
   return (
     <IonApp>
+      <DarkModeEffect />
       <TanstackQueryProvider>
         <AuthProvider>
           <PostRemoveProvider>

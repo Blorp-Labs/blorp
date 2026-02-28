@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import {
+  DarkMode,
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
@@ -45,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { SimpleSelect } from "@/src/components/ui/simple-select";
 import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
 
 const version =
@@ -286,6 +288,9 @@ export default function SettingsPage() {
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const setPaginationMode = useSettingsStore((s) => s.setPaginationMode);
 
+  const darkMode = useSettingsStore((s) => s.darkMode);
+  const setDarkMode = useSettingsStore((s) => s.setDarkMode);
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -359,6 +364,26 @@ export default function SettingsPage() {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              </SectionItem>
+              <SectionItem>
+                <label>Appearance</label>
+                <SimpleSelect
+                  options={["system", "light", "dark"] satisfies DarkMode[]}
+                  value={darkMode}
+                  onChange={setDarkMode}
+                  valueGetter={(o) => o}
+                  labelGetter={(o) => {
+                    switch (o) {
+                      case "system":
+                        return "System default";
+                      case "dark":
+                        return "Dark";
+                      case "light":
+                        return "Light";
+                    }
+                  }}
+                  className="w-[160px]"
+                />
               </SectionItem>
             </Section>
 

@@ -1,16 +1,10 @@
 :root:root {
   --ion-border-color: var(--color-border);
   --ion-color-primary: var(--color-muted-foreground);
-  --ion-toolbar-background: white;
-  --ion-tab-bar-background: white;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:root {
-    --ion-background-color: black;
-    --ion-toolbar-background: black;
-    --ion-tab-bar-background: black;
-  }
+  --ion-text-color: var(--shad-foreground);
+  --ion-background-color: var(--shad-background);
+  --ion-toolbar-background: var(--shad-background);
+  --ion-tab-bar-background: var(--shad-background);
 }
 
 /* Without this, the ion-content inside of the ion-split-pane */

@@ -7,6 +7,8 @@ import { env } from "../env";
 
 export type PostCardStyle = "small" | "large" | "extra-small";
 
+export type DarkMode = "system" | "dark" | "light";
+
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
   value: PostCardStyle;
@@ -58,6 +60,8 @@ type SettingsStore = {
   pruneFiltersKeywords: () => any;
   paginationMode: "infinite" | "pages";
   setPaginationMode: (mode: "infinite" | "pages") => void;
+  darkMode: DarkMode;
+  setDarkMode: (mode: DarkMode) => void;
   reset: () => void;
 };
 
@@ -72,6 +76,7 @@ const INIT_STATE = {
   shareLinkType: null,
   filterKeywords: [],
   paginationMode: "infinite",
+  darkMode: "system",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -101,6 +106,7 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ filterKeywords: pruneFilterKeywords(get().filterKeywords) });
       },
       setPaginationMode: (paginationMode) => set({ paginationMode }),
+      setDarkMode: (darkMode) => set({ darkMode }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
