@@ -403,6 +403,446 @@ function convertCommentReport(
   };
 }
 
+function convertModlogPersonV3(person: lemmyV3.Person | undefined) {
+  if (!person) {
+    return { id: null, apId: null, slug: null };
+  }
+  return {
+    id: person.id,
+    apId: person.actor_id,
+    slug: createSlug({ apId: person.actor_id, name: person.name }).slug,
+  };
+}
+
+function convertModlogCommunityV3(
+  community: lemmyV3.Community | null | undefined,
+) {
+  if (!community) {
+    return { id: null, apId: null, slug: null };
+  }
+  return {
+    id: community.id,
+    apId: community.actor_id,
+    slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
+  };
+}
+
+function convertModlogResponseV3(
+  response: lemmyV3.GetModlogResponse,
+): Schemas.ModlogItem[] {
+  const items: Schemas.ModlogItem[] = [];
+
+  for (const view of response.removed_posts) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.mod_remove_post.id,
+      actionType: "removed_post",
+      isAdminAction: false,
+      createdAt: view.mod_remove_post.when_,
+      reason: view.mod_remove_post.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: view.post.id,
+      postApId: view.post.ap_id,
+      postTitle: view.post.name,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.locked_posts) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.mod_lock_post.id,
+      actionType: "locked_post",
+      isAdminAction: false,
+      createdAt: view.mod_lock_post.when_,
+      reason: null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: view.post.id,
+      postApId: view.post.ap_id,
+      postTitle: view.post.name,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.featured_posts) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.mod_feature_post.id,
+      actionType: "featured_post",
+      isAdminAction: false,
+      createdAt: view.mod_feature_post.when_,
+      reason: null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: view.post.id,
+      postApId: view.post.ap_id,
+      postTitle: view.post.name,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.removed_comments) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    const user = convertModlogPersonV3(view.commenter);
+    items.push({
+      id: view.mod_remove_comment.id,
+      actionType: "removed_comment",
+      isAdminAction: false,
+      createdAt: view.mod_remove_comment.when_,
+      reason: view.mod_remove_comment.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: view.post.id,
+      postApId: view.post.ap_id,
+      postTitle: view.post.name,
+      commentId: view.comment.id,
+      commentApId: view.comment.ap_id,
+      commentContent: view.comment.content,
+    });
+  }
+
+  for (const view of response.removed_communities) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.mod_remove_community.id,
+      actionType: "removed_community",
+      isAdminAction: false,
+      createdAt: view.mod_remove_community.when_,
+      reason: view.mod_remove_community.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.banned_from_community) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    const user = convertModlogPersonV3(view.banned_person);
+    items.push({
+      id: view.mod_ban_from_community.id,
+      actionType: "banned_from_community",
+      isAdminAction: false,
+      createdAt: view.mod_ban_from_community.when_,
+      reason: view.mod_ban_from_community.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.banned) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const user = convertModlogPersonV3(view.banned_person);
+    items.push({
+      id: view.mod_ban.id,
+      actionType: "banned",
+      isAdminAction: false,
+      createdAt: view.mod_ban.when_,
+      reason: view.mod_ban.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: null,
+      communityApId: null,
+      communitySlug: null,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.added_to_community) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    const user = convertModlogPersonV3(view.modded_person);
+    items.push({
+      id: view.mod_add_community.id,
+      actionType: "added_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_add_community.when_,
+      reason: null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.transferred_to_community) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const community = convertModlogCommunityV3(view.community);
+    const user = convertModlogPersonV3(view.modded_person);
+    items.push({
+      id: view.mod_transfer_community.id,
+      actionType: "transferred_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_transfer_community.when_,
+      reason: null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.added) {
+    const mod = convertModlogPersonV3(view.moderator);
+    const user = convertModlogPersonV3(view.modded_person);
+    items.push({
+      id: view.mod_add.id,
+      actionType: "added_admin",
+      isAdminAction: true,
+      createdAt: view.mod_add.when_,
+      reason: null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: user.id,
+      userApId: user.apId,
+      userSlug: user.slug,
+      communityId: null,
+      communityApId: null,
+      communitySlug: null,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.admin_purged_persons) {
+    const mod = convertModlogPersonV3(view.admin);
+    items.push({
+      id: view.admin_purge_person.id,
+      actionType: "admin_purged_person",
+      isAdminAction: true,
+      createdAt: view.admin_purge_person.when_,
+      reason: view.admin_purge_person.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: null,
+      communityApId: null,
+      communitySlug: null,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.admin_purged_communities) {
+    const mod = convertModlogPersonV3(view.admin);
+    items.push({
+      id: view.admin_purge_community.id,
+      actionType: "admin_purged_community",
+      isAdminAction: true,
+      createdAt: view.admin_purge_community.when_,
+      reason: view.admin_purge_community.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: null,
+      communityApId: null,
+      communitySlug: null,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.admin_purged_posts) {
+    const mod = convertModlogPersonV3(view.admin);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.admin_purge_post.id,
+      actionType: "admin_purged_post",
+      isAdminAction: true,
+      createdAt: view.admin_purge_post.when_,
+      reason: view.admin_purge_post.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.admin_purged_comments) {
+    const mod = convertModlogPersonV3(view.admin);
+    items.push({
+      id: view.admin_purge_comment.id,
+      actionType: "admin_purged_comment",
+      isAdminAction: true,
+      createdAt: view.admin_purge_comment.when_,
+      reason: view.admin_purge_comment.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: null,
+      communityApId: null,
+      communitySlug: null,
+      postId: view.post.id,
+      postApId: view.post.ap_id,
+      postTitle: view.post.name,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  for (const view of response.hidden_communities) {
+    const mod = convertModlogPersonV3(view.admin);
+    const community = convertModlogCommunityV3(view.community);
+    items.push({
+      id: view.mod_hide_community.id,
+      actionType: "hidden_community",
+      isAdminAction: true,
+      createdAt: view.mod_hide_community.when_,
+      reason: view.mod_hide_community.reason ?? null,
+      modId: mod.id,
+      modApId: mod.apId,
+      modSlug: mod.slug,
+      userId: null,
+      userApId: null,
+      userSlug: null,
+      communityId: community.id,
+      communityApId: community.apId,
+      communitySlug: community.slug,
+      postId: null,
+      postApId: null,
+      postTitle: null,
+      commentId: null,
+      commentApId: null,
+      commentContent: null,
+    });
+  }
+
+  return items.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
 export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   software = Software.LEMMY;
   softwareVersion: string;
@@ -1473,6 +1913,34 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         imageUrl: metadata.image,
         embedVideoUrl: metadata.embed_video_url,
       };
+    });
+  }
+
+  async getModlog(form: Forms.GetModlog, options: RequestOptions) {
+    return translateErrors(async () => {
+      let community_id: number | undefined;
+      if (form.communitySlug) {
+        const { community } = await this.getCommunity(
+          { slug: form.communitySlug },
+          options,
+        );
+        community_id = community.id;
+      }
+      const page =
+        !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
+          ? 1
+          : _.parseInt(form.pageCursor) + 1;
+
+      const response = await this.client.getModlog(
+        { community_id, page, limit: this.limit },
+        options,
+      );
+
+      const items = convertModlogResponseV3(response);
+      const hasNextPage = Object.values(response).some(
+        (arr) => Array.isArray(arr) && arr.length >= this.limit,
+      );
+      return { items, nextCursor: hasNextPage ? String(page) : null };
     });
   }
 

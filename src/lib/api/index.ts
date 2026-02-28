@@ -1847,6 +1847,25 @@ export function useCommentReportsQuery() {
   });
 }
 
+export function useModlog(form: Forms.GetModlog) {
+  const { api } = useApiClients();
+  const queryKey = ["modlog", form.communitySlug ?? "site"];
+
+  return useThrottledInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam, signal }) => {
+      const { items, nextCursor } = await (
+        await api
+      ).getModlog({ ...form, pageCursor: pageParam }, { signal });
+      return { items, nextCursor };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: INIT_PAGE_TOKEN,
+    gcTime: 30_000,
+    staleTime: 30_000,
+  });
+}
+
 function useNotificationCountQueryKey() {
   const { apis } = useApiClients();
   const queryKey = [
