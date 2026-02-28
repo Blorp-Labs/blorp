@@ -17,13 +17,12 @@ import { Skeleton } from "../components/ui/skeleton";
 
 function ModlogRowSkeleton() {
   return (
-    <ContentGutters>
+    <ContentGutters noMobilePadding>
       <div className="flex flex-row items-stretch gap-2 px-3 py-2 border-b border-border text-sm min-h-14">
         <Skeleton className="w-20" />
         <Skeleton className="w-28" />
         <Skeleton className="flex-1" />
       </div>
-      <></>
     </ContentGutters>
   );
 }
@@ -90,9 +89,8 @@ export default function CommunityModlog() {
             </ContentGutters>
           }
           renderItem={({ item }) => (
-            <ContentGutters>
+            <ContentGutters noMobilePadding>
               <ModlogRow item={item} />
-              <></>
             </ContentGutters>
           )}
         />

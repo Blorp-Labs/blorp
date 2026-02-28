@@ -6,6 +6,7 @@ import { encodeApId } from "@/src/lib/api/utils";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import { RelativeTime } from "../relative-time";
 
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
@@ -51,15 +52,12 @@ function actionTypeLabel(actionType: string): string {
 
 export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
   const linkCtx = useLinkContext();
-  const time = dayjs(item.createdAt);
 
   return (
     <div className="flex flex-row items-start gap-2 px-3 py-2 border-b border-border text-sm min-h-14">
       {/* Time column */}
-      <div className="w-20 shrink-0 text-muted-foreground text-xs pt-0.5">
-        <time dateTime={time.toISOString()} title={time.format("LLLL")}>
-          {time.fromNow()}
-        </time>
+      <div className="w-12 shrink-0 text-muted-foreground text-xs pt-0.5">
+        <RelativeTime time={item.createdAt} />
       </div>
 
       {/* Mod column */}
