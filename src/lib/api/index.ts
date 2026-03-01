@@ -847,6 +847,10 @@ export function useRefreshAuth() {
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
 
+  const setNsfwPreviouslyEnabled = useSettingsStore(
+    (s) => s.setNsfwPreviouslyEnabled,
+  );
+
   const queryKey = useRefreshAuthKey();
 
   return useQuery({
@@ -890,6 +894,9 @@ export function useRefreshAuth() {
             updateAccount(i, {
               site,
             });
+            if (site.showNsfw) {
+              setNsfwPreviouslyEnabled(true);
+            }
           }
         } else if (
           _.isString(p?.reason) &&
