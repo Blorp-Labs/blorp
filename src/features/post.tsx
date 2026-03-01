@@ -51,6 +51,7 @@ import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
 import { useQueryToast } from "../tanstack-query/hooks";
+import { Button } from "../components/ui/button";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -408,16 +409,19 @@ export default function Post() {
               keepMounted={[replyingToItem]}
               fullscreen
               scrollHost
+              jumpMinItemHeight={50}
               renderJumpButton={(onClick) => (
                 <ContentGutters>
-                  <div className="flex justify-end p-4">
-                    <button
-                      className="size-10 rounded-full bg-background shadow-md flex items-center justify-center"
+                  <div className="flex justify-end">
+                    <Button
+                      size="icon"
+                      variant="outline"
                       onClick={onClick}
+                      className="absolute bottom-4 max-md:bottom-[calc(var(--ion-safe-area-bottom)+75px)] z-10"
                       aria-label="Jump to next item"
                     >
                       <ChevronDown className="size-5" />
-                    </button>
+                    </Button>
                   </div>
                   <></>
                 </ContentGutters>
