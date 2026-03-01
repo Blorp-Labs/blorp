@@ -135,6 +135,7 @@ function VirtualListInternal<T>({
   noItems,
   noItemsComponent,
   paginationControls,
+  renderJumpButton,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -153,6 +154,7 @@ function VirtualListInternal<T>({
   noItems?: boolean;
   noItemsComponent?: ReactNode;
   paginationControls?: ReactNode;
+  renderJumpButton?: (onClick: () => void) => ReactNode;
 }) {
   const index = useRef(0);
   const offset = useRef(0);
@@ -270,6 +272,19 @@ function VirtualListInternal<T>({
     virtualizer: rowVirtualizer,
   });
 
+  const scrollToNext = useCallback(() => {
+    const scrollOffset = scrollRef.current?.scrollTop ?? 0;
+    const firstItem = rowVirtualizer
+      .getVirtualItems()
+      .find((item) => item.start >= scrollOffset);
+    const currentIndex = firstItem?.index ?? 0;
+    const nextIndex = currentIndex < headerLen ? headerLen : currentIndex + 1;
+    rowVirtualizer.scrollToIndex(nextIndex, {
+      align: "start",
+      behavior: "smooth",
+    });
+  }, [rowVirtualizer, scrollRef, headerLen]);
+
   useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
     if (!lastItem || _.isNil(dataLen)) {
@@ -283,61 +298,69 @@ function VirtualListInternal<T>({
   const colWidth = 100 / (numColumns ?? 1);
 
   return (
-    <div
-      style={{
-        height: `${rowVirtualizer.getTotalSize()}px`,
-        width: "100%",
-        position: "relative",
-      }}
-    >
-      {/* Only the visible items in the virtualizer, manually positioned to be in view */}
-      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        const showHeader = header && virtualItem.index < headerLen;
-        const isPaginationItem =
-          !!paginationControls &&
-          virtualItem.index === headerLen + baseDataCount;
-        const localIndex = virtualItem.index - headerLen;
-        const item =
-          !showHeader && !isPaginationItem ? data?.[localIndex] : undefined;
+    <>
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {/* Only the visible items in the virtualizer, manually positioned to be in view */}
+        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+          const showHeader = header && virtualItem.index < headerLen;
+          const isPaginationItem =
+            !!paginationControls &&
+            virtualItem.index === headerLen + baseDataCount;
+          const localIndex = virtualItem.index - headerLen;
+          const item =
+            !showHeader && !isPaginationItem ? data?.[localIndex] : undefined;
 
-        const isStuck = isActiveSticky(virtualItem.index);
+          const isStuck = isActiveSticky(virtualItem.index);
 
-        return (
-          <div
-            key={virtualItem.key}
-            data-index={virtualItem.index}
-            data-is-sticky-header={isStuck}
-            ref={rowVirtualizer.measureElement}
-            className={cn(isStuck && "max-md:bg-background")}
-            style={
-              isStuck
-                ? {
-                    position: "sticky",
-                    zIndex: 1,
-                    top: 0,
-                  }
-                : {
-                    position: "absolute",
-                    top: 0,
-                    left: `${colWidth * virtualItem.lane}%`,
-                    width: `${colWidth}%`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }
-            }
-          >
-            {showHeader
-              ? header[virtualItem.index]
-              : isPaginationItem
-                ? paginationControls
-                : noItems
-                  ? noItemsComponent
-                  : item
-                    ? renderItem({ item, index: localIndex })
-                    : placeholder}
-          </div>
-        );
-      })}
-    </div>
+          return (
+            <div
+              key={virtualItem.key}
+              data-index={virtualItem.index}
+              data-is-sticky-header={isStuck}
+              ref={rowVirtualizer.measureElement}
+              className={cn(isStuck && "max-md:bg-background")}
+              style={
+                isStuck
+                  ? {
+                      position: "sticky",
+                      zIndex: 1,
+                      top: 0,
+                    }
+                  : {
+                      position: "absolute",
+                      top: 0,
+                      left: `${colWidth * virtualItem.lane}%`,
+                      width: `${colWidth}%`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }
+              }
+            >
+              {showHeader
+                ? header[virtualItem.index]
+                : isPaginationItem
+                  ? paginationControls
+                  : noItems
+                    ? noItemsComponent
+                    : item
+                      ? renderItem({ item, index: localIndex })
+                      : placeholder}
+            </div>
+          );
+        })}
+      </div>
+
+      {renderJumpButton && (
+        <div className="sticky bottom-0 z-10 pointer-events-none [&>*]:pointer-events-auto">
+          {renderJumpButton(scrollToNext)}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -349,6 +372,7 @@ export function VirtualList<T>({
   refresh,
   scrollHost,
   fullscreen,
+  renderJumpButton,
   ...props
 }: {
   data?: T[] | readonly T[];
@@ -373,6 +397,7 @@ export function VirtualList<T>({
   noItems?: boolean;
   noItemsComponent?: ReactNode;
   paginationControls?: ReactNode;
+  renderJumpButton?: (onClick: () => void) => ReactNode;
 }) {
   const media = useMedia();
   const focused = useRef(false);
@@ -435,6 +460,7 @@ export function VirtualList<T>({
         <VirtualListInternal
           listKey={`${key}-${props.numColumns}`}
           {...props}
+          renderJumpButton={renderJumpButton}
           ref={scrollRef}
           onFocusChange={(newFocused) => {
             focused.current = newFocused;
