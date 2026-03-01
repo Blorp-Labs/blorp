@@ -169,6 +169,7 @@ function convertPerson({
   return {
     apId: person.actor_id,
     id: person.id,
+    instanceId: person.instance_id,
     avatar: person.avatar ?? null,
     bio: person.bio ?? null,
     matrixUserId: person.matrix_user_id ?? null,

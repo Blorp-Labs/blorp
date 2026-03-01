@@ -32,6 +32,7 @@ const personSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
+  instanceId: z.number().nullable().optional(),
   avatar: z.string().nullable(),
   slug: z.string(),
   matrixUserId: z.string().nullable(),

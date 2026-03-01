@@ -7,10 +7,11 @@ import { openUrl } from "@/src/lib/linking";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
-import { useBlockPerson } from "@/src/lib/api";
+import { useBlockInstance, useBlockPerson } from "@/src/lib/api";
 import {
   getAccountActorId,
   useAuth,
+  useIsInstanceBlocked,
   useIsPersonBlocked,
 } from "@/src/stores/auth";
 import { useShareActions } from "@/src/lib/share";
@@ -59,6 +60,8 @@ export function usePersonActions({
   );
 
   const isBlocked = useIsPersonBlocked(person?.apId);
+  const isInstanceBlocked = useIsInstanceBlocked(person?.instanceId);
+  const blockInstance = useBlockInstance();
 
   return [
     ...(person && !isBlocked
@@ -88,6 +91,41 @@ export function usePersonActions({
                 // TODO: handle error
               }
             },
+          },
+        ]
+      : []),
+    ...(person && person.apId !== myUserId && person.instanceId
+      ? [
+          {
+            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const deferred = new Deferred();
+                const domain = new URL(person.apId).hostname;
+                alrt({
+                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                  buttons: [
+                    {
+                      text: "Cancel",
+                      role: "cancel",
+                      handler: () => deferred.reject(),
+                    },
+                    {
+                      text: "OK",
+                      role: "confirm",
+                      handler: () => deferred.resolve(),
+                    },
+                  ],
+                });
+                await deferred.promise;
+                blockInstance.mutate({
+                  instanceId: person.instanceId!,
+                  block: !isInstanceBlocked,
+                });
+              } catch {}
+            },
+            danger: true,
           },
         ]
       : []),

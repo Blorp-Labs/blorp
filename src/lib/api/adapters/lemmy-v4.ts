@@ -303,6 +303,7 @@ function convertPerson({
   return {
     id: person.id,
     apId: person.ap_id,
+    instanceId: person.instance_id,
     avatar: person.avatar ?? null,
     bio: person.bio ?? null,
     matrixUserId: person.matrix_user_id ?? null,

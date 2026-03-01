@@ -634,6 +634,7 @@ function convertPerson(
   const p: Schemas.Person = {
     apId: person.actor_id,
     id: person.id,
+    instanceId: person.instance_id ?? null,
     avatar: person.avatar ?? null,
     matrixUserId: null,
     slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
