@@ -13,6 +13,7 @@ import {
   parseAccountInfo,
   useAuth,
 } from "@/src/stores/auth";
+import { Badge } from "@/src/components/ui/badge";
 import { useRequireAuth } from "@/src/components/auth-context";
 import { ContentGutters } from "@/src/components/gutters";
 import _ from "lodash";
@@ -83,9 +84,11 @@ function AccountCard({
           <div className="flex items-center justify-between w-full">
             <PersonCard actorId={person.apId} account={account} size="sm" />
             {getAccountSite(account)?.showNsfw && (
-              <span className="text-xs px-1.5 py-0.5 bg-destructive/10 text-destructive rounded-full font-medium">
-                NSFW
-              </span>
+              <Badge variant="brand-secondary">
+                {getAccountSite(account)?.blurNsfw
+                  ? "NSFW Blurred"
+                  : "NSFW Shown"}
+              </Badge>
             )}
           </div>
         </SectionItem>
