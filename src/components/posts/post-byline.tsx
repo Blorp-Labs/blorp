@@ -438,9 +438,17 @@ export function PostByline({
 
       <div className="flex-1" />
 
-      {saved && <FaBookmark className="text-lg text-brand" />}
-      {pinned && <BsFillPinAngleFill className="text-xl text-[#17B169]" />}
-      {locked && <Lock className="text-xl text-yellow-500" />}
+      {saved && (
+        <FaBookmark className={cn("text-lg text-brand", ABOVE_LINK_OVERLAY)} />
+      )}
+      {pinned && (
+        <BsFillPinAngleFill
+          className={cn("text-xl text-[#17B169]", ABOVE_LINK_OVERLAY)}
+        />
+      )}
+      {locked && (
+        <Lock className={cn("text-xl text-yellow-500", ABOVE_LINK_OVERLAY)} />
+      )}
 
       {showActions && <PostActionButtion post={post} canMod={canMod} />}
     </div>
