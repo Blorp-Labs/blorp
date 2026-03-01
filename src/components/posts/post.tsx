@@ -337,8 +337,8 @@ function LargePostCard({
     <article
       data-testid="post-card"
       className={cn(
-        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 group",
-        detailView ? "max-md:bg-background" : "relative border-b",
+        "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 group relative",
+        detailView ? "max-md:bg-background" : "border-b",
       )}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
