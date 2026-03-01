@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
@@ -408,6 +409,20 @@ export default function Post() {
               keepMounted={[replyingToItem]}
               fullscreen
               scrollHost
+              renderJumpButton={(onClick) => (
+                <ContentGutters>
+                  <div className="flex justify-end p-4">
+                    <button
+                      className="size-10 rounded-full bg-background shadow-md flex items-center justify-center"
+                      onClick={onClick}
+                      aria-label="Jump to next item"
+                    >
+                      <ChevronDown className="size-5" />
+                    </button>
+                  </div>
+                  <></>
+                </ContentGutters>
+              )}
               className={cn(
                 showMobileReply &&
                   "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
