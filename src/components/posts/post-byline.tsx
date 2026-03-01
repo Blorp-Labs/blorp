@@ -47,7 +47,7 @@ import {
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 
 export function usePostActions({
@@ -71,6 +71,7 @@ export function usePostActions({
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
   const inputAlert = useInputAlert();
+  const getConfirmation = useConfirmationAlert();
   const { software } = useSoftware();
 
   const router = useIonRouter();
@@ -176,24 +177,10 @@ export function usePostActions({
                       onClick: async () => {
                         try {
                           await requireAuth();
-                          const deferred = new Deferred();
                           const domain = new URL(post.creatorApId).hostname;
-                          alrt({
+                          await getConfirmation({
                             message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                            buttons: [
-                              {
-                                text: "Cancel",
-                                role: "cancel",
-                                handler: () => deferred.reject(),
-                              },
-                              {
-                                text: "OK",
-                                role: "confirm",
-                                handler: () => deferred.resolve(),
-                              },
-                            ],
                           });
-                          await deferred.promise;
                           blockInstance.mutate({
                             instanceId: post.creatorInstanceId!,
                             block: !isInstanceBlocked,

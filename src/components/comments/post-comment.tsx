@@ -75,7 +75,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
 } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -120,6 +120,7 @@ export function useCommentActions({
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const addReactionEmoji = useAddCommentReactionEmoji();
   const inputAlert = useInputAlert();
+  const getConfirmation = useConfirmationAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -276,25 +277,11 @@ export function useCommentActions({
                       onClick: async () => {
                         try {
                           await requireAuth();
-                          const deferred = new Deferred();
                           const domain = new URL(commentView.creatorApId)
                             .hostname;
-                          alrt({
+                          await getConfirmation({
                             message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                            buttons: [
-                              {
-                                text: "Cancel",
-                                role: "cancel",
-                                handler: () => deferred.reject(),
-                              },
-                              {
-                                text: "OK",
-                                role: "confirm",
-                                handler: () => deferred.resolve(),
-                              },
-                            ],
                           });
-                          await deferred.promise;
                           blockInstance.mutate({
                             instanceId: commentView.creatorInstanceId!,
                             block: !isInstanceBlocked,

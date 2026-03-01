@@ -7,6 +7,7 @@ import { openUrl } from "@/src/lib/linking";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
+import { useConfirmationAlert } from "@/src/lib/hooks/index";
 import { useBlockInstance, useBlockPerson } from "@/src/lib/api";
 import {
   getAccountActorId,
@@ -62,6 +63,7 @@ export function usePersonActions({
   const isBlocked = useIsPersonBlocked(person?.apId);
   const isInstanceBlocked = useIsInstanceBlocked(person?.instanceId);
   const blockInstance = useBlockInstance();
+  const getConfirmation = useConfirmationAlert();
 
   return [
     ...(person && !isBlocked
@@ -101,24 +103,10 @@ export function usePersonActions({
             onClick: async () => {
               try {
                 await requireAuth();
-                const deferred = new Deferred();
                 const domain = new URL(person.apId).hostname;
-                alrt({
+                await getConfirmation({
                   message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                  buttons: [
-                    {
-                      text: "Cancel",
-                      role: "cancel",
-                      handler: () => deferred.reject(),
-                    },
-                    {
-                      text: "OK",
-                      role: "confirm",
-                      handler: () => deferred.resolve(),
-                    },
-                  ],
                 });
-                await deferred.promise;
                 blockInstance.mutate({
                   instanceId: person.instanceId!,
                   block: !isInstanceBlocked,
