@@ -580,6 +580,7 @@ function convertCommunity(
       name: communityView.community.name,
     }).slug,
     icon: communityView.community.icon ?? null,
+    nsfw: communityView.community.nsfw,
     ...(counts
       ? {
           postCount: counts.post_count ?? undefined,
