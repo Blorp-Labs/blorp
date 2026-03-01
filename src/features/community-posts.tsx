@@ -36,7 +36,11 @@ import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
 import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { useAuth, useIsCommunityBlocked } from "../stores/auth";
+import {
+  useAuth,
+  useIsCommunityBlocked,
+  useIsInstanceBlocked,
+} from "../stores/auth";
 import { useFiltersStore } from "../stores/filters";
 import { usePostsStore } from "../stores/posts";
 import { Search } from "../components/icons";
@@ -85,6 +89,9 @@ export default function CommunityPosts() {
   });
   const community = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
+  const isInstanceBlocked = useIsInstanceBlocked(
+    community?.communityView.instanceId,
+  );
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
   useUpdateRecentCommunity(community?.communityView);
@@ -236,11 +243,19 @@ export default function CommunityPosts() {
                 )}
               </Fragment>,
             ]}
-            noItems={isBlocked || (data.length === 0 && !posts.isFetching)}
+            noItems={
+              isBlocked ||
+              isInstanceBlocked ||
+              (data.length === 0 && !posts.isFetching)
+            }
             noItemsComponent={
               <NoPostsMessage
-                isBlocked={isBlocked}
-                blockedName={communityName}
+                isBlocked={isBlocked || isInstanceBlocked}
+                blockedName={
+                  isInstanceBlocked
+                    ? communityName.split("@")[1]
+                    : communityName
+                }
                 postSort={postSort}
                 suggestedPostSort={suggestedPostSort}
                 setPostSort={setPostSort}

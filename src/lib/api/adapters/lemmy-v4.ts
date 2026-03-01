@@ -272,6 +272,7 @@ function convertCommunity(
     id: community.id,
     apId: community.ap_id,
     slug: createSlug({ apId: community.ap_id, name: community.name }).slug,
+    instanceId: community.instance_id,
     icon: community.icon ?? null,
     banner: community.banner ?? null,
     description: community.description ?? null,
@@ -351,6 +352,7 @@ function convertPost({
       .slug,
     creatorId: creator.id,
     creatorApId: creator.ap_id,
+    communityInstanceId: community.instance_id,
     creatorSlug: createSlug({ apId: creator.ap_id, name: creator.name }).slug,
     isBannedFromCommunity: creator_banned_from_community,
     thumbnailAspectRatio: ar,
@@ -616,6 +618,16 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     const me = myUser ? convertPerson(myUser.local_user_view) : null;
 
+    const instanceBlocks = myUser
+      ? _.uniqBy(
+          [
+            ...myUser.instance_communities_blocks,
+            ...myUser.instance_persons_blocks,
+          ],
+          (i) => i.id,
+        ).map((i) => ({ id: i.id, domain: i.domain }))
+      : null;
+
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
       privateInstance: lemmySite.site_view.local_site.private_instance,
@@ -629,6 +641,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       follows: [],
       communityBlocks: [],
       personBlocks: [],
+      instanceBlocks: instanceBlocks ?? null,
       usersActiveDayCount: lemmySite.site_view.local_site.users_active_day,
       usersActiveWeekCount: lemmySite.site_view.local_site.users_active_week,
       usersActiveMonthCount: lemmySite.site_view.local_site.users_active_month,
@@ -1316,6 +1329,19 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       community_id: form.communityId,
       block: form.block,
     });
+  }
+
+  async blockInstance(form: Forms.BlockInstance): Promise<void> {
+    await Promise.all([
+      this.client.userBlockInstancePersons({
+        instance_id: form.instanceId,
+        block: form.block,
+      }),
+      this.client.userBlockInstanceCommunities({
+        instance_id: form.instanceId,
+        block: form.block,
+      }),
+    ]);
   }
 
   async uploadImage(form: Forms.UploadImage) {

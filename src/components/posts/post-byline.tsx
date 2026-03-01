@@ -1,4 +1,5 @@
-import { useBlockPerson } from "@/src/lib/api/index";
+import _ from "lodash";
+import { useBlockPerson, useBlockInstance } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -6,6 +7,7 @@ import {
   useAuth,
   getAccountActorId,
   useIsPersonBlocked,
+  useIsInstanceBlocked,
   useIsAdmin,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
@@ -46,7 +48,7 @@ import {
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 
 export function usePostActions({
@@ -70,6 +72,7 @@ export function usePostActions({
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
   const inputAlert = useInputAlert();
+  const getConfirmation = useConfirmationAlert();
   const { software } = useSoftware();
 
   const router = useIonRouter();
@@ -78,6 +81,9 @@ export function usePostActions({
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
   const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
+  const communityInstanceId = post.communityInstanceId;
+  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
+  const blockInstance = useBlockInstance();
 
   const encodedApId = encodeApId(post.apId);
   const tagUser = useTagUser();
@@ -258,6 +264,27 @@ export function usePostActions({
               requireAuth().then(() => {
                 showReportModal(post.apId);
               }),
+            danger: true,
+          },
+        ]
+      : []),
+    ...(_.isNumber(communityInstanceId) && !isMyPost
+      ? [
+          {
+            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const domain = new URL(post.communityApId).hostname;
+                await getConfirmation({
+                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                });
+                blockInstance.mutate({
+                  instanceId: communityInstanceId,
+                  block: !isInstanceBlocked,
+                });
+              } catch {}
+            },
             danger: true,
           },
         ]

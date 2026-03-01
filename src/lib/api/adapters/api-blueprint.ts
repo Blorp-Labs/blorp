@@ -72,6 +72,7 @@ export const postSchema = z.object({
   creatorApId: z.string(),
   creatorSlug: z.string(),
   isBannedFromCommunity: z.boolean(),
+  communityInstanceId: z.number().nullable().optional(),
   title: z.string(),
   body: z.string().nullable(),
   thumbnailUrl: z.string().nullable(),
@@ -126,6 +127,7 @@ const communitySchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
+  instanceId: z.number().nullable().optional(),
   slug: communitySlug,
   icon: z.string().nullable(),
   description: z.string().nullable().optional(),
@@ -175,6 +177,10 @@ export const siteSchema = z.object({
   follows: z.array(z.string()).nullable(),
   personBlocks: z.array(z.string()).nullable(),
   communityBlocks: z.array(z.string()).nullable(),
+  instanceBlocks: z
+    .array(z.object({ id: z.number(), domain: z.string() }))
+    .nullable()
+    .optional(),
   version: z.string(),
   sidebar: z.string().nullable(),
   userCount: z.number().nullable(),
@@ -667,6 +673,11 @@ export namespace Forms {
     block: boolean;
   };
 
+  export type BlockInstance = {
+    instanceId: number;
+    block: boolean;
+  };
+
   export type UploadImage = {
     image: File;
   };
@@ -909,6 +920,8 @@ export abstract class ApiBlueprint<C> {
   abstract blockPerson(form: Forms.BlockPerson): Promise<void>;
 
   abstract blockCommunity(form: Forms.BlockCommunity): Promise<void>;
+
+  abstract blockInstance(form: Forms.BlockInstance): Promise<void>;
 
   abstract uploadImage(
     form: Forms.UploadImage,

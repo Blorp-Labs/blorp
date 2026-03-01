@@ -136,6 +136,7 @@ function convertCommunity(
     id: community.id,
     apId: community.actor_id,
     slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
+    instanceId: community.instance_id,
     icon: community.icon ?? null,
     banner: community.banner ?? null,
     description: community.description ?? null,
@@ -200,6 +201,7 @@ function convertPost(
     url: post.url ?? null,
     urlContentType: post.url_content_type ?? null,
     creatorId: post.creator_id,
+    communityInstanceId: community.instance_id,
     createdAt: post.published,
     isBannedFromCommunity: postView.creator_banned_from_community,
     id: post.id,
@@ -489,6 +491,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           shrinkBlockedCommunity(convertCommunity({ community })),
       );
 
+      const instanceBlocks = lemmySite.my_user?.instance_blocks.map((b) => ({
+        id: b.instance.id,
+        domain: b.instance.domain,
+      }));
+
       const me = lemmyMe ? convertPerson({ person: lemmyMe }) : null;
 
       const admins = lemmySite.admins.map((p) => convertPerson(p));
@@ -517,6 +524,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         follows: follows?.map((c) => c.slug) ?? null,
         personBlocks: personBlocks?.map((p) => p.apId) ?? null,
         communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
+        instanceBlocks: instanceBlocks ?? null,
         applicationQuestion:
           lemmySite.site_view.local_site.application_question ?? null,
         registrationMode: lemmySite.site_view.local_site.registration_mode,
@@ -1251,6 +1259,15 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     return translateErrors(async () => {
       await this.client.blockCommunity({
         community_id: form.communityId,
+        block: form.block,
+      });
+    });
+  }
+
+  async blockInstance(form: Forms.BlockInstance): Promise<void> {
+    return translateErrors(async () => {
+      await this.client.blockInstance({
+        instance_id: form.instanceId,
         block: form.block,
       });
     });

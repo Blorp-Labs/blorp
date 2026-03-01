@@ -1,4 +1,9 @@
-import { useBlockCommunity, useCommunity } from "@/src/lib/api/index";
+import _ from "lodash";
+import {
+  useBlockCommunity,
+  useBlockInstance,
+  useCommunity,
+} from "@/src/lib/api/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
@@ -10,7 +15,11 @@ import {
 } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { useAuth, useIsCommunityBlocked } from "@/src/stores/auth";
+import {
+  useAuth,
+  useIsCommunityBlocked,
+  useIsInstanceBlocked,
+} from "@/src/stores/auth";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { openUrl } from "@/src/lib/linking";
@@ -212,7 +221,11 @@ function useCommunityActions({
 }): ActionMenuProps["actions"] {
   const getConfirmation = useConfirmationAlert();
   const blockCommunity = useBlockCommunity({ communitySlug: communityName });
+  const blockInstance = useBlockInstance();
   const isBlocked = useIsCommunityBlocked(communityName);
+  const communityInstanceId = communityView?.instanceId;
+  const communityApId = communityView?.apId;
+  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const linkCtx = useLinkContext();
@@ -275,6 +288,25 @@ function useCommunityActions({
                   block: !isBlocked,
                 }),
               ),
+          },
+        ]
+      : []),
+    ...(isLoggedIn && _.isNumber(communityInstanceId) && communityApId
+      ? [
+          {
+            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
+            danger: true,
+            onClick: () => {
+              const domain = new URL(communityApId).hostname;
+              getConfirmation({
+                message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+              }).then(() =>
+                blockInstance.mutate({
+                  instanceId: communityInstanceId,
+                  block: !isInstanceBlocked,
+                }),
+              );
+            },
           },
         ]
       : []),
