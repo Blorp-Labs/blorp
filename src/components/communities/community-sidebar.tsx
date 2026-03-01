@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   useBlockCommunity,
   useBlockInstance,
@@ -222,7 +223,9 @@ function useCommunityActions({
   const blockCommunity = useBlockCommunity({ communitySlug: communityName });
   const blockInstance = useBlockInstance();
   const isBlocked = useIsCommunityBlocked(communityName);
-  const isInstanceBlocked = useIsInstanceBlocked(communityView?.instanceId);
+  const communityInstanceId = communityView?.instanceId;
+  const communityApId = communityView?.apId;
+  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const linkCtx = useLinkContext();
@@ -288,18 +291,18 @@ function useCommunityActions({
           },
         ]
       : []),
-    ...(isLoggedIn && communityView?.instanceId
+    ...(isLoggedIn && _.isNumber(communityInstanceId) && communityApId
       ? [
           {
             text: isInstanceBlocked ? "Unblock instance" : "Block instance",
             danger: true,
             onClick: () => {
-              const domain = new URL(communityView.apId).hostname;
+              const domain = new URL(communityApId).hostname;
               getConfirmation({
                 message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
               }).then(() =>
                 blockInstance.mutate({
-                  instanceId: communityView.instanceId!,
+                  instanceId: communityInstanceId,
                   block: !isInstanceBlocked,
                 }),
               );

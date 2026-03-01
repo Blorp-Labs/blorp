@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { useBlockPerson, useBlockInstance } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
@@ -80,7 +81,8 @@ export function usePostActions({
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
   const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
-  const isInstanceBlocked = useIsInstanceBlocked(post.communityInstanceId);
+  const communityInstanceId = post.communityInstanceId;
+  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
   const blockInstance = useBlockInstance();
 
   const encodedApId = encodeApId(post.apId);
@@ -172,7 +174,7 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(post.communityInstanceId && !isMyPost
+    ...(_.isNumber(communityInstanceId) && !isMyPost
       ? [
           {
             text: isInstanceBlocked ? "Unblock instance" : "Block instance",
@@ -184,7 +186,7 @@ export function usePostActions({
                   message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
                 });
                 blockInstance.mutate({
-                  instanceId: post.communityInstanceId!,
+                  instanceId: communityInstanceId,
                   block: !isInstanceBlocked,
                 });
               } catch {}
