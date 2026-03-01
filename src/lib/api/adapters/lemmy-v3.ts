@@ -139,6 +139,7 @@ function convertCommunity(
     icon: community.icon ?? null,
     banner: community.banner ?? null,
     description: community.description ?? null,
+    nsfw: community.nsfw,
     ...(counts
       ? {
           usersActiveDayCount: counts.users_active_day,

@@ -229,5 +229,6 @@ export function getCommunity(
     icon: `https://picsum.photos/id/12/200/200`,
     subscribed: "NotSubscribed",
     description: COMMUNITY_DESCRIPTION,
+    nsfw: false,
   };
 }

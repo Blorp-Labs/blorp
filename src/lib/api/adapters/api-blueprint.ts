@@ -149,6 +149,7 @@ const communitySchema = z.object({
       }),
     )
     .optional(),
+  nsfw: z.boolean(),
 });
 const multiCommunityFeedSchema = z.object({
   createdAt: z.string(),

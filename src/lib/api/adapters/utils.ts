@@ -24,7 +24,7 @@ export function shrinkBlockedPerson(person: Schemas.Person): Schemas.Person {
 export function shrinkBlockedCommunity(
   community: Schemas.Community,
 ): Schemas.Community {
-  return _.pick(community, ["createdAt", "id", "apId", "slug", "icon"]);
+  return _.pick(community, ["createdAt", "id", "apId", "slug", "icon", "nsfw"]);
 }
 
 export function commentIsAnswer(comment: Schemas.Comment | undefined) {

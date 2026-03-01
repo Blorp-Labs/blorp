@@ -324,3 +324,9 @@ export function useAmIAdmin() {
     return site?.me?.apId && site?.admins?.includes(site.me?.apId);
   });
 }
+
+export function useShouldBlurNsfw() {
+  return (
+    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true
+  );
+}
