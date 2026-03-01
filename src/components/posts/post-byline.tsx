@@ -174,27 +174,6 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(_.isNumber(communityInstanceId) && !isMyPost
-      ? [
-          {
-            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
-            onClick: async () => {
-              try {
-                await requireAuth();
-                const domain = new URL(post.communityApId).hostname;
-                await getConfirmation({
-                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                });
-                blockInstance.mutate({
-                  instanceId: communityInstanceId,
-                  block: !isInstanceBlocked,
-                });
-              } catch {}
-            },
-            danger: true,
-          },
-        ]
-      : []),
     {
       text: saved ? "Unsave post" : "Save post",
       onClick: () =>
@@ -285,6 +264,27 @@ export function usePostActions({
               requireAuth().then(() => {
                 showReportModal(post.apId);
               }),
+            danger: true,
+          },
+        ]
+      : []),
+    ...(_.isNumber(communityInstanceId) && !isMyPost
+      ? [
+          {
+            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const domain = new URL(post.communityApId).hostname;
+                await getConfirmation({
+                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                });
+                blockInstance.mutate({
+                  instanceId: communityInstanceId,
+                  block: !isInstanceBlocked,
+                });
+              } catch {}
+            },
             danger: true,
           },
         ]
