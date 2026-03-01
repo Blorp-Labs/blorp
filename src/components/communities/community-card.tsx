@@ -8,7 +8,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { Account, useAuth } from "@/src/stores/auth";
+import { Account, useAuth, useShouldBlurNsfw } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
@@ -37,6 +37,8 @@ export function CommunityCard({
   });
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 
+  const blurNsfw = useShouldBlurNsfw();
+
   // TODO: FIX THIS
   const linkCtx = useLinkContext();
 
@@ -53,7 +55,7 @@ export function CommunityCard({
           src={communityView.icon ?? undefined}
           className={cn(
             "object-cover absolute inset-0",
-            communityView.nsfw && "blur-sm",
+            communityView.nsfw && blurNsfw && "blur-sm",
           )}
         />
         <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
