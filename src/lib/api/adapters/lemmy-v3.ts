@@ -169,7 +169,6 @@ function convertPerson({
   return {
     apId: person.actor_id,
     id: person.id,
-    instanceId: person.instance_id,
     avatar: person.avatar ?? null,
     bio: person.bio ?? null,
     matrixUserId: person.matrix_user_id ?? null,
@@ -202,7 +201,7 @@ function convertPost(
     url: post.url ?? null,
     urlContentType: post.url_content_type ?? null,
     creatorId: post.creator_id,
-    creatorInstanceId: creator.instance_id,
+    communityInstanceId: community.instance_id,
     createdAt: post.published,
     isBannedFromCommunity: postView.creator_banned_from_community,
     id: post.id,
@@ -252,7 +251,6 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     body: comment.content,
     creatorId: creator.id,
     creatorApId: creator.actor_id,
-    creatorInstanceId: creator.instance_id,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
       .slug,
     isBannedFromCommunity: commentView.creator_banned_from_community,

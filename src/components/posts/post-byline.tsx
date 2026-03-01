@@ -80,7 +80,7 @@ export function usePostActions({
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
   const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
-  const isInstanceBlocked = useIsInstanceBlocked(post.creatorInstanceId);
+  const isInstanceBlocked = useIsInstanceBlocked(post.communityInstanceId);
   const blockInstance = useBlockInstance();
 
   const encodedApId = encodeApId(post.apId);
@@ -168,30 +168,28 @@ export function usePostActions({
                 },
                 danger: true,
               },
-              ...(post.creatorInstanceId
-                ? [
-                    {
-                      text: isInstanceBlocked
-                        ? "Unblock instance"
-                        : "Block instance",
-                      onClick: async () => {
-                        try {
-                          await requireAuth();
-                          const domain = new URL(post.creatorApId).hostname;
-                          await getConfirmation({
-                            message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                          });
-                          blockInstance.mutate({
-                            instanceId: post.creatorInstanceId!,
-                            block: !isInstanceBlocked,
-                          });
-                        } catch {}
-                      },
-                      danger: true,
-                    },
-                  ]
-                : []),
             ],
+          },
+        ]
+      : []),
+    ...(post.communityInstanceId && !isMyPost
+      ? [
+          {
+            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const domain = new URL(post.communityApId).hostname;
+                await getConfirmation({
+                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
+                });
+                blockInstance.mutate({
+                  instanceId: post.communityInstanceId!,
+                  block: !isInstanceBlocked,
+                });
+              } catch {}
+            },
+            danger: true,
           },
         ]
       : []),

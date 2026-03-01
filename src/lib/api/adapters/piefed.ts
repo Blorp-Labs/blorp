@@ -525,7 +525,7 @@ function convertPost({
     // TODO: see if this exists
     urlContentType: null,
     creatorId: creator.id,
-    creatorInstanceId: creator.instance_id ?? null,
+    communityInstanceId: community.instance_id ?? null,
     createdAt: post.published,
     isBannedFromCommunity: postView.creator_banned_from_community ?? false,
     id: post.id,
@@ -634,7 +634,6 @@ function convertPerson(
   const p: Schemas.Person = {
     apId: person.actor_id,
     id: person.id,
-    instanceId: person.instance_id ?? null,
     avatar: person.avatar ?? null,
     matrixUserId: null,
     slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
@@ -670,7 +669,6 @@ function convertComment(
     body: comment.body,
     creatorId: creator.id,
     creatorApId: creator.actor_id,
-    creatorInstanceId: creator.instance_id ?? null,
     creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
       .slug,
     isBannedFromCommunity: commentView.creator_banned_from_community ?? false,

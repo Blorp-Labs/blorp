@@ -16,7 +16,6 @@ import { RelativeTime } from "../relative-time";
 import {
   useAddCommentReactionEmoji,
   useBlockPerson,
-  useBlockInstance,
   useDeleteComment,
   useLockComment,
   useMarkCommentAsAnswer,
@@ -44,7 +43,6 @@ import {
   getAccountSite,
   useAuth,
   useIsAdmin,
-  useIsInstanceBlocked,
   useIsPersonBlocked,
 } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
@@ -75,7 +73,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
 } from "@/src/lib/api/adapters/utils";
-import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
+import { useInputAlert } from "@/src/lib/hooks/index";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -120,7 +118,6 @@ export function useCommentActions({
   const markCommentAsAnswer = useMarkCommentAsAnswer();
   const addReactionEmoji = useAddCommentReactionEmoji();
   const inputAlert = useInputAlert();
-  const getConfirmation = useConfirmationAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -132,16 +129,12 @@ export function useCommentActions({
   const requireAuth = useRequireAuth();
 
   const blockPerson = useBlockPerson();
-  const blockInstance = useBlockInstance();
 
   const deleteComment = useDeleteComment();
   const lockComment = useLockComment();
 
   const tagUser = useTagUser();
   const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
-  const isInstanceBlocked = useIsInstanceBlocked(
-    commentView?.creatorInstanceId,
-  );
 
   const router = useIonRouter();
 
@@ -268,30 +261,6 @@ export function useCommentActions({
                 },
                 danger: true,
               },
-              ...(commentView.creatorInstanceId
-                ? [
-                    {
-                      text: isInstanceBlocked
-                        ? "Unblock instance"
-                        : "Block instance",
-                      onClick: async () => {
-                        try {
-                          await requireAuth();
-                          const domain = new URL(commentView.creatorApId)
-                            .hostname;
-                          await getConfirmation({
-                            message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                          });
-                          blockInstance.mutate({
-                            instanceId: commentView.creatorInstanceId!,
-                            block: !isInstanceBlocked,
-                          });
-                        } catch {}
-                      },
-                      danger: true,
-                    },
-                  ]
-                : []),
             ],
           },
         ]
