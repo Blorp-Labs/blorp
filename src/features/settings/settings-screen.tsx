@@ -4,6 +4,7 @@ import {
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
+  VoteSetting,
   useSettingsStore,
 } from "@/src/stores/settings";
 import { useLogout, useSoftware } from "@/src/lib/api/index";
@@ -306,6 +307,12 @@ export default function SettingsPage() {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
 
+  const downvotesSetting = useSettingsStore((s) => s.downvotesSetting);
+  const setDownvotesSetting = useSettingsStore((s) => s.setDownvotesSetting);
+
+  const scoresSetting = useSettingsStore((s) => s.scoresSetting);
+  const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -452,6 +459,49 @@ export default function SettingsPage() {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              </SectionItem>
+            </Section>
+
+            <Section title="MENTAL HEALTH">
+              <SectionItem>
+                <label>Downvotes</label>
+                <SimpleSelect
+                  options={["account", "hide", "show"] satisfies VoteSetting[]}
+                  value={downvotesSetting}
+                  onChange={setDownvotesSetting}
+                  valueGetter={(o) => o}
+                  labelGetter={(o) => {
+                    switch (o) {
+                      case "account":
+                        return "Account setting";
+                      case "hide":
+                        return "Always hide";
+                      case "show":
+                        return "Always show";
+                    }
+                  }}
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Scores</label>
+                <SimpleSelect
+                  options={["account", "hide", "show"] satisfies VoteSetting[]}
+                  value={scoresSetting}
+                  onChange={setScoresSetting}
+                  valueGetter={(o) => o}
+                  labelGetter={(o) => {
+                    switch (o) {
+                      case "account":
+                        return "Account setting";
+                      case "hide":
+                        return "Always hide";
+                      case "show":
+                        return "Always show";
+                    }
+                  }}
+                  className="w-[160px]"
+                />
               </SectionItem>
             </Section>
 

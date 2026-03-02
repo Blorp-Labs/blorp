@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { useLinkContext } from "../../routing/link-context";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { useAuth } from "@/src/stores/auth";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostsStore } from "@/src/stores/posts";
@@ -43,6 +43,10 @@ import {
   useAddPostReactionEmoji,
   useLikePost,
 } from "@/src/lib/api/post-mutations";
+import {
+  useShouldShowDownvotes,
+  useShouldShowScores,
+} from "@/src/stores/utils";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 
@@ -52,10 +56,8 @@ export function usePostVoting(apId?: string) {
     apId ? s.posts[getCachePrefixer()(apId)]?.data : null,
   );
 
-  const enableDownvotes =
-    useAuth(
-      (s) => getAccountSite(s.getSelectedAccount())?.enablePostDownvotes,
-    ) ?? true;
+  const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
+  const showScores = useShouldShowScores();
 
   const { mutate: mutateVote } = useLikePost();
 
@@ -92,6 +94,7 @@ export function usePostVoting(apId?: string) {
     isDownvoted,
     vote,
     enableDownvotes,
+    showScores,
     postId: postView.id,
   };
 }
@@ -236,8 +239,15 @@ export function PostVoting({
     return null;
   }
 
-  const { score, isUpvoted, isDownvoted, enableDownvotes, vote, postId } =
-    voting;
+  const {
+    score,
+    isUpvoted,
+    isDownvoted,
+    enableDownvotes,
+    showScores,
+    vote,
+    postId,
+  } = voting;
 
   const abbriviatedScore = abbriviateNumberParts(score);
 
@@ -255,12 +265,12 @@ export function PostVoting({
         }
         className={cn(
           "text-md font-normal",
-          isUpvoted && "text-brand",
+          isUpvoted && "text-brand hover:text-brand",
           className,
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {abbriviateNumber(score)}
+        {showScores && abbriviateNumber(score)}
       </Button>
     );
   }
@@ -296,24 +306,26 @@ export function PostVoting({
           <PiArrowFatUpBold className="scale-115" aria-label="upvote" />
         )}
       </Button>
-      <Tooltip>
-        <TooltipTrigger aria-label={`${score} score`}>
-          <label htmlFor={id}>
-            <NumberFlow
-              className={cn(
-                "-mx-px cursor-pointer text-md",
-                isUpvoted && "text-brand",
-                isDownvoted && "text-brand-secondary",
-              )}
-              suffix={abbriviatedScore.suffix}
-              value={abbriviatedScore.number}
-            />
-          </label>
-        </TooltipTrigger>
-        <TooltipContent>
-          {voting.upvotes} upvotes, {voting.downvotes} downvotes
-        </TooltipContent>
-      </Tooltip>
+      {showScores && (
+        <Tooltip>
+          <TooltipTrigger aria-label={`${score} score`}>
+            <label htmlFor={id}>
+              <NumberFlow
+                className={cn(
+                  "-mx-px cursor-pointer text-md",
+                  isUpvoted && "text-brand",
+                  isDownvoted && "text-brand-secondary",
+                )}
+                suffix={abbriviatedScore.suffix}
+                value={abbriviatedScore.number}
+              />
+            </label>
+          </TooltipTrigger>
+          <TooltipContent>
+            {voting.upvotes} upvotes, {voting.downvotes} downvotes
+          </TooltipContent>
+        </Tooltip>
+      )}
       <Button
         size="icon"
         variant="ghost"

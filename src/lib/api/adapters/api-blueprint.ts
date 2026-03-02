@@ -199,6 +199,8 @@ export const siteSchema = z.object({
   blurNsfw: z.boolean(),
   enablePostDownvotes: z.boolean(),
   enableCommentDownvotes: z.boolean(),
+  showScores: z.boolean().optional(),
+  showDownvotes: z.boolean().optional(),
   software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
@@ -731,6 +733,8 @@ export namespace Forms {
     email?: string;
     showNsfw?: boolean;
     blurNsfw?: boolean;
+    showScores?: boolean;
+    showDownvotes?: boolean;
   };
 
   export type ResolveObject = {

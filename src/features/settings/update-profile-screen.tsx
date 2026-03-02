@@ -1,6 +1,13 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonToggle, IonToolbar } from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonToggle,
+  IonToolbar,
+  useIonAlert,
+} from "@ionic/react";
+import { FiHelpCircle } from "react-icons/fi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -83,9 +90,28 @@ export default function SettingsPage() {
   const [_blurNsfw, setBlurNsfw] = useState<boolean>();
   const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
 
+  const [_showDownvotes, setShowDownvotes] = useState<boolean>();
+  const showDownvotes = _showDownvotes ?? site?.showDownvotes ?? true;
+
+  const [_showScores, setShowScores] = useState<boolean>();
+  const showScores = _showScores ?? site?.showScores ?? true;
+
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
   );
+  const downvotesSetting = useSettingsStore((s) => s.downvotesSetting);
+  const setDownvotesSetting = useSettingsStore((s) => s.setDownvotesSetting);
+  const scoresSetting = useSettingsStore((s) => s.scoresSetting);
+  const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
+
+  const [presentAlert] = useIonAlert();
+  const showOverrideInfo = () =>
+    presentAlert({
+      header: "Blorp is overriding this setting",
+      message:
+        'Your Blorp app settings are overriding this account preference. Tap "Use account setting" to let your Lemmy account preference take effect.',
+      buttons: [{ text: "OK", role: "cancel" }],
+    });
   const canShowNsfwSetting =
     !(isCapacitor() && isIos()) || nsfwPreviouslyEnabled;
 
@@ -97,6 +123,7 @@ export default function SettingsPage() {
     ? parseAccountInfo(account)
     : { person: undefined };
   const slug = person?.slug;
+  const isLemmy = site?.software === "lemmy";
 
   const handleSubmit = () => {
     if (account) {
@@ -108,6 +135,8 @@ export default function SettingsPage() {
             email,
             showNsfw,
             blurNsfw,
+            showDownvotes,
+            showScores,
           },
         })
         .then(() => history.goBack());
@@ -226,6 +255,73 @@ export default function SettingsPage() {
                       >
                         Blur NSFW images
                       </IonToggle>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isLemmy && (
+                <>
+                  {downvotesSetting === "account" ? (
+                    <IonToggle
+                      className="flex-1 font-light"
+                      checked={showDownvotes}
+                      onIonChange={(e) => setShowDownvotes(e.detail.checked)}
+                    >
+                      Show downvotes
+                    </IonToggle>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Show downvotes</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setDownvotesSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {scoresSetting === "account" ? (
+                    <IonToggle
+                      className="flex-1 font-light"
+                      checked={showScores}
+                      onIonChange={(e) => setShowScores(e.detail.checked)}
+                    >
+                      Show scores
+                    </IonToggle>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Show scores</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setScoresSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>
