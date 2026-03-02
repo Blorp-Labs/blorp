@@ -15,11 +15,14 @@ import { Button } from "../ui/button";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import _ from "lodash";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
+import {
+  useShouldShowDownvotes,
+  useShouldShowScores,
+} from "@/src/stores/utils";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "../posts/config";
 import {
@@ -151,10 +154,8 @@ export function CommentVoting({
   className?: string;
   fixRightAlignment?: boolean;
 }) {
-  const enableDownvotes =
-    useAuth(
-      (s) => getAccountSite(s.getSelectedAccount())?.enableCommentDownvotes,
-    ) ?? true;
+  const enableDownvotes = useShouldShowDownvotes("enableCommentDownvotes");
+  const showScores = useShouldShowScores();
 
   const id = useId();
 
@@ -189,12 +190,12 @@ export function CommentVoting({
         }}
         className={cn(
           "text-md font-normal -mr-2",
-          isUpvoted && "text-brand",
+          isUpvoted && "text-brand hover:text-brand",
           fixRightAlignment && "-mr-2",
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {abbriviateNumber(score)}
+        {showScores && abbriviateNumber(score)}
       </Button>
     );
   }
@@ -232,24 +233,26 @@ export function CommentVoting({
           <PiArrowFatUpBold aria-label="Upvote" />
         )}
       </Button>
-      <Tooltip>
-        <TooltipTrigger aria-label={`${score} score`}>
-          <label htmlFor={id}>
-            <NumberFlow
-              className={cn(
-                "-mx-0.5 cursor-pointer",
-                isUpvoted && "text-brand",
-                isDownvoted && "text-brand-secondary",
-              )}
-              suffix={abbriviatedScore.suffix}
-              value={abbriviatedScore.number}
-            />
-          </label>
-        </TooltipTrigger>
-        <TooltipContent>
-          {commentView.upvotes} upvotes, {commentView.downvotes} downvotes
-        </TooltipContent>
-      </Tooltip>
+      {showScores && (
+        <Tooltip>
+          <TooltipTrigger aria-label={`${score} score`}>
+            <label htmlFor={id}>
+              <NumberFlow
+                className={cn(
+                  "-mx-0.5 cursor-pointer",
+                  isUpvoted && "text-brand",
+                  isDownvoted && "text-brand-secondary",
+                )}
+                suffix={abbriviatedScore.suffix}
+                value={abbriviatedScore.number}
+              />
+            </label>
+          </TooltipTrigger>
+          <TooltipContent>
+            {commentView.upvotes} upvotes, {commentView.downvotes} downvotes
+          </TooltipContent>
+        </Tooltip>
+      )}
       <Button
         size="icon"
         variant="ghost"

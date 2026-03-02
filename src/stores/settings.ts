@@ -9,6 +9,8 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
+export type VoteSetting = "account" | "hide" | "show";
+
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
   value: PostCardStyle;
@@ -69,6 +71,10 @@ type SettingsStore = {
   // an account with showNsfw=true, and is never cleared programmatically.
   nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
+  downvotesSetting: VoteSetting;
+  setDownvotesSetting: (newVal: VoteSetting) => void;
+  scoresSetting: VoteSetting;
+  setScoresSetting: (newVal: VoteSetting) => void;
   reset: () => void;
 };
 
@@ -85,6 +91,8 @@ const INIT_STATE = {
   paginationMode: "infinite",
   darkMode: "system",
   nsfwPreviouslyEnabled: false,
+  downvotesSetting: "account",
+  scoresSetting: "account",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -117,6 +125,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setDarkMode: (darkMode) => set({ darkMode }),
       setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
         set({ nsfwPreviouslyEnabled }),
+      setDownvotesSetting: (downvotesSetting) => set({ downvotesSetting }),
+      setScoresSetting: (scoresSetting) => set({ scoresSetting }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
