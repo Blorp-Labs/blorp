@@ -334,6 +334,12 @@ export function useAmIAdmin() {
   });
 }
 
+export function useShouldShowNsfw() {
+  return (
+    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false
+  );
+}
+
 export function useShouldBlurNsfw() {
   return (
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true

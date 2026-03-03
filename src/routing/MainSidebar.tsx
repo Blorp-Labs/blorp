@@ -3,7 +3,12 @@ import { Link, ParamsFor } from "@/src/routing/index";
 import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import {
+  getAccountSite,
+  useAuth,
+  useShouldBlurNsfw,
+  useShouldShowNsfw,
+} from "@/src/stores/auth";
 import {
   useModeratingCommunities,
   useNotificationCount,
@@ -190,6 +195,12 @@ export function MainSidebar() {
     instanceHost = url.host;
   } catch {}
 
+  const showNsfw = useShouldShowNsfw();
+
+  const fiveRecentCommunities = recentCommunities
+    .filter((c) => (showNsfw ? true : !c.nsfw))
+    .slice(0, 5);
+
   return (
     <div className="overflow-y-auto h-full">
       {isTauri() && (
@@ -216,7 +227,7 @@ export function MainSidebar() {
       <div className="md:px-3 pt-2 pb-4 gap-0.5 flex flex-col">
         <SidebarTabs />
 
-        {recentCommunities.length > 0 && (
+        {fiveRecentCommunities.length > 0 && (
           <>
             <Separator className="my-2" />
 
@@ -241,7 +252,7 @@ export function MainSidebar() {
                   mainSidebarCollapsed && "items-center",
                 )}
               >
-                {recentCommunities.slice(0, 5).map((c, index) => (
+                {fiveRecentCommunities.map((c, index) => (
                   <IonMenuToggle
                     key={index}
                     menu={LEFT_SIDEBAR_MENU_ID}
