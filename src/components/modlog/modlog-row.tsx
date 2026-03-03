@@ -3,16 +3,10 @@ import { PersonHoverCard } from "@/src/components/person/person-hover-card";
 import { Link } from "@/src/routing/index";
 import { useLinkContext } from "@/src/routing/link-context";
 import { encodeApId } from "@/src/lib/api/utils";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import localizedFormat from "dayjs/plugin/localizedFormat";
 import { RelativeTime } from "../relative-time";
 import { ContentGutters } from "../gutters";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-
-dayjs.extend(relativeTime);
-dayjs.extend(localizedFormat);
 
 const ACTION_LABELS: Record<string, string> = {
   banned: "Site banned",

@@ -406,30 +406,6 @@ function convertCommentReport(
   };
 }
 
-function convertModlogPersonV3(person: lemmyV3.Person | undefined) {
-  if (!person) {
-    return { id: null, apId: null, slug: null };
-  }
-  return {
-    id: person.id,
-    apId: person.actor_id,
-    slug: createSlug({ apId: person.actor_id, name: person.name }).slug,
-  };
-}
-
-function convertModlogCommunityV3(
-  community: lemmyV3.Community | null | undefined,
-) {
-  if (!community) {
-    return { id: null, apId: null, slug: null };
-  }
-  return {
-    id: community.id,
-    apId: community.actor_id,
-    slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
-  };
-}
-
 function convertModlogResponseV3(
   response: lemmyV3.GetModlogResponse,
 ): Schemas.ModlogItem[] {
@@ -448,18 +424,24 @@ function convertModlogResponseV3(
     commentContent: null,
   } satisfies Partial<Schemas.ModlogItem>;
 
+  const emptyObject = {
+    id: null,
+    apId: null,
+    slug: null,
+  };
+
   function modFields(person: lemmyV3.Person | undefined) {
-    const p = convertModlogPersonV3(person);
+    const p = person ? convertPerson({ person }) : emptyObject;
     return { modId: p.id, modApId: p.apId, modSlug: p.slug };
   }
 
   function userFields(person: lemmyV3.Person | undefined) {
-    const p = convertModlogPersonV3(person);
+    const p = person ? convertPerson({ person }) : emptyObject;
     return { userId: p.id, userApId: p.apId, userSlug: p.slug };
   }
 
   function communityFields(community: lemmyV3.Community | null | undefined) {
-    const c = convertModlogCommunityV3(community);
+    const c = community ? convertCommunity({ community }) : emptyObject;
     return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
   }
 

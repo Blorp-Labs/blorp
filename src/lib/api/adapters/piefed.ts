@@ -823,21 +823,11 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
 
   const items: Schemas.ModlogItem[] = [];
 
-  function convertModlogPersonPieFed(
-    person:
-      | { actor_id: string; user_name: string; id: number }
-      | null
-      | undefined,
-  ) {
-    if (!person) {
-      return { id: null, apId: null, slug: null };
-    }
-    return {
-      id: person.id,
-      apId: person.actor_id,
-      slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
-    };
-  }
+  const emptyObject = {
+    id: null,
+    apId: null,
+    slug: null,
+  };
 
   function convertModlogCommunityPieFed(
     community:
@@ -856,12 +846,12 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
   }
 
   function piefedModFields(person: any) {
-    const p = convertModlogPersonPieFed(person);
+    const p = convertPerson({ person }, "partial");
     return { modId: p.id, modApId: p.apId, modSlug: p.slug };
   }
 
   function piefedUserFields(person: any) {
-    const p = convertModlogPersonPieFed(person);
+    const p = convertPerson({ person }, "partial");
     return { userId: p.id, userApId: p.apId, userSlug: p.slug };
   }
 
@@ -1026,7 +1016,6 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
   }
 
   // TODO: implement admin_purged_* conversion once example data is available
-
   return items.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
