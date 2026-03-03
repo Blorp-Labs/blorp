@@ -68,7 +68,6 @@ export default function SiteModlog() {
           renderItem={({ item }) => (
             <ContentGutters noMobilePadding>
               <ModlogRow item={item} />
-              <></>
             </ContentGutters>
           )}
         />
