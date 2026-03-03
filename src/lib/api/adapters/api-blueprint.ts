@@ -200,6 +200,7 @@ export const siteSchema = z.object({
   enablePostDownvotes: z.boolean(),
   enableCommentDownvotes: z.boolean(),
   showScores: z.boolean().optional(),
+  showUpvotes: z.boolean().optional(),
   showDownvotes: z.boolean().optional(),
   software: z.nativeEnum(Software),
 });
@@ -734,6 +735,7 @@ export namespace Forms {
     showNsfw?: boolean;
     blurNsfw?: boolean;
     showScores?: boolean;
+    showUpvotes?: boolean;
     showDownvotes?: boolean;
   };
 
