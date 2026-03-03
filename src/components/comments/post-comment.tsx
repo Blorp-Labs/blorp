@@ -53,6 +53,10 @@ import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
+import {
+  useCommentCollapseThreshold,
+  useCommentHideThreshold,
+} from "@/src/stores/utils";
 import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
@@ -475,6 +479,18 @@ export function PostComment({
     }
   }
 
+  const collapseThreshold = useCommentCollapseThreshold();
+  const hideThreshold = useCommentHideThreshold();
+  const commentScore = commentView
+    ? commentView.upvotes - commentView.downvotes
+    : 0;
+  const shouldHide =
+    hideThreshold !== null && commentView && commentScore <= hideThreshold;
+  const shouldAutoCollapse =
+    collapseThreshold !== null &&
+    commentView &&
+    commentScore <= collapseThreshold;
+
   const hasParent = useMemo(() => {
     if (_.isNil(level) || level > 0 || !comment || !singleCommentThread) {
       return false;
@@ -489,7 +505,7 @@ export function PostComment({
   const open =
     useDetailsStore((s) =>
       commentView?.apId ? s.expandedDetails[commentView.apId] : null,
-    ) ?? true;
+    ) ?? !shouldAutoCollapse;
   const setOpen = useDetailsStore((s) => s.setExpandedDetails);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -523,6 +539,10 @@ export function PostComment({
   });
 
   const bgOnParent = sorted.length === 0 && !replyState;
+
+  if (shouldHide) {
+    return null;
+  }
 
   const bodyRenderer = commentView && (
     <>
