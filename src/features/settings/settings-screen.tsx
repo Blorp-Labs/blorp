@@ -354,6 +354,35 @@ export default function SettingsPage() {
           <div className="flex-1 gap-9 flex flex-col">
             <AccountSection />
 
+            <Section title="SHARING">
+              <SectionItem>
+                <label htmlFor={`${id}-share-link-type`}>Share links as</label>
+                <Select
+                  value={shareLinkType ?? "blorp"}
+                  onValueChange={(val) =>
+                    setShareLinkType(val as ShareLinkType)
+                  }
+                >
+                  <SelectTrigger
+                    className="w-[160px]"
+                    id={`${id}-share-link-type`}
+                  >
+                    <SelectValue placeholder="Choose style" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Share link style</SelectLabel>
+                      {SHARE_LINK_TYPE_OPTIONS.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </SectionItem>
+            </Section>
+
             <Section title="ACCESSIBILITY">
               <SectionItem>
                 <IonToggle
@@ -407,8 +436,11 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </SectionItem>
+            </Section>
+
+            <Section title="APPEARANCE">
               <SectionItem>
-                <label>Appearance</label>
+                <label>Dark / Light mode</label>
                 <SimpleSelect
                   options={["system", "light", "dark"] satisfies DarkMode[]}
                   value={darkMode}
@@ -427,11 +459,8 @@ export default function SettingsPage() {
                   className="w-[160px]"
                 />
               </SectionItem>
-            </Section>
-
-            <Section title="POSTS">
               <SectionItem>
-                <label htmlFor={`${id}-post-display`}>Display posts as</label>
+                <label>Display posts as</label>
                 <SimpleSelect
                   options={POST_CARD_STYLE_OPTIONS}
                   value={postCardStyle}
@@ -441,38 +470,6 @@ export default function SettingsPage() {
                   className="w-[160px]"
                 />
               </SectionItem>
-            </Section>
-
-            <Section title="SHARING">
-              <SectionItem>
-                <label htmlFor={`${id}-share-link-type`}>Share links as</label>
-                <Select
-                  value={shareLinkType ?? "blorp"}
-                  onValueChange={(val) =>
-                    setShareLinkType(val as ShareLinkType)
-                  }
-                >
-                  <SelectTrigger
-                    className="w-[160px]"
-                    id={`${id}-share-link-type`}
-                  >
-                    <SelectValue placeholder="Choose style" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectGroup>
-                      <SelectLabel>Share link style</SelectLabel>
-                      {SHARE_LINK_TYPE_OPTIONS.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </SectionItem>
-            </Section>
-
-            <Section title="MENTAL HEALTH">
               <SectionItem>
                 <label>Downvotes</label>
                 <SimpleSelect
