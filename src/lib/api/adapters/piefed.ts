@@ -805,7 +805,118 @@ export function flattenCommentViews(
   return result;
 }
 
-function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
+// Modlog schemas — reuse existing PieFed schemas
+const modlogActionSchema = z.object({
+  id: z.number(),
+  when_: z.string(),
+  reason: z.string().nullish(),
+});
+
+const pieFedModlogResponseSchema = z.object({
+  removed_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_remove_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  locked_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_lock_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  featured_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_feature_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  removed_comments: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        comment: pieFedCommentSchema.nullish(),
+        commenter: pieFedPersonSchema.nullish(),
+        mod_remove_comment: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  removed_communities: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema.nullish(),
+        mod_remove_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  banned_from_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        banned_person: pieFedPersonSchema.nullish(),
+        mod_ban_from_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  banned: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        banned_person: pieFedPersonSchema.nullish(),
+        mod_ban: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  added_to_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_add_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  transferred_to_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_transfer_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  added: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_add: modlogActionSchema,
+      }),
+    )
+    .default([]),
+});
+
+function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
+  const response = pieFedModlogResponseSchema.parse(json);
+
   const baseItem = {
     userId: null,
     userApId: null,
@@ -821,62 +932,56 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
     commentContent: null,
   } satisfies Partial<Schemas.ModlogItem>;
 
-  const items: Schemas.ModlogItem[] = [];
-
   const emptyObject = {
     id: null,
     apId: null,
     slug: null,
   };
 
-  function convertModlogCommunityPieFed(
-    community:
-      | { actor_id: string; name: string; id: number }
-      | null
-      | undefined,
+  function modFields(
+    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
   ) {
-    if (!community) {
-      return { id: null, apId: null, slug: null };
-    }
-    return {
-      id: community.id,
-      apId: community.actor_id,
-      slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
-    };
-  }
-
-  function piefedModFields(person: any) {
-    const p = convertPerson({ person }, "partial");
+    const p = person ? convertPerson({ person }, "partial") : emptyObject;
     return { modId: p.id, modApId: p.apId, modSlug: p.slug };
   }
 
-  function piefedUserFields(person: any) {
-    const p = convertPerson({ person }, "partial");
+  function userFields(
+    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
+  ) {
+    const p = person ? convertPerson({ person }, "partial") : emptyObject;
     return { userId: p.id, userApId: p.apId, userSlug: p.slug };
   }
 
-  function piefedCommunityFields(community: any) {
-    const c = convertModlogCommunityPieFed(community);
+  function communityFields(
+    community: z.infer<typeof pieFedCommunitySchema> | null | undefined,
+  ) {
+    const c = community
+      ? convertCommunity({ community }, "partial")
+      : emptyObject;
     return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
   }
 
-  function piefedPostFields(post: any) {
+  function postFields(
+    post: z.infer<typeof pieFedPostSchema> | null | undefined,
+  ) {
+    if (!post) return {};
+    return { postId: post.id, postApId: post.ap_id, postTitle: post.title };
+  }
+
+  function commentFields(
+    comment: z.infer<typeof pieFedCommentSchema> | null | undefined,
+  ) {
+    if (!comment) return {};
     return {
-      postId: post?.id ?? null,
-      postApId: post?.ap_id ?? null,
-      postTitle: post?.title ?? null,
+      commentId: comment.id,
+      commentApId: comment.ap_id,
+      commentContent: comment.body,
     };
   }
 
-  function piefedCommentFields(comment: any) {
-    return {
-      commentId: comment?.id ?? null,
-      commentApId: comment?.ap_id ?? null,
-      commentContent: comment?.body ?? null,
-    };
-  }
+  const items: Schemas.ModlogItem[] = [];
 
-  for (const view of (json.removed_posts ?? []) as any[]) {
+  for (const view of response.removed_posts) {
     items.push({
       ...baseItem,
       id: view.mod_remove_post.id,
@@ -884,13 +989,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_remove_post.when_,
       reason: view.mod_remove_post.reason ?? null,
-      ...piefedModFields(view.moderator),
-      ...piefedCommunityFields(view.community),
-      ...piefedPostFields(view.post),
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
     });
   }
 
-  for (const view of (json.locked_posts ?? []) as any[]) {
+  for (const view of response.locked_posts) {
     items.push({
       ...baseItem,
       id: view.mod_lock_post.id,
@@ -898,13 +1003,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_lock_post.when_,
       reason: null,
-      ...piefedModFields(view.moderator),
-      ...piefedCommunityFields(view.community),
-      ...piefedPostFields(view.post),
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
     });
   }
 
-  for (const view of (json.featured_posts ?? []) as any[]) {
+  for (const view of response.featured_posts) {
     items.push({
       ...baseItem,
       id: view.mod_feature_post.id,
@@ -912,13 +1017,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_feature_post.when_,
       reason: null,
-      ...piefedModFields(view.moderator),
-      ...piefedCommunityFields(view.community),
-      ...piefedPostFields(view.post),
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
     });
   }
 
-  for (const view of (json.removed_comments ?? []) as any[]) {
+  for (const view of response.removed_comments) {
     items.push({
       ...baseItem,
       id: view.mod_remove_comment.id,
@@ -926,15 +1031,15 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_remove_comment.when_,
       reason: view.mod_remove_comment.reason ?? null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.commenter),
-      ...piefedCommunityFields(view.community),
-      ...piefedPostFields(view.post),
-      ...piefedCommentFields(view.comment),
+      ...modFields(view.moderator),
+      ...userFields(view.commenter),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+      ...commentFields(view.comment),
     });
   }
 
-  for (const view of (json.removed_communities ?? []) as any[]) {
+  for (const view of response.removed_communities) {
     items.push({
       ...baseItem,
       id: view.mod_remove_community.id,
@@ -942,12 +1047,12 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_remove_community.when_,
       reason: view.mod_remove_community.reason ?? null,
-      ...piefedModFields(view.moderator),
-      ...piefedCommunityFields(view.community ?? null),
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
     });
   }
 
-  for (const view of (json.banned_from_community ?? []) as any[]) {
+  for (const view of response.banned_from_community) {
     items.push({
       ...baseItem,
       id: view.mod_ban_from_community.id,
@@ -955,13 +1060,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_ban_from_community.when_,
       reason: view.mod_ban_from_community.reason ?? null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.banned_person),
-      ...piefedCommunityFields(view.community),
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
+      ...communityFields(view.community),
     });
   }
 
-  for (const view of (json.banned ?? []) as any[]) {
+  for (const view of response.banned) {
     items.push({
       ...baseItem,
       id: view.mod_ban.id,
@@ -969,12 +1074,12 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_ban.when_,
       reason: view.mod_ban.reason ?? null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.banned_person),
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
     });
   }
 
-  for (const view of (json.added_to_community ?? []) as any[]) {
+  for (const view of response.added_to_community) {
     items.push({
       ...baseItem,
       id: view.mod_add_community.id,
@@ -982,13 +1087,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_add_community.when_,
       reason: null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.modded_person),
-      ...piefedCommunityFields(view.community),
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
     });
   }
 
-  for (const view of (json.transferred_to_community ?? []) as any[]) {
+  for (const view of response.transferred_to_community) {
     items.push({
       ...baseItem,
       id: view.mod_transfer_community.id,
@@ -996,13 +1101,13 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: false,
       createdAt: view.mod_transfer_community.when_,
       reason: null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.modded_person),
-      ...piefedCommunityFields(view.community),
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
     });
   }
 
-  for (const view of (json.added ?? []) as any[]) {
+  for (const view of response.added) {
     items.push({
       ...baseItem,
       id: view.mod_add.id,
@@ -1010,8 +1115,8 @@ function convertModlogResponsePieFed(json: any): Schemas.ModlogItem[] {
       isAdminAction: true,
       createdAt: view.mod_add.when_,
       reason: null,
-      ...piefedModFields(view.moderator),
-      ...piefedUserFields(view.modded_person),
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
     });
   }
 
@@ -2545,11 +2650,16 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
 
-    const items = convertModlogResponsePieFed(json);
-    const hasNextPage = Object.values(json).some(
-      (arr) => Array.isArray(arr) && arr.length >= this.limit,
-    );
-    return { items, nextCursor: hasNextPage ? String(page) : null };
+    try {
+      const items = convertModlogResponsePieFed(json);
+      const hasNextPage = Object.values(json).some(
+        (arr) => Array.isArray(arr) && arr.length >= this.limit,
+      );
+      return { items, nextCursor: hasNextPage ? String(page) : null };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   getPostSorts() {
