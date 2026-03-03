@@ -88,6 +88,8 @@ type SettingsStore = {
   setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
   hideThresholdSetting: ThresholdSetting;
   setHideThresholdSetting: (newVal: ThresholdSetting) => void;
+  collapseRemovedComments: boolean;
+  setCollapseRemovedComments: (newVal: boolean) => void;
   reset: () => void;
 };
 
@@ -108,6 +110,7 @@ const INIT_STATE = {
   scoresSetting: "account",
   collapseThresholdSetting: -10,
   hideThresholdSetting: -20,
+  collapseRemovedComments: true,
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -146,6 +149,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ collapseThresholdSetting }),
       setHideThresholdSetting: (hideThresholdSetting) =>
         set({ hideThresholdSetting }),
+      setCollapseRemovedComments: (collapseRemovedComments) =>
+        set({ collapseRemovedComments }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);

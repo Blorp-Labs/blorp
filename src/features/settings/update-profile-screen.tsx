@@ -382,7 +382,7 @@ export default function SettingsPage() {
                         options={[-5, -10, -15, -20]}
                         value={replyCollapseThreshold}
                         onChange={setReplyCollapseThreshold}
-                        valueGetter={(o) => String(o)}
+                        valueGetter={(o) => o}
                         labelGetter={(o) => `Score \u2264 ${o}`}
                         className="w-[160px]"
                       />
@@ -417,7 +417,7 @@ export default function SettingsPage() {
                         options={[-5, -10, -15, -20]}
                         value={replyHideThreshold}
                         onChange={setReplyHideThreshold}
-                        valueGetter={(o) => String(o)}
+                        valueGetter={(o) => o}
                         labelGetter={(o) => `Score \u2264 ${o}`}
                         className="w-[160px]"
                       />
