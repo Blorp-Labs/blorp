@@ -14,43 +14,22 @@ import { Skeleton } from "../ui/skeleton";
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
 
+const ACTION_LABELS: Record<string, string> = {
+  banned: "Site banned",
+  added_to_community: "Added as mod",
+  transferred_to_community: "Transferred community",
+  added_admin: "Added as admin",
+  admin_purged_person: "Purged person",
+  admin_purged_community: "Purged community",
+  admin_purged_post: "Purged post",
+  admin_purged_comment: "Purged comment",
+};
+
 function actionTypeLabel(actionType: string): string {
-  switch (actionType) {
-    case "removed_post":
-      return "Removed post";
-    case "locked_post":
-      return "Locked post";
-    case "featured_post":
-      return "Featured post";
-    case "removed_comment":
-      return "Removed comment";
-    case "removed_community":
-      return "Removed community";
-    case "banned_from_community":
-      return "Banned from community";
-    case "banned":
-      return "Site banned";
-    case "added_to_community":
-      return "Added as mod";
-    case "transferred_to_community":
-      return "Transferred community";
-    case "added_admin":
-      return "Added as admin";
-    case "admin_purged_person":
-      return "Purged person";
-    case "admin_purged_community":
-      return "Purged community";
-    case "admin_purged_post":
-      return "Purged post";
-    case "admin_purged_comment":
-      return "Purged comment";
-    case "hidden_community":
-      return "Hidden community";
-    default:
-      return actionType
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-  }
+  return (
+    ACTION_LABELS[actionType] ??
+    actionType.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
+  );
 }
 
 export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
