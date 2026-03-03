@@ -6,17 +6,17 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 
-interface SimpleSelectProps<O> {
+interface SimpleSelectProps<O, V extends string | number> {
   options: O[];
-  value: O | undefined;
+  value: V | undefined;
   onChange: (value: O) => void;
-  valueGetter: (option: O) => string;
+  valueGetter: (option: O) => V;
   labelGetter: (option: O) => string;
   placeholder?: string;
   className?: string;
 }
 
-export function SimpleSelect<O>({
+export function SimpleSelect<O, V extends string | number>({
   options,
   value,
   onChange,
@@ -24,12 +24,14 @@ export function SimpleSelect<O>({
   labelGetter,
   placeholder,
   className,
-}: SimpleSelectProps<O>) {
+}: SimpleSelectProps<O, V>) {
   return (
     <Select
-      value={value !== undefined ? valueGetter(value) : undefined}
+      value={String(value)}
       onValueChange={(key) => {
-        const match = options.find((o) => valueGetter(o) === key);
+        const match = options.find(
+          (o) => valueGetter(o) === key || String(valueGetter(o)) === key,
+        );
         if (match !== undefined) onChange(match);
       }}
     >
@@ -38,7 +40,7 @@ export function SimpleSelect<O>({
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
-          <SelectItem key={valueGetter(o)} value={valueGetter(o)}>
+          <SelectItem key={valueGetter(o)} value={String(valueGetter(o))}>
             {labelGetter(o)}
           </SelectItem>
         ))}

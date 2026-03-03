@@ -486,10 +486,15 @@ export function PostComment({
     : 0;
   const shouldHide =
     hideThreshold !== null && commentView && commentScore <= hideThreshold;
+  const collapseRemovedComments = useSettingsStore(
+    (s) => s.collapseRemovedComments,
+  );
+  const isRemovedOrDeleted = commentView?.removed || commentView?.deleted;
   const shouldAutoCollapse =
-    collapseThreshold !== null &&
-    commentView &&
-    commentScore <= collapseThreshold;
+    (collapseThreshold !== null &&
+      commentView &&
+      commentScore <= collapseThreshold) ||
+    (collapseRemovedComments && isRemovedOrDeleted);
 
   const hasParent = useMemo(() => {
     if (_.isNil(level) || level > 0 || !comment || !singleCommentThread) {
@@ -565,7 +570,7 @@ export function PostComment({
       ref={ref}
       className={cn(
         "flex-1",
-        level === 0 && "max-md:px-3.5 pb-2 bg-background",
+        level === 0 && "max-md:px-3.5 pb-2.5 bg-background",
         level === 0 && !singleCommentThread && "border-t",
         bgOnParent && getCommentBgClass({ commentView, highlightComment }),
       )}
@@ -631,7 +636,7 @@ export function PostComment({
           <Byline
             className={cn(
               "pt-2",
-              level === 0 && "pt-3",
+              level === 0 && "pt-2.5",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
               !bgOnParent &&

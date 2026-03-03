@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from "react";
 import {
   DarkMode,
   POST_CARD_STYLE_OPTIONS,
+  PostCardStyle,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
   THRESHOLD_OPTIONS,
@@ -325,6 +326,12 @@ export default function SettingsPage() {
   const setHideThresholdSetting = useSettingsStore(
     (s) => s.setHideThresholdSetting,
   );
+  const collapseRemovedComments = useSettingsStore(
+    (s) => s.collapseRemovedComments,
+  );
+  const setCollapseRemovedComments = useSettingsStore(
+    (s) => s.setCollapseRemovedComments,
+  );
 
   const keywords = [...filterKeywords, ""];
 
@@ -425,24 +432,14 @@ export default function SettingsPage() {
             <Section title="POSTS">
               <SectionItem>
                 <label htmlFor={`${id}-post-display`}>Display posts as</label>
-                <Select value={postCardStyle} onValueChange={setPostCardStyle}>
-                  <SelectTrigger
-                    className="w-[120px]"
-                    id={`${id}-post-display`}
-                  >
-                    <SelectValue placeholder="Select a fruit" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectGroup>
-                      <SelectLabel>Display posts as</SelectLabel>
-                      {POST_CARD_STYLE_OPTIONS.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <SimpleSelect
+                  options={POST_CARD_STYLE_OPTIONS}
+                  value={postCardStyle}
+                  onChange={(opt) => setPostCardStyle(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
               </SectionItem>
             </Section>
 
@@ -522,7 +519,7 @@ export default function SettingsPage() {
                   options={THRESHOLD_OPTIONS}
                   value={collapseThresholdSetting}
                   onChange={setCollapseThresholdSetting}
-                  valueGetter={(o) => String(o)}
+                  valueGetter={(o) => o}
                   labelGetter={(o: ThresholdSetting) =>
                     o === "account" ? "Account setting" : `Score \u2264 ${o}`
                   }
@@ -535,12 +532,23 @@ export default function SettingsPage() {
                   options={THRESHOLD_OPTIONS}
                   value={hideThresholdSetting}
                   onChange={setHideThresholdSetting}
-                  valueGetter={(o) => String(o)}
+                  valueGetter={(o) => o}
                   labelGetter={(o: ThresholdSetting) =>
                     o === "account" ? "Account setting" : `Score \u2264 ${o}`
                   }
                   className="w-[160px]"
                 />
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={collapseRemovedComments}
+                  onIonChange={(e) =>
+                    setCollapseRemovedComments(e.detail.checked)
+                  }
+                >
+                  Collapse removed comments
+                </IonToggle>
               </SectionItem>
             </Section>
 
