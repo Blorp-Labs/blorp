@@ -29,6 +29,15 @@ export const POST_CARD_STYLE_OPTIONS: {
   },
 ];
 
+export type ThresholdSetting = "account" | -5 | -10 | -15 | -20;
+export const THRESHOLD_OPTIONS: ThresholdSetting[] = [
+  "account",
+  -5,
+  -10,
+  -15,
+  -20,
+];
+
 export type ShareLinkType = "blorp" | "instance" | "threadiverse.link";
 
 export const SHARE_LINK_TYPE_OPTIONS: {
@@ -75,6 +84,10 @@ type SettingsStore = {
   setDownvotesSetting: (newVal: VoteSetting) => void;
   scoresSetting: VoteSetting;
   setScoresSetting: (newVal: VoteSetting) => void;
+  collapseThresholdSetting: ThresholdSetting;
+  setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
+  hideThresholdSetting: ThresholdSetting;
+  setHideThresholdSetting: (newVal: ThresholdSetting) => void;
   reset: () => void;
 };
 
@@ -93,6 +106,8 @@ const INIT_STATE = {
   nsfwPreviouslyEnabled: false,
   downvotesSetting: "account",
   scoresSetting: "account",
+  collapseThresholdSetting: -10,
+  hideThresholdSetting: -20,
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -127,6 +142,10 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ nsfwPreviouslyEnabled }),
       setDownvotesSetting: (downvotesSetting) => set({ downvotesSetting }),
       setScoresSetting: (scoresSetting) => set({ scoresSetting }),
+      setCollapseThresholdSetting: (collapseThresholdSetting) =>
+        set({ collapseThresholdSetting }),
+      setHideThresholdSetting: (hideThresholdSetting) =>
+        set({ hideThresholdSetting }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);

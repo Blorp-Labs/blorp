@@ -4,6 +4,8 @@ import {
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
+  THRESHOLD_OPTIONS,
+  ThresholdSetting,
   VoteSetting,
   useSettingsStore,
 } from "@/src/stores/settings";
@@ -313,6 +315,17 @@ export default function SettingsPage() {
   const scoresSetting = useSettingsStore((s) => s.scoresSetting);
   const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
 
+  const collapseThresholdSetting = useSettingsStore(
+    (s) => s.collapseThresholdSetting,
+  );
+  const setCollapseThresholdSetting = useSettingsStore(
+    (s) => s.setCollapseThresholdSetting,
+  );
+  const hideThresholdSetting = useSettingsStore((s) => s.hideThresholdSetting);
+  const setHideThresholdSetting = useSettingsStore(
+    (s) => s.setHideThresholdSetting,
+  );
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -500,6 +513,32 @@ export default function SettingsPage() {
                         return "Always show";
                     }
                   }}
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Collapse comments</label>
+                <SimpleSelect
+                  options={THRESHOLD_OPTIONS}
+                  value={collapseThresholdSetting}
+                  onChange={setCollapseThresholdSetting}
+                  valueGetter={(o) => String(o)}
+                  labelGetter={(o: ThresholdSetting) =>
+                    o === "account" ? "Account setting" : `Score \u2264 ${o}`
+                  }
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Hide comments</label>
+                <SimpleSelect
+                  options={THRESHOLD_OPTIONS}
+                  value={hideThresholdSetting}
+                  onChange={setHideThresholdSetting}
+                  valueGetter={(o) => String(o)}
+                  labelGetter={(o: ThresholdSetting) =>
+                    o === "account" ? "Account setting" : `Score \u2264 ${o}`
+                  }
                   className="w-[160px]"
                 />
               </SectionItem>

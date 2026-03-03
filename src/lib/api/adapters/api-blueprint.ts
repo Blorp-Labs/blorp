@@ -202,6 +202,8 @@ export const siteSchema = z.object({
   showScores: z.boolean().optional(),
   showUpvotes: z.boolean().optional(),
   showDownvotes: z.boolean().optional(),
+  replyCollapseThreshold: z.number().optional(),
+  replyHideThreshold: z.number().optional(),
   software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
@@ -737,6 +739,8 @@ export namespace Forms {
     showScores?: boolean;
     showUpvotes?: boolean;
     showDownvotes?: boolean;
+    replyCollapseThreshold?: number;
+    replyHideThreshold?: number;
   };
 
   export type ResolveObject = {

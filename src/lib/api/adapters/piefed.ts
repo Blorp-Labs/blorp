@@ -284,6 +284,8 @@ export const pieFedLocalUserSchema = z.object({
   //show_bot_accounts: z.boolean(),
   show_nsfw: z.boolean(),
   nsfw_visibility: z.string().nullish(),
+  reply_collapse_threshold: z.number().nullish(),
+  reply_hide_threshold: z.number().nullish(),
   //show_read_posts: z.boolean(),
   //show_scores: z.boolean(),
 });
@@ -1341,6 +1343,12 @@ export class PieFedApi implements ApiBlueprint<null> {
         blurNsfw: nsfwVisibility !== "show",
         enablePostDownvotes: pieFedSite.site.enable_downvotes,
         enableCommentDownvotes: pieFedSite.site.enable_downvotes,
+        replyCollapseThreshold:
+          pieFedSite.my_user?.local_user_view?.local_user
+            .reply_collapse_threshold ?? undefined,
+        replyHideThreshold:
+          pieFedSite.my_user?.local_user_view?.local_user
+            .reply_hide_threshold ?? undefined,
         software: this.software,
       };
 
@@ -2499,6 +2507,8 @@ export class PieFedApi implements ApiBlueprint<null> {
           : "Show"
         : "Hide",
       show_nsfw: form.showNsfw ?? false,
+      reply_collapse_threshold: form.replyCollapseThreshold,
+      reply_hide_threshold: form.replyHideThreshold,
     });
   }
 

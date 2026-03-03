@@ -26,6 +26,7 @@ import { Input } from "@/src/components/ui/input";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { isCapacitor, isIos } from "@/src/lib/device";
 import { useSettingsStore } from "@/src/stores/settings";
+import { SimpleSelect } from "@/src/components/ui/simple-select";
 
 function FileUpload({
   placeholder,
@@ -101,6 +102,15 @@ export default function SettingsPage() {
 
   const scoresOverriddenByVotes = showUpvotes || showDownvotes;
 
+  const [_replyCollapseThreshold, setReplyCollapseThreshold] =
+    useState<number>();
+  const replyCollapseThreshold =
+    _replyCollapseThreshold ?? site?.replyCollapseThreshold ?? -10;
+
+  const [_replyHideThreshold, setReplyHideThreshold] = useState<number>();
+  const replyHideThreshold =
+    _replyHideThreshold ?? site?.replyHideThreshold ?? -20;
+
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
   );
@@ -108,6 +118,18 @@ export default function SettingsPage() {
   const setDownvotesSetting = useSettingsStore((s) => s.setDownvotesSetting);
   const scoresSetting = useSettingsStore((s) => s.scoresSetting);
   const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
+  const collapseThresholdSetting = useSettingsStore(
+    (s) => s.collapseThresholdSetting,
+  );
+  const setCollapseThresholdSetting = useSettingsStore(
+    (s) => s.setCollapseThresholdSetting,
+  );
+  const hideThresholdSetting = useSettingsStore((s) => s.hideThresholdSetting);
+  const setHideThresholdSetting = useSettingsStore(
+    (s) => s.setHideThresholdSetting,
+  );
+
+  const isPieFed = site?.software === "piefed";
 
   const [presentAlert] = useIonAlert();
   const showOverrideInfo = () =>
@@ -143,6 +165,8 @@ export default function SettingsPage() {
             showUpvotes,
             showDownvotes,
             showScores,
+            replyCollapseThreshold,
+            replyHideThreshold,
           },
         })
         .then(() => history.goBack());
@@ -332,6 +356,81 @@ export default function SettingsPage() {
                           size="sm"
                           type="button"
                           onClick={() => setScoresSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isPieFed && (
+                <>
+                  {collapseThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Collapse comments</label>
+                      <SimpleSelect
+                        options={[-5, -10, -15, -20]}
+                        value={replyCollapseThreshold}
+                        onChange={setReplyCollapseThreshold}
+                        valueGetter={(o) => String(o)}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Collapse comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setCollapseThresholdSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {hideThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Hide comments</label>
+                      <SimpleSelect
+                        options={[-5, -10, -15, -20]}
+                        value={replyHideThreshold}
+                        onChange={setReplyHideThreshold}
+                        valueGetter={(o) => String(o)}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Hide comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setHideThresholdSetting("account")}
                         >
                           Use account setting
                         </Button>

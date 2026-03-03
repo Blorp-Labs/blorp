@@ -44,3 +44,25 @@ export function useShouldShowScores(): boolean {
     : true;
   return resolveVoteSetting(scoresSetting, accountShowsScores, true);
 }
+
+export function useCommentCollapseThreshold(): number | null {
+  const setting = useSettingsStore((s) => s.collapseThresholdSetting);
+  const accountThreshold = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.replyCollapseThreshold,
+  );
+  if (setting === "account") {
+    return accountThreshold ?? null;
+  }
+  return setting;
+}
+
+export function useCommentHideThreshold(): number | null {
+  const setting = useSettingsStore((s) => s.hideThresholdSetting);
+  const accountThreshold = useAuth(
+    (s) => getAccountSite(s.getSelectedAccount())?.replyHideThreshold,
+  );
+  if (setting === "account") {
+    return accountThreshold ?? null;
+  }
+  return setting;
+}
