@@ -436,7 +436,7 @@ function LargePostCard({
               communityName: post.communitySlug,
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
-            className="max-md:-mx-3.5 flex flex-col relative overflow-hidden cursor-zoom-in"
+            className="max-md:-mx-3.5 flex flex-col relative overflow-hidden md:rounded-lg cursor-zoom-in"
           >
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
@@ -653,22 +653,24 @@ export function SmallPostCard({
           {!imageLoaded && (
             <Skeleton className="absolute inset-0 md:rounded-md" />
           )}
-          <ProgressiveImage
-            lowSrc={embed?.thumbnail}
-            highSrc={embed?.fullResThumbnail}
-            className={cn(
-              "h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0",
-              blurImg && "blur-3xl",
-            )}
-            onAspectRatio={(thumbnailAspectRatio) => {
-              setImageLoaded(true);
-              if (!post.thumbnailAspectRatio) {
-                patchPost(apId, getCachePrefixer(), {
-                  thumbnailAspectRatio,
-                });
-              }
-            }}
-          />
+          <div className="h-32 w-28 md:h-36 md:w-40 shrink-0 overflow-hidden md:rounded-md">
+            <ProgressiveImage
+              lowSrc={embed?.thumbnail}
+              highSrc={embed?.fullResThumbnail}
+              className={cn(
+                "h-full w-full md:rounded-md",
+                blurImg && "blur-3xl",
+              )}
+              onAspectRatio={(thumbnailAspectRatio) => {
+                setImageLoaded(true);
+                if (!post.thumbnailAspectRatio) {
+                  patchPost(apId, getCachePrefixer(), {
+                    thumbnailAspectRatio,
+                  });
+                }
+              }}
+            />
+          </div>
         </Link>
       )}
       {showArticle && (
