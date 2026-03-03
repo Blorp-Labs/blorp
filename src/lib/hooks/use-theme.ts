@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import _ from "lodash";
+import { App } from "@capacitor/app";
 import { useSettingsStore } from "../../stores/settings";
 
 // create the MQL once
@@ -28,6 +29,11 @@ if (_.isFunction(mql.addEventListener)) {
 } else if (_.isFunction(mql.addListener)) {
   mql.addListener(handler);
 }
+
+// Re-check on app resume in case the system theme changed while backgrounded
+App.addListener("appStateChange", ({ isActive }) => {
+  if (isActive) handler();
+});
 
 // subscribe & snapshot
 function subscribeTheme(cb: () => void) {
