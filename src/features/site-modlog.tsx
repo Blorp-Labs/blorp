@@ -6,24 +6,10 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { VirtualList } from "../components/virtual-list";
 import { usePagination } from "../lib/hooks/use-pagination";
-import { ModlogRow } from "../components/modlog/modlog-row";
+import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ContentGutters } from "../components/gutters";
-import { Skeleton } from "../components/ui/skeleton";
 import { useAuth } from "../stores/auth";
-
-function ModlogRowSkeleton() {
-  return (
-    <ContentGutters>
-      <div className="flex flex-row items-stretch gap-2 px-3 py-2 border-b border-border text-sm min-h-14">
-        <Skeleton className="w-20" />
-        <Skeleton className="w-28" />
-        <Skeleton className="flex-1" />
-      </div>
-      <></>
-    </ContentGutters>
-  );
-}
 
 export default function SiteModlog() {
   const instance = useAuth((s) => s.getSelectedAccount().instance);
@@ -80,7 +66,7 @@ export default function SiteModlog() {
             </ContentGutters>
           }
           renderItem={({ item }) => (
-            <ContentGutters>
+            <ContentGutters noMobilePadding>
               <ModlogRow item={item} />
               <></>
             </ContentGutters>

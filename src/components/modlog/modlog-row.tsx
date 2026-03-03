@@ -7,6 +7,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { RelativeTime } from "../relative-time";
+import { ContentGutters } from "../gutters";
+import { cn } from "@/src/lib/utils";
+import { Skeleton } from "../ui/skeleton";
 
 dayjs.extend(relativeTime);
 dayjs.extend(localizedFormat);
@@ -54,7 +57,12 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
   const linkCtx = useLinkContext();
 
   return (
-    <div className="flex flex-row items-start gap-2 px-3 py-2 border-b border-border text-sm min-h-14">
+    <div
+      className={cn(
+        "flex flex-row items-start gap-2 py-2 border-b border-border text-sm min-h-14",
+        ContentGutters.mobilePadding,
+      )}
+    >
       {/* Time column */}
       <div className="w-12 shrink-0 text-muted-foreground text-xs pt-0.5">
         <RelativeTime time={item.createdAt} />
@@ -129,5 +137,23 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
         )}
       </div>
     </div>
+  );
+}
+
+export function ModlogRowSkeleton() {
+  return (
+    <ContentGutters noMobilePadding>
+      <div
+        className={cn(
+          "flex flex-row items-stretch gap-2 py-2 border-b border-border text-sm min-h-14",
+          ContentGutters.mobilePadding,
+        )}
+      >
+        <Skeleton className="w-12" />
+        <Skeleton className="w-28" />
+        <Skeleton className="flex-1" />
+      </div>
+      <></>
+    </ContentGutters>
   );
 }
