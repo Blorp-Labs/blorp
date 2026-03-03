@@ -805,6 +805,432 @@ export function flattenCommentViews(
   return result;
 }
 
+// Modlog schemas — reuse existing PieFed schemas
+const modlogActionSchema = z.object({
+  id: z.number(),
+  when_: z.string(),
+  reason: z.string().nullish(),
+});
+
+const pieFedModlogResponseSchema = z.object({
+  removed_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_remove_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  locked_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_lock_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  featured_posts: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        mod_feature_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  removed_comments: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        post: pieFedPostSchema.nullish(),
+        comment: pieFedCommentSchema.nullish(),
+        commenter: pieFedPersonSchema.nullish(),
+        mod_remove_comment: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  removed_communities: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema.nullish(),
+        mod_remove_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  banned_from_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        banned_person: pieFedPersonSchema.nullish(),
+        mod_ban_from_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  banned: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        banned_person: pieFedPersonSchema.nullish(),
+        mod_ban: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  added_to_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_add_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  transferred_to_community: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema,
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_transfer_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  added: z
+    .array(
+      z.object({
+        moderator: pieFedPersonSchema.nullish(),
+        modded_person: pieFedPersonSchema.nullish(),
+        mod_add: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  admin_purged_persons: z
+    .array(
+      z.object({
+        admin: pieFedPersonSchema.nullish(),
+        admin_purge_person: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  admin_purged_communities: z
+    .array(
+      z.object({
+        admin: pieFedPersonSchema.nullish(),
+        admin_purge_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  admin_purged_posts: z
+    .array(
+      z.object({
+        admin: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema.nullish(),
+        admin_purge_post: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  admin_purged_comments: z
+    .array(
+      z.object({
+        admin: pieFedPersonSchema.nullish(),
+        post: pieFedPostSchema.nullish(),
+        admin_purge_comment: modlogActionSchema,
+      }),
+    )
+    .default([]),
+  hidden_communities: z
+    .array(
+      z.object({
+        admin: pieFedPersonSchema.nullish(),
+        community: pieFedCommunitySchema.nullish(),
+        mod_hide_community: modlogActionSchema,
+      }),
+    )
+    .default([]),
+});
+
+function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
+  const response = pieFedModlogResponseSchema.parse(json);
+
+  const baseItem = {
+    userId: null,
+    userApId: null,
+    userSlug: null,
+    communityId: null,
+    communityApId: null,
+    communitySlug: null,
+    postId: null,
+    postApId: null,
+    postTitle: null,
+    commentId: null,
+    commentApId: null,
+    commentContent: null,
+  } satisfies Partial<Schemas.ModlogItem>;
+
+  const emptyObject = {
+    id: null,
+    apId: null,
+    slug: null,
+  };
+
+  function modFields(
+    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
+  ) {
+    const p = person ? convertPerson({ person }, "partial") : emptyObject;
+    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+  }
+
+  function userFields(
+    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
+  ) {
+    const p = person ? convertPerson({ person }, "partial") : emptyObject;
+    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+  }
+
+  function communityFields(
+    community: z.infer<typeof pieFedCommunitySchema> | null | undefined,
+  ) {
+    const c = community
+      ? convertCommunity({ community }, "partial")
+      : emptyObject;
+    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+  }
+
+  function postFields(
+    post: z.infer<typeof pieFedPostSchema> | null | undefined,
+  ) {
+    if (!post) return {};
+    return { postId: post.id, postApId: post.ap_id, postTitle: post.title };
+  }
+
+  function commentFields(
+    comment: z.infer<typeof pieFedCommentSchema> | null | undefined,
+  ) {
+    if (!comment) return {};
+    return {
+      commentId: comment.id,
+      commentApId: comment.ap_id,
+      commentContent: comment.body,
+    };
+  }
+
+  const items: Schemas.ModlogItem[] = [];
+
+  for (const view of response.removed_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_post.id,
+      actionType: "removed_post",
+      isAdminAction: false,
+      createdAt: view.mod_remove_post.when_,
+      reason: view.mod_remove_post.reason ?? null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.locked_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_lock_post.id,
+      actionType: "locked_post",
+      isAdminAction: false,
+      createdAt: view.mod_lock_post.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.featured_posts) {
+    items.push({
+      ...baseItem,
+      id: view.mod_feature_post.id,
+      actionType: "featured_post",
+      isAdminAction: false,
+      createdAt: view.mod_feature_post.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.removed_comments) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_comment.id,
+      actionType: "removed_comment",
+      isAdminAction: false,
+      createdAt: view.mod_remove_comment.when_,
+      reason: view.mod_remove_comment.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.commenter),
+      ...communityFields(view.community),
+      ...postFields(view.post),
+      ...commentFields(view.comment),
+    });
+  }
+
+  for (const view of response.removed_communities) {
+    items.push({
+      ...baseItem,
+      id: view.mod_remove_community.id,
+      actionType: "removed_community",
+      isAdminAction: false,
+      createdAt: view.mod_remove_community.when_,
+      reason: view.mod_remove_community.reason ?? null,
+      ...modFields(view.moderator),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.banned_from_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban_from_community.id,
+      actionType: "banned_from_community",
+      isAdminAction: false,
+      createdAt: view.mod_ban_from_community.when_,
+      reason: view.mod_ban_from_community.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.banned) {
+    items.push({
+      ...baseItem,
+      id: view.mod_ban.id,
+      actionType: "banned",
+      isAdminAction: false,
+      createdAt: view.mod_ban.when_,
+      reason: view.mod_ban.reason ?? null,
+      ...modFields(view.moderator),
+      ...userFields(view.banned_person),
+    });
+  }
+
+  for (const view of response.added_to_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add_community.id,
+      actionType: "added_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_add_community.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.transferred_to_community) {
+    items.push({
+      ...baseItem,
+      id: view.mod_transfer_community.id,
+      actionType: "transferred_to_community",
+      isAdminAction: false,
+      createdAt: view.mod_transfer_community.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.added) {
+    items.push({
+      ...baseItem,
+      id: view.mod_add.id,
+      actionType: "added_admin",
+      isAdminAction: true,
+      createdAt: view.mod_add.when_,
+      reason: null,
+      ...modFields(view.moderator),
+      ...userFields(view.modded_person),
+    });
+  }
+
+  for (const view of response.admin_purged_persons) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_person.id,
+      actionType: "admin_purged_person",
+      isAdminAction: true,
+      createdAt: view.admin_purge_person.when_,
+      reason: view.admin_purge_person.reason ?? null,
+      ...modFields(view.admin),
+    });
+  }
+
+  for (const view of response.admin_purged_communities) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_community.id,
+      actionType: "admin_purged_community",
+      isAdminAction: true,
+      createdAt: view.admin_purge_community.when_,
+      reason: view.admin_purge_community.reason ?? null,
+      ...modFields(view.admin),
+    });
+  }
+
+  for (const view of response.admin_purged_posts) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_post.id,
+      actionType: "admin_purged_post",
+      isAdminAction: true,
+      createdAt: view.admin_purge_post.when_,
+      reason: view.admin_purge_post.reason ?? null,
+      ...modFields(view.admin),
+      ...communityFields(view.community),
+    });
+  }
+
+  for (const view of response.admin_purged_comments) {
+    items.push({
+      ...baseItem,
+      id: view.admin_purge_comment.id,
+      actionType: "admin_purged_comment",
+      isAdminAction: true,
+      createdAt: view.admin_purge_comment.when_,
+      reason: view.admin_purge_comment.reason ?? null,
+      ...modFields(view.admin),
+      ...postFields(view.post),
+    });
+  }
+
+  for (const view of response.hidden_communities) {
+    items.push({
+      ...baseItem,
+      id: view.mod_hide_community.id,
+      actionType: "hidden_community",
+      isAdminAction: true,
+      createdAt: view.mod_hide_community.when_,
+      reason: view.mod_hide_community.reason ?? null,
+      ...modFields(view.admin),
+      ...communityFields(view.community),
+    });
+  }
+
+  return items.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
 export class PieFedApi implements ApiBlueprint<null> {
   software = Software.PIEFED;
   softwareVersion: string;
@@ -2306,6 +2732,38 @@ export class PieFedApi implements ApiBlueprint<null> {
       } catch {
         return {};
       }
+    }
+  }
+
+  async getModlog(form: Forms.GetModlog, options: RequestOptions) {
+    let community_id: number | undefined;
+    if (form.communitySlug) {
+      const { community } = await this.getCommunity(
+        { slug: form.communitySlug },
+        options,
+      );
+      community_id = community.id;
+    }
+    const page =
+      !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
+        ? 1
+        : _.parseInt(form.pageCursor) + 1;
+
+    const json = await this.get(
+      "/modlog",
+      { ...(community_id ? { community_id } : {}), page, limit: this.limit },
+      options,
+    );
+
+    try {
+      const items = convertModlogResponsePieFed(json);
+      const hasNextPage = Object.values(json).some(
+        (arr) => Array.isArray(arr) && arr.length >= this.limit,
+      );
+      return { items, nextCursor: hasNextPage ? String(page) : null };
+    } catch (err) {
+      console.log(err);
+      throw err;
     }
   }
 

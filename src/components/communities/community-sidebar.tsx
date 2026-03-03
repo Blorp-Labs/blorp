@@ -203,6 +203,13 @@ export function SmallScreenSidebar({
             {data?.mods?.map((m) => (
               <PersonCard key={m.apId} actorId={m.apId} size="sm" />
             ))}
+            <Link
+              to={`${linkCtx.root}c/:communityName/modlog`}
+              params={{ communityName }}
+              className="text-brand text-sm mt-1"
+            >
+              Modlog
+            </Link>
           </section>
         </>
       )}
@@ -327,6 +334,7 @@ export function CommunitySidebar({
     name: communityName,
   });
 
+  const linkCtx = useLinkContext();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const data = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
@@ -469,6 +477,13 @@ export function CommunitySidebar({
                   {data.mods?.map((m) => (
                     <PersonCard key={m.apId} actorId={m.apId} size="sm" />
                   ))}
+                  <Link
+                    to={`${linkCtx.root}c/:communityName/modlog`}
+                    params={{ communityName }}
+                    className="text-brand text-sm mt-1"
+                  >
+                    Modlog
+                  </Link>
                 </CollapsibleContent>
               </Collapsible>
             </>
