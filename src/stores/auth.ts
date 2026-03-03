@@ -310,6 +310,15 @@ export function useIsCommunityBlocked(slug?: string | null) {
   });
 }
 
+export function useIsInstanceBlocked(instanceId?: number | null) {
+  return useAuth((s) => {
+    const account = s.getSelectedAccount();
+    const site = getAccountSite(account);
+    if (!instanceId || !site?.instanceBlocks?.length) return false;
+    return !!site.instanceBlocks.find((b) => b.id === instanceId);
+  });
+}
+
 export function useIsAdmin(apId?: string) {
   const adminApIds = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.admins,

@@ -329,10 +329,10 @@ function VirtualListInternal<T>({
               ? header[virtualItem.index]
               : isPaginationItem
                 ? paginationControls
-                : item
-                  ? renderItem({ item, index: localIndex })
-                  : noItems
-                    ? noItemsComponent
+                : noItems
+                  ? noItemsComponent
+                  : item
+                    ? renderItem({ item, index: localIndex })
                     : placeholder}
           </div>
         );

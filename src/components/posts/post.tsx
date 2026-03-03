@@ -25,7 +25,12 @@ import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import _ from "lodash";
-import { getAccountSite, useAmIAdmin, useAuth } from "@/src/stores/auth";
+import {
+  getAccountSite,
+  useAmIAdmin,
+  useAuth,
+  useIsInstanceBlocked,
+} from "@/src/stores/auth";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -910,6 +915,7 @@ export function PostCard(props: PostProps) {
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const creator = useProfileFromStore(post?.creatorApId);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
+  const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
@@ -925,6 +931,12 @@ export function PostCard(props: PostProps) {
 
   if (hideBotPosts && creator?.isBot) {
     return props.detailView ? <Notice>Hidden bot posts</Notice> : null;
+  }
+
+  if (isInstanceBlocked) {
+    return props.detailView ? (
+      <Notice>Hidden due to blocked instance</Notice>
+    ) : null;
   }
 
   if (props.detailView || postCardStyle === "large") {

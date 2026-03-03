@@ -127,6 +127,7 @@ Ionic provides the app shell (pages, tabs, menus, gestures, safe areas). ShadCN/
 ### TypeScript
 
 - **Prefer `satisfies` over `as` for type assertions.** Use `as` only when you need to override the inferred type (e.g., narrowing `unknown`), not just to annotate it.
+- **Never use the non-null assertion operator (`!`).** Instead, extract the value to a `const` so TypeScript can narrow it via a type guard (e.g., `_.isNumber()`), or restructure the code to avoid the assertion.
 - **Avoid nested ternary operators.** When branching over multiple cases, prefer a `switch` statement or a lookup object. A single ternary is fine; nesting them is a last resort.
 
 ### React hooks

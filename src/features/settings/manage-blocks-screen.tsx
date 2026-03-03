@@ -15,7 +15,11 @@ import { useProfilesStore } from "@/src/stores/profiles";
 import { useShallow } from "zustand/shallow";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
-import { useBlockPerson, useBlockCommunity } from "@/src/lib/api";
+import {
+  useBlockPerson,
+  useBlockCommunity,
+  useBlockInstance,
+} from "@/src/lib/api";
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
 import { X } from "@/src/components/icons";
@@ -48,6 +52,8 @@ export default function SettingsPage() {
     ),
   );
 
+  const instanceBlocks = site?.instanceBlocks ?? [];
+
   const { person } = account
     ? parseAccountInfo(account)
     : { person: undefined };
@@ -57,6 +63,7 @@ export default function SettingsPage() {
 
   const blockPerson = useBlockPerson({ account });
   const blockCommunity = useBlockCommunity({ account });
+  const blockInstance = useBlockInstance({ account });
 
   return (
     <Page notFound={!account}>
@@ -82,6 +89,8 @@ export default function SettingsPage() {
             ...blockedPersons,
             "BLOCKED COMMUNITIES",
             ...blockedCommunities,
+            "BLOCKED INSTANCES",
+            ...instanceBlocks,
           ]}
           estimatedItemSize={53}
           renderItem={({ item }) => {
@@ -122,6 +131,40 @@ export default function SettingsPage() {
                               handler: () =>
                                 blockPerson.mutate({
                                   personId: item.id,
+                                  block: false,
+                                }),
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      <span className="sr-only">Unblock</span>
+                      <X />
+                    </Button>
+                  </div>
+                </ContentGutters>
+              );
+            }
+
+            if ("domain" in item) {
+              return (
+                <ContentGutters className="py-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 text-sm">{item.domain}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        alrt({
+                          message: `Unblock ${item.domain}`,
+                          buttons: [
+                            { text: "Cancel", role: "cancel" },
+                            {
+                              text: "OK",
+                              role: "confirm",
+                              handler: () =>
+                                blockInstance.mutate({
+                                  instanceId: item.id,
                                   block: false,
                                 }),
                             },
