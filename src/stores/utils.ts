@@ -34,7 +34,13 @@ export function useShouldShowDownvotes(
 
 export function useShouldShowScores(): boolean {
   const scoresSetting = useSettingsStore((s) => s.scoresSetting);
-  const accountShowsScores =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showScores) ?? true;
+  const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
+  // Lemmy ignores show_scores when show_upvotes or show_downvotes is enabled,
+  // so treat any of the three being true as "account shows scores".
+  const accountShowsScores = site
+    ? (site.showUpvotes ?? true) ||
+      (site.showDownvotes ?? true) ||
+      (site.showScores ?? true)
+    : true;
   return resolveVoteSetting(scoresSetting, accountShowsScores, true);
 }

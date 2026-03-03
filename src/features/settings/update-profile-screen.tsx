@@ -90,11 +90,16 @@ export default function SettingsPage() {
   const [_blurNsfw, setBlurNsfw] = useState<boolean>();
   const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
 
+  const [_showUpvotes, setShowUpvotes] = useState<boolean>();
+  const showUpvotes = _showUpvotes ?? site?.showUpvotes ?? true;
+
   const [_showDownvotes, setShowDownvotes] = useState<boolean>();
   const showDownvotes = _showDownvotes ?? site?.showDownvotes ?? true;
 
   const [_showScores, setShowScores] = useState<boolean>();
   const showScores = _showScores ?? site?.showScores ?? true;
+
+  const scoresOverriddenByVotes = showUpvotes || showDownvotes;
 
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
@@ -135,6 +140,7 @@ export default function SettingsPage() {
             email,
             showNsfw,
             blurNsfw,
+            showUpvotes,
             showDownvotes,
             showScores,
           },
@@ -262,6 +268,13 @@ export default function SettingsPage() {
 
               {isLemmy && (
                 <>
+                  <IonToggle
+                    className="flex-1 font-light"
+                    checked={showUpvotes}
+                    onIonChange={(e) => setShowUpvotes(e.detail.checked)}
+                  >
+                    Show upvotes
+                  </IonToggle>
                   {downvotesSetting === "account" ? (
                     <IonToggle
                       className="flex-1 font-light"
@@ -294,13 +307,22 @@ export default function SettingsPage() {
                     </div>
                   )}
                   {scoresSetting === "account" ? (
-                    <IonToggle
-                      className="flex-1 font-light"
-                      checked={showScores}
-                      onIonChange={(e) => setShowScores(e.detail.checked)}
-                    >
-                      Show scores
-                    </IonToggle>
+                    <div className="flex flex-col gap-1">
+                      <IonToggle
+                        className="flex-1 font-light"
+                        checked={showScores}
+                        disabled={scoresOverriddenByVotes}
+                        onIonChange={(e) => setShowScores(e.detail.checked)}
+                      >
+                        Show scores
+                      </IonToggle>
+                      {scoresOverriddenByVotes && (
+                        <p className="text-sm text-muted-foreground">
+                          No effect while show upvotes or show downvotes is
+                          enabled.
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-light">Show scores</span>

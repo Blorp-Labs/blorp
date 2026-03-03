@@ -794,6 +794,9 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         blurNsfw:
           lemmySite.my_user?.local_user_view.local_user.blur_nsfw ?? true,
         showScores: lemmySite.my_user?.local_user_view.local_user.show_scores,
+        showUpvotes:
+          lemmySite.my_user?.local_user_view.local_user_vote_display_mode
+            ?.upvotes,
         showDownvotes:
           lemmySite.my_user?.local_user_view.local_user_vote_display_mode
             ?.downvotes,
@@ -1616,6 +1619,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         show_nsfw: form.showNsfw,
         blur_nsfw: form.blurNsfw,
         show_scores: form.showScores,
+        show_upvotes: form.showUpvotes,
         show_downvotes: form.showDownvotes,
       });
     });
