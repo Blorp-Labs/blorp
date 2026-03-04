@@ -8,9 +8,9 @@
     "dev": "vite dev",
     "preview": "vite preview",
     "dev:tauri": "tauri dev",
-    "dev:ios": "yarn ionic capacitor run ios -l --external",
-    "lint": "yarn oxlint",
-    "build": "vite build && cap sync && yarn cp-package-json",
+    "dev:ios": "ionic capacitor run ios -l --external",
+    "lint": "oxlint",
+    "build": "vite build && cap sync && pnpm cp-package-json",
     "build:tauri": "tauri build",
     "build:docker": "docker build . --tag blorp",
     "cp-package-json": "cp ./package.json ./dist/package.json",
@@ -18,12 +18,9 @@
     "test:watch": "vitest --watch",
     "test:ui": "vitest --watch --coverage --ui",
     "test:e2e": "playwright test",
-    "test:ts": "yarn tsc --noEmit",
+    "test:ts": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build --stats-json"
-  },
-  "installConfig": {
-    "hoistingLimits": "workspaces"
   },
   "dependencies": {
     "@capacitor-community/media": "^8.0.1",
@@ -44,7 +41,9 @@
     "@ionic/react": "8.5.7",
     "@ionic/react-router": "^8.5.7",
     "@number-flow/react": "^0.5.10",
-    "@panzoom/panzoom": "patch:@panzoom/panzoom@npm%3A4.6.1#~/.yarn/patches/@panzoom-panzoom-npm-4.6.1-897295f93e.patch",
+    "@panzoom/panzoom": "^4.6.1",
+    "@radix-ui/react-collapsible": "^1.1.12",
+    "@radix-ui/react-hover-card": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/pacer": "^0.14.0",
@@ -53,6 +52,7 @@
     "@tanstack/react-query-devtools": "5.83.1",
     "@tanstack/react-query-persist-client": "5.83.1",
     "@tanstack/react-virtual": "^3.13.12",
+    "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-deep-link": "2.2.0",
     "@tauri-apps/plugin-dialog": "2.2.0",
     "@tauri-apps/plugin-fs": "2.4.1",
@@ -113,6 +113,8 @@
     "p-retry": "^6.2.1",
     "p-timeout": "^6.1.4",
     "path-to-regexp": "^8.2.0",
+    "ionicons": "^7.4.0",
+    "prosemirror-markdown": "^1.13.4",
     "prosemirror-model": "^1.25.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.0",
@@ -188,5 +190,37 @@
   "lint-staged": {
     "*.{ts,tsx}": "prettier --write"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "patchedDependencies": {
+      "@panzoom/panzoom@4.6.1": "patches/@panzoom__panzoom@4.6.1.patch"
+    },
+    "overrides": {
+      "@types/markdown-it": "14.1.2",
+      "@tiptap/extension-blockquote": "3.6.1",
+      "@tiptap/extension-bold": "3.6.1",
+      "@tiptap/extension-bubble-menu": "3.6.1",
+      "@tiptap/extension-code": "3.6.1",
+      "@tiptap/extension-code-block": "3.6.1",
+      "@tiptap/extension-document": "3.6.1",
+      "@tiptap/extension-floating-menu": "3.6.1",
+      "@tiptap/extension-hard-break": "3.6.1",
+      "@tiptap/extension-heading": "3.6.1",
+      "@tiptap/extension-horizontal-rule": "3.6.1",
+      "@tiptap/extension-italic": "3.6.1",
+      "@tiptap/extension-list": "3.6.1",
+      "@tiptap/extension-paragraph": "3.6.1",
+      "@tiptap/extension-strike": "3.6.1",
+      "@tiptap/extension-text": "3.6.1",
+      "@tiptap/extension-text-style": "3.6.1",
+      "@tiptap/extension-underline": "3.6.1",
+      "@tiptap/extensions": "3.6.1",
+      "@tiptap/pm": "3.6.1"
+    },
+    "onlyBuiltDependencies": [
+      "core-js",
+      "esbuild",
+      "sharp"
+    ]
+  }
 }

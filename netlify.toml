@@ -1,6 +1,6 @@
 [build]
   publish = "dist/"
-  command = "yarn vite build"
+  command = "pnpm vite build"
 
 [[redirects]]
   from = "/*"

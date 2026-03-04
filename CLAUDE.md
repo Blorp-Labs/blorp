@@ -10,16 +10,16 @@ Blorp is a multi-platform client for [Lemmy](https://join-lemmy.org/) and [PieFe
 - **State**: Zustand (local/persisted state) + React Query (server data)
 - **Routing**: React Router 5 with Ionic router, Zod-validated route params
 - **Editor**: TipTap (rich text)
-- **Package manager**: Yarn 4 (Berry)
+- **Package manager**: pnpm
 
 ## Platforms
 
 | Platform | Technology  | Build                                            |
 | -------- | ----------- | ------------------------------------------------ |
-| Web      | Vite        | `yarn build`                                     |
-| macOS    | Tauri 2     | `yarn build:tauri` or `scripts/build-release.sh` |
-| iOS      | Capacitor 7 | `yarn build` then Xcode                          |
-| Android  | Capacitor 7 | `yarn build` then Android Studio                 |
+| Web      | Vite        | `pnpm build`                                     |
+| macOS    | Tauri 2     | `pnpm build:tauri` or `scripts/build-release.sh` |
+| iOS      | Capacitor 7 | `pnpm build` then Xcode                          |
+| Android  | Capacitor 7 | `pnpm build` then Android Studio                 |
 
 Tauri is only used for macOS. Capacitor handles iOS and Android. Web runs as a standalone Vite app.
 
@@ -27,15 +27,15 @@ Tauri is only used for macOS. Capacitor handles iOS and Android. Web runs as a s
 
 | Command          | Purpose                                            |
 | ---------------- | -------------------------------------------------- |
-| `yarn dev`       | Start Vite dev server                              |
-| `yarn build`     | Production build (Vite + Capacitor sync)           |
-| `yarn test`      | Run Vitest unit tests                              |
-| `yarn test:ts`   | TypeScript type check (`tsc --noEmit`)             |
-| `yarn lint`      | Lint via oxlint                                    |
-| `yarn test:e2e`  | Playwright E2E tests (requires `yarn build` first) |
-| `yarn storybook` | Component Storybook                                |
+| `pnpm dev`       | Start Vite dev server                              |
+| `pnpm build`     | Production build (Vite + Capacitor sync)           |
+| `pnpm test`      | Run Vitest unit tests                              |
+| `pnpm test:ts`   | TypeScript type check (`tsc --noEmit`)             |
+| `pnpm lint`      | Lint via oxlint                                    |
+| `pnpm test:e2e`  | Playwright E2E tests (requires `pnpm build` first) |
+| `pnpm storybook` | Component Storybook                                |
 
-Run `yarn test:ts` periodically during development. Run `yarn lint` to check for lint issues.
+Run `pnpm test:ts` periodically during development. Run `pnpm lint` to check for lint issues.
 
 ## Project Structure
 

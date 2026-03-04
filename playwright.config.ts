@@ -74,7 +74,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `yarn preview --port ${PORT}`,
+    command: `pnpm preview --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env["CI"],
   },
