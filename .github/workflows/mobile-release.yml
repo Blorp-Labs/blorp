@@ -16,18 +16,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "yarn"
+          cache: "pnpm"
 
       - name: Install JS dependencies
-        run: corepack enable && yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build web assets + cap sync
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-        run: yarn build
+        run: pnpm build
 
       - uses: ruby/setup-ruby@v1
         with:
@@ -67,18 +69,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "yarn"
+          cache: "pnpm"
 
       - name: Install JS dependencies
-        run: corepack enable && yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build web assets + cap sync
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-        run: yarn build
+        run: |
+          pnpm vite build
+          pnpm exec cap sync android
+          pnpm cp-package-json
 
       - uses: actions/setup-java@v4
         with:
@@ -132,18 +139,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "yarn"
+          cache: "pnpm"
 
       - name: Install JS dependencies
-        run: corepack enable && yarn install --immutable
+        run: pnpm install --frozen-lockfile
 
       - name: Build web assets
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-        run: yarn vite build && yarn cp-package-json
+        run: pnpm vite build && pnpm cp-package-json
 
       - name: Install Rust (universal targets)
         uses: dtolnay/rust-toolchain@stable
@@ -182,7 +191,7 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-        run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
+        run: pnpm tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
 
       - name: Create .pkg
         timeout-minutes: 5

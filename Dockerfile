@@ -2,13 +2,13 @@ ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
 
-# Enable Yarn Berry
-RUN corepack enable && corepack prepare yarn@stable --activate
+# Enable pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 # Install deps
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
-RUN yarn install --immutable --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+COPY patches/ ./patches/
+RUN pnpm install --frozen-lockfile
 
 # Build app (inject build‑time args if you like)
 COPY . .
@@ -21,7 +21,7 @@ ENV \
   REACT_APP_DEFAULT_INSTANCE=$REACT_APP_DEFAULT_INSTANCE \
   REACT_APP_LOCK_TO_DEFAULT_INSTANCE=$REACT_APP_LOCK_TO_DEFAULT_INSTANCE \
   REACT_APP_INSTANCE_SELECTION_MODE=$REACT_APP_INSTANCE_SELECTION_MODE
-RUN yarn build \
+RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm vite build \
  && rm -rf dist/*.map
 
 # ─── Runtime stage ───────────────────────────

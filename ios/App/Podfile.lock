@@ -1,101 +1,105 @@
 PODS:
-  - Capacitor (7.4.0):
+  - Capacitor (7.5.0):
     - CapacitorCordova
-  - CapacitorApp (7.0.1):
+  - CapacitorApp (7.1.2):
     - Capacitor
-  - CapacitorBrowser (7.0.1):
+  - CapacitorBrowser (7.0.4):
     - Capacitor
   - CapacitorCommunityMedia (8.0.1):
     - Capacitor
     - SDWebImage
-  - CapacitorCordova (7.4.0)
-  - CapacitorFilesystem (7.0.1):
+  - CapacitorCordova (7.5.0)
+  - CapacitorFilesystem (7.1.8):
     - Capacitor
-  - CapacitorHaptics (7.0.1):
+    - IONFilesystemLib (~> 1.1.1)
+  - CapacitorHaptics (7.0.3):
     - Capacitor
   - CapacitorInappbrowser (2.1.0):
     - Capacitor
     - OSInAppBrowserLib (~> 2.0)
-  - CapacitorKeyboard (7.0.1):
+  - CapacitorKeyboard (7.0.4):
     - Capacitor
-  - CapacitorPluginSafeArea (4.0.0):
+  - CapacitorPluginSafeArea (4.0.3):
     - Capacitor
-  - CapacitorShare (7.0.1):
+  - CapacitorShare (7.0.4):
     - Capacitor
-  - CapacitorStatusBar (7.0.1):
+  - CapacitorStatusBar (7.0.5):
     - Capacitor
-  - CapacitorTextZoom (7.0.1):
+  - CapacitorTextZoom (7.0.4):
     - Capacitor
+  - IONFilesystemLib (1.1.1)
   - OSInAppBrowserLib (2.0.0)
   - SDWebImage (5.21.0):
     - SDWebImage/Core (= 5.21.0)
   - SDWebImage/Core (5.21.0)
 
 DEPENDENCIES:
-  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
-  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
-  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
-  - "CapacitorCommunityMedia (from `../../node_modules/@capacitor-community/media`)"
-  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
-  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
-  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
-  - "CapacitorInappbrowser (from `../../node_modules/@capacitor/inappbrowser`)"
-  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
-  - CapacitorPluginSafeArea (from `../../node_modules/capacitor-plugin-safe-area`)
-  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
-  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
-  - "CapacitorTextZoom (from `../../node_modules/@capacitor/text-zoom`)"
+  - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@7.5.0_@capacitor+core@7.5.0/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.5.0/node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/.pnpm/@capacitor+browser@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/browser`)"
+  - "CapacitorCommunityMedia (from `../../node_modules/.pnpm/@capacitor-community+media@8.0.1_@capacitor+core@7.5.0/node_modules/@capacitor-community/media`)"
+  - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@7.5.0_@capacitor+core@7.5.0/node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.5.0/node_modules/@capacitor/filesystem`)"
+  - "CapacitorHaptics (from `../../node_modules/.pnpm/@capacitor+haptics@7.0.3_@capacitor+core@7.5.0/node_modules/@capacitor/haptics`)"
+  - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@2.1.0_@capacitor+core@7.5.0/node_modules/@capacitor/inappbrowser`)"
+  - "CapacitorKeyboard (from `../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/keyboard`)"
+  - "CapacitorPluginSafeArea (from `../../node_modules/.pnpm/capacitor-plugin-safe-area@4.0.3_@capacitor+core@7.5.0/node_modules/capacitor-plugin-safe-area`)"
+  - "CapacitorShare (from `../../node_modules/.pnpm/@capacitor+share@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/share`)"
+  - "CapacitorStatusBar (from `../../node_modules/.pnpm/@capacitor+status-bar@7.0.5_@capacitor+core@7.5.0/node_modules/@capacitor/status-bar`)"
+  - "CapacitorTextZoom (from `../../node_modules/.pnpm/@capacitor+text-zoom@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/text-zoom`)"
 
 SPEC REPOS:
   trunk:
+    - IONFilesystemLib
     - OSInAppBrowserLib
     - SDWebImage
 
 EXTERNAL SOURCES:
   Capacitor:
-    :path: "../../node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@7.5.0_@capacitor+core@7.5.0/node_modules/@capacitor/ios"
   CapacitorApp:
-    :path: "../../node_modules/@capacitor/app"
+    :path: "../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.5.0/node_modules/@capacitor/app"
   CapacitorBrowser:
-    :path: "../../node_modules/@capacitor/browser"
+    :path: "../../node_modules/.pnpm/@capacitor+browser@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/browser"
   CapacitorCommunityMedia:
-    :path: "../../node_modules/@capacitor-community/media"
+    :path: "../../node_modules/.pnpm/@capacitor-community+media@8.0.1_@capacitor+core@7.5.0/node_modules/@capacitor-community/media"
   CapacitorCordova:
-    :path: "../../node_modules/@capacitor/ios"
+    :path: "../../node_modules/.pnpm/@capacitor+ios@7.5.0_@capacitor+core@7.5.0/node_modules/@capacitor/ios"
   CapacitorFilesystem:
-    :path: "../../node_modules/@capacitor/filesystem"
+    :path: "../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.5.0/node_modules/@capacitor/filesystem"
   CapacitorHaptics:
-    :path: "../../node_modules/@capacitor/haptics"
+    :path: "../../node_modules/.pnpm/@capacitor+haptics@7.0.3_@capacitor+core@7.5.0/node_modules/@capacitor/haptics"
   CapacitorInappbrowser:
-    :path: "../../node_modules/@capacitor/inappbrowser"
+    :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@2.1.0_@capacitor+core@7.5.0/node_modules/@capacitor/inappbrowser"
   CapacitorKeyboard:
-    :path: "../../node_modules/@capacitor/keyboard"
+    :path: "../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/keyboard"
   CapacitorPluginSafeArea:
-    :path: "../../node_modules/capacitor-plugin-safe-area"
+    :path: "../../node_modules/.pnpm/capacitor-plugin-safe-area@4.0.3_@capacitor+core@7.5.0/node_modules/capacitor-plugin-safe-area"
   CapacitorShare:
-    :path: "../../node_modules/@capacitor/share"
+    :path: "../../node_modules/.pnpm/@capacitor+share@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/share"
   CapacitorStatusBar:
-    :path: "../../node_modules/@capacitor/status-bar"
+    :path: "../../node_modules/.pnpm/@capacitor+status-bar@7.0.5_@capacitor+core@7.5.0/node_modules/@capacitor/status-bar"
   CapacitorTextZoom:
-    :path: "../../node_modules/@capacitor/text-zoom"
+    :path: "../../node_modules/.pnpm/@capacitor+text-zoom@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/text-zoom"
 
 SPEC CHECKSUMS:
-  Capacitor: 10feab36396883c55373328124a677f118cd4b5f
-  CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
-  CapacitorBrowser: 6299776d496e968505464884d565992faa20444a
+  Capacitor: 0a78ec6b54580fa055c11744a4e83cd7942d98ca
+  CapacitorApp: f01a913211780e0718dae9750442c3e23f96e106
+  CapacitorBrowser: affdd32ab6a1822942eb55095b3c5ecf3f656a9d
   CapacitorCommunityMedia: d1538b56a3303298e7cf45a18b11e624fbcbdc8e
-  CapacitorCordova: 723e017d8a80ab2ede9959fbe37556c35ac860d5
-  CapacitorFilesystem: e6261c410436f54908c11f94336c5b58286b1db0
-  CapacitorHaptics: 1f1e17041f435d8ead9ff2a34edd592c6aa6a8d6
+  CapacitorCordova: ae35646a9b46cfd00d637f195509c86594026aad
+  CapacitorFilesystem: c63fc54df41e5a6761785a7f3c49dc696c22e296
+  CapacitorHaptics: ce15be8f287fa2c61c7d2d9e958885b90cf0bebc
   CapacitorInappbrowser: b9b366f37561bf92da226df6353631ac01cc5b92
-  CapacitorKeyboard: 09fd91dcde4f8a37313e7f11bde553ad1ed52036
-  CapacitorPluginSafeArea: 22031c3436269ca80fac90ec2c94bc7c1e59a81d
-  CapacitorShare: e573823f511f260f598d0423c33b1e3d7bbe5fd1
-  CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
-  CapacitorTextZoom: ccb82513c95a64bd9d4de4fc2399c2690a8705de
+  CapacitorKeyboard: 5660c760113bfa48962817a785879373cf5339c3
+  CapacitorPluginSafeArea: 1abd81c6facac9eae0c6ae3cb0b3b53ccc135522
+  CapacitorShare: 25f7fc5dd0e4edbde5d6801c6de5d14a8b450a41
+  CapacitorStatusBar: 6de542f202c0dd3f9d0a73b240d4c9d3dddc49b4
+  CapacitorTextZoom: 9f874e3ab5f36ec108a3f80345bac12f143100ed
+  IONFilesystemLib: dfa8706539ac9ab77ccfd6e5b3830ce9b5e57f6c
   OSInAppBrowserLib: 232c74691cffb9959aa07b1d5ff57d96fca2af7f
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: f65392f843c0753d347d40c80d4d2100a4efb4e3
+PODFILE CHECKSUM: 81130343edd19ef9b8d1823d878d84acbdbf3ca0
 
 COCOAPODS: 1.16.2

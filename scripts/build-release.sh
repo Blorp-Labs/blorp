@@ -15,8 +15,8 @@ fi
 rm -rf release
 mkdir release
 
-# 1) Make sure yarn is up to date
-yarn install
+# 1) Make sure pnpm is up to date
+pnpm install
 
 # 2) Build Tauri MacOS
 tauri build --bundles app --target universal-apple-darwin

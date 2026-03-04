@@ -2,27 +2,17 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "rootDir": ".",
     "noEmit": true,
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "downlevelIteration": true,
-    "preserveSymlinks": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "types": [
-      "node",
-      "react",
-      "vite/client"
-    ],
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "types": ["node", "react", "vite/client"],
+    "lib": ["dom", "esnext"],
     "strict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,

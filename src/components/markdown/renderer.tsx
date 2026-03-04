@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it";
+import type Token from "markdown-it/lib/token.mjs";
 import markdownitContainer, { ContainerOpts } from "markdown-it-container";
 import { useLinkContext } from "../../routing/link-context";
 import parse, {
@@ -45,7 +46,7 @@ export function registerSpoilerPlugin(md: MarkdownIt) {
       return /^spoiler\s+(.*)$/.test(params.trim());
     },
 
-    render: function (tokens, idx) {
+    render: function (tokens: Token[], idx: number) {
       const m = tokens[idx]!.info.trim().match(/^spoiler\s+(.*)$/);
       const summary = m?.[1] ? md.utils.escapeHtml(m[1]) : "";
 
