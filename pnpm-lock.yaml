@@ -84,8 +84,8 @@ importers:
         specifier: 8.5.7
         version: 8.5.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@ionic/react-router':
-        specifier: ^8.5.7
-        version: 8.7.18(react-dom@19.2.0(react@19.2.0))(react-router-dom@5.3.4(react@19.2.0))(react-router@5.3.4(react@19.2.0))(react@19.2.0)
+        specifier: 8.5.7
+        version: 8.5.7(react-dom@19.2.0(react@19.2.0))(react-router-dom@5.3.4(react@19.2.0))(react-router@5.3.4(react@19.2.0))(react@19.2.0)
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.14(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1684,12 +1684,8 @@ packages:
   '@ionic/core@8.5.7':
     resolution: {integrity: sha512-V5ZRYXD1MgAPdjfLyOejILAdTqIzpMY7/v6GSynFPPWoEpfFbGe/tNsimrYm1/D8iouigYLkJjWSeg2rpIpESA==}
 
-  '@ionic/core@8.7.18':
-    resolution: {integrity: sha512-KUp91+XFTSAhOTLOIj7rY6j44guxI/gaR0S6bUZ/+65qZIuftRcETKb54yQ0COqn0lgAgQnkuYdWyH1uRPHsEA==}
-    engines: {node: '>= 16'}
-
-  '@ionic/react-router@8.7.18':
-    resolution: {integrity: sha512-yQf6HpSkAw31AG8GbR6Ues2pjV5xovSuwgvB4l+bwZ3JS+AptOrCQkXnzLoS81ou4Nl/QGsyo/1PSRgNM1YEvg==}
+  '@ionic/react-router@8.5.7':
+    resolution: {integrity: sha512-REEnLRIWh23DnqTugNT7VIO2D49GtmSHvxOmmTmaFTjhMXQ1ilzM35oh+Fr2pWU5NmCqD8am+RLfITQhIJI1hA==}
     peerDependencies:
       react: '>=16.8.6'
       react-dom: '>=16.8.6'
@@ -1698,12 +1694,6 @@ packages:
 
   '@ionic/react@8.5.7':
     resolution: {integrity: sha512-AgX4iu6SfuBhNgYr0H+K3oGsp7ESkCsnaqZdHRO2+GtKTmo4akMrFPihGj4LrZB/IaYwcvYQR/bPWHuZGJYsnw==}
-    peerDependencies:
-      react: '>=16.8.6'
-      react-dom: '>=16.8.6'
-
-  '@ionic/react@8.7.18':
-    resolution: {integrity: sha512-6OvR5xQT9p2rm+9iGrUsJXlPwsRfJdMVqU+M6iVPS4QwJ9Ob4/0CyeEHvaS+XX+pGEKTpsabiU0Ibjnomj0sLA==}
     peerDependencies:
       react: '>=16.8.6'
       react-dom: '>=16.8.6'
@@ -2723,11 +2713,6 @@ packages:
     cpu: [arm64]
     os: [android]
 
-  '@rollup/rollup-darwin-arm64@4.34.9':
-    resolution: {integrity: sha512-0CY3/K54slrzLDjOA7TOjN1NuLKERBgk9nY5V34mhmuu673YNb+7ghaDUs6N0ujXR7fz5XaS5Aa6d2TNxZd0OQ==}
-    cpu: [arm64]
-    os: [darwin]
-
   '@rollup/rollup-darwin-arm64@4.44.0':
     resolution: {integrity: sha512-VGF3wy0Eq1gcEIkSCr8Ke03CWT+Pm2yveKLaDvq51pPpZza3JX/ClxXOCmTYYq3us5MvEuNRTaeyFThCKRQhOA==}
     cpu: [arm64]
@@ -2736,11 +2721,6 @@ packages:
   '@rollup/rollup-darwin-arm64@4.59.0':
     resolution: {integrity: sha512-W2Psnbh1J8ZJw0xKAd8zdNgF9HRLkdWwwdWqubSVk0pUuQkoHnv7rx4GiF9rT4t5DIZGAsConRE3AxCdJ4m8rg==}
     cpu: [arm64]
-    os: [darwin]
-
-  '@rollup/rollup-darwin-x64@4.34.9':
-    resolution: {integrity: sha512-eOojSEAi/acnsJVYRxnMkPFqcxSMFfrw7r2iD9Q32SGkb/Q9FpUY1UlAu1DH9T7j++gZ0lHjnm4OyH2vCI7l7Q==}
-    cpu: [x64]
     os: [darwin]
 
   '@rollup/rollup-darwin-x64@4.44.0':
@@ -2775,12 +2755,6 @@ packages:
     os: [linux]
     libc: [musl]
 
-  '@rollup/rollup-linux-arm64-gnu@4.34.9':
-    resolution: {integrity: sha512-6TZjPHjKZUQKmVKMUowF3ewHxctrRR09eYyvT5eFv8w/fXarEra83A2mHTVJLA5xU91aCNOUnM+DWFMSbQ0Nxw==}
-    cpu: [arm64]
-    os: [linux]
-    libc: [glibc]
-
   '@rollup/rollup-linux-arm64-gnu@4.44.0':
     resolution: {integrity: sha512-ZTR2mxBHb4tK4wGf9b8SYg0Y6KQPjGpR4UWwTFdnmjB4qRtoATZ5dWn3KsDwGa5Z2ZBOE7K52L36J9LueKBdOQ==}
     cpu: [arm64]
@@ -2792,12 +2766,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
-
-  '@rollup/rollup-linux-arm64-musl@4.34.9':
-    resolution: {integrity: sha512-LD2fytxZJZ6xzOKnMbIpgzFOuIKlxVOpiMAXawsAZ2mHBPEYOnLRK5TTEsID6z4eM23DuO88X0Tq1mErHMVq0A==}
-    cpu: [arm64]
-    os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-musl@4.44.0':
     resolution: {integrity: sha512-GFWfAhVhWGd4r6UxmnKRTBwP1qmModHtd5gkraeW2G490BpFOZkFtem8yuX2NyafIP/mGpRJgTJ2PwohQkUY/Q==}
@@ -2853,12 +2821,6 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@rollup/rollup-linux-x64-gnu@4.34.9':
-    resolution: {integrity: sha512-FwBHNSOjUTQLP4MG7y6rR6qbGw4MFeQnIBrMe161QGaQoBQLqSUEKlHIiVgF3g/mb3lxlxzJOpIBhaP+C+KP2A==}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
   '@rollup/rollup-linux-x64-gnu@4.44.0':
     resolution: {integrity: sha512-iUVJc3c0o8l9Sa/qlDL2Z9UP92UZZW1+EmQ4xfjTc1akr0iUFZNfxrXJ/R1T90h/ILm9iXEY6+iPrmYB3pXKjw==}
     cpu: [x64]
@@ -2870,12 +2832,6 @@ packages:
     cpu: [x64]
     os: [linux]
     libc: [glibc]
-
-  '@rollup/rollup-linux-x64-musl@4.34.9':
-    resolution: {integrity: sha512-cYRpV4650z2I3/s6+5/LONkjIz8MBeqrk+vPXV10ORBnshpn8S32bPqQ2Utv39jCiDcO2eJTuSlPXpnvmaIgRA==}
-    cpu: [x64]
-    os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-x64-musl@4.44.0':
     resolution: {integrity: sha512-PQUobbhLTQT5yz/SPg116VJBgz+XOtXt8D1ck+sfJJhuEsMj2jSej5yTdp8CvWBSceu+WW+ibVL6dm0ptG5fcA==}
@@ -2899,11 +2855,6 @@ packages:
     cpu: [arm64]
     os: [openharmony]
 
-  '@rollup/rollup-win32-arm64-msvc@4.34.9':
-    resolution: {integrity: sha512-z4mQK9dAN6byRA/vsSgQiPeuO63wdiDxZ9yg9iyX2QTzKuQM7T4xlBoeUP/J8uiFkqxkcWndWi+W7bXdPbt27Q==}
-    cpu: [arm64]
-    os: [win32]
-
   '@rollup/rollup-win32-arm64-msvc@4.44.0':
     resolution: {integrity: sha512-M0CpcHf8TWn+4oTxJfh7LQuTuaYeXGbk0eageVjQCKzYLsajWS/lFC94qlRqOlyC2KvRT90ZrfXULYmukeIy7w==}
     cpu: [arm64]
@@ -2921,11 +2872,6 @@ packages:
 
   '@rollup/rollup-win32-x64-gnu@4.59.0':
     resolution: {integrity: sha512-laBkYlSS1n2L8fSo1thDNGrCTQMmxjYY5G0WFWjFFYZkKPjsMBsgJfGf4TLxXrF6RyhI60L8TMOjBMvXiTcxeA==}
-    cpu: [x64]
-    os: [win32]
-
-  '@rollup/rollup-win32-x64-msvc@4.34.9':
-    resolution: {integrity: sha512-AyleYRPU7+rgkMWbEh71fQlrzRfeP6SyMnRf9XX4fCdDPAJumdSBqYEcWPMzVQ4ScAl7E4oFfK0GUVn77xSwbw==}
     cpu: [x64]
     os: [win32]
 
@@ -2964,11 +2910,6 @@ packages:
 
   '@stencil/core@4.20.0':
     resolution: {integrity: sha512-WPrTHFngvN081RY+dJPneKQLwnOFD60OMCOQGmmSHfCW0f4ujPMzzhwWU1gcSwXPWXz5O+8cBiiCaxAbJU7kAg==}
-    engines: {node: '>=16.0.0', npm: '>=7.10.0'}
-    hasBin: true
-
-  '@stencil/core@4.38.0':
-    resolution: {integrity: sha512-oC3QFKO0X1yXVvETgc8OLY525MNKhn9vISBrbtKnGoPlokJ6rI8Vk1RK22TevnNrHLI4SExNLbcDnqilKR35JQ==}
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
@@ -5391,9 +5332,6 @@ packages:
 
   ionicons@7.4.0:
     resolution: {integrity: sha512-ZK94MMqgzMCPPMhmk8Ouu6goyVHFIlw/ACP6oe3FrikcI0N7CX0xcwVaEbUc0G/v3W0shI93vo+9ve/KpvcNhQ==}
-
-  ionicons@8.0.13:
-    resolution: {integrity: sha512-2QQVyG2P4wszne79jemMjWYLp0DBbDhr4/yFroPCxvPP1wtMxgdIV3l5n+XZ5E9mgoXU79w7yTWpm2XzJsISxQ==}
 
   ip-address@10.1.0:
     resolution: {integrity: sha512-XXADHxXmvT9+CRxhXg56LJovE+bmWnEWB78LB83VZTprKTmaC5QfruXocxzTZ2Kl0DNwKuBdlIhjL8LeY8Sf8Q==}
@@ -9330,15 +9268,9 @@ snapshots:
       ionicons: 7.4.0
       tslib: 2.8.1
 
-  '@ionic/core@8.7.18':
+  '@ionic/react-router@8.5.7(react-dom@19.2.0(react@19.2.0))(react-router-dom@5.3.4(react@19.2.0))(react-router@5.3.4(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@stencil/core': 4.38.0
-      ionicons: 8.0.13
-      tslib: 2.8.1
-
-  '@ionic/react-router@8.7.18(react-dom@19.2.0(react@19.2.0))(react-router-dom@5.3.4(react@19.2.0))(react-router@5.3.4(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@ionic/react': 8.7.18(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@ionic/react': 8.5.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       react-router: 5.3.4(react@19.2.0)
@@ -9349,14 +9281,6 @@ snapshots:
     dependencies:
       '@ionic/core': 8.5.7
       ionicons: 7.4.0
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-      tslib: 2.8.1
-
-  '@ionic/react@8.7.18(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@ionic/core': 8.7.18
-      ionicons: 8.0.13
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       tslib: 2.8.1
@@ -10443,16 +10367,10 @@ snapshots:
   '@rollup/rollup-android-arm64@4.59.0':
     optional: true
 
-  '@rollup/rollup-darwin-arm64@4.34.9':
-    optional: true
-
   '@rollup/rollup-darwin-arm64@4.44.0':
     optional: true
 
   '@rollup/rollup-darwin-arm64@4.59.0':
-    optional: true
-
-  '@rollup/rollup-darwin-x64@4.34.9':
     optional: true
 
   '@rollup/rollup-darwin-x64@4.44.0':
@@ -10473,16 +10391,10 @@ snapshots:
   '@rollup/rollup-linux-arm-musleabihf@4.59.0':
     optional: true
 
-  '@rollup/rollup-linux-arm64-gnu@4.34.9':
-    optional: true
-
   '@rollup/rollup-linux-arm64-gnu@4.44.0':
     optional: true
 
   '@rollup/rollup-linux-arm64-gnu@4.59.0':
-    optional: true
-
-  '@rollup/rollup-linux-arm64-musl@4.34.9':
     optional: true
 
   '@rollup/rollup-linux-arm64-musl@4.44.0':
@@ -10512,16 +10424,10 @@ snapshots:
   '@rollup/rollup-linux-s390x-gnu@4.59.0':
     optional: true
 
-  '@rollup/rollup-linux-x64-gnu@4.34.9':
-    optional: true
-
   '@rollup/rollup-linux-x64-gnu@4.44.0':
     optional: true
 
   '@rollup/rollup-linux-x64-gnu@4.59.0':
-    optional: true
-
-  '@rollup/rollup-linux-x64-musl@4.34.9':
     optional: true
 
   '@rollup/rollup-linux-x64-musl@4.44.0':
@@ -10536,9 +10442,6 @@ snapshots:
   '@rollup/rollup-openharmony-arm64@4.59.0':
     optional: true
 
-  '@rollup/rollup-win32-arm64-msvc@4.34.9':
-    optional: true
-
   '@rollup/rollup-win32-arm64-msvc@4.44.0':
     optional: true
 
@@ -10549,9 +10452,6 @@ snapshots:
     optional: true
 
   '@rollup/rollup-win32-x64-gnu@4.59.0':
-    optional: true
-
-  '@rollup/rollup-win32-x64-msvc@4.34.9':
     optional: true
 
   '@rollup/rollup-win32-x64-msvc@4.44.0':
@@ -10584,17 +10484,6 @@ snapshots:
   '@standard-schema/spec@1.1.0': {}
 
   '@stencil/core@4.20.0': {}
-
-  '@stencil/core@4.38.0':
-    optionalDependencies:
-      '@rollup/rollup-darwin-arm64': 4.34.9
-      '@rollup/rollup-darwin-x64': 4.34.9
-      '@rollup/rollup-linux-arm64-gnu': 4.34.9
-      '@rollup/rollup-linux-arm64-musl': 4.34.9
-      '@rollup/rollup-linux-x64-gnu': 4.34.9
-      '@rollup/rollup-linux-x64-musl': 4.34.9
-      '@rollup/rollup-win32-arm64-msvc': 4.34.9
-      '@rollup/rollup-win32-x64-msvc': 4.34.9
 
   '@stencil/core@4.43.2':
     optionalDependencies:
@@ -13185,10 +13074,6 @@ snapshots:
       through: 2.3.8
 
   ionicons@7.4.0:
-    dependencies:
-      '@stencil/core': 4.43.2
-
-  ionicons@8.0.13:
     dependencies:
       '@stencil/core': 4.43.2
 
