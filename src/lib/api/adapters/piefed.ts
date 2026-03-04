@@ -893,65 +893,12 @@ const pieFedModlogResponseSchema = z.object({
       }),
     )
     .default([]),
-  transferred_to_community: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        modded_person: pieFedPersonSchema.nullish(),
-        mod_transfer_community: modlogActionSchema,
-      }),
-    )
-    .default([]),
   added: z
     .array(
       z.object({
         moderator: pieFedPersonSchema.nullish(),
         modded_person: pieFedPersonSchema.nullish(),
         mod_add: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  admin_purged_persons: z
-    .array(
-      z.object({
-        admin: pieFedPersonSchema.nullish(),
-        admin_purge_person: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  admin_purged_communities: z
-    .array(
-      z.object({
-        admin: pieFedPersonSchema.nullish(),
-        admin_purge_community: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  admin_purged_posts: z
-    .array(
-      z.object({
-        admin: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema.nullish(),
-        admin_purge_post: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  admin_purged_comments: z
-    .array(
-      z.object({
-        admin: pieFedPersonSchema.nullish(),
-        post: pieFedPostSchema.nullish(),
-        admin_purge_comment: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  hidden_communities: z
-    .array(
-      z.object({
-        admin: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema.nullish(),
-        mod_hide_community: modlogActionSchema,
       }),
     )
     .default([]),
@@ -1136,20 +1083,6 @@ function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
     });
   }
 
-  for (const view of response.transferred_to_community) {
-    items.push({
-      ...baseItem,
-      id: view.mod_transfer_community.id,
-      actionType: "transferred_to_community",
-      isAdminAction: false,
-      createdAt: view.mod_transfer_community.when_,
-      reason: null,
-      ...modFields(view.moderator),
-      ...userFields(view.modded_person),
-      ...communityFields(view.community),
-    });
-  }
-
   for (const view of response.added) {
     items.push({
       ...baseItem,
@@ -1160,69 +1093,6 @@ function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
       reason: null,
       ...modFields(view.moderator),
       ...userFields(view.modded_person),
-    });
-  }
-
-  for (const view of response.admin_purged_persons) {
-    items.push({
-      ...baseItem,
-      id: view.admin_purge_person.id,
-      actionType: "admin_purged_person",
-      isAdminAction: true,
-      createdAt: view.admin_purge_person.when_,
-      reason: view.admin_purge_person.reason ?? null,
-      ...modFields(view.admin),
-    });
-  }
-
-  for (const view of response.admin_purged_communities) {
-    items.push({
-      ...baseItem,
-      id: view.admin_purge_community.id,
-      actionType: "admin_purged_community",
-      isAdminAction: true,
-      createdAt: view.admin_purge_community.when_,
-      reason: view.admin_purge_community.reason ?? null,
-      ...modFields(view.admin),
-    });
-  }
-
-  for (const view of response.admin_purged_posts) {
-    items.push({
-      ...baseItem,
-      id: view.admin_purge_post.id,
-      actionType: "admin_purged_post",
-      isAdminAction: true,
-      createdAt: view.admin_purge_post.when_,
-      reason: view.admin_purge_post.reason ?? null,
-      ...modFields(view.admin),
-      ...communityFields(view.community),
-    });
-  }
-
-  for (const view of response.admin_purged_comments) {
-    items.push({
-      ...baseItem,
-      id: view.admin_purge_comment.id,
-      actionType: "admin_purged_comment",
-      isAdminAction: true,
-      createdAt: view.admin_purge_comment.when_,
-      reason: view.admin_purge_comment.reason ?? null,
-      ...modFields(view.admin),
-      ...postFields(view.post),
-    });
-  }
-
-  for (const view of response.hidden_communities) {
-    items.push({
-      ...baseItem,
-      id: view.mod_hide_community.id,
-      actionType: "hidden_community",
-      isAdminAction: true,
-      createdAt: view.mod_hide_community.when_,
-      reason: view.mod_hide_community.reason ?? null,
-      ...modFields(view.admin),
-      ...communityFields(view.community),
     });
   }
 
