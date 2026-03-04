@@ -81,7 +81,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           pnpm vite build
-          cap sync android
+          pnpm exec cap sync android
           pnpm cp-package-json
 
       - uses: actions/setup-java@v4

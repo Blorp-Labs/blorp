@@ -26,7 +26,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install libvips (sharp fallback build dep)
-        run: sudo apt-get install -y libvips-dev
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
