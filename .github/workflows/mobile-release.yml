@@ -79,7 +79,10 @@ jobs:
       - name: Build web assets + cap sync
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-        run: pnpm build
+        run: |
+          pnpm vite build
+          cap sync android
+          pnpm cp-package-json
 
       - uses: actions/setup-java@v4
         with:
@@ -185,7 +188,7 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-        run: yarn tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
+        run: pnpm tauri build --config '{"build":{"beforeBuildCommand":""}}' --bundles app --target universal-apple-darwin
 
       - name: Create .pkg
         timeout-minutes: 5
