@@ -30,7 +30,7 @@
     "@capacitor/core": "^7.4.0",
     "@capacitor/filesystem": "^7.0.1",
     "@capacitor/haptics": "^7.0.1",
-    "@capacitor/inappbrowser": "^2.1.0",
+    "@capacitor/inappbrowser": "2.1.0",
     "@capacitor/ios": "^7.4.0",
     "@capacitor/keyboard": "^7.0.1",
     "@capacitor/share": "^7.0.1",
