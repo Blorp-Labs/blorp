@@ -1,6 +1,6 @@
 import { ContentGutters } from "../components/gutters";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
@@ -17,8 +17,11 @@ import {
   useLinkMetadata,
   useListCommunities,
   useSearch,
+  useSoftware,
   useUploadImage,
 } from "../lib/api";
+import { supportsPollCreation } from "../lib/api/adapters/support";
+import { Forms } from "../lib/api/adapters/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -66,8 +69,23 @@ import { Flair } from "../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { useFlairs } from "../stores/flairs";
 import { Page } from "../components/page";
+import { SimpleSelect } from "../components/ui/simple-select";
+import { Trash } from "../components/icons";
+import { Separator } from "../components/ui/separator";
 
 dayjs.extend(localizedFormat);
+
+const POLL_UNIT_OPTIONS: {
+  value: Forms.PollInput["endUnit"];
+  label: string;
+}[] = [
+  { value: "minutes", label: "Minutes" },
+  { value: "hours", label: "Hours" },
+  { value: "days", label: "Days" },
+  { value: "weeks", label: "Weeks" },
+  { value: "months", label: "Months" },
+  { value: "permanent", label: "Permanent" },
+];
 
 const EMPTY_ARR: never[] = [];
 
@@ -287,6 +305,47 @@ export function CreatePost() {
     isEdit && post?.data.creatorApId && myUserId === post.data.creatorApId;
   const postOwner = post?.data.creatorSlug;
 
+  const softwareInfo = useSoftware();
+  const { software } = softwareInfo;
+  const showPollOption =
+    supportsPollCreation(softwareInfo) || draft.type === "poll";
+
+  const DEFAULT_POLL: Forms.PollInput = {
+    endAmount: 7,
+    endUnit: "days",
+    mode: "single",
+    localOnly: false,
+    choices: [
+      { id: 0, text: "", sortOrder: 0 },
+      { id: 0, text: "", sortOrder: 1 },
+    ],
+  };
+
+  const patchPollChoice = (index: number, text: string) => {
+    if (!draft.poll) return;
+    const choices = draft.poll.choices.map((c, i) =>
+      i === index ? { ...c, text } : c,
+    );
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
+  const addPollChoice = () => {
+    if (!draft.poll) return;
+    const choices = [
+      ...draft.poll.choices,
+      { id: 0, text: "", sortOrder: draft.poll.choices.length },
+    ];
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
+  const removePollChoice = (index: number) => {
+    if (!draft.poll) return;
+    const choices = draft.poll.choices
+      .filter((_, i) => i !== index)
+      .map((c, i) => ({ ...c, sortOrder: i }));
+    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+  };
+
   const uploadImage = useUploadImage();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -316,6 +375,8 @@ export function CreatePost() {
     resetCreatePost();
     resetEditPost();
   }, [draftId, resetCreatePost, resetEditPost]);
+
+  const [editingBody, setEditingBody] = useState(false);
 
   const linkMetadata = useLinkMetadata();
 
@@ -359,7 +420,11 @@ export function CreatePost() {
           // TODO: handle incomplete post data
         }
       }}
-      disabled={!draft.communitySlug || (isEdit && !canEdit)}
+      disabled={
+        !draft.communitySlug ||
+        (isEdit && !canEdit) ||
+        (draft.type === "poll" && software === "lemmy")
+      }
       loading={
         isEdit
           ? editPost.isPending || editPost.isSuccess
@@ -409,7 +474,7 @@ export function CreatePost() {
               onClickDraft={() => setShowDrafts(false)}
             />
           ) : (
-            <div className="flex flex-col gap-4 md:gap-5 max-md:pt-3 md:py-6">
+            <div className="flex flex-col gap-5 max-md:pt-3 md:py-6">
               {isEdit && !canEdit && (
                 <span className="bg-amber-500/30 text-amber-500 py-2 px-3 rounded-lg">
                   {postOwner
@@ -441,34 +506,72 @@ export function CreatePost() {
                 value={draft.type}
                 onValueChange={(val) => {
                   if (val) {
-                    patchDraft(draftId, {
-                      type: val as "text" | "media" | "link",
-                    });
+                    const patch: Partial<Draft> = {
+                      type: val as Draft["type"],
+                    };
+                    if (val === "poll" && !draft.poll) {
+                      patch.poll = DEFAULT_POLL;
+                    }
+                    patchDraft(draftId, patch);
                   }
                 }}
               >
                 <ToggleGroupItem value="text">Text</ToggleGroupItem>
                 <ToggleGroupItem value="media">Image</ToggleGroupItem>
                 <ToggleGroupItem value="link">Link</ToggleGroupItem>
+                {showPollOption && (
+                  <ToggleGroupItem value="poll">Poll</ToggleGroupItem>
+                )}
               </ToggleGroup>
 
-              <div className="gap-2 flex items-center">
-                <Checkbox
-                  id={`${id}-nsfw`}
-                  checked={draft.nsfw ?? false}
-                  onCheckedChange={(nsfw) =>
-                    patchDraft(draftId, {
-                      nsfw: nsfw === true,
-                    })
-                  }
-                />
-                <Label htmlFor={`${id}-nsfw`}>NSFW</Label>
+              {draft.type === "poll" && software === "lemmy" && (
+                <p className="text-sm text-destructive">
+                  Lemmy doesn't support polls. Switch to a different post type
+                  or use a PieFed account.
+                </p>
+              )}
+
+              <div className="flex gap-5">
+                <div className="gap-1.5 flex items-center">
+                  <Checkbox
+                    id={`${id}-nsfw`}
+                    checked={draft.nsfw ?? false}
+                    onCheckedChange={(nsfw) =>
+                      patchDraft(draftId, {
+                        nsfw: nsfw === true,
+                      })
+                    }
+                  />
+                  <Label htmlFor={`${id}-nsfw`}>NSFW</Label>
+                </div>
+
+                {draft.type === "poll" && (
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      id={`${id}-local`}
+                      checked={draft.poll?.localOnly ?? false}
+                      onCheckedChange={(v) =>
+                        draft.poll &&
+                        patchDraft(draftId, {
+                          poll: { ...draft.poll, localOnly: !!v },
+                        })
+                      }
+                    />
+                    <Label htmlFor={`${id}-local`}>Local voting only</Label>
+                  </div>
+                )}
               </div>
 
               {flairs && flairs.length > 0 && (
-                <div className="gap-2 flex flex-col">
-                  <Label htmlFor={`${id}-flair`}>Flair</Label>
+                <div className="gap-px flex flex-col">
+                  <Label
+                    htmlFor={`${id}-flair`}
+                    className={cn(!draft.flairs?.length && "sr-only")}
+                  >
+                    Post Flair
+                  </Label>
                   <MultiSelect
+                    id={`${id}-flair`}
                     onChange={(values) => {
                       patchDraft(draftId, {
                         flairs: values,
@@ -484,14 +587,16 @@ export function CreatePost() {
                       })) ?? []
                     }
                     keyExtractor={(val) => val.apId ?? val.title}
-                    placeholder="Flair"
+                    placeholder="Add Post Flair"
                     renderOption={(opt) => <Flair flair={opt.value} />}
+                    buttonVariant="ghost"
+                    buttonClassName="rounded-full -mx-3 px-2"
                   />
                 </div>
               )}
 
               {draft.type === "link" && (
-                <div className="gap-2 flex flex-col">
+                <div className="gap-1 flex flex-col">
                   <Label htmlFor={`${id}-link`}>Link</Label>
                   <Input
                     id={`${id}-link`}
@@ -506,14 +611,31 @@ export function CreatePost() {
                 </div>
               )}
 
+              <div className="flex flex-col">
+                <Label htmlFor={`${id}-title`}>Title</Label>
+                <Input
+                  id={`${id}-title`}
+                  placeholder="Title"
+                  value={draft.title ?? ""}
+                  className="text-2xl! font-bold"
+                  wrapperClassName="border-0 -mx-3 w-auto shadow-none"
+                  onInput={(e) =>
+                    patchDraft(draftId, {
+                      title: e.currentTarget.value ?? "",
+                    })
+                  }
+                />
+              </div>
+
               {(draft.type === "media" || draft.type === "link") && (
                 <div className="gap-2 flex flex-col">
                   <Label htmlFor={`${id}-media`}>Image</Label>
                   <div
                     {...getRootProps()}
                     className={cn(
-                      "border-2 border-dashed flex flex-col items-center justify-center gap-2 p-2 cursor-pointer rounded-md",
-                      draft.type === "media" && "md:min-h-32",
+                      "border-2 border-dashed flex flex-col items-center justify-center gap-2 p-1 px-2 cursor-pointer rounded-md self-start text-sm",
+                      draft.type === "media" &&
+                        "md:min-h-32 self-stretch p-2 text-base",
                     )}
                   >
                     <input id={`${id}-media`} {...getInputProps()} />
@@ -540,19 +662,101 @@ export function CreatePost() {
                 </div>
               )}
 
-              <div className="gap-2 flex flex-col">
-                <Label htmlFor={`${id}-title`}>Title</Label>
-                <Input
-                  id={`${id}-title`}
-                  placeholder="Title"
-                  value={draft.title ?? ""}
-                  onInput={(e) =>
-                    patchDraft(draftId, {
-                      title: e.currentTarget.value ?? "",
-                    })
-                  }
-                />
-              </div>
+              {draft.type === "poll" && (
+                <>
+                  <div className="flex flex-col">
+                    <Label className="mb-2">Poll Options</Label>
+                    {draft.poll?.choices.map((choice, i) => (
+                      <Input
+                        key={i}
+                        placeholder={`Option ${i + 1}`}
+                        value={choice.text}
+                        onChange={(e) => patchPollChoice(i, e.target.value)}
+                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10 pr-0.5 -mb-px bg-background focus-within:z-1"
+                        endAdornment={
+                          (draft.poll?.choices.length ?? 0) > 2 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removePollChoice(i)}
+                            >
+                              <Trash />
+                            </Button>
+                          )
+                        }
+                      />
+                    ))}
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-t-none rounded-b-lg h-10"
+                      onClick={addPollChoice}
+                    >
+                      + Add Option
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-between items-center gap-3">
+                    <div className="flex flex-col gap-2">
+                      <Label>Voting Mode</Label>
+                      <SimpleSelect
+                        options={["single", "multiple"] as const}
+                        value={draft.poll?.mode ?? "single"}
+                        onChange={(mode) =>
+                          draft.poll &&
+                          patchDraft(draftId, {
+                            poll: {
+                              ...draft.poll,
+                              mode: mode,
+                            },
+                          })
+                        }
+                        valueGetter={(opt) => opt}
+                        labelGetter={(opt) => `${_.capitalize(opt)} choice`}
+                      />
+                    </div>
+
+                    <Separator className="flex-1" />
+
+                    <div className="flex flex-col gap-2">
+                      <Label>Poll Duration</Label>
+                      <div className="flex gap-2">
+                        {draft.poll?.endUnit !== "permanent" && (
+                          <Input
+                            type="number"
+                            min="1"
+                            step="any"
+                            value={draft.poll?.endAmount ?? 7}
+                            className="w-20"
+                            onChange={(e) =>
+                              draft.poll &&
+                              patchDraft(draftId, {
+                                poll: {
+                                  ...draft.poll,
+                                  endAmount: parseFloat(e.target.value),
+                                },
+                              })
+                            }
+                          />
+                        )}
+                        <SimpleSelect
+                          options={POLL_UNIT_OPTIONS}
+                          value={POLL_UNIT_OPTIONS.find(
+                            (o) => o.value === (draft.poll?.endUnit ?? "days"),
+                          )}
+                          onChange={(o) =>
+                            draft.poll &&
+                            patchDraft(draftId, {
+                              poll: { ...draft.poll, endUnit: o.value },
+                            })
+                          }
+                          valueGetter={(o) => o.value}
+                          labelGetter={(o) => o.label}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="gap-2 flex flex-col flex-1">
                 <Label htmlFor={`${id}-body`}>Body</Label>
@@ -566,9 +770,15 @@ export function CreatePost() {
                   }
                   className="md:border md:rounded-lg md:shadow-xs max-md:-mx-3.5 max-md:flex-1"
                   placeholder="Write something..."
+                  onFocus={() => setEditingBody(true)}
+                  onBlur={() => setEditingBody(false)}
+                  hideMenu={
+                    !editingBody && draft.type !== "text" && !draft.body?.trim()
+                  }
                 />
-                {getPostButton("self-end max-md:hidden")}
               </div>
+
+              {getPostButton("self-end max-md:hidden")}
             </div>
           )}
 

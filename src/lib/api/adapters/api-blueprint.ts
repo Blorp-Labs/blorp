@@ -621,6 +621,20 @@ export namespace Forms {
     read: boolean;
   };
 
+  export interface PollChoiceInput {
+    id: number; // 0 for new choices; real id when editing existing
+    text: string; // matches postPollSchema choices[].text
+    sortOrder: number;
+  }
+
+  export interface PollInput {
+    endAmount: number;
+    endUnit: "minutes" | "hours" | "days" | "weeks" | "months" | "permanent";
+    mode: "single" | "multiple"; // matches postPollSchema.mode
+    localOnly: boolean; // matches postPollSchema.localOnly
+    choices: PollChoiceInput[];
+  }
+
   export interface EditPost
     extends Pick<
       Schemas.Post,
@@ -628,6 +642,7 @@ export namespace Forms {
     > {
     apId: string;
     flairs?: Pick<Schemas.Flair, "title" | "apId">[];
+    poll?: PollInput;
   }
 
   export interface CreatePost
@@ -642,6 +657,7 @@ export namespace Forms {
       | "nsfw"
     > {
     flairs?: Pick<Schemas.Flair, "title" | "apId">[];
+    poll?: PollInput;
   }
 
   export type CreatePostReport = {
