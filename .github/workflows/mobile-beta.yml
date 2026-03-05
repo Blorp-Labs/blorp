@@ -1,7 +1,6 @@
 name: Mobile Beta
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       platform:
@@ -17,6 +16,7 @@ on:
 jobs:
   ios:
     name: iOS – Beta Build & Upload to TestFlight
+    if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
@@ -74,6 +74,7 @@ jobs:
 
   android:
     name: Android – Beta Build & Upload to Play Store
+    if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
