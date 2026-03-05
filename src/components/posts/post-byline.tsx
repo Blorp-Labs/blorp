@@ -1,5 +1,9 @@
 import _ from "lodash";
-import { useBlockPerson, useBlockInstance } from "@/src/lib/api/index";
+import {
+  useBlockPerson,
+  useBlockInstance,
+  useBlockCommunity,
+} from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -8,6 +12,7 @@ import {
   getAccountActorId,
   useIsPersonBlocked,
   useIsInstanceBlocked,
+  useIsCommunityBlocked,
   useIsAdmin,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
@@ -30,7 +35,10 @@ import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import {
+  useCommunitiesStore,
+  useCommunityFromStore,
+} from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
@@ -84,6 +92,12 @@ export function usePostActions({
   const communityInstanceId = post.communityInstanceId;
   const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
   const blockInstance = useBlockInstance();
+  const blockCommunity = useBlockCommunity({
+    communitySlug: post.communitySlug,
+  });
+  const isCommunityBlocked = useIsCommunityBlocked(post.communitySlug);
+  const community = useCommunityFromStore(post.communitySlug);
+  const communityId = community?.communityView.id;
 
   const encodedApId = encodeApId(post.apId);
   const tagUser = useTagUser();
@@ -165,6 +179,47 @@ export function usePostActions({
                     blockPerson.mutate({
                       personId: post.creatorId,
                       block: !isCreatorBlocked,
+                    });
+                  } catch {}
+                },
+                danger: true,
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(_.isNumber(communityId)
+      ? [
+          {
+            text: "Community",
+            actions: [
+              {
+                text: isCommunityBlocked
+                  ? "Unblock community"
+                  : "Block community",
+                onClick: async () => {
+                  try {
+                    await requireAuth();
+                    const deferred = new Deferred();
+                    alrt({
+                      message: `${isCommunityBlocked ? "Unblock" : "Block"} ${post.communitySlug}`,
+                      buttons: [
+                        {
+                          text: "Cancel",
+                          role: "cancel",
+                          handler: () => deferred.reject(),
+                        },
+                        {
+                          text: "OK",
+                          role: "confirm",
+                          handler: () => deferred.resolve(),
+                        },
+                      ],
+                    });
+                    await deferred.promise;
+                    blockCommunity.mutate({
+                      communityId,
+                      block: !isCommunityBlocked,
                     });
                   } catch {}
                 },
