@@ -14,10 +14,11 @@ tsconfig.tsbuildinfo
 .idea
 
 .env
+.env.keys
 # local env files
 .env.local
 .env.development.local
-.env.test.localp
+.env.test.local
 .env.production.local
 .env.keys
 
