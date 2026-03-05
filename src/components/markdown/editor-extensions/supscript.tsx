@@ -1,38 +1,41 @@
-import { Mark, mergeAttributes } from "@tiptap/core";
-import MarkdownIt from "markdown-it";
-// @ts-expect-error
-import markdownitSup from "markdown-it-sup";
+import Superscript from "@tiptap/extension-superscript";
+import type {
+  JSONContent,
+  MarkdownToken,
+  MarkdownParseHelpers,
+  MarkdownParseResult,
+  MarkdownRendererHelpers,
+  MarkdownTokenizer,
+} from "@tiptap/core";
 
-const Superscript = Mark.create({
-  name: "supscript",
+export default Superscript.extend({
+  markdownTokenizer: {
+    name: "superscript",
+    level: "inline",
+    start: "^",
+    tokenize(src, _tokens, lexer): MarkdownToken | undefined {
+      const match = src.match(/^\^([^\^\n]+)\^/);
+      if (!match) return undefined;
+      return {
+        type: "superscript",
+        raw: match[0],
+        text: match[1],
+        tokens: lexer.inlineTokens(match[1]!),
+      };
+    },
+  } satisfies MarkdownTokenizer,
 
-  parseHTML() {
-    return [{ tag: "sup" }];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ["sup", mergeAttributes(HTMLAttributes), 0];
-  },
-
-  addStorage() {
+  parseMarkdown(
+    token: MarkdownToken,
+    helpers: MarkdownParseHelpers,
+  ): MarkdownParseResult {
     return {
-      markdown: {
-        // parse ^ … ^ into <sup>
-        parse: {
-          setup(markdownit: MarkdownIt) {
-            markdownit.use(markdownitSup);
-          },
-        },
-        // serialize <sup> back to ^ … ^
-        serialize: {
-          open: "^",
-          close: "^",
-          mixable: true,
-          expelEnclosingWhitespace: true,
-        },
-      },
+      mark: "superscript",
+      content: helpers.parseInline(token.tokens || []),
     };
   },
-});
 
-export default Superscript;
+  renderMarkdown(node: JSONContent, helpers: MarkdownRendererHelpers): string {
+    return `^${helpers.renderChildren(node.content || [])}^`;
+  },
+});
