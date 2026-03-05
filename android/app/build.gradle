@@ -7,7 +7,7 @@ android {
         applicationId "xyz.blorpblorp.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 53
+        versionCode (System.getenv("VERSION_CODE")?.toInteger() ?: 53)
         versionName "1.10.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
