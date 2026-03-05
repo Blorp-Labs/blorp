@@ -19,6 +19,7 @@ tsconfig.tsbuildinfo
 .env.development.local
 .env.test.localp
 .env.production.local
+.env.keys
 
 .expo
 
@@ -39,6 +40,10 @@ storybook-static/
 
 # Local Netlify folder
 .netlify
+
+# Fastlane
+fastlane/report.xml
+ios/build/
 
 # Tauri
 *.provisionprofile

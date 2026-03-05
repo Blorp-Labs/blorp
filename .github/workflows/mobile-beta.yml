@@ -1,0 +1,150 @@
+name: Mobile Beta
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to deploy"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - ios
+          - android
+          - both
+
+jobs:
+  ios:
+    name: iOS – Beta Build & Upload to TestFlight
+    if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web assets + cap sync
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: pnpm build
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: pod install --repo-update
+        working-directory: ios/App
+
+      - name: Compute build number
+        run: echo "BUILD_NUMBER=$(date -u +%s)" >> "$GITHUB_ENV"
+
+      - name: Build and upload to TestFlight
+        env:
+          BETA_NOTES: "CI beta · branch: ${{ github.ref_name }} · ${{ github.sha }}"
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: bundle exec fastlane ios beta
+
+      - name: Upload gym log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gym-log
+          path: ~/Library/Logs/gym/
+          retention-days: 5
+
+  android:
+    name: Android – Beta Build & Upload to Play Store
+    if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web assets + cap sync
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: |
+          pnpm vite build
+          pnpm exec cap sync android
+          pnpm cp-package-json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Decode Android keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/blorp-release.keystore"
+
+      - name: Compute build number and version name
+        run: |
+          echo "VERSION_CODE=$(date -u +%s)" >> "$GITHUB_ENV"
+          TAG=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          MAJOR=$(echo "$TAG" | cut -d. -f1)
+          MINOR=$(echo "$TAG" | cut -d. -f2)
+          PATCH=$(echo "$TAG" | cut -d. -f3)
+          echo "VERSION_NAME=${MAJOR}.${MINOR}.$((PATCH + 1))" >> "$GITHUB_ENV"
+
+      - name: Create Android changelog
+        run: |
+          mkdir -p fastlane/metadata/android/en-US/changelogs
+          echo "CI beta · branch: ${{ github.ref_name }} · ${GITHUB_SHA::7}" > "fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+
+      - name: Build AAB and upload to Play Store
+        env:
+          BETA_NOTES: "CI beta · branch: ${{ github.ref_name }} · ${{ github.sha }}"
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/blorp-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: bundle exec fastlane android deploy
+
+      - name: Upload AAB as Actions artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-beta-aab-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+          if-no-files-found: warn
