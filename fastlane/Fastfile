@@ -106,7 +106,7 @@ platform :android do
     upload_to_play_store(
       track: "internal",
       aab: "android/app/build/outputs/bundle/release/app-release.aab",
-      json_key_data: ENV["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"],
+      json_key_data: Base64.decode64(ENV["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"]),
       package_name: "xyz.blorpblorp.app",
       release_status: "draft",
       skip_upload_metadata: true,

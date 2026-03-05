@@ -104,13 +104,13 @@ Used by Fastlane to upload builds to the Play Store.
 
 ### Android GitHub Secrets
 
-| Secret                             | Description                                        | Where to get it                                                                           |
-| ---------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ANDROID_KEYSTORE_BASE64`          | Base64-encoded release keystore file               | `base64 -i blorp-release.keystore`                                                        |
-| `ANDROID_KEYSTORE_PASSWORD`        | Password for the keystore                          | Set during `keytool -genkey`                                                              |
-| `ANDROID_KEY_ALIAS`                | Key alias inside the keystore                      | Set during `keytool -genkey`. Check with `keytool -list -keystore blorp-release.keystore` |
-| `ANDROID_KEY_PASSWORD`             | Password for the key entry                         | Set during `keytool -genkey` (often same as keystore password)                            |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Full contents of the service account JSON key file | Downloaded from Google Cloud Console in step 2                                            |
+| Secret                             | Description                                                  | Where to get it                                                                           |
+| ---------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`          | Base64-encoded release keystore file                         | `base64 -i blorp-release.keystore`                                                        |
+| `ANDROID_KEYSTORE_PASSWORD`        | Password for the keystore                                    | Set during `keytool -genkey`                                                              |
+| `ANDROID_KEY_ALIAS`                | Key alias inside the keystore                                | Set during `keytool -genkey`. Check with `keytool -list -keystore blorp-release.keystore` |
+| `ANDROID_KEY_PASSWORD`             | Password for the key entry                                   | Set during `keytool -genkey` (often same as keystore password)                            |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Base64-encoded contents of the service account JSON key file | `base64 -i service-account.json \| tr -d '\n'`                                            |
 
 ---
 
