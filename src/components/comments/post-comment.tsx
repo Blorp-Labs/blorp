@@ -53,6 +53,10 @@ import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
+import {
+  useCommentCollapseThreshold,
+  useCommentHideThreshold,
+} from "@/src/stores/utils";
 import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
@@ -475,6 +479,23 @@ export function PostComment({
     }
   }
 
+  const collapseThreshold = useCommentCollapseThreshold();
+  const hideThreshold = useCommentHideThreshold();
+  const commentScore = commentView
+    ? commentView.upvotes - commentView.downvotes
+    : 0;
+  const shouldHide =
+    hideThreshold !== null && commentView && commentScore <= hideThreshold;
+  const collapseRemovedComments = useSettingsStore(
+    (s) => s.collapseRemovedComments,
+  );
+  const isRemovedOrDeleted = commentView?.removed || commentView?.deleted;
+  const shouldAutoCollapse =
+    (collapseThreshold !== null &&
+      commentView &&
+      commentScore <= collapseThreshold) ||
+    (collapseRemovedComments && isRemovedOrDeleted);
+
   const hasParent = useMemo(() => {
     if (_.isNil(level) || level > 0 || !comment || !singleCommentThread) {
       return false;
@@ -489,7 +510,7 @@ export function PostComment({
   const open =
     useDetailsStore((s) =>
       commentView?.apId ? s.expandedDetails[commentView.apId] : null,
-    ) ?? true;
+    ) ?? !shouldAutoCollapse;
   const setOpen = useDetailsStore((s) => s.setExpandedDetails);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -524,6 +545,10 @@ export function PostComment({
 
   const bgOnParent = sorted.length === 0 && !replyState;
 
+  if (shouldHide) {
+    return null;
+  }
+
   const bodyRenderer = commentView && (
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
@@ -545,7 +570,7 @@ export function PostComment({
       ref={ref}
       className={cn(
         "flex-1",
-        level === 0 && "max-md:px-3.5 pb-2 bg-background",
+        level === 0 && "max-md:px-3.5 pb-2.5 bg-background",
         level === 0 && !singleCommentThread && "border-t",
         bgOnParent && getCommentBgClass({ commentView, highlightComment }),
       )}
@@ -611,7 +636,7 @@ export function PostComment({
           <Byline
             className={cn(
               "pt-2",
-              level === 0 && "pt-3",
+              level === 0 && "pt-2.5",
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
               !bgOnParent &&

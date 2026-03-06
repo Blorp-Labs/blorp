@@ -1,6 +1,13 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonToggle, IonToolbar } from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonToggle,
+  IonToolbar,
+  useIonAlert,
+} from "@ionic/react";
+import { FiHelpCircle } from "react-icons/fi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -19,6 +26,7 @@ import { Input } from "@/src/components/ui/input";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { isCapacitor, isIos } from "@/src/lib/device";
 import { useSettingsStore } from "@/src/stores/settings";
+import { SimpleSelect } from "@/src/components/ui/simple-select";
 
 function FileUpload({
   placeholder,
@@ -83,9 +91,54 @@ export default function SettingsPage() {
   const [_blurNsfw, setBlurNsfw] = useState<boolean>();
   const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
 
+  const [_showUpvotes, setShowUpvotes] = useState<boolean>();
+  const showUpvotes = _showUpvotes ?? site?.showUpvotes ?? true;
+
+  const [_showDownvotes, setShowDownvotes] = useState<boolean>();
+  const showDownvotes = _showDownvotes ?? site?.showDownvotes ?? true;
+
+  const [_showScores, setShowScores] = useState<boolean>();
+  const showScores = _showScores ?? site?.showScores ?? true;
+
+  const scoresOverriddenByVotes = showUpvotes || showDownvotes;
+
+  const [_replyCollapseThreshold, setReplyCollapseThreshold] =
+    useState<number>();
+  const replyCollapseThreshold =
+    _replyCollapseThreshold ?? site?.replyCollapseThreshold ?? -10;
+
+  const [_replyHideThreshold, setReplyHideThreshold] = useState<number>();
+  const replyHideThreshold =
+    _replyHideThreshold ?? site?.replyHideThreshold ?? -20;
+
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
   );
+  const downvotesSetting = useSettingsStore((s) => s.downvotesSetting);
+  const setDownvotesSetting = useSettingsStore((s) => s.setDownvotesSetting);
+  const scoresSetting = useSettingsStore((s) => s.scoresSetting);
+  const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
+  const collapseThresholdSetting = useSettingsStore(
+    (s) => s.collapseThresholdSetting,
+  );
+  const setCollapseThresholdSetting = useSettingsStore(
+    (s) => s.setCollapseThresholdSetting,
+  );
+  const hideThresholdSetting = useSettingsStore((s) => s.hideThresholdSetting);
+  const setHideThresholdSetting = useSettingsStore(
+    (s) => s.setHideThresholdSetting,
+  );
+
+  const isPieFed = site?.software === "piefed";
+
+  const [presentAlert] = useIonAlert();
+  const showOverrideInfo = () =>
+    presentAlert({
+      header: "Blorp is overriding this setting",
+      message:
+        'Your Blorp app settings are overriding this account preference. Tap "Use account setting" to let your Lemmy account preference take effect.',
+      buttons: [{ text: "OK", role: "cancel" }],
+    });
   const canShowNsfwSetting =
     !(isCapacitor() && isIos()) || nsfwPreviouslyEnabled;
 
@@ -97,6 +150,7 @@ export default function SettingsPage() {
     ? parseAccountInfo(account)
     : { person: undefined };
   const slug = person?.slug;
+  const isLemmy = site?.software === "lemmy";
 
   const handleSubmit = () => {
     if (account) {
@@ -108,6 +162,11 @@ export default function SettingsPage() {
             email,
             showNsfw,
             blurNsfw,
+            showUpvotes,
+            showDownvotes,
+            showScores,
+            replyCollapseThreshold,
+            replyHideThreshold,
           },
         })
         .then(() => history.goBack());
@@ -226,6 +285,164 @@ export default function SettingsPage() {
                       >
                         Blur NSFW images
                       </IonToggle>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isLemmy && (
+                <>
+                  <IonToggle
+                    className="flex-1 font-light"
+                    checked={showUpvotes}
+                    onIonChange={(e) => setShowUpvotes(e.detail.checked)}
+                  >
+                    Show upvotes
+                  </IonToggle>
+                  {downvotesSetting === "account" ? (
+                    <IonToggle
+                      className="flex-1 font-light"
+                      checked={showDownvotes}
+                      onIonChange={(e) => setShowDownvotes(e.detail.checked)}
+                    >
+                      Show downvotes
+                    </IonToggle>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Show downvotes</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setDownvotesSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {scoresSetting === "account" ? (
+                    <div className="flex flex-col gap-1">
+                      <IonToggle
+                        className="flex-1 font-light"
+                        checked={showScores}
+                        disabled={scoresOverriddenByVotes}
+                        onIonChange={(e) => setShowScores(e.detail.checked)}
+                      >
+                        Show scores
+                      </IonToggle>
+                      {scoresOverriddenByVotes && (
+                        <p className="text-sm text-muted-foreground">
+                          No effect while show upvotes or show downvotes is
+                          enabled.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Show scores</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setScoresSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isPieFed && (
+                <>
+                  {collapseThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Collapse comments</label>
+                      <SimpleSelect
+                        options={[-5, -10, -15, -20]}
+                        value={replyCollapseThreshold}
+                        onChange={setReplyCollapseThreshold}
+                        valueGetter={(o) => o}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Collapse comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setCollapseThresholdSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {hideThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Hide comments</label>
+                      <SimpleSelect
+                        options={[-5, -10, -15, -20]}
+                        value={replyHideThreshold}
+                        onChange={setReplyHideThreshold}
+                        valueGetter={(o) => o}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Hide comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setHideThresholdSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>

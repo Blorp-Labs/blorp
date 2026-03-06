@@ -10,8 +10,12 @@ export function Section({
 }) {
   return (
     <section>
-      <h2 className="text-xs font-medium text-muted-foreground">{title}</h2>
-      <div className="divide-y-[.5px] flex flex-col">{children}</div>
+      <h2 className="text-xs font-medium text-muted-foreground mb-1.5">
+        {title}
+      </h2>
+      <div className="border px-3 rounded-md">
+        <div className="divide-y-[.5px] flex flex-col">{children}</div>
+      </div>
     </section>
   );
 }
@@ -48,7 +52,8 @@ export function SectionItem({
       to={to as any}
       {...rest}
       className={cn(
-        "py-2 text-start",
+        "py-2 text-start first:rounded-t-md last:rounded-b-md",
+        (to || rest.href || rest.onClick) && "hover:bg-secondary -mx-3 px-3",
         !unstyled && "flex items-center justify-between",
       )}
     >

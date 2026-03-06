@@ -672,7 +672,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
   client: lemmyV3.LemmyHttp;
   instance: string;
-  limit = 50;
+  limit = 25;
 
   private resolveObjectId = _.memoize(
     async (apId: string) =>
@@ -793,8 +793,13 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           lemmySite.my_user?.local_user_view.local_user.show_nsfw ?? false,
         blurNsfw:
           lemmySite.my_user?.local_user_view.local_user.blur_nsfw ?? true,
-        hideDownvotes:
-          lemmySite.site_view.local_site.enable_downvotes === false,
+        showScores: lemmySite.my_user?.local_user_view.local_user.show_scores,
+        showUpvotes:
+          lemmySite.my_user?.local_user_view.local_user_vote_display_mode
+            ?.upvotes,
+        showDownvotes:
+          lemmySite.my_user?.local_user_view.local_user_vote_display_mode
+            ?.downvotes,
         enablePostDownvotes: enableDownvotes,
         enableCommentDownvotes: enableDownvotes,
         software: this.software,
@@ -1613,6 +1618,9 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         email: form.email,
         show_nsfw: form.showNsfw,
         blur_nsfw: form.blurNsfw,
+        show_scores: form.showScores,
+        show_upvotes: form.showUpvotes,
+        show_downvotes: form.showDownvotes,
       });
     });
   }

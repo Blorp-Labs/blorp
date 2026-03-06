@@ -9,6 +9,8 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
+export type VoteSetting = "account" | "hide" | "show";
+
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
   value: PostCardStyle;
@@ -25,6 +27,15 @@ export const POST_CARD_STYLE_OPTIONS: {
     value: "extra-small",
     label: "Extra Compact",
   },
+];
+
+export type ThresholdSetting = "account" | -5 | -10 | -15 | -20;
+export const THRESHOLD_OPTIONS: ThresholdSetting[] = [
+  "account",
+  -5,
+  -10,
+  -15,
+  -20,
 ];
 
 export type ShareLinkType = "blorp" | "instance" | "threadiverse.link";
@@ -69,6 +80,16 @@ type SettingsStore = {
   // an account with showNsfw=true, and is never cleared programmatically.
   nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
+  downvotesSetting: VoteSetting;
+  setDownvotesSetting: (newVal: VoteSetting) => void;
+  scoresSetting: VoteSetting;
+  setScoresSetting: (newVal: VoteSetting) => void;
+  collapseThresholdSetting: ThresholdSetting;
+  setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
+  hideThresholdSetting: ThresholdSetting;
+  setHideThresholdSetting: (newVal: ThresholdSetting) => void;
+  collapseRemovedComments: boolean;
+  setCollapseRemovedComments: (newVal: boolean) => void;
   reset: () => void;
 };
 
@@ -85,6 +106,11 @@ const INIT_STATE = {
   paginationMode: "infinite",
   darkMode: "system",
   nsfwPreviouslyEnabled: false,
+  downvotesSetting: "account",
+  scoresSetting: "account",
+  collapseThresholdSetting: -10,
+  hideThresholdSetting: -20,
+  collapseRemovedComments: true,
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -117,6 +143,14 @@ export const useSettingsStore = create<SettingsStore>()(
       setDarkMode: (darkMode) => set({ darkMode }),
       setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
         set({ nsfwPreviouslyEnabled }),
+      setDownvotesSetting: (downvotesSetting) => set({ downvotesSetting }),
+      setScoresSetting: (scoresSetting) => set({ scoresSetting }),
+      setCollapseThresholdSetting: (collapseThresholdSetting) =>
+        set({ collapseThresholdSetting }),
+      setHideThresholdSetting: (hideThresholdSetting) =>
+        set({ hideThresholdSetting }),
+      setCollapseRemovedComments: (collapseRemovedComments) =>
+        set({ collapseRemovedComments }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
