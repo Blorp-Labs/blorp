@@ -1584,6 +1584,11 @@ export class PieFedApi implements ApiBlueprint<null> {
       options,
     );
 
+    this.post("/post/mark_as_read", {
+      post_ids: [post_id],
+      read: true,
+    });
+
     try {
       const { post_view, community_view, cross_posts } = z
         .object({
