@@ -66,7 +66,6 @@ import {
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { usePersonActions } from "../person/person-action-menu";
-import { bookmark } from "ionicons/icons";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;

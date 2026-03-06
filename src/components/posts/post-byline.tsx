@@ -3,7 +3,6 @@ import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
-import { openUrl } from "@/src/lib/linking";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
