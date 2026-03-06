@@ -50,11 +50,7 @@ import {
   CommentVoting,
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
-import {
-  ActionMenu,
-  EllipsisActionMenu,
-} from "@/src/components/adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
 
 const EMPTY_ARR: never[] = [];
 

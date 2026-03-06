@@ -20,9 +20,7 @@ import {
   useIsCommunityBlocked,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { IoEllipsisHorizontal } from "react-icons/io5";
-import { ActionMenu, SubAction } from "../adaptable/action-menu";
-import { openUrl } from "@/src/lib/linking";
+import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
 import { useCommunityCreatePost } from "./community-create-post";
 import {
   Avatar,
@@ -149,16 +147,10 @@ export function SmallScreenSidebar({
             </Link>
           )}
           <div className="flex-1" />
-          <ActionMenu
+          <EllipsisActionMenu
             header="Community"
             align="end"
             actions={actions}
-            trigger={
-              <IoEllipsisHorizontal
-                className="text-muted-foreground"
-                aria-label="Community actions"
-              />
-            }
           />
 
           <CommunityJoinButton communityName={communityName} />
@@ -258,7 +250,6 @@ export function useCommunityActions({
   );
 
   return [
-    ...(!isBlocked ? shareActions : []),
     ...(isLoggedIn && !isBlocked
       ? [
           {
@@ -267,20 +258,7 @@ export function useCommunityActions({
           },
         ]
       : []),
-    ...(actorId && !isBlocked
-      ? [
-          {
-            text: "View source",
-            onClick: async () => {
-              try {
-                openUrl(actorId);
-              } catch {
-                // TODO: handle error
-              }
-            },
-          },
-        ]
-      : []),
+    ...(!isBlocked ? shareActions : []),
     ...(isLoggedIn && communityView
       ? [
           {
@@ -380,13 +358,10 @@ export function CommunitySidebar({
                 </AvatarFallback>
               </Avatar>
 
-              <ActionMenu
+              <EllipsisActionMenu
                 header="Community"
                 align="end"
                 actions={actions}
-                trigger={
-                  <IoEllipsisHorizontal className="text-muted-foreground mt-0.5" />
-                }
               />
             </div>
 

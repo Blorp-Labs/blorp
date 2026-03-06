@@ -1,14 +1,8 @@
 import _ from "lodash";
-import { useBlockPerson } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
-import {
-  useAuth,
-  getAccountActorId,
-  useIsPersonBlocked,
-  useIsAdmin,
-} from "@/src/stores/auth";
+import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
@@ -19,8 +13,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
-import { useIonAlert, useIonRouter } from "@ionic/react";
-import { Deferred } from "@/src/lib/deferred";
+import { useIonRouter } from "@ionic/react";
 import { encodeApId } from "@/src/lib/api/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
@@ -35,7 +28,7 @@ import {
 } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useCommunityActions } from "@/src/components/communities/community-sidebar";
-import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
+import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
@@ -51,24 +44,20 @@ import {
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
-import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
+import { useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
+import { useShareActions } from "@/src/lib/share";
 
 export function usePostActions({
   post,
   canMod,
-  tag,
 }: {
   post: Schemas.Post;
   canMod?: boolean;
-  tag?: string;
 }): ActionMenuProps["actions"] {
-  const [alrt] = useIonAlert();
-
   const showReportModal = useShowPostReportModal();
   const requireAuth = useRequireAuth();
-  const blockPerson = useBlockPerson();
   const deletePost = useDeletePost();
   const featurePost = useFeaturePost();
   const lockPost = useLockPost();
@@ -93,7 +82,25 @@ export function usePostActions({
   const author = useProfileFromStore(post.creatorApId);
   const authorActions = usePersonActions({
     person: author,
+    personLabel: "author",
   });
+
+  const linkCtx = useLinkContext();
+  const shareActions = useShareActions(
+    "post",
+    post
+      ? {
+          type: "post",
+          id: post.id,
+          apId: post.apId,
+          communitySlug: post.communitySlug,
+          route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
+            communityName: post.communitySlug,
+            post: encodeApId(post.apId),
+          }),
+        }
+      : null,
+  );
 
   const encodedApId = encodeApId(post.apId);
 
@@ -138,22 +145,6 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(!isMyPost
-      ? [
-          {
-            text: "Author",
-            actions: authorActions,
-          },
-        ]
-      : []),
-    ...(communityActions.length > 0
-      ? [
-          {
-            text: "Community",
-            actions: communityActions,
-          },
-        ]
-      : []),
     {
       text: saved ? "Unsave post" : "Save post",
       onClick: () =>
@@ -165,6 +156,7 @@ export function usePostActions({
           });
         }),
     },
+    ...shareActions,
     ...(software === "piefed"
       ? [
           {
@@ -203,16 +195,6 @@ export function usePostActions({
           },
         ]
       : []),
-    {
-      text: "View post source",
-      onClick: async () => {
-        try {
-          openUrl(post.apId);
-        } catch {
-          // TODO: handle error
-        }
-      },
-    },
     ...(isMyPost
       ? [
           {
@@ -248,6 +230,23 @@ export function usePostActions({
           },
         ]
       : []),
+    "DIVIDER",
+    ...(!isMyPost
+      ? [
+          {
+            text: "Author",
+            actions: authorActions,
+          },
+        ]
+      : []),
+    ...(communityActions.length > 0
+      ? [
+          {
+            text: "Community",
+            actions: communityActions,
+          },
+        ]
+      : []),
   ];
 }
 
@@ -258,8 +257,7 @@ export function PostActionButtion({
   post: Schemas.Post;
   canMod?: boolean;
 }) {
-  const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
-  const actions = usePostActions({ post, canMod, tag });
+  const actions = usePostActions({ post, canMod });
   return (
     <EllipsisActionMenu
       header="Post"

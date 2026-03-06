@@ -32,19 +32,14 @@ import { cn } from "@/src/lib/utils";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { CodeBlockEditor, lowlight } from "./code-block";
 import { useSettingsStore } from "@/src/stores/settings";
-import {
-  IoLogoMarkdown,
-  IoDocumentText,
-  IoLink,
-  IoEllipsisHorizontal,
-} from "react-icons/io5";
+import { IoLogoMarkdown, IoDocumentText, IoLink } from "react-icons/io5";
 import { useUploadImage } from "@/src/lib/api";
 import { LuImageUp } from "react-icons/lu";
 import _ from "lodash";
 import { useIonAlert } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import z from "zod";
-import { ActionMenu } from "../adaptable/action-menu";
+import { EllipsisActionMenu } from "../adaptable/action-menu";
 import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
@@ -294,7 +289,7 @@ const MenuBar = ({
       {/*   Hard break */}
       {/* </button> */}
 
-      <ActionMenu
+      <EllipsisActionMenu
         actions={[
           {
             text: "Horizontal Line",
@@ -333,12 +328,6 @@ const MenuBar = ({
             onClick: () => editor.chain().focus().toggleMark("supscript").run(),
           },
         ]}
-        trigger={
-          <IoEllipsisHorizontal
-            className="text-muted-foreground"
-            aria-label="More text formatting options"
-          />
-        }
       />
     </div>
   );

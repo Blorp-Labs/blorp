@@ -7,8 +7,7 @@ import { LuCakeSlice } from "react-icons/lu";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
-import { ActionMenu } from "../adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { EllipsisActionMenu } from "../adaptable/action-menu";
 import { Sidebar, SidebarContent } from "../sidebar";
 import { Separator } from "../ui/separator";
 import { Collapsible } from "../ui/collapsible";
@@ -73,17 +72,7 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
 
         <div className="flex-1" />
 
-        <ActionMenu
-          header="User"
-          align="end"
-          actions={actions}
-          trigger={
-            <IoEllipsisHorizontal
-              className="text-muted-foreground mt-0.5"
-              aria-label="Person action menu"
-            />
-          }
-        />
+        <EllipsisActionMenu header="User" align="end" actions={actions} />
       </div>
 
       {expanded && person?.bio && !isBlocked && (
@@ -134,17 +123,7 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
               </AvatarFallback>
             </Avatar>
 
-            <ActionMenu
-              header="User"
-              align="end"
-              actions={actions}
-              trigger={
-                <IoEllipsisHorizontal
-                  className="text-muted-foreground mt-0.5"
-                  aria-label="Person action menu"
-                />
-              }
-            />
+            <EllipsisActionMenu header="User" align="end" actions={actions} />
           </div>
 
           <span className="flex items-center text-ellipsis overflow-hidden">
