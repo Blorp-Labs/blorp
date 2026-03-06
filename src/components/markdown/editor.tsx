@@ -290,6 +290,7 @@ const MenuBar = ({
       {/* </button> */}
 
       <EllipsisActionMenu
+        aria-label="More formatting options"
         actions={[
           {
             text: "Horizontal Line",

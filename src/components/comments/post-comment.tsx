@@ -667,7 +667,10 @@ export function PostComment({
                   )}
                 />
               )}
-              <EllipsisActionMenu actions={actions} />
+              <EllipsisActionMenu
+                actions={actions}
+                aria-label="Comment actions"
+              />
               {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
                   onClick={() =>

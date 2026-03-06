@@ -105,7 +105,7 @@ const Comment = memo(function Comment({ path }: { path: string }) {
         <CommentButtonBar className={cn("pb-1", ContentGutters.mobilePadding)}>
           <RelativeTime time={commentView.createdAt} />
           <div className="flex-1" />
-          <EllipsisActionMenu actions={actions} />
+          <EllipsisActionMenu actions={actions} aria-label="Comment actions" />
           <CommentVoting commentView={commentView} fixRightAlignment />
         </CommentButtonBar>
         <Separator />

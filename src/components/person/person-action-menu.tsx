@@ -121,6 +121,11 @@ export function usePersonActions({
 export function PersonActionMenu({ person }: { person?: Schemas.Person }) {
   const actions = usePersonActions({ person });
   return (
-    <EllipsisActionMenu header="User actions" align="end" actions={actions} />
+    <EllipsisActionMenu
+      header="User actions"
+      align="end"
+      actions={actions}
+      aria-label="User actions"
+    />
   );
 }

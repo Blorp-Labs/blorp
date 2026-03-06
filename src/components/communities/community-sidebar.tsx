@@ -151,6 +151,7 @@ export function SmallScreenSidebar({
             header="Community"
             align="end"
             actions={actions}
+            aria-label="Community actions"
           />
 
           <CommunityJoinButton communityName={communityName} />

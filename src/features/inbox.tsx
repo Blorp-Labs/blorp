@@ -343,6 +343,7 @@ function Mention({
                   },
                   ...actions,
                 ]}
+                aria-label="Mention actions"
               />
               {commentView && (
                 <CommentVoting commentView={commentView} fixRightAlignment />
@@ -447,6 +448,7 @@ function Reply({
                   },
                   ...actions,
                 ]}
+                aria-label="Reply actions"
               />
               {commentView && (
                 <CommentVoting commentView={commentView} fixRightAlignment />

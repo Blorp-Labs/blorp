@@ -7,7 +7,6 @@ import { LuCakeSlice } from "react-icons/lu";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
-import { EllipsisActionMenu } from "../adaptable/action-menu";
 import { Sidebar, SidebarContent } from "../sidebar";
 import { Separator } from "../ui/separator";
 import { Collapsible } from "../ui/collapsible";
@@ -21,7 +20,7 @@ import { AggregateBadges } from "../aggregates";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
-import { usePersonActions } from "./person-action-menu";
+import { PersonActionMenu } from "./person-action-menu";
 import { cn } from "@/src/lib/utils";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -33,7 +32,6 @@ dayjs.extend(localizedFormat);
 
 export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
   const [expanded, setExpanded] = useState(false);
-  const actions = usePersonActions({ person });
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 
@@ -72,7 +70,7 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
 
         <div className="flex-1" />
 
-        <EllipsisActionMenu header="User" align="end" actions={actions} />
+        <PersonActionMenu person={person} />
       </div>
 
       {expanded && person?.bio && !isBlocked && (
@@ -105,7 +103,6 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
 
   const [name, host] = person ? person.slug.split("@") : [];
 
-  const actions = usePersonActions({ person });
   const isBlocked = useIsPersonBlocked(person?.apId);
 
   return (
@@ -123,7 +120,7 @@ export function PersonSidebar({ person }: { person?: Schemas.Person }) {
               </AvatarFallback>
             </Avatar>
 
-            <EllipsisActionMenu header="User" align="end" actions={actions} />
+            <PersonActionMenu person={person} />
           </div>
 
           <span className="flex items-center text-ellipsis overflow-hidden">

@@ -265,6 +265,7 @@ export function PostActionButtion({
       actions={actions}
       fixRightAlignment
       buttonClassName={ABOVE_LINK_OVERLAY}
+      aria-label="Post actions"
     />
   );
 }

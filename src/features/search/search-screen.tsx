@@ -146,7 +146,10 @@ function Comment({ commentPath }: { commentPath: string }) {
             <CommentButtonBar>
               <RelativeTime time={comment.createdAt} />
               <div className="flex-1" />
-              <EllipsisActionMenu actions={actions} />
+              <EllipsisActionMenu
+                actions={actions}
+                aria-label="Comment actions"
+              />
               <CommentVoting commentView={comment} fixRightAlignment />
             </CommentButtonBar>
           </div>

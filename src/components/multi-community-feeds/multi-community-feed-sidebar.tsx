@@ -100,6 +100,7 @@ export function SmallScreenSidebar({
             header="Community"
             align="end"
             actions={actions}
+            aria-label="Community actions"
           />
         </div>
       </div>
@@ -199,6 +200,7 @@ export function FeedSidebar({
                 header="Multi Community Feed"
                 align="end"
                 actions={actions}
+                aria-label="Multi-community feed actions"
               />
             </div>
 
