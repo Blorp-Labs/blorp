@@ -1,3 +1,4 @@
+pnpm dotenvx ext precommit
 pnpm tsc --noEmit
 pnpm lint-staged
 pnpm vitest
