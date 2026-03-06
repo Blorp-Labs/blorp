@@ -1,9 +1,5 @@
 import _ from "lodash";
-import {
-  useBlockPerson,
-  useBlockInstance,
-  useBlockCommunity,
-} from "@/src/lib/api/index";
+import { useBlockPerson } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
@@ -11,8 +7,6 @@ import {
   useAuth,
   getAccountActorId,
   useIsPersonBlocked,
-  useIsInstanceBlocked,
-  useIsCommunityBlocked,
   useIsAdmin,
 } from "@/src/stores/auth";
 import { openUrl } from "@/src/lib/linking";
@@ -40,6 +34,7 @@ import {
   useCommunityFromStore,
 } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
+import { useCommunityActions } from "@/src/components/communities/community-sidebar";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
@@ -89,15 +84,12 @@ export function usePostActions({
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
   const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
-  const communityInstanceId = post.communityInstanceId;
-  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
-  const blockInstance = useBlockInstance();
-  const blockCommunity = useBlockCommunity({
-    communitySlug: post.communitySlug,
-  });
-  const isCommunityBlocked = useIsCommunityBlocked(post.communitySlug);
   const community = useCommunityFromStore(post.communitySlug);
-  const communityId = community?.communityView.id;
+  const communityActions = useCommunityActions({
+    actorId: community?.communityView.apId ?? null,
+    communityName: post.communitySlug,
+    communityView: community?.communityView,
+  });
 
   const encodedApId = encodeApId(post.apId);
   const tagUser = useTagUser();
@@ -188,44 +180,11 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(_.isNumber(communityId)
+    ...(communityActions.length > 0
       ? [
           {
             text: "Community",
-            actions: [
-              {
-                text: isCommunityBlocked
-                  ? "Unblock community"
-                  : "Block community",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const deferred = new Deferred();
-                    alrt({
-                      message: `${isCommunityBlocked ? "Unblock" : "Block"} ${post.communitySlug}`,
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    blockCommunity.mutate({
-                      communityId,
-                      block: !isCommunityBlocked,
-                    });
-                  } catch {}
-                },
-                danger: true,
-              },
-            ],
+            actions: communityActions,
           },
         ]
       : []),
@@ -319,27 +278,6 @@ export function usePostActions({
               requireAuth().then(() => {
                 showReportModal(post.apId);
               }),
-            danger: true,
-          },
-        ]
-      : []),
-    ...(_.isNumber(communityInstanceId) && !isMyPost
-      ? [
-          {
-            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
-            onClick: async () => {
-              try {
-                await requireAuth();
-                const domain = new URL(post.communityApId).hostname;
-                await getConfirmation({
-                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                });
-                blockInstance.mutate({
-                  instanceId: communityInstanceId,
-                  block: !isInstanceBlocked,
-                });
-              } catch {}
-            },
             danger: true,
           },
         ]

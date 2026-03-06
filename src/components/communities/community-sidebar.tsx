@@ -21,7 +21,7 @@ import {
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
 import { IoEllipsisHorizontal } from "react-icons/io5";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
+import { ActionMenu, SubAction } from "../adaptable/action-menu";
 import { openUrl } from "@/src/lib/linking";
 import { useCommunityCreatePost } from "./community-create-post";
 import {
@@ -217,7 +217,7 @@ export function SmallScreenSidebar({
   );
 }
 
-function useCommunityActions({
+export function useCommunityActions({
   actorId,
   communityName,
   communityView,
@@ -225,7 +225,7 @@ function useCommunityActions({
   actorId?: string | null;
   communityName: string;
   communityView?: Schemas.Community;
-}): ActionMenuProps["actions"] {
+}): SubAction[] {
   const getConfirmation = useConfirmationAlert();
   const blockCommunity = useBlockCommunity({ communitySlug: communityName });
   const blockInstance = useBlockInstance();

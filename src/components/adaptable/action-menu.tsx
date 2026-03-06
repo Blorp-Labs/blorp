@@ -1,5 +1,5 @@
 import { IonActionSheet } from "@ionic/react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -21,6 +21,21 @@ import { Button } from "../ui/button";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useSettingsStore } from "@/src/stores/settings";
 
+export type SubAction<V = string> =
+  | { text: string; onClick: () => any; value?: V; danger?: boolean }
+  | {
+      text: string;
+      onClick?: undefined;
+      value?: string;
+      actions: {
+        text: string;
+        onClick: () => any;
+        value?: V;
+        danger?: boolean;
+      }[];
+      danger?: undefined;
+    };
+
 export interface ActionMenuProps<V = string>
   extends Omit<
     React.ComponentProps<typeof IonActionSheet>,
@@ -39,12 +54,7 @@ export interface ActionMenuProps<V = string>
         text: string;
         value?: string;
         onClick?: undefined;
-        actions: {
-          text: string;
-          onClick: () => any;
-          value?: V;
-          danger?: boolean;
-        }[];
+        actions: SubAction<V>[];
         danger?: undefined;
       }
   )[];
@@ -68,15 +78,14 @@ export function ActionMenu<V extends string>({
 }: ActionMenuProps<V>) {
   const media = useMedia();
   const id = useId();
-  const [subActionsTitle, setSubActionsTitle] = useState<string>();
-  const [subActions, setSubActions] = useState<
-    {
-      text: string;
-      onClick: () => any;
-      value?: string;
-      danger?: boolean;
-    }[]
-  >();
+  const [subStack, setSubStack] = useState<
+    { title: string; actions: SubAction[] }[]
+  >([]);
+  const currentSub = subStack[subStack.length - 1];
+  const pendingAction = useRef<(() => any) | null>(null);
+  const pendingPush = useRef<{ title: string; actions: SubAction[] } | null>(
+    null,
+  );
 
   const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
     useMemo(
@@ -109,11 +118,12 @@ export function ActionMenu<V extends string>({
     | React.ComponentProps<typeof IonActionSheet>["buttons"]
     | null = useMemo(
     () =>
-      subActions
+      currentSub
         ? [
-            ...subActions.map((a, index) => ({
+            ...currentSub.actions.map((a, index) => ({
               text: a.text,
               data: index,
+              cssClass: "actions" in a ? "detail" : undefined,
               role: a.danger
                 ? "destructive"
                 : _.isString(a.value) && a.value === selectedValue
@@ -130,7 +140,7 @@ export function ActionMenu<V extends string>({
               : []),
           ]
         : null,
-    [showCancel, subActions, selectedValue],
+    [currentSub, showCancel, selectedValue],
   );
 
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
@@ -156,20 +166,46 @@ export function ActionMenu<V extends string>({
                 <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    {a.actions.map((sa) => (
-                      <DropdownMenuItem
-                        key={sa.text + index}
-                        onClick={sa.onClick}
-                        className={cn(
-                          _.isString(a.value) &&
-                            sa.value === selectedValue &&
-                            "font-bold",
-                          sa.danger && "text-destructive!",
-                        )}
-                      >
-                        {sa.text}
-                      </DropdownMenuItem>
-                    ))}
+                    {a.actions.map((sa, saIndex) =>
+                      "actions" in sa ? (
+                        <DropdownMenuSub key={sa.text + saIndex}>
+                          <DropdownMenuSubTrigger>
+                            {sa.text}
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              {sa.actions.map((leaf, leafIndex) => (
+                                <DropdownMenuItem
+                                  key={leaf.text + leafIndex}
+                                  onClick={leaf.onClick}
+                                  className={cn(
+                                    _.isString(sa.value) &&
+                                      leaf.value === selectedValue &&
+                                      "font-bold",
+                                    leaf.danger && "text-destructive!",
+                                  )}
+                                >
+                                  {leaf.text}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+                      ) : (
+                        <DropdownMenuItem
+                          key={sa.text + saIndex}
+                          onClick={sa.onClick}
+                          className={cn(
+                            _.isString(a.value) &&
+                              sa.value === selectedValue &&
+                              "font-bold",
+                            sa.danger && "text-destructive!",
+                          )}
+                        >
+                          {sa.text}
+                        </DropdownMenuItem>
+                      ),
+                    )}
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
@@ -208,24 +244,49 @@ export function ActionMenu<V extends string>({
       >
         {trigger}
       </Button>
-      {subActionButtons && (
+      {currentSub && (
         <IonActionSheet
           {...props}
-          subHeader={subActionsTitle}
+          key={subStack.length}
+          header={
+            subStack.length > 1
+              ? subStack[subStack.length - 2]?.title
+              : props.header
+          }
+          subHeader={currentSub.title}
           isOpen
-          buttons={subActionButtons}
+          buttons={subActionButtons!}
           onWillDismiss={({ detail }) => {
             const index = _.isNumber(detail.data) ? detail.data : null;
-            if (index !== null && subActions) {
-              const action = subActions[index];
-              if (action && action.onClick) {
-                setSubActions(undefined);
-                setSubActionsTitle(undefined);
-                action.onClick();
+            if (index !== null && currentSub) {
+              const action = currentSub.actions[index];
+              if (action && "onClick" in action && action.onClick) {
+                pendingAction.current = action.onClick;
+              } else if (action && "actions" in action) {
+                if (!disableHaptics) {
+                  Haptics.impact({ style: ImpactStyle.Medium });
+                }
+                pendingPush.current = {
+                  title: action.text,
+                  actions: action.actions,
+                };
               }
             }
           }}
-          onDidDismiss={() => setSubActions(undefined)}
+          onDidDismiss={() => {
+            if (pendingAction.current) {
+              const fn = pendingAction.current;
+              pendingAction.current = null;
+              setSubStack([]);
+              fn();
+            } else if (pendingPush.current) {
+              const push = pendingPush.current;
+              pendingPush.current = null;
+              setSubStack((prev) => [...prev, push]);
+            } else {
+              setSubStack([]);
+            }
+          }}
           onWillPresent={(e) => {
             props.onWillPresent?.(e);
             onOpen?.();
@@ -242,12 +303,11 @@ export function ActionMenu<V extends string>({
             const action = actions[index];
             if (_.isObject(action) && action.onClick) {
               action.onClick();
-            } else if (_.isObject(action)) {
+            } else if (_.isObject(action) && action.actions) {
               if (!disableHaptics) {
                 Haptics.impact({ style: ImpactStyle.Medium });
               }
-              setSubActions(action.actions);
-              setSubActionsTitle(action.text);
+              setSubStack([{ title: action.text, actions: action.actions }]);
             }
           }
         }}
