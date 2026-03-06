@@ -89,14 +89,11 @@ export function ActionMenu<V extends string>({
   const currentSub = subStack[subStack.length - 1];
 
   // IonActionSheet fires onWillDismiss (while still animating out) before
-  // onDidDismiss (after fully closed). We must not mutate subStack during
-  // onWillDismiss or the sheet will disappear mid-animation. Instead we store
-  // the intended next step in a ref and apply it in onDidDismiss.
-  //
-  // pendingAction: a leaf action to call once the sheet finishes closing.
-  // pendingPush:   a sub-level to navigate into once the sheet finishes closing
-  //                (causes the sheet to reopen with the new level's content).
-  const pendingAction = useRef<(() => any) | null>(null);
+  // onDidDismiss (after fully closed). Pushing to subStack in onWillDismiss
+  // would change currentSub mid-animation, causing the sheet content to
+  // visually glitch as its buttons change while it's still closing. We defer
+  // the push to onDidDismiss so the old sheet fully closes first, then the
+  // new level mounts and plays its own open animation cleanly.
   const pendingPush = useRef<{ title: string; actions: SubAction[] } | null>(
     null,
   );
@@ -283,10 +280,14 @@ export function ActionMenu<V extends string>({
             if (index !== null && currentSub) {
               const action = currentSub.actions[index];
               if (action && "onClick" in action && action.onClick) {
-                // Leaf action — store it for onDidDismiss to call.
-                pendingAction.current = action.onClick;
+                // Leaf action — call immediately and close the sub-sheet flow.
+                setSubStack([]);
+                action.onClick();
               } else if (action && "actions" in action) {
-                // Sub-section — store the next level for onDidDismiss to push.
+                // Sub-section — store the next level so onDidDismiss can push
+                // it after the current sheet finishes closing. We can't push
+                // here because mutating subStack mid-animation would change the
+                // sheet's buttons while they're still animating out.
                 if (!disableHaptics) {
                   Haptics.impact({ style: ImpactStyle.Medium });
                 }
@@ -298,13 +299,7 @@ export function ActionMenu<V extends string>({
             }
           }}
           onDidDismiss={() => {
-            if (pendingAction.current) {
-              // A leaf was tapped: close all sub-sheets, then fire the action.
-              const fn = pendingAction.current;
-              pendingAction.current = null;
-              setSubStack([]);
-              fn();
-            } else if (pendingPush.current) {
+            if (pendingPush.current) {
               // A sub-section was tapped: push the next level. The `key` change
               // will remount the sheet so it animates in with the new content.
               const push = pendingPush.current;
