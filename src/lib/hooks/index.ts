@@ -19,6 +19,7 @@ import { RoutePath } from "@/src/routing/routes";
 
 export { useMedia } from "./use-media";
 export { useTheme } from "./use-theme";
+export { useFullscreenFix } from "./use-fullscreen-fix";
 
 export function useElementHasFocus<T extends HTMLElement | null>(
   ref: RefObject<T>,
