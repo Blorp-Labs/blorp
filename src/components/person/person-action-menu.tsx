@@ -1,9 +1,7 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
+import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
-import { openUrl } from "@/src/lib/linking";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
@@ -22,9 +20,11 @@ dayjs.extend(localizedFormat);
 
 export function usePersonActions({
   person,
+  personLabel = "user",
 }: {
   person?: Schemas.Person;
-}): ActionMenuProps["actions"] {
+  personLabel?: string;
+}): SubAction[] {
   const tag = useTagUserStore((s) =>
     person ? s.userTags[person.slug] : undefined,
   );
@@ -45,7 +45,7 @@ export function usePersonActions({
   const tagUser = useTagUser();
 
   const shareActions = useShareActions(
-    "person",
+    personLabel,
     person
       ? {
           type: "person",
@@ -64,7 +64,7 @@ export function usePersonActions({
     ...(person && !isBlocked
       ? [
           {
-            text: "Message user",
+            text: `Message ${personLabel}`,
             onClick: () =>
               router.push(
                 resolveRoute("/messages/chat/:userId", {
@@ -72,29 +72,19 @@ export function usePersonActions({
                 }),
               ),
           },
-          ...shareActions,
           {
-            text: "Tag user",
+            text: `Tag ${personLabel}`,
             onClick: async () => {
               tagUser(person.slug, tag);
             },
           },
-          {
-            text: "View user source",
-            onClick: async () => {
-              try {
-                openUrl(person.apId);
-              } catch {
-                // TODO: handle error
-              }
-            },
-          },
+          ...shareActions,
         ]
       : []),
     ...(person && person.apId !== myUserId
       ? [
           {
-            text: isBlocked ? "Unblock user" : "Block user",
+            text: `${isBlocked ? "Unblock" : "Block"} ${personLabel}`,
             onClick: async () => {
               try {
                 await requireAuth();
@@ -131,13 +121,11 @@ export function usePersonActions({
 export function PersonActionMenu({ person }: { person?: Schemas.Person }) {
   const actions = usePersonActions({ person });
   return (
-    <ActionMenu
+    <EllipsisActionMenu
       header="User actions"
       align="end"
       actions={actions}
-      trigger={
-        <IoEllipsisHorizontal className="text-muted-foreground mt-0.5" />
-      }
+      aria-label="User actions"
     />
   );
 }

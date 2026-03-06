@@ -1,16 +1,8 @@
 import _ from "lodash";
-import { useBlockPerson, useBlockInstance } from "@/src/lib/api/index";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
-import {
-  useAuth,
-  getAccountActorId,
-  useIsPersonBlocked,
-  useIsInstanceBlocked,
-  useIsAdmin,
-} from "@/src/stores/auth";
-import { openUrl } from "@/src/lib/linking";
+import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
@@ -20,8 +12,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
-import { useIonAlert, useIonRouter } from "@ionic/react";
-import { Deferred } from "@/src/lib/deferred";
+import { useIonRouter } from "@ionic/react";
 import { encodeApId } from "@/src/lib/api/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
@@ -30,9 +21,13 @@ import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import {
+  useCommunitiesStore,
+  useCommunityFromStore,
+} from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
-import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
+import { useCommunityActions } from "@/src/components/communities/community-sidebar";
+import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
@@ -48,23 +43,20 @@ import {
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
-import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
+import { useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
+import { usePersonActions } from "../person/person-action-menu";
+import { useShareActions } from "@/src/lib/share";
 
 export function usePostActions({
   post,
   canMod,
-  tag,
 }: {
   post: Schemas.Post;
   canMod?: boolean;
-  tag?: string;
 }): ActionMenuProps["actions"] {
-  const [alrt] = useIonAlert();
-
   const showReportModal = useShowPostReportModal();
   const requireAuth = useRequireAuth();
-  const blockPerson = useBlockPerson();
   const deletePost = useDeletePost();
   const featurePost = useFeaturePost();
   const lockPost = useLockPost();
@@ -72,7 +64,6 @@ export function usePostActions({
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
   const inputAlert = useInputAlert();
-  const getConfirmation = useConfirmationAlert();
   const { software } = useSoftware();
 
   const router = useIonRouter();
@@ -80,13 +71,37 @@ export function usePostActions({
 
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
-  const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
-  const communityInstanceId = post.communityInstanceId;
-  const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
-  const blockInstance = useBlockInstance();
+  const community = useCommunityFromStore(post.communitySlug);
+  const communityActions = useCommunityActions({
+    actorId: community?.communityView.apId ?? null,
+    communityName: post.communitySlug,
+    communityView: community?.communityView,
+  });
+
+  const author = useProfileFromStore(post.creatorApId);
+  const authorActions = usePersonActions({
+    person: author,
+    personLabel: "author",
+  });
+
+  const linkCtx = useLinkContext();
+  const shareActions = useShareActions(
+    "post",
+    post
+      ? {
+          type: "post",
+          id: post.id,
+          apId: post.apId,
+          communitySlug: post.communitySlug,
+          route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
+            communityName: post.communitySlug,
+            post: encodeApId(post.apId),
+          }),
+        }
+      : null,
+  );
 
   const encodedApId = encodeApId(post.apId);
-  const tagUser = useTagUser();
 
   const saved = post.optimisticSaved ?? post.saved;
 
@@ -129,51 +144,6 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(!isMyPost
-      ? [
-          {
-            text: "Author",
-            actions: [
-              {
-                text: "Tag author",
-                onClick: async () => {
-                  tagUser(post.creatorSlug, tag);
-                },
-              },
-              {
-                text: isCreatorBlocked ? "Unblock author" : "Block author",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const deferred = new Deferred();
-                    alrt({
-                      message: `${isCreatorBlocked ? "Unblock" : "Block"} ${post.creatorSlug}`,
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    blockPerson.mutate({
-                      personId: post.creatorId,
-                      block: !isCreatorBlocked,
-                    });
-                  } catch {}
-                },
-                danger: true,
-              },
-            ],
-          },
-        ]
-      : []),
     {
       text: saved ? "Unsave post" : "Save post",
       onClick: () =>
@@ -185,6 +155,7 @@ export function usePostActions({
           });
         }),
     },
+    ...shareActions,
     ...(software === "piefed"
       ? [
           {
@@ -223,16 +194,6 @@ export function usePostActions({
           },
         ]
       : []),
-    {
-      text: "View post source",
-      onClick: async () => {
-        try {
-          openUrl(post.apId);
-        } catch {
-          // TODO: handle error
-        }
-      },
-    },
     ...(isMyPost
       ? [
           {
@@ -268,24 +229,20 @@ export function usePostActions({
           },
         ]
       : []),
-    ...(_.isNumber(communityInstanceId) && !isMyPost
+    "DIVIDER",
+    ...(!isMyPost
       ? [
           {
-            text: isInstanceBlocked ? "Unblock instance" : "Block instance",
-            onClick: async () => {
-              try {
-                await requireAuth();
-                const domain = new URL(post.communityApId).hostname;
-                await getConfirmation({
-                  message: `${isInstanceBlocked ? "Unblock" : "Block"} ${domain}`,
-                });
-                blockInstance.mutate({
-                  instanceId: communityInstanceId,
-                  block: !isInstanceBlocked,
-                });
-              } catch {}
-            },
-            danger: true,
+            text: "Author",
+            actions: authorActions,
+          },
+        ]
+      : []),
+    ...(communityActions.length > 0
+      ? [
+          {
+            text: "Community",
+            actions: communityActions,
           },
         ]
       : []),
@@ -299,8 +256,7 @@ export function PostActionButtion({
   post: Schemas.Post;
   canMod?: boolean;
 }) {
-  const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
-  const actions = usePostActions({ post, canMod, tag });
+  const actions = usePostActions({ post, canMod });
   return (
     <EllipsisActionMenu
       header="Post"
@@ -308,6 +264,7 @@ export function PostActionButtion({
       actions={actions}
       fixRightAlignment
       buttonClassName={ABOVE_LINK_OVERLAY}
+      aria-label="Post actions"
     />
   );
 }

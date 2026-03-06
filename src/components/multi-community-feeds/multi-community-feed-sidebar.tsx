@@ -4,8 +4,7 @@ import { MarkdownRenderer } from "../markdown/renderer";
 import { useLinkContext } from "../../routing/link-context";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
-import { IoEllipsisHorizontal } from "react-icons/io5";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
+import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import {
   Avatar,
   AvatarFallback,
@@ -43,7 +42,7 @@ export function SmallScreenSidebar({
 
   const feed = useMultiCommunityFeedFromStore(apId);
 
-  const actions = useCommunityActions({
+  const actions = useMultiCommunityActions({
     apId,
   });
 
@@ -97,16 +96,11 @@ export function SmallScreenSidebar({
             </Link>
           )}
           <div className="flex-1" />
-          <ActionMenu
+          <EllipsisActionMenu
             header="Community"
             align="end"
             actions={actions}
-            trigger={
-              <IoEllipsisHorizontal
-                className="text-muted-foreground"
-                aria-label="Community actions"
-              />
-            }
+            aria-label="Community actions"
           />
         </div>
       </div>
@@ -145,7 +139,7 @@ export function SmallScreenSidebar({
   );
 }
 
-function useCommunityActions({
+function useMultiCommunityActions({
   apId,
 }: {
   apId: string;
@@ -170,22 +164,15 @@ export function FeedSidebar({
   hideDescription?: boolean;
   asPage?: boolean;
 }) {
-  // useCommunity({
-  //   name: communityName,
-  // });
-
   const feed = useMultiCommunityFeedFromStore(apId);
 
   const aboutOpen = useSidebarStore((s) => s.communityAboutExpanded);
   const setAboutOpen = useSidebarStore((s) => s.setCommunityAboutExpanded);
 
-  const flairsOpen = useSidebarStore((s) => s.communityFlairsExpanded);
-  const setFlairsOpen = useSidebarStore((s) => s.setCommunityFlairsExpanded);
-
   const modsOpen = useSidebarStore((s) => s.communityModsExpanded);
   const setModsOpen = useSidebarStore((s) => s.setCommunityModsExpanded);
 
-  const actions = useCommunityActions({
+  const actions = useMultiCommunityActions({
     apId,
   });
 
@@ -209,13 +196,11 @@ export function FeedSidebar({
                 </AvatarFallback>
               </Avatar>
 
-              <ActionMenu
-                header="Community"
+              <EllipsisActionMenu
+                header="Multi Community Feed"
                 align="end"
                 actions={actions}
-                trigger={
-                  <IoEllipsisHorizontal className="text-muted-foreground mt-0.5" />
-                }
+                aria-label="Multi-community feed actions"
               />
             </div>
 

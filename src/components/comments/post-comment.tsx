@@ -15,7 +15,6 @@ import { useCommentsStore } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
   useAddCommentReactionEmoji,
-  useBlockPerson,
   useDeleteComment,
   useLockComment,
   useMarkCommentAsAnswer,
@@ -34,23 +33,15 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
-import { ActionMenu } from "../adaptable/action-menu";
-import { IoEllipsisHorizontal } from "react-icons/io5";
-import { useIonAlert, useIonRouter } from "@ionic/react";
-import { Deferred } from "@/src/lib/deferred";
+import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import { PersonHoverCard } from "../person/person-hover-card";
-import {
-  getAccountSite,
-  useAuth,
-  useIsAdmin,
-  useIsPersonBlocked,
-} from "@/src/stores/auth";
+import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
 import { useShareActions } from "@/src/lib/share";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore, useProfilesStore } from "@/src/stores/profiles";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -60,7 +51,7 @@ import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
 import { useMedia } from "@/src/lib/hooks/index";
 import { CakeDay } from "../cake-day";
-import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
+import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
 import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
@@ -74,6 +65,7 @@ import {
   getCommentMyVote,
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
+import { usePersonActions } from "../person/person-action-menu";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -104,14 +96,9 @@ export function useCommentActions({
   queryKeyParentId?: number;
   canMod?: boolean;
   postCreatorId?: number;
-}) {
+}): ActionMenuProps["actions"] {
   const myUserId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
-  );
-
-  const actorSlug = commentView?.creatorApId;
-  const tag = useTagUserStore((s) =>
-    actorSlug ? s.userTags[actorSlug] : null,
   );
 
   const saveComment = useSaveComment(commentView?.path);
@@ -123,20 +110,11 @@ export function useCommentActions({
 
   const isMyComment = commentView?.creatorId === myUserId;
 
-  const [alrt] = useIonAlert();
-
   const showReportModal = useShowCommentReportModal();
   const requireAuth = useRequireAuth();
 
-  const blockPerson = useBlockPerson();
-
   const deleteComment = useDeleteComment();
   const lockComment = useLockComment();
-
-  const tagUser = useTagUser();
-  const isCreatorBlocked = useIsPersonBlocked(commentView?.creatorApId);
-
-  const router = useIonRouter();
 
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
 
@@ -171,6 +149,12 @@ export function useCommentActions({
         }
       : null,
   );
+
+  const commenter = useProfileFromStore(commentView?.creatorApId);
+  const commenterActions = usePersonActions({
+    person: commenter,
+    personLabel: "commenter",
+  });
 
   const { software } = useSoftware();
 
@@ -207,64 +191,6 @@ export function useCommentActions({
           },
         ]
       : []),
-    ...(!isMyComment
-      ? [
-          {
-            text: "Commenter",
-            actions: [
-              {
-                text: "Tag commenter",
-                onClick: async () => {
-                  tagUser(commentView.creatorSlug, tag ?? undefined);
-                },
-              },
-              {
-                text: "Message commenter",
-                onClick: () =>
-                  requireAuth().then(() =>
-                    router.push(
-                      resolveRoute("/messages/chat/:userId", {
-                        userId: encodeApId(commentView.creatorApId),
-                      }),
-                    ),
-                  ),
-              },
-              {
-                text: isCreatorBlocked
-                  ? "Unblock commenter"
-                  : "Block commenter",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const deferred = new Deferred();
-                    alrt({
-                      message: `${isCreatorBlocked ? "Unblock" : "Block"} ${commentView.creatorSlug}`,
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    blockPerson.mutate({
-                      personId: commentView.creatorId,
-                      block: !isCreatorBlocked,
-                    });
-                  } catch {}
-                },
-                danger: true,
-              },
-            ],
-          },
-        ]
-      : []),
     ...(isMyComment && !commentView.deleted
       ? [
           {
@@ -279,7 +205,6 @@ export function useCommentActions({
           } as const,
         ]
       : []),
-    ...(route ? shareActions : []),
     ...(software === "piefed" && commentView
       ? [
           {
@@ -328,6 +253,7 @@ export function useCommentActions({
           });
         }),
     },
+    ...(route ? shareActions : []),
     ...((isPostAuthor || canMod) && commentView && software === "piefed"
       ? [
           {
@@ -364,6 +290,15 @@ export function useCommentActions({
               requireAuth().then(() => showReportModal(commentView.path)),
             danger: true,
           } as const,
+        ]
+      : []),
+    "DIVIDER",
+    ...(!isMyComment
+      ? [
+          {
+            text: "Commenter",
+            actions: commenterActions,
+          },
         ]
       : []),
   ];
@@ -731,19 +666,9 @@ export function PostComment({
                   )}
                 />
               )}
-              <ActionMenu
+              <EllipsisActionMenu
                 actions={actions}
-                trigger={
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="z-10"
-                    aria-label="Comment actions"
-                  >
-                    <IoEllipsisHorizontal size={16} />
-                  </Button>
-                }
-                triggerAsChild
+                aria-label="Comment actions"
               />
               {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
