@@ -53,6 +53,7 @@ import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote } from "@/src/lib/api/adapters/utils";
 import { useConfirmationAlert, useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
+import { usePersonActions } from "../person/person-action-menu";
 
 export function usePostActions({
   post,
@@ -75,7 +76,6 @@ export function usePostActions({
   const savePost = useSavePost();
   const addReactionEmoji = useAddPostReactionEmoji();
   const inputAlert = useInputAlert();
-  const getConfirmation = useConfirmationAlert();
   const { software } = useSoftware();
 
   const router = useIonRouter();
@@ -83,7 +83,6 @@ export function usePostActions({
 
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
-  const isCreatorBlocked = useIsPersonBlocked(post.creatorApId);
   const community = useCommunityFromStore(post.communitySlug);
   const communityActions = useCommunityActions({
     actorId: community?.communityView.apId ?? null,
@@ -91,8 +90,12 @@ export function usePostActions({
     communityView: community?.communityView,
   });
 
+  const author = useProfileFromStore(post.creatorApId);
+  const authorActions = usePersonActions({
+    person: author,
+  });
+
   const encodedApId = encodeApId(post.apId);
-  const tagUser = useTagUser();
 
   const saved = post.optimisticSaved ?? post.saved;
 
@@ -139,44 +142,7 @@ export function usePostActions({
       ? [
           {
             text: "Author",
-            actions: [
-              {
-                text: "Tag author",
-                onClick: async () => {
-                  tagUser(post.creatorSlug, tag);
-                },
-              },
-              {
-                text: isCreatorBlocked ? "Unblock author" : "Block author",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const deferred = new Deferred();
-                    alrt({
-                      message: `${isCreatorBlocked ? "Unblock" : "Block"} ${post.creatorSlug}`,
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    blockPerson.mutate({
-                      personId: post.creatorId,
-                      block: !isCreatorBlocked,
-                    });
-                  } catch {}
-                },
-                danger: true,
-              },
-            ],
+            actions: authorActions,
           },
         ]
       : []),

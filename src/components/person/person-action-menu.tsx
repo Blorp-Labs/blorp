@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
+import { ActionMenu, SubAction } from "../adaptable/action-menu";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { encodeApId } from "@/src/lib/api/utils";
 import { openUrl } from "@/src/lib/linking";
@@ -24,7 +24,7 @@ export function usePersonActions({
   person,
 }: {
   person?: Schemas.Person;
-}): ActionMenuProps["actions"] {
+}): SubAction[] {
   const tag = useTagUserStore((s) =>
     person ? s.userTags[person.slug] : undefined,
   );
