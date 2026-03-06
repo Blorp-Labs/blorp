@@ -101,18 +101,25 @@ export function ActionMenu<V extends string>({
   const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
     useMemo(
       () => [
-        ...actions
-          .filter((a) => _.isObject(a))
-          .map((a, index) => ({
-            text: a.text,
-            data: index,
-            cssClass: a.actions ? "detail" : undefined,
-            role: a.danger
-              ? "destructive"
-              : _.isString(a.value) && a.value === selectedValue
-                ? "selected"
-                : undefined,
-          })),
+        // Store the original index in `data` (not the post-filter index) so
+        // that onWillDismiss can look up the action in `actions` correctly even
+        // when dividers are present — dividers shift post-filter indices.
+        ...actions.flatMap((a, originalIndex) =>
+          _.isString(a)
+            ? []
+            : [
+                {
+                  text: a.text,
+                  data: originalIndex,
+                  cssClass: a.actions ? "detail" : undefined,
+                  role: a.danger
+                    ? "destructive"
+                    : _.isString(a.value) && a.value === selectedValue
+                      ? "selected"
+                      : undefined,
+                },
+              ],
+        ),
         ...(showCancel
           ? [
               {
