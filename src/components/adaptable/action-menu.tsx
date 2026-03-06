@@ -78,10 +78,24 @@ export function ActionMenu<V extends string>({
 }: ActionMenuProps<V>) {
   const media = useMedia();
   const id = useId();
+
+  // Mobile uses IonActionSheet, which only supports a flat list of buttons.
+  // To render nested sections (tier 2) and sub-sections (tier 3), we maintain
+  // a navigation stack of sub-sheets. Each entry holds the title and actions
+  // for one level. The top of the stack is what's currently displayed.
   const [subStack, setSubStack] = useState<
     { title: string; actions: SubAction[] }[]
   >([]);
   const currentSub = subStack[subStack.length - 1];
+
+  // IonActionSheet fires onWillDismiss (while still animating out) before
+  // onDidDismiss (after fully closed). We must not mutate subStack during
+  // onWillDismiss or the sheet will disappear mid-animation. Instead we store
+  // the intended next step in a ref and apply it in onDidDismiss.
+  //
+  // pendingAction: a leaf action to call once the sheet finishes closing.
+  // pendingPush:   a sub-level to navigate into once the sheet finishes closing
+  //                (causes the sheet to reopen with the new level's content).
   const pendingAction = useRef<(() => any) | null>(null);
   const pendingPush = useRef<{ title: string; actions: SubAction[] } | null>(
     null,
@@ -247,7 +261,13 @@ export function ActionMenu<V extends string>({
       {currentSub && (
         <IonActionSheet
           {...props}
+          // Changing `key` forces React to unmount/remount the sheet, which
+          // causes Ionic to play the open animation for the new level after a
+          // pendingPush navigation.
           key={subStack.length}
+          // Breadcrumb: at tier 3 show the parent level's title as the header
+          // and the current level's title as the subHeader (e.g. "Community /
+          // Share"). At tier 2 keep the original top-level header ("Post").
           header={
             subStack.length > 1
               ? subStack[subStack.length - 2]?.title
@@ -257,12 +277,16 @@ export function ActionMenu<V extends string>({
           isOpen
           buttons={subActionButtons!}
           onWillDismiss={({ detail }) => {
+            // detail.data holds the button index when a button was tapped;
+            // it is undefined for backdrop/cancel dismissals.
             const index = _.isNumber(detail.data) ? detail.data : null;
             if (index !== null && currentSub) {
               const action = currentSub.actions[index];
               if (action && "onClick" in action && action.onClick) {
+                // Leaf action — store it for onDidDismiss to call.
                 pendingAction.current = action.onClick;
               } else if (action && "actions" in action) {
+                // Sub-section — store the next level for onDidDismiss to push.
                 if (!disableHaptics) {
                   Haptics.impact({ style: ImpactStyle.Medium });
                 }
@@ -275,15 +299,19 @@ export function ActionMenu<V extends string>({
           }}
           onDidDismiss={() => {
             if (pendingAction.current) {
+              // A leaf was tapped: close all sub-sheets, then fire the action.
               const fn = pendingAction.current;
               pendingAction.current = null;
               setSubStack([]);
               fn();
             } else if (pendingPush.current) {
+              // A sub-section was tapped: push the next level. The `key` change
+              // will remount the sheet so it animates in with the new content.
               const push = pendingPush.current;
               pendingPush.current = null;
               setSubStack((prev) => [...prev, push]);
             } else {
+              // Backdrop/cancel tap: exit the sub-sheet flow entirely.
               setSubStack([]);
             }
           }}
