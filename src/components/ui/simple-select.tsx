@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import _ from "lodash";
 
 interface SimpleSelectProps<O, V extends string | number> {
   options: O[];
@@ -27,7 +28,7 @@ export function SimpleSelect<O, V extends string | number>({
 }: SimpleSelectProps<O, V>) {
   return (
     <Select
-      value={String(value)}
+      value={_.isNil(value) ? value : String(value)}
       onValueChange={(key) => {
         const match = options.find(
           (o) => valueGetter(o) === key || String(valueGetter(o)) === key,
