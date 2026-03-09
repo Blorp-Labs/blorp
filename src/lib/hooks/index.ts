@@ -126,10 +126,6 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
     const params = new URLSearchParams(location.search);
     const raw = params.get(key);
-    if (raw === null) {
-      defaultValueRef.current = defaultValue;
-      return undefined;
-    }
 
     if (!schema) {
       defaultValueRef.current = raw;
@@ -143,7 +139,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
     }
 
     return undefined;
-  }, [location.search, key, schema, isActive, defaultValue]);
+  }, [location.search, key, schema, isActive]);
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
@@ -198,6 +194,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       const replace = config?.replace ?? true;
       const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
+      defaultValueRef.current = defaultValue;
       const newSearch = params.toString();
       const to = {
         // Idk why but location is getting out of sync with
@@ -221,7 +218,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         },
       };
     },
-    [history, key, search],
+    [history, key, search, defaultValue],
   );
 
   return [value ?? defaultValueRef.current, setValue, removeParam];
