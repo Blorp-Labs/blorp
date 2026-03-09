@@ -128,7 +128,7 @@ function DraftsSidebar({
                     !draft.title && "italic",
                   )}
                 >
-                  {draft.title || "Untitiled"}
+                  {draft.title || "Untitled"}
                 </span>
               </Link>
               <button
