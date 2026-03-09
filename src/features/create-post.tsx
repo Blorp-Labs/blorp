@@ -191,10 +191,10 @@ function useDraftFromUrl({
   patchDraft: (key: string, patch: Partial<Draft>) => void;
   draftId: string;
 }) {
-  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
-  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
-  const [body, _3, removeBody] = useUrlSearchState("body", "", z.string());
-  const [nsfw, _4, removeNsfw] = useUrlSearchState(
+  const titleParam = useUrlSearchState("title", "", z.string());
+  const urlParam = useUrlSearchState("url", "", z.string());
+  const bodyParam = useUrlSearchState("body", "", z.string());
+  const nsfwParam = useUrlSearchState(
     "nsfw",
     undefined,
     z
@@ -208,6 +208,10 @@ function useDraftFromUrl({
   );
 
   useEffect(() => {
+    const { value: title } = titleParam;
+    const { value: url } = urlParam;
+    const { value: body } = bodyParam;
+    const { value: nsfw } = nsfwParam;
     if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
       const updateDraft: Partial<Draft> = {};
       if (title) {
@@ -226,29 +230,21 @@ function useDraftFromUrl({
       patchDraft(draftId, updateDraft);
     }
     if (title || url || body || nsfw) {
-      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
+      titleParam
+        .remove()
+        .and(urlParam.remove)
+        .and(bodyParam.remove)
+        .and(nsfwParam.remove);
     }
-  }, [
-    draft,
-    title,
-    url,
-    body,
-    nsfw,
-    patchDraft,
-    draftId,
-    removeTitle,
-    removeUrl,
-    removeBody,
-    removeNsfw,
-  ]);
+  }, [draft, titleParam, urlParam, bodyParam, nsfwParam, patchDraft, draftId]);
 }
 
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
   const [defaultUuid, setDefaultUuid] = useState(uuid());
-  const [draftIdEncoded] = useUrlSearchState("id", defaultUuid, z.string());
-  const draftId = decodeURIComponent(draftIdEncoded);
+  const draftIdParam = useUrlSearchState("id", defaultUuid, z.string());
+  const draftId = decodeURIComponent(draftIdParam.value);
   const id = useId();
 
   useEffect(() => {

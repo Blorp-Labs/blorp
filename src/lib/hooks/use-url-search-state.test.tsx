@@ -1,6 +1,10 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, cleanup } from "@testing-library/react";
 import z from "zod";
+import {
+  RouteSearchParamContext,
+  RouteSearchParamProvider,
+} from "./use-url-search-state";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +35,14 @@ vi.mock("@ionic/react", () => ({
 // Import after mocks are set up
 import { useUrlSearchState } from "./index";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function wrapWithRouteProvider() {
+  return ({ children }: { children: React.ReactNode }) => (
+    <RouteSearchParamProvider>{children}</RouteSearchParamProvider>
+  );
+}
+
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
@@ -53,7 +65,7 @@ describe("useUrlSearchState", () => {
     );
 
     act(() => {
-      result.current[1]("2");
+      result.current.set("2");
     });
 
     act(() => {
@@ -71,18 +83,15 @@ describe("useUrlSearchState", () => {
       useUrlSearchState("page", "1", z.string()),
     );
 
-    // Queue a URL update while active
     act(() => {
-      result.current[1]("2");
+      result.current.set("2");
     });
 
-    // Simulate navigating away — pathname changes so isActive becomes false
     act(() => {
       mockPathname = "/home";
       rerender();
     });
 
-    // Now let the timeout fire
     act(() => {
       vi.advanceTimersByTime(10);
     });
@@ -97,18 +106,15 @@ describe("useUrlSearchState", () => {
       useUrlSearchState("page", "1", z.string()),
     );
 
-    // Queue a removeParam while active
     act(() => {
-      result.current[2]();
+      result.current.remove();
     });
 
-    // Navigate away
     act(() => {
       mockPathname = "/home";
       rerender();
     });
 
-    // Let the timeout fire
     act(() => {
       vi.advanceTimersByTime(10);
     });
@@ -121,14 +127,12 @@ describe("useUrlSearchState", () => {
       useUrlSearchState("page", "1", z.string()),
     );
 
-    // Queue multiple URL updates
     act(() => {
-      result.current[1]("2");
-      result.current[1]("3");
-      result.current[1]("4");
+      result.current.set("2");
+      result.current.set("3");
+      result.current.set("4");
     });
 
-    // Navigate away before timeouts fire
     act(() => {
       mockPathname = "/home";
       rerender();
@@ -139,5 +143,177 @@ describe("useUrlSearchState", () => {
     });
 
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+});
+
+describe("useUrlSearchState — default value behavior", () => {
+  test("remembers last URL value as default after param is removed from URL", () => {
+    mockSearch = "?page=5";
+
+    const { result, rerender } = renderHook(() =>
+      useUrlSearchState("page", "1", z.string()),
+    );
+
+    // Value should be "5" from URL
+    expect(result.current.value).toBe("5");
+
+    // Simulate the URL param disappearing (e.g. external navigation)
+    // without calling removeParam
+    act(() => {
+      mockSearch = "";
+      rerender();
+    });
+
+    // Should retain "5" (last seen value), NOT reset to "1"
+    expect(result.current.value).toBe("5");
+  });
+
+  test("removeParam resets default back to initial value", () => {
+    mockSearch = "?page=5";
+
+    const { result, rerender } = renderHook(() =>
+      useUrlSearchState("page", "1", z.string()),
+    );
+
+    expect(result.current.value).toBe("5");
+
+    // Call removeParam — this should reset default to "1"
+    act(() => {
+      result.current.remove();
+    });
+
+    act(() => {
+      mockSearch = "";
+      vi.advanceTimersByTime(10);
+      rerender();
+    });
+
+    expect(result.current.value).toBe("1");
+  });
+});
+
+describe("useUrlSearchState — chaining", () => {
+  test("chained remove calls produce a single history.replace with all params removed", () => {
+    mockSearch = "?title=hello&url=https://example.com&body=world";
+
+    const { result } = renderHook(() => ({
+      title: useUrlSearchState("title", "", z.string()),
+      url: useUrlSearchState("url", "", z.string()),
+      body: useUrlSearchState("body", "", z.string()),
+    }));
+
+    act(() => {
+      result.current.title
+        .remove()
+        .and(result.current.url.remove)
+        .and(result.current.body.remove);
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    // Only one history call, with all three params removed
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(
+      expect.objectContaining({ search: "" }),
+    );
+  });
+
+  test("chained set calls produce a single history.replace with all params set", () => {
+    const { result } = renderHook(() => ({
+      page: useUrlSearchState("page", "1", z.string()),
+      sort: useUrlSearchState("sort", "new", z.string()),
+    }));
+
+    act(() => {
+      result.current.page.set("5").and(result.current.sort.set, "top");
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    const search = mockReplace.mock.calls[0]?.[0].search;
+    const params = new URLSearchParams(search);
+    expect(params.get("page")).toBe("5");
+    expect(params.get("sort")).toBe("top");
+  });
+});
+
+describe("useUrlSearchState — route isolation", () => {
+  test("two route instances have isolated defaults", () => {
+    mockSearch = "?apId=post-42";
+
+    // Each wrapper creates its own provider with its own Map
+    const routeA = renderHook(() => useUrlSearchState("apId", "", z.string()), {
+      wrapper: wrapWithRouteProvider(),
+    });
+
+    const routeB = renderHook(() => useUrlSearchState("apId", "", z.string()), {
+      wrapper: wrapWithRouteProvider(),
+    });
+
+    // Both see "post-42" from URL
+    expect(routeA.result.current.value).toBe("post-42");
+    expect(routeB.result.current.value).toBe("post-42");
+
+    // Call removeParam on route A only
+    act(() => {
+      routeA.result.current.remove();
+    });
+
+    act(() => {
+      mockSearch = "";
+      vi.advanceTimersByTime(10);
+      routeA.rerender();
+      routeB.rerender();
+    });
+
+    // Route A should reset to initial default ""
+    expect(routeA.result.current.value).toBe("");
+    // Route B should retain "post-42" (last seen value)
+    expect(routeB.result.current.value).toBe("post-42");
+  });
+
+  test("two hooks in the same route share the same defaults", () => {
+    mockSearch = "?apId=post-42";
+
+    // Share a single Map across two renderHook trees to simulate
+    // two hooks under the same RouteSearchParamProvider
+    const sharedDefaults = new Map<string, unknown>();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <RouteSearchParamContext value={sharedDefaults}>
+        {children}
+      </RouteSearchParamContext>
+    );
+
+    const hookA = renderHook(() => useUrlSearchState("apId", "", z.string()), {
+      wrapper,
+    });
+
+    const hookB = renderHook(() => useUrlSearchState("apId", "", z.string()), {
+      wrapper,
+    });
+
+    expect(hookA.result.current.value).toBe("post-42");
+    expect(hookB.result.current.value).toBe("post-42");
+
+    // removeParam on hook A resets the shared default
+    act(() => {
+      hookA.result.current.remove();
+    });
+
+    act(() => {
+      mockSearch = "";
+      vi.advanceTimersByTime(10);
+      hookA.rerender();
+      hookB.rerender();
+    });
+
+    // Both should see "" because they share the same provider
+    expect(hookA.result.current.value).toBe("");
+    expect(hookB.result.current.value).toBe("");
   });
 });

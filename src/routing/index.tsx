@@ -10,6 +10,7 @@ import {
 import { RouteDefs, routeDefs, RoutePath } from "./routes";
 import z from "zod";
 import { isDev } from "../lib/device";
+import { RouteSearchParamProvider } from "../lib/hooks/use-url-search-state";
 export { resolveRoute } from "./resolve-route";
 
 // lookup schema by path
@@ -100,15 +101,30 @@ export function Link<Path extends RoutePath>({
 }
 
 interface TypedRouteProps<Path extends RoutePath>
-  extends Omit<React.ComponentProps<typeof RRRoute>, "path"> {
+  extends Omit<
+    React.ComponentProps<typeof RRRoute>,
+    "path" | "children" | "component"
+  > {
   path: Path;
+  children?: React.ReactNode;
+  component?: React.ComponentType;
+}
+
+function RouteContent({ children }: { children: React.ReactNode }) {
+  return <RouteSearchParamProvider>{children}</RouteSearchParamProvider>;
 }
 
 export function Route<Path extends RoutePath>({
   path,
+  children,
+  component: Component,
   ...rest
 }: TypedRouteProps<Path>) {
-  return <RRRoute path={path} {...rest} />;
+  return (
+    <RRRoute path={path} {...rest}>
+      <RouteContent>{Component ? <Component /> : children}</RouteContent>
+    </RRRoute>
+  );
 }
 
 export function useParams<P extends RoutePath>(path: P): z.infer<DefByPath[P]> {

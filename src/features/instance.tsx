@@ -24,7 +24,7 @@ function compareHosts(a: string, b: string) {
 export default function Instance() {
   const { replace } = useHistory();
 
-  const [instance] = useUrlSearchState("q", "", z.string());
+  const { value: instance } = useUrlSearchState("q", "", z.string());
   const site = useSite({
     instance,
   });
