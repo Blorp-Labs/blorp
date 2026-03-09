@@ -104,6 +104,20 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   const isActive = useIsActiveRoute();
 
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
+
+  const pendingTimeouts = useRef(new Set<number>());
+
+  useEffect(() => {
+    if (!isActive) {
+      for (const id of pendingTimeouts.current) {
+        window.clearTimeout(id);
+      }
+      pendingTimeouts.current.clear();
+    }
+  }, [isActive]);
+
   // parse & validate the raw URL param, fallback to default
   const value = useMemo<z.infer<S>>(() => {
     if (!isActive) {
@@ -157,13 +171,16 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         search: newSearch ? `?${newSearch}` : "",
       };
       const id = window.setTimeout(() => {
-        if (!locked.current) {
+        pendingTimeouts.current.delete(id);
+        if (!locked.current && isActiveRef.current) {
           replace ? history.replace(to) : history.push(to);
         }
       }, 5);
+      pendingTimeouts.current.add(id);
       return {
         and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
           window.clearTimeout(id);
+          pendingTimeouts.current.delete(id);
           return setValue(val, { ...config, search: newSearch });
         },
       };
@@ -189,12 +206,17 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         ...frozenLocation.current,
         search: newSearch ? `?${newSearch}` : "",
       };
-      const id = setTimeout(() => {
-        replace ? history.replace(to) : history.push(to);
+      const id = window.setTimeout(() => {
+        pendingTimeouts.current.delete(id);
+        if (!locked.current && isActiveRef.current) {
+          replace ? history.replace(to) : history.push(to);
+        }
       }, 5);
+      pendingTimeouts.current.add(id);
       return {
         and: (removeParam) => {
-          clearTimeout(id);
+          window.clearTimeout(id);
+          pendingTimeouts.current.delete(id);
           return removeParam({ ...config, search: newSearch });
         },
       };
