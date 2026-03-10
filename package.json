@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "dev:tauri": "tauri dev",
     "dev:ios": "ionic capacitor run ios -l --external",
-    "lint": "oxlint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "build": "vite build && cap sync && pnpm cp-package-json",
     "build:tauri": "tauri build",
     "build:docker": "docker build . --tag blorp",
@@ -153,6 +154,7 @@
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
     "@dotenvx/dotenvx": "^1.53.0",
+    "@eslint/js": "^10.0.1",
     "@faker-js/faker": "9.4.0",
     "@fetch-mock/vitest": "^0.2.18",
     "@ionic/cli": "^7.2.1",
@@ -161,6 +163,7 @@
     "@storybook/addon-docs": "^10.2.10",
     "@storybook/react-vite": "^10.2.10",
     "@t3-oss/env-core": "^0.13.4",
+    "@tanstack/eslint-plugin-query": "^5.91.4",
     "@tanstack/react-devtools": "^0.3.0",
     "@tauri-apps/cli": "^2.8.1",
     "@types/canvas-confetti": "^1.9.0",
@@ -176,22 +179,28 @@
     "@vitest/coverage-v8": "4.0.13",
     "@vitest/ui": "4.0.13",
     "chromatic": "^15.1.1",
+    "eslint": "^10.0.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "fetch-mock": "^12.5.3",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "license-checker": "^25.0.1",
     "lint-staged": "^15.3.0",
-    "oxlint": "^1.46.0",
     "prettier": "3.4.1",
     "storybook": "^10.2.10",
     "terser": "^5.39.0",
+    "typescript-eslint": "^8.56.1",
     "vite": "7.2.4",
     "vite-plugin-checker": "^0.11.0",
     "vite-plugin-sitemap": "^0.8.2",
     "vitest": "4.0.13"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "prettier --write"
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "packageManager": "pnpm@10.30.3",
   "pnpm": {
