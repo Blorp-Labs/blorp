@@ -74,11 +74,12 @@ function Comment({ path }: { path: string }) {
 export default function SavedContent() {
   const media = useMedia();
 
-  const [type, setType] = useUrlSearchState(
+  const typeParam = useUrlSearchState(
     "type",
     "posts",
     z.enum(["posts", "comments"]),
   );
+  const type = typeParam.value;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
 
@@ -149,7 +150,7 @@ export default function SavedContent() {
                 size="sm"
                 value={type}
                 onValueChange={(val) =>
-                  val && setType(val as "posts" | "comments")
+                  val && typeParam.set(val as "posts" | "comments")
                 }
               >
                 <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
@@ -178,7 +179,7 @@ export default function SavedContent() {
                     size="sm"
                     value={type}
                     onValueChange={(val) =>
-                      val && setType(val as "posts" | "comments")
+                      val && typeParam.set(val as "posts" | "comments")
                     }
                   >
                     <ToggleGroupItem value="posts">Posts</ToggleGroupItem>

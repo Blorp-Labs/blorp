@@ -444,9 +444,14 @@ export default function Communities() {
             }}
             type="Communities"
             className="max-md:hidden"
+            data-testid="explore-search-bar"
           />
           <ToolbarButtons side="right">
-            <Link to="/communities/s" className="text-2xl contents md:hidden">
+            <Link
+              to="/communities/s"
+              className="text-2xl contents md:hidden"
+              data-testid="explore-search-link"
+            >
               <Search className="text-muted-foreground scale-110" />
             </Link>
             <UserDropdown />

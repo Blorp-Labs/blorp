@@ -243,12 +243,8 @@ export default function LightBoxPosts() {
     [communityNameEncoded],
   );
 
-  const [encodedApId, setEncodedApId] = useUrlSearchState(
-    "apId",
-    "",
-    z.string(),
-  );
-  const decodedApId = encodedApId ? decodeApId(encodedApId) : null;
+  const apIdParam = useUrlSearchState("apId", "", z.string());
+  const decodedApId = apIdParam.value ? decodeApId(apIdParam.value) : null;
   const initPostApId = useRef(decodedApId).current ?? undefined;
 
   const media = useMedia();
@@ -272,11 +268,12 @@ export default function LightBoxPosts() {
 
   const isPending = initPostQuery.isPending || postsQuery.isPending;
 
+  const setApId = apIdParam.set;
   useEffect(() => {
     if (initPostQuery.isError) {
-      setEncodedApId("");
+      setApId("");
     }
-  }, [initPostQuery.isError, setEncodedApId]);
+  }, [initPostQuery.isError, setApId]);
 
   const activeIndex = Math.max(
     data.findIndex((apId) => apId === decodedApId),
@@ -340,10 +337,10 @@ export default function LightBoxPosts() {
     (newIndex: number) => {
       const newApId = data[newIndex];
       if (newApId && !isPending) {
-        setEncodedApId(encodeApId(newApId));
+        setApId(encodeApId(newApId));
       }
     },
-    [data, isPending, setEncodedApId],
+    [data, isPending, setApId],
   );
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);

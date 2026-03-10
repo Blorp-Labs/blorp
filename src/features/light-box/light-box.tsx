@@ -80,7 +80,7 @@ export default function LightBox() {
   const linkCtx = useLinkContext();
   const { imgUrl } = useParams(`${linkCtx.root}lightbox/:imgUrl`);
   const src = decodeURIComponent(imgUrl);
-  const [title] = useUrlSearchState("title", "", z.string());
+  const { value: title } = useUrlSearchState("title", "", z.string());
   const navbar = useNavbarHeight();
   const isActive = useIsActiveRoute();
 

@@ -122,11 +122,12 @@ export default function User() {
 
   const actorId = userId ? decodeApId(userId) : undefined;
 
-  const [type, setType] = useUrlSearchState(
+  const typeParam = useUrlSearchState(
     "type",
     "Posts",
     z.enum(["Posts", "Comments"]),
   );
+  const type = typeParam.value;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort } = useAvailableSorts();
@@ -228,7 +229,7 @@ export default function User() {
                     size="sm"
                     value={type}
                     onValueChange={(val) =>
-                      val && setType(val as "Posts" | "Comments")
+                      val && typeParam.set(val as "Posts" | "Comments")
                     }
                   >
                     <ToggleGroupItem value="Posts">Posts</ToggleGroupItem>

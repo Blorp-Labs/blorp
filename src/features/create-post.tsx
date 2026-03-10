@@ -191,10 +191,10 @@ function useDraftFromUrl({
   patchDraft: (key: string, patch: Partial<Draft>) => void;
   draftId: string;
 }) {
-  const [title, _1, removeTitle] = useUrlSearchState("title", "", z.string());
-  const [url, _2, removeUrl] = useUrlSearchState("url", "", z.string());
-  const [body, _3, removeBody] = useUrlSearchState("body", "", z.string());
-  const [nsfw, _4, removeNsfw] = useUrlSearchState(
+  const titleParam = useUrlSearchState("title", "", z.string());
+  const urlParam = useUrlSearchState("url", "", z.string());
+  const bodyParam = useUrlSearchState("body", "", z.string());
+  const nsfwParam = useUrlSearchState(
     "nsfw",
     undefined,
     z
@@ -206,6 +206,15 @@ function useDraftFromUrl({
       ])
       .optional(),
   );
+
+  const title = titleParam.value;
+  const url = urlParam.value;
+  const body = bodyParam.value;
+  const nsfw = nsfwParam.value;
+  const removeTitle = titleParam.remove;
+  const removeUrl = urlParam.remove;
+  const removeBody = bodyParam.remove;
+  const removeNsfw = nsfwParam.remove;
 
   useEffect(() => {
     if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
@@ -234,12 +243,12 @@ function useDraftFromUrl({
     url,
     body,
     nsfw,
-    patchDraft,
-    draftId,
     removeTitle,
     removeUrl,
     removeBody,
     removeNsfw,
+    patchDraft,
+    draftId,
   ]);
 }
 
@@ -247,8 +256,8 @@ export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
   const [defaultUuid, setDefaultUuid] = useState(uuid());
-  const [draftIdEncoded] = useUrlSearchState("id", defaultUuid, z.string());
-  const draftId = decodeURIComponent(draftIdEncoded);
+  const draftIdParam = useUrlSearchState("id", defaultUuid, z.string());
+  const draftId = decodeURIComponent(draftIdParam.value);
   const id = useId();
 
   useEffect(() => {

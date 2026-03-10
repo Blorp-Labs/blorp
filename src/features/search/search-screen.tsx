@@ -182,8 +182,8 @@ export default function SearchFeed({
     [communityNameEncoded],
   );
 
-  const [searchInput, setSearchInput] = useUrlSearchState("q", "", z.string());
-  const [search, setSearch] = useState(searchInput);
+  const searchInputParam = useUrlSearchState("q", "", z.string());
+  const [search, setSearch] = useState(searchInputParam.value);
 
   const setDebouncedSearch = useMemo(
     () =>
@@ -194,18 +194,20 @@ export default function SearchFeed({
   );
 
   const updateSearch = (newSearch: string, flush?: boolean) => {
-    setSearchInput(newSearch);
+    searchInputParam.set(newSearch);
     setDebouncedSearch(newSearch);
     if (flush) {
       setDebouncedSearch.flush();
     }
   };
 
-  const [type, setType] = useUrlSearchState(
+  const typeParam = useUrlSearchState(
     "type",
     defaultType,
     z.enum(["posts", "communities", "users", "comments"]),
   );
+  const type = typeParam.value;
+  const setType = typeParam.set;
 
   useKeyboardShortcut(
     useCallback(
@@ -293,7 +295,7 @@ export default function SearchFeed({
   const searchHistory = useSearchStore((s) => s.searchHistory);
 
   const data =
-    searchInput.length === 0
+    searchInputParam.value.length === 0
       ? searchHistory
       : apiData.length === 0 &&
           !searchResults.isRefetching &&
@@ -312,7 +314,7 @@ export default function SearchFeed({
             <ToolbarBackButton />
           </ToolbarButtons>
           <SearchBar
-            value={searchInput}
+            value={searchInputParam.value}
             onValueChange={(value) => updateSearch(value)}
             placeholder={
               communityName && type === "posts"
@@ -321,7 +323,8 @@ export default function SearchFeed({
             }
             preventOpen
             className="w-auto max-md:mx-3"
-            autoFocus={media.maxMd && searchInput.length === 0}
+            autoFocus={media.maxMd && searchInputParam.value.length === 0}
+            data-testid="search-page-input"
           />
           <ToolbarButtons side="right">
             <UserDropdown />
@@ -337,7 +340,9 @@ export default function SearchFeed({
               value={type}
               onValueChange={(val) =>
                 val &&
-                setType(val as "posts" | "communities" | "users" | "comments")
+                typeParam.set(
+                  val as "posts" | "communities" | "users" | "comments",
+                )
               }
             >
               <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
@@ -373,7 +378,7 @@ export default function SearchFeed({
                     value={type}
                     onValueChange={(val) =>
                       val &&
-                      setType(
+                      typeParam.set(
                         val as "posts" | "communities" | "users" | "comments",
                       )
                     }
@@ -404,7 +409,10 @@ export default function SearchFeed({
               </ContentGutters>,
               <ContentGutters
                 key="recent-searches"
-                className={cn("md:hidden", searchInput.length > 0 && "hidden")}
+                className={cn(
+                  "md:hidden",
+                  searchInputParam.value.length > 0 && "hidden",
+                )}
               >
                 <span className="py-2.5 text-sm text-muted-foreground">
                   RECENT SEARCHES
@@ -412,7 +420,7 @@ export default function SearchFeed({
               </ContentGutters>,
             ]}
             renderItem={({ item }) => {
-              if (searchInput.length === 0 && _.isString(item)) {
+              if (searchInputParam.value.length === 0 && _.isString(item)) {
                 return (
                   <SearchHistoryItem
                     search={item}
@@ -468,7 +476,7 @@ export default function SearchFeed({
             estimatedItemSize={type === "posts" ? 475 : 52}
             refresh={refetch}
             placeholder={
-              searchInput.length > 0 && (
+              searchInputParam.value.length > 0 && (
                 <ContentGutters
                   className={type !== "communities" ? "px-0" : undefined}
                 >

@@ -8,17 +8,23 @@ import {
   useState,
 } from "react";
 import { InAppBrowser } from "@capacitor/inappbrowser";
-import { useHistory, useLocation } from "react-router-dom";
 import type z from "zod";
 import { AlertInput, useIonAlert } from "@ionic/react";
 import { Deferred } from "../deferred";
-import { usePathname } from "@/src/routing/hooks";
 import { useMedia } from "./use-media";
 import _ from "lodash";
-import { RoutePath } from "@/src/routing/routes";
+import { useIsActiveRoute } from "./navigation-hooks";
 
 export { useMedia } from "./use-media";
 export { useTheme } from "./use-theme";
+export { useUrlSearchState } from "./use-url-search-state";
+export type {
+  UrlSearchState,
+  SetUrlSearchParam,
+  RemoveUrlSearchParam,
+} from "./use-url-search-state";
+
+export * from "./navigation-hooks";
 
 export function useElementHasFocus<T extends HTMLElement | null>(
   ref: RefObject<T>,
@@ -58,151 +64,6 @@ export function useIsInAppBrowserOpen() {
     };
   }, []);
   return isOpen;
-}
-
-type AndSet<V> = (fn: SetUrlSearchParam<V>, val: V) => { and: AndSet<V> };
-
-type SetUrlSearchParam<V> = (
-  next: V | ((prev: V) => V),
-  config?: { replace?: boolean; search?: string },
-) => {
-  and: AndSet<V>;
-};
-
-type AndRemove = (fn: RemoveUrlSearchParam) => { and: AndRemove };
-
-type RemoveUrlSearchParam = (opts?: { replace?: boolean; search?: string }) => {
-  and: AndRemove;
-};
-
-/**
- * Similar to useState but stores it's state in the url.
- * Only works with strings for now.
- *
- * @example
- *   const [search, setSearch] = useUrlSearchState("q", "default_search", z.string());
- */
-export function useUrlSearchState<S extends z.ZodSchema>(
-  key: string,
-  defaultValue: z.infer<S>,
-  schema: S,
-): [z.infer<S>, SetUrlSearchParam<z.infer<S>>, RemoveUrlSearchParam] {
-  const history = useHistory();
-  const location = useLocation();
-  const search = location.search;
-  const frozenLocation = useRef(location);
-
-  const locked = useRef(false);
-  const defaultValueRef = useRef(defaultValue);
-
-  useEffect(() => {
-    locked.current = false;
-    return () => {
-      locked.current = true;
-    };
-  }, [defaultValue]);
-
-  const isActive = useIsActiveRoute();
-
-  // parse & validate the raw URL param, fallback to default
-  const value = useMemo<z.infer<S>>(() => {
-    if (!isActive) {
-      return undefined;
-    }
-
-    const params = new URLSearchParams(location.search);
-    const raw = params.get(key);
-    if (raw === null) {
-      defaultValueRef.current = defaultValue;
-      return undefined;
-    }
-
-    if (!schema) {
-      defaultValueRef.current = raw;
-      return raw;
-    }
-
-    const parsed = schema.safeParse(raw);
-    if (parsed.success) {
-      defaultValueRef.current = parsed.data;
-      return parsed.data;
-    }
-
-    return undefined;
-  }, [location.search, key, schema, isActive, defaultValue]);
-
-  // setter that validates and pushes/replaces the URL
-  const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
-    (next, config) => {
-      const replace = config?.replace ?? true;
-
-      const newVal =
-        typeof next === "function"
-          ? (next as (p: z.infer<S>) => z.infer<S>)(value)
-          : next;
-
-      // ensure it’s valid
-      if (schema) {
-        schema.parse(newVal);
-      }
-
-      const params = new URLSearchParams(config?.search ?? search);
-      params.set(key, newVal);
-      const newSearch = params.toString();
-      const to = {
-        // Idk why but location is getting out of sync with
-        // browser location. So we just freeze the intial value
-        // and that seems to work.
-        ...frozenLocation.current,
-        search: newSearch ? `?${newSearch}` : "",
-      };
-      const id = window.setTimeout(() => {
-        if (!locked.current) {
-          replace ? history.replace(to) : history.push(to);
-        }
-      }, 5);
-      return {
-        and: <V>(setValue: SetUrlSearchParam<V>, val: V) => {
-          window.clearTimeout(id);
-          return setValue(val, { ...config, search: newSearch });
-        },
-      };
-    },
-    [history, key, schema, value, search, locked],
-  );
-
-  const removeParam = useCallback(
-    (config?: {
-      replace?: boolean;
-      search?: string;
-    }): {
-      and: AndRemove;
-    } => {
-      const replace = config?.replace ?? true;
-      const params = new URLSearchParams(config?.search ?? search);
-      params.delete(key);
-      const newSearch = params.toString();
-      const to = {
-        // Idk why but location is getting out of sync with
-        // browser location. So we just freeze the intial value
-        // and that seems to work.
-        ...frozenLocation.current,
-        search: newSearch ? `?${newSearch}` : "",
-      };
-      const id = setTimeout(() => {
-        replace ? history.replace(to) : history.push(to);
-      }, 5);
-      return {
-        and: (removeParam) => {
-          clearTimeout(id);
-          return removeParam({ ...config, search: newSearch });
-        },
-      };
-    },
-    [history, key, search],
-  );
-
-  return [value ?? defaultValueRef.current, setValue, removeParam];
 }
 
 export function useSelectAlert() {
@@ -350,34 +211,6 @@ export function useIonPageElement() {
     ref,
     element: element ?? undefined,
   };
-}
-
-function normalizePath(p: string) {
-  return p.replace(/\/$/, "");
-}
-
-export function useIsActiveRoute(route?: RoutePath) {
-  const pathname = usePathname();
-  const snapshot = useRef(pathname);
-  if (route) {
-    return normalizePath(route) === normalizePath(pathname);
-  }
-  return normalizePath(snapshot.current) === normalizePath(pathname);
-}
-
-export function useHideTabBarOnMount() {
-  const isActive = useIsActiveRoute();
-  useEffect(() => {
-    if (isActive) {
-      const tabBar = () => document.querySelector("ion-tab-bar");
-      // add a CSS class to the root element
-      tabBar()?.classList.add("hidden");
-      return () => {
-        // clean up when this component unmounts
-        tabBar()?.classList.remove("hidden");
-      };
-    }
-  }, [isActive]);
 }
 
 export function useSafeAreaInsets() {
