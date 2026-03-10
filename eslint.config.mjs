@@ -26,6 +26,11 @@ export default tseslint.config(
   },
   ...tanstackQuery.configs["flat/recommended"],
   {
+    rules: {
+      "@tanstack/query/exhaustive-deps": "off",
+    },
+  },
+  {
     plugins: { "unused-imports": unusedImports },
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
@@ -45,6 +50,7 @@ export default tseslint.config(
     files: ["**/*.ts", "**/*.tsx"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-namespace": "off",
       "no-empty": "warn",
       "prefer-const": "warn",
       "no-useless-assignment": "warn",

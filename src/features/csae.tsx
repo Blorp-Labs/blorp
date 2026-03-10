@@ -42,7 +42,7 @@ I maintain a strict zero‑tolerance stance toward any form of child sexual abus
 
 ## 4. Reporting Mechanisms  
 - **In‑App “Report” Button:** Directs the report to the instance administrators.  
-- **Email Reports:** Send detailed reports (URLs, screenshots) to **support@blorpblorp.xyz**. Expect an acknowledgment within 24 hours.
+- **Email Reports:** Send detailed reports (URLs, screenshots) to **support@blorpblorp.xyz**. Expect an acknowledgment within 24 hours.
 
 ---
 

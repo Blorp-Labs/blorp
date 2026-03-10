@@ -423,7 +423,7 @@ function TipTapEditor({
       DetailsContentWithMarkdown,
     ],
     onUpdate: ({ editor }) => {
-      // @ts-expect-error
+      // @ts-expect-error types too hard lol
       const markdown = editor?.storage["markdown"].getMarkdown();
       onChange(markdown);
     },
@@ -492,7 +492,7 @@ function TipTapEditor({
   });
 
   useEffect(() => {
-    // @ts-expect-error
+    // @ts-expect-error types also too hard
     if (editor?.storage["markdown"].getMarkdown() !== content) {
       editor?.commands.setContent(content);
     }

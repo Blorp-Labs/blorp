@@ -1054,10 +1054,13 @@ export function useLikeComment() {
         switch (score) {
           case 0:
             verb = "upvote";
+            break;
           case 1:
             verb = "unvote";
+            break;
           case -1:
             verb = "downvote";
+            break;
         }
         toast.error(`Couldn't ${verb} post`);
       }
@@ -1367,7 +1370,7 @@ function usePrivateMessagesKey() {
   return getPrivateMessagesKey(queryKeyPrefix);
 }
 
-export function usePrivateMessages(form: {}) {
+export function usePrivateMessages(form: Forms.GetPrivateMessages) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const queryKey = usePrivateMessagesKey();

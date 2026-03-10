@@ -29,7 +29,7 @@ const makeRenderer = () => {
         return true;
       }
       // forward arrows/enter to the component
-      // @ts-ignore
+      // @ts-expect-error fn doesn't exist on ref
       return renderer?.ref?.onKeyDown?.(props) ?? false;
     },
     onExit: () => {

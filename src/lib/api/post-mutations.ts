@@ -114,10 +114,13 @@ export const useLikePost = createPostMutation({
     switch (score) {
       case 0:
         verb = "upvote";
+        break;
       case 1:
         verb = "unvote";
+        break;
       case -1:
         verb = "downvote";
+        break;
     }
     return `Couldn't ${verb} post`;
   },
