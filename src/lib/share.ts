@@ -292,6 +292,7 @@ function resolveShareUrl(
       if (entity.type === "comment") {
         return `https://${instance}/post/${entity.postId}/${entity.commentId}`;
       }
+      break;
     }
 
     case "threadiverse.link": {
@@ -310,6 +311,7 @@ function resolveShareUrl(
       if (entity.type === "comment") {
         return `https://threadiverse.link/${instance}/comment/${entity.commentId}`;
       }
+      break;
     }
   }
 

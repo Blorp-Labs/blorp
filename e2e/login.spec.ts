@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import z from "zod";
+import { GetSiteResponse } from "lemmy-v3";
 
 const USERNAME = faker.internet.username();
 const JWT = "sdfkhsdkfjhsdfkjshdfksjdhfskjdhfskjhsfsdfsdkjfhs";
@@ -103,7 +104,7 @@ test("login", async ({ page }, testInfo) => {
 
   await page.route("**/api/**/site?", async (route, request) => {
     const loggedIn = request.headers()["authorization"]?.includes(JWT);
-    const mockPayload = {
+    const mockPayload: GetSiteResponse = {
       site_view: {
         site: {
           id: 1,
@@ -253,7 +254,6 @@ test("login", async ({ page }, testInfo) => {
       blocked_urls: [],
     };
     if (!loggedIn) {
-      // @ts-expect-error
       delete mockPayload.my_user;
       mockPayload.site_view.site.sidebar = "123";
     }

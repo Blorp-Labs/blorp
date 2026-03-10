@@ -129,9 +129,9 @@ export function Route<Path extends RoutePath>({
 
 export function useParams<P extends RoutePath>(path: P): z.infer<DefByPath[P]> {
   const def = routeDefs[path];
+  const raw = useParamsDefault();
   if ("schema" in def) {
     const schema = def.schema;
-    const raw = useParamsDefault();
     return schema.parse(raw);
   }
   return {} as any;

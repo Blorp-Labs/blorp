@@ -47,7 +47,7 @@ export const DetailsWithMarkdown = Details.extend({
             // If you use DetailsContent, render the content of that wrapper:
             if (child.type.name === "detailsContent") {
               state.renderContent(child);
-              // @ts-expect-error
+              // @ts-expect-error close does not exist for some reason
               state.closed = null;
             } else {
               state.render(child, node, i);

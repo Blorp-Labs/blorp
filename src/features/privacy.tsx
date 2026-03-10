@@ -10,7 +10,7 @@ import {
 import { PageTitle } from "../components/page-title";
 
 const POLICY = `
-**Updated:** April 19, 2025
+**Updated:** April 19, 2025
 
 **Introduction**  
 Blorp is a decentralized social media client that allows users to interact with Lemmy servers of their choice. We prioritize your privacy and are committed to being transparent about how your data is handled (or not handled). This Privacy Policy explains what information we collect, how we use it, and your rights.

@@ -1,6 +1,6 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
 import MarkdownIt from "markdown-it";
-// @ts-expect-error
+// @ts-expect-error pkg doesn't have types
 import markdownitSup from "markdown-it-sup";
 
 const Superscript = Mark.create({

@@ -1,8 +1,0 @@
-{
-  "plugins": [
-    "react",
-    "unicorn",
-    "typescript",
-    "oxc"
-  ]
-}

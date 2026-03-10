@@ -738,7 +738,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getPerson(form: Forms.GetPerson, options: RequestOptions) {
-    // @ts-expect-error
+    // @ts-expect-error beta library types broken
     const { person } = await this.client.resolveObject(
       {
         q: form.apIdOrUsername,

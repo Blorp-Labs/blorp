@@ -20,9 +20,9 @@ import DOMPurify from "dompurify";
 import { createContext } from "react";
 import { RoutePath } from "@/src/routing/routes";
 import footnotePlugin from "markdown-it-footnote";
-// @ts-expect-error
+// @ts-expect-error pkg doesn't have types
 import markdownitSub from "markdown-it-sub";
-// @ts-expect-error
+// @ts-expect-error pkg doesn't have types
 import markdownitSup from "markdown-it-sup";
 import { ErrorBoundary } from "react-error-boundary";
 
