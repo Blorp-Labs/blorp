@@ -268,11 +268,12 @@ export default function LightBoxPosts() {
 
   const isPending = initPostQuery.isPending || postsQuery.isPending;
 
+  const setApId = apIdParam.set;
   useEffect(() => {
     if (initPostQuery.isError) {
-      apIdParam.set("");
+      setApId("");
     }
-  }, [initPostQuery.isError, apIdParam]);
+  }, [initPostQuery.isError, setApId]);
 
   const activeIndex = Math.max(
     data.findIndex((apId) => apId === decodedApId),
@@ -336,10 +337,10 @@ export default function LightBoxPosts() {
     (newIndex: number) => {
       const newApId = data[newIndex];
       if (newApId && !isPending) {
-        apIdParam.set(encodeApId(newApId));
+        setApId(encodeApId(newApId));
       }
     },
-    [data, isPending, apIdParam],
+    [data, isPending, setApId],
   );
 
   const [keyboardHelpModal, setKeyboardHelpModal] = useState(false);

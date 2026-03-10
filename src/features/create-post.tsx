@@ -207,11 +207,16 @@ function useDraftFromUrl({
       .optional(),
   );
 
+  const title = titleParam.value;
+  const url = urlParam.value;
+  const body = bodyParam.value;
+  const nsfw = nsfwParam.value;
+  const removeTitle = titleParam.remove;
+  const removeUrl = urlParam.remove;
+  const removeBody = bodyParam.remove;
+  const removeNsfw = nsfwParam.remove;
+
   useEffect(() => {
-    const { value: title } = titleParam;
-    const { value: url } = urlParam;
-    const { value: body } = bodyParam;
-    const { value: nsfw } = nsfwParam;
     if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
       const updateDraft: Partial<Draft> = {};
       if (title) {
@@ -230,13 +235,21 @@ function useDraftFromUrl({
       patchDraft(draftId, updateDraft);
     }
     if (title || url || body || nsfw) {
-      titleParam
-        .remove()
-        .and(urlParam.remove)
-        .and(bodyParam.remove)
-        .and(nsfwParam.remove);
+      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
     }
-  }, [draft, titleParam, urlParam, bodyParam, nsfwParam, patchDraft, draftId]);
+  }, [
+    draft,
+    title,
+    url,
+    body,
+    nsfw,
+    removeTitle,
+    removeUrl,
+    removeBody,
+    removeNsfw,
+    patchDraft,
+    draftId,
+  ]);
 }
 
 export function CreatePost() {

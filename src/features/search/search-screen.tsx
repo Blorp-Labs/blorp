@@ -207,6 +207,7 @@ export default function SearchFeed({
     z.enum(["posts", "communities", "users", "comments"]),
   );
   const type = typeParam.value;
+  const setType = typeParam.set;
 
   useKeyboardShortcut(
     useCallback(
@@ -214,21 +215,21 @@ export default function SearchFeed({
         if (!(e.target instanceof HTMLInputElement)) {
           switch (e.key) {
             case "1":
-              typeParam.set("posts");
+              setType("posts");
               break;
             case "2":
-              typeParam.set("comments");
+              setType("comments");
               break;
             case "3":
-              typeParam.set("communities");
+              setType("communities");
               break;
             case "4":
-              typeParam.set("users");
+              setType("users");
               break;
           }
         }
       },
-      [typeParam],
+      [setType],
     ),
   );
 
