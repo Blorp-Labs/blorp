@@ -25,7 +25,6 @@ type FeedStore = {
     prefix: CachePrefixer,
     patch: Partial<Schemas.MultiCommunityFeed>,
   ) => void;
-  cacheFeed: (prefix: CachePrefixer, data: Data) => void;
   cacheFeeds: (
     prefix: CachePrefixer,
     data: Data[],
@@ -69,31 +68,6 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
           },
         });
       },
-      cacheFeed: (prefix, view) => {
-        const prev = get();
-        const slug = view.feedView.apId;
-        if (slug) {
-          const cacheKey = prefix(slug);
-          const prevData = prev.feeds[cacheKey]?.data;
-          const updatedData: Data = {
-            ...prevData,
-            ...view,
-            feedView: {
-              ...prevData?.feedView,
-              ...view.feedView,
-            },
-          };
-          set({
-            feeds: {
-              ...prev.feeds,
-              [cacheKey]: {
-                data: updatedData,
-                lastUsed: Date.now(),
-              },
-            },
-          });
-        }
-      },
       cacheFeeds: (prefix, views) => {
         const prev = get().feeds;
 
@@ -110,6 +84,14 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
               feedView: {
                 ...prevData?.feedView,
                 ...view.feedView,
+                // Clear any stuck optimistic state when fresh server data arrives
+                optimisticSubscribed: undefined,
+                // Preserve previously cached community slugs if new data has none
+                // (e.g. list endpoint fetches feeds without communities)
+                communitySlugs:
+                  view.feedView.communitySlugs.length > 0
+                    ? view.feedView.communitySlugs
+                    : (prevData?.feedView.communitySlugs ?? []),
               },
             };
             newFeeds[cacheKey] = {

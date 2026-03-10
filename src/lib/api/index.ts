@@ -652,14 +652,14 @@ export function useMultiCommunityFeed(
 ) {
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cacheFeed = useMultiCommunityFeedStore((s) => s.cacheFeed);
+  const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const queryKey = [...queryKeyPrefix, "getMultiCommunityFeed", form.apId];
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
       const res = await (await api).getMultiCommunityFeed(form, { signal });
-      cacheFeed(getCachePrefixer(), { feedView: res.feed });
+      cacheFeeds(getCachePrefixer(), [{ feedView: res.feed }]);
       cacheCommunities(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),
