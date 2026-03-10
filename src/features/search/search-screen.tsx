@@ -323,6 +323,7 @@ export default function SearchFeed({
             preventOpen
             className="w-auto max-md:mx-3"
             autoFocus={media.maxMd && searchInputParam.value.length === 0}
+            data-testid="search-page-input"
           />
           <ToolbarButtons side="right">
             <UserDropdown />

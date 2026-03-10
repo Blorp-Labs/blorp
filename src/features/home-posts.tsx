@@ -254,11 +254,13 @@ export default function HomePosts() {
               router.push(resolveRoute("/home/s", `?q=${newVal ?? search}`));
             }}
             className="max-md:hidden"
+            data-testid="home-search-bar"
           />
           <ToolbarButtons side="right">
             <Link
               to="/home/s"
               className="text-2xl text-muted-foreground md:hidden"
+              data-testid="home-search-link"
             >
               <Search className="scale-110" />
             </Link>
