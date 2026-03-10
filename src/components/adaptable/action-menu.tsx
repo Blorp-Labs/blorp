@@ -1,5 +1,5 @@
 import { IonActionSheet } from "@ionic/react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -88,15 +88,7 @@ export function ActionMenu<V extends string>({
   >([]);
   const currentSub = subStack[subStack.length - 1];
 
-  // IonActionSheet fires onWillDismiss (while still animating out) before
-  // onDidDismiss (after fully closed). Pushing to subStack in onWillDismiss
-  // would change currentSub mid-animation, causing the sheet content to
-  // visually glitch as its buttons change while it's still closing. We defer
-  // the push to onDidDismiss so the old sheet fully closes first, then the
-  // new level mounts and plays its own open animation cleanly.
-  const pendingPush = useRef<{ title: string; actions: SubAction[] } | null>(
-    null,
-  );
+  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
   const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
     useMemo(
@@ -134,34 +126,28 @@ export function ActionMenu<V extends string>({
 
   const subActionButtons:
     | React.ComponentProps<typeof IonActionSheet>["buttons"]
-    | null = useMemo(
-    () =>
-      currentSub
-        ? [
-            ...currentSub.actions.map((a, index) => ({
-              text: a.text,
-              data: index,
-              cssClass: "actions" in a ? "detail" : undefined,
-              role: a.danger
-                ? "destructive"
-                : _.isString(a.value) && a.value === selectedValue
-                  ? "selected"
-                  : undefined,
-            })),
-            ...(showCancel
-              ? [
-                  {
-                    text: "Cancel",
-                    role: "cancel",
-                  },
-                ]
-              : []),
-          ]
-        : null,
-    [currentSub, showCancel, selectedValue],
-  );
+    | null = useMemo(() => {
+    if (!currentSub) return null;
 
-  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
+    const btns: NonNullable<
+      React.ComponentProps<typeof IonActionSheet>["buttons"]
+    > = currentSub.actions.map((a, index) => ({
+      text: a.text,
+      data: index,
+      cssClass: "actions" in a ? "detail" : undefined,
+      role: a.danger
+        ? "destructive"
+        : _.isString(a.value) && a.value === selectedValue
+          ? "selected"
+          : undefined,
+    }));
+
+    if (showCancel) {
+      btns.push({ text: "Cancel", role: "cancel" });
+    }
+
+    return btns;
+  }, [currentSub, showCancel, selectedValue]);
 
   if (media.md) {
     return (
@@ -176,58 +162,70 @@ export function ActionMenu<V extends string>({
               <DropdownMenuSeparator />
             </>
           )}
-          {actions.map((a, index) =>
-            _.isString(a) ? (
-              <DropdownMenuSeparator key={index} />
-            ) : a.actions ? (
-              <DropdownMenuSub key={a.text + index}>
-                <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {a.actions.map((sa, saIndex) =>
-                      "actions" in sa ? (
-                        <DropdownMenuSub key={sa.text + saIndex}>
-                          <DropdownMenuSubTrigger>
+          {actions.map((a, index) => {
+            const isFirstItem = index === 0;
+            const isLastItem = index === actions.length - 1;
+
+            if (_.isString(a)) {
+              if (isFirstItem || isLastItem) {
+                return null;
+              }
+              return <DropdownMenuSeparator key={index} />;
+            }
+
+            if (a.actions) {
+              return (
+                <DropdownMenuSub key={a.text + index}>
+                  <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      {a.actions.map((sa, saIndex) =>
+                        "actions" in sa ? (
+                          <DropdownMenuSub key={sa.text + saIndex}>
+                            <DropdownMenuSubTrigger>
+                              {sa.text}
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                              <DropdownMenuSubContent>
+                                {sa.actions.map((leaf, leafIndex) => (
+                                  <DropdownMenuItem
+                                    key={leaf.text + leafIndex}
+                                    onClick={leaf.onClick}
+                                    className={cn(
+                                      _.isString(sa.value) &&
+                                        leaf.value === selectedValue &&
+                                        "font-bold",
+                                      leaf.danger && "text-destructive!",
+                                    )}
+                                  >
+                                    {leaf.text}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                          </DropdownMenuSub>
+                        ) : (
+                          <DropdownMenuItem
+                            key={sa.text + saIndex}
+                            onClick={sa.onClick}
+                            className={cn(
+                              _.isString(a.value) &&
+                                sa.value === selectedValue &&
+                                "font-bold",
+                              sa.danger && "text-destructive!",
+                            )}
+                          >
                             {sa.text}
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                              {sa.actions.map((leaf, leafIndex) => (
-                                <DropdownMenuItem
-                                  key={leaf.text + leafIndex}
-                                  onClick={leaf.onClick}
-                                  className={cn(
-                                    _.isString(sa.value) &&
-                                      leaf.value === selectedValue &&
-                                      "font-bold",
-                                    leaf.danger && "text-destructive!",
-                                  )}
-                                >
-                                  {leaf.text}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuSubContent>
-                          </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                      ) : (
-                        <DropdownMenuItem
-                          key={sa.text + saIndex}
-                          onClick={sa.onClick}
-                          className={cn(
-                            _.isString(a.value) &&
-                              sa.value === selectedValue &&
-                              "font-bold",
-                            sa.danger && "text-destructive!",
-                          )}
-                        >
-                          {sa.text}
-                        </DropdownMenuItem>
-                      ),
-                    )}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            ) : (
+                          </DropdownMenuItem>
+                        ),
+                      )}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              );
+            }
+
+            return (
               <DropdownMenuItem
                 key={a.text + index}
                 onClick={a.onClick}
@@ -240,8 +238,8 @@ export function ActionMenu<V extends string>({
               >
                 {a.text}
               </DropdownMenuItem>
-            ),
-          )}
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -264,14 +262,8 @@ export function ActionMenu<V extends string>({
       </Button>
       {currentSub && (
         <IonActionSheet
-          {...props}
-          // Changing `key` forces React to unmount/remount the sheet, which
-          // causes Ionic to play the open animation for the new level after a
-          // pendingPush navigation.
           key={subStack.length}
-          // Breadcrumb: at tier 3 show the parent level's title as the header
-          // and the current level's title as the subHeader (e.g. "Community /
-          // Share"). At tier 2 keep the original top-level header ("Post").
+          {...props}
           header={
             subStack.length > 1
               ? subStack[subStack.length - 2]?.title
@@ -279,44 +271,31 @@ export function ActionMenu<V extends string>({
           }
           subHeader={currentSub.title}
           isOpen
-          buttons={subActionButtons!}
+          buttons={subActionButtons ?? []}
           onWillDismiss={({ detail }) => {
-            // detail.data holds the button index when a button was tapped;
-            // it is undefined for backdrop/cancel dismissals.
             const index = _.isNumber(detail.data) ? detail.data : null;
-            if (index !== null && currentSub) {
+            if (index !== null && currentSub.actions[index]) {
               const action = currentSub.actions[index];
-              if (action && "onClick" in action && action.onClick) {
-                // Leaf action — call immediately and close the sub-sheet flow.
-                setSubStack([]);
+              if ("onClick" in action && action.onClick) {
                 action.onClick();
-              } else if (action && "actions" in action) {
-                // Sub-section — store the next level so onDidDismiss can push
-                // it after the current sheet finishes closing. We can't push
-                // here because mutating subStack mid-animation would change the
-                // sheet's buttons while they're still animating out.
+                setSubStack([]);
+              } else if ("actions" in action) {
+                // Push immediately so the new sheet mounts (via key change)
+                // while the old one is still animating out, overlapping the
+                // dismiss/present animations for a snappier transition.
                 if (!disableHaptics) {
                   Haptics.impact({ style: ImpactStyle.Medium });
                 }
-                pendingPush.current = {
-                  title: action.text,
-                  actions: action.actions,
-                };
+                setSubStack((prev) => [
+                  ...prev,
+                  { title: action.text, actions: action.actions },
+                ]);
               }
             }
           }}
-          onDidDismiss={() => {
-            if (pendingPush.current) {
-              // A sub-section was tapped: push the next level. The `key` change
-              // will remount the sheet so it animates in with the new content.
-              const push = pendingPush.current;
-              pendingPush.current = null;
-              setSubStack((prev) => [...prev, push]);
-            } else {
-              // Backdrop/cancel tap: exit the sub-sheet flow entirely.
-              setSubStack([]);
-            }
-          }}
+          // Only fires for cancel/backdrop — sub-section pushes unmount this
+          // sheet (via key change) before onDidDismiss can run.
+          onDidDismiss={() => setSubStack([])}
           onWillPresent={(e) => {
             props.onWillPresent?.(e);
             onOpen?.();
