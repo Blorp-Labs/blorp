@@ -73,7 +73,7 @@ function FileUpload({
 }
 
 export default function SettingsPage() {
-  const { index: indexStr } = useParams("/settings/manage-blocks/:index");
+  const { index: indexStr } = useParams("/settings/update-profile/:index");
   const index = parseInt(indexStr);
 
   const account = useAuth((s) => s.accounts[index]);
@@ -94,11 +94,15 @@ export default function SettingsPage() {
   const [_showUpvotes, setShowUpvotes] = useState<boolean>();
   const showUpvotes = _showUpvotes ?? site?.showUpvotes ?? true;
 
-  const [_showDownvotes, setShowDownvotes] = useState<boolean>();
-  const showDownvotes = _showDownvotes ?? site?.showDownvotes ?? true;
-
   const [_showScores, setShowScores] = useState<boolean>();
   const showScores = _showScores ?? site?.showScores ?? true;
+
+  const downvotesDisabled =
+    !site?.enablePostDownvotes && !site?.enableCommentDownvotes;
+
+  const [_showDownvotes, setShowDownvotes] = useState<boolean>();
+  const showDownvotes =
+    !downvotesDisabled && (_showDownvotes ?? site?.showDownvotes ?? true);
 
   const scoresOverriddenByVotes = showUpvotes || showDownvotes;
 
@@ -135,8 +139,7 @@ export default function SettingsPage() {
   const showOverrideInfo = () =>
     presentAlert({
       header: "Blorp is overriding this setting",
-      message:
-        'Your Blorp app settings are overriding this account preference. Tap "Use account setting" to let your Lemmy account preference take effect.',
+      message: `Your Blorp app settings are overriding this account preference. Tap "Use account setting" to let your ${_.capitalize(site?.software)} account preference take effect.`,
       buttons: [{ text: "OK", role: "cancel" }],
     });
   const canShowNsfwSetting =
@@ -304,6 +307,7 @@ export default function SettingsPage() {
                       className="flex-1 font-light"
                       checked={showDownvotes}
                       onIonChange={(e) => setShowDownvotes(e.detail.checked)}
+                      disabled={downvotesDisabled}
                     >
                       Show downvotes
                     </IonToggle>
