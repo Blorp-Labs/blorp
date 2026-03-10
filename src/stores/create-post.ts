@@ -173,12 +173,11 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
       post.url = null;
       post.thumbnailUrl = null;
       if (post.poll) {
-        let maxId = Math.max(0, ...post.poll.choices.map((c) => c.id));
         post.poll = {
           ...post.poll,
           choices: post.poll.choices.map((c, i) => ({
             ...c,
-            id: c.id ?? ++maxId,
+            id: c.id,
             sortOrder: i,
           })),
         };

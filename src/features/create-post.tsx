@@ -270,6 +270,17 @@ function useDraftFromUrl({
   ]);
 }
 
+const DEFAULT_POLL: Forms.PollInput = {
+  endAmount: 7,
+  endUnit: "days",
+  mode: "single",
+  localOnly: false,
+  choices: [
+    { id: 0, text: "", sortOrder: 0 },
+    { id: 0, text: "", sortOrder: 1 },
+  ],
+};
+
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
@@ -318,17 +329,6 @@ export function CreatePost() {
   const { software } = softwareInfo;
   const showPollOption =
     supportsPollCreation(softwareInfo) || draft.type === "poll";
-
-  const DEFAULT_POLL: Forms.PollInput = {
-    endAmount: 7,
-    endUnit: "days",
-    mode: "single",
-    localOnly: false,
-    choices: [
-      { id: 0, text: "", sortOrder: 0 },
-      { id: 0, text: "", sortOrder: 1 },
-    ],
-  };
 
   const patchPollChoice = (index: number, text: string) => {
     if (!draft.poll) return;
@@ -741,7 +741,7 @@ export function CreatePost() {
                               patchDraft(draftId, {
                                 poll: {
                                   ...draft.poll,
-                                  endAmount: parseFloat(e.target.value),
+                                  endAmount: parseFloat(e.target.value || "1"),
                                 },
                               })
                             }
