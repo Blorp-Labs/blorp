@@ -280,6 +280,9 @@ export function ActionMenu<V extends string>({
                 action.onClick();
                 setSubStack([]);
               } else if ("actions" in action) {
+                // Push immediately so the new sheet mounts (via key change)
+                // while the old one is still animating out, overlapping the
+                // dismiss/present animations for a snappier transition.
                 if (!disableHaptics) {
                   Haptics.impact({ style: ImpactStyle.Medium });
                 }
@@ -290,6 +293,8 @@ export function ActionMenu<V extends string>({
               }
             }
           }}
+          // Only fires for cancel/backdrop — sub-section pushes unmount this
+          // sheet (via key change) before onDidDismiss can run.
           onDidDismiss={() => setSubStack([])}
           onWillPresent={(e) => {
             props.onWillPresent?.(e);
