@@ -119,7 +119,7 @@ export class PriorityThrottledQueue {
   }
 }
 
-export function useThrottleQueue(key: ReadonlyArray<unknown> | {}) {
+export function useThrottleQueue(key: ReadonlyArray<unknown>) {
   const memo = useDeepCompareMemoize(key);
   const queue = useMemo(() => new PriorityThrottledQueue(1000 * 5), [memo]);
 
