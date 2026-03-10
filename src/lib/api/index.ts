@@ -633,7 +633,10 @@ export function useListMultiCommunityFeeds(
     queryKey,
     queryFn: async ({ signal }) => {
       const res = await (await api).getMultiCommunityFeeds(form, { signal });
-      cacheFeeds(getCachePrefixer(), res.multiCommunityFeeds);
+      cacheFeeds(
+        getCachePrefixer(),
+        res.multiCommunityFeeds.map((feedView) => ({ feedView })),
+      );
       cacheCommunities(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),
@@ -642,6 +645,30 @@ export function useListMultiCommunityFeeds(
     },
     getNextPageParam: () => null,
     initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
+export function useMultiCommunityFeed(
+  form: Forms.GetMultiCommunityFeed,
+  options?: QueryOverwriteOptions,
+) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheFeed = useMultiCommunityFeedStore((s) => s.cacheFeed);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const queryKey = [...queryKeyPrefix, "getMultiCommunityFeed", form.apId];
+  return useQuery({
+    queryKey,
+    queryFn: async ({ signal }) => {
+      const res = await (await api).getMultiCommunityFeed(form, { signal });
+      cacheFeed(getCachePrefixer(), { feedView: res.feed });
+      cacheCommunities(
+        getCachePrefixer(),
+        res.communities.map((communityView) => ({ communityView })),
+      );
+      return res;
+    },
     ...options,
   });
 }

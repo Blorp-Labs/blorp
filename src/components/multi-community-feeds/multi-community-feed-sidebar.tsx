@@ -40,7 +40,7 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const actions = useMultiCommunityActions({
     apId,
@@ -164,7 +164,7 @@ export function FeedSidebar({
   hideDescription?: boolean;
   asPage?: boolean;
 }) {
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const aboutOpen = useSidebarStore((s) => s.communityAboutExpanded);
   const setAboutOpen = useSidebarStore((s) => s.setCommunityAboutExpanded);

@@ -557,6 +557,10 @@ export namespace Forms {
     type?: "All" | "Local" | "Subscribed";
   };
 
+  export type GetMultiCommunityFeed = {
+    apId: string;
+  };
+
   export type FollowCommunity = {
     communityId: number;
     follow: boolean;
@@ -858,6 +862,14 @@ export abstract class ApiBlueprint<C> {
     multiCommunityFeeds: Schemas.MultiCommunityFeed[];
     communities: Schemas.Community[];
     nextCursor: null;
+  }>;
+
+  abstract getMultiCommunityFeed(
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
+  ): Promise<{
+    feed: Schemas.MultiCommunityFeed;
+    communities: Schemas.Community[];
   }>;
 
   abstract getPerson(

@@ -65,7 +65,7 @@ export default function MultiCommunityFeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSorts();

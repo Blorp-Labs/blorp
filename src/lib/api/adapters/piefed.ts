@@ -1498,6 +1498,47 @@ export class PieFedApi implements ApiBlueprint<null> {
     }
   }
 
+  async getMultiCommunityFeed(
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
+  ) {
+    const json = await this.get("/resolve_object", { q: form.apId }, options);
+    try {
+      const { feed } = z
+        .object({
+          feed: pieFedFeedSchema,
+        })
+        .parse(json);
+
+      const communities = feed.communities.map((community) =>
+        convertCommunity({ community }, "partial"),
+      );
+
+      return {
+        feed: {
+          createdAt: feed.published,
+          id: feed.id,
+          apId: feed.actor_id,
+          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+          name: feed.name,
+          icon: feed.icon ?? null,
+          banner: feed.banner ?? null,
+          nsfw: feed.nsfw,
+          communityCount: feed.communities_count,
+          subscriberCount: feed.subscriptions_count,
+          description: feed.description ?? null,
+          communitySlugs: feed.communities.map(
+            (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+          ),
+        },
+        communities,
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
     if (!form.slug) {
       throw new Error("community slug required");
