@@ -994,7 +994,6 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     });
     return {
       multiCommunityFeeds: items.map(convertFeed),
-      communities: [],
       nextCursor: null,
     };
   }

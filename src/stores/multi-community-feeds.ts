@@ -156,7 +156,7 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
     {
       name: "multi-community-feeds",
       storage: createStorage<FeedStore>(),
-      version: 1,
+      version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();

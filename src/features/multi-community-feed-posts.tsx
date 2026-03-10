@@ -8,16 +8,15 @@ import { Fragment, memo, useMemo, useState } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
-import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
+import {
+  useAvailableSorts,
+  useMostRecentPost,
+  useMultiCommunityFeed,
+  usePosts,
+} from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { MultiCommunityFeedBanner } from "../components/multi-community-feeds/multi-community-feed-banner";
 import {
@@ -35,7 +34,7 @@ import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
-import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
+import { FeedPostSortBar } from "../components/multi-community-feeds/feed-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
@@ -47,6 +46,7 @@ import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
+import { Page } from "../components/page";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -65,6 +65,9 @@ export default function MultiCommunityFeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
+  const feedQuery = useMultiCommunityFeed({
+    apId,
+  });
   const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
@@ -75,7 +78,7 @@ export default function MultiCommunityFeedPosts() {
     multiCommunityFeedId: feed?.id,
   });
 
-  const mostRecentPost = useMostRecentPost("community", {
+  const mostRecentPost = useMostRecentPost("feed", {
     multiCommunityFeedApId: apId,
     multiCommunityFeedId: feed?.id,
   });
@@ -119,7 +122,7 @@ export default function MultiCommunityFeedPosts() {
   };
 
   return (
-    <IonPage>
+    <Page notFound={feedQuery.isError && !feed} notFoundCommunitySlug={apId}>
       <PageTitle>{feed?.slug ?? apId}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -215,7 +218,7 @@ export default function MultiCommunityFeedPosts() {
                 </ContentGutters>
               </Fragment>,
               <Fragment key="community-sort-bar">
-                <CommunityPostSortBar communityName={apId} />
+                <FeedPostSortBar apId={apId} />
                 {!refreshing && (
                   <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
                 )}
@@ -254,6 +257,6 @@ export default function MultiCommunityFeedPosts() {
           <FeedSidebar apId={apId} />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

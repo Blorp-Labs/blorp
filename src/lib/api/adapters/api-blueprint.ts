@@ -166,6 +166,7 @@ const multiCommunityFeedSchema = z.object({
   subscriberCount: z.number(),
   description: z.string().nullable(),
   communitySlugs: z.array(z.string()),
+  subscribed: z.boolean().nullish(),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -860,7 +861,6 @@ export abstract class ApiBlueprint<C> {
     options?: RequestOptions,
   ): Promise<{
     multiCommunityFeeds: Schemas.MultiCommunityFeed[];
-    communities: Schemas.Community[];
     nextCursor: null;
   }>;
 

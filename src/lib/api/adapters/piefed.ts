@@ -114,13 +114,13 @@ export const pieFedFeedSchema = z.object({
   banner: z.string().nullish(),
   communities_count: z.number(),
   subscriptions_count: z.number(),
-  description: z.string(),
-  description_html: z.string(),
+  description: z.string().nullish(),
   icon: z.string().nullish(),
   id: z.number(),
   name: z.string(),
   nsfw: z.boolean(),
   communities: z.array(pieFedCommunitySchema),
+  subscribed: z.boolean().nullish(),
 });
 
 export const pieFedPostCountsSchema = z.object({
@@ -1447,49 +1447,45 @@ export class PieFedApi implements ApiBlueprint<null> {
     }
   }
 
+  private convertFeed(feed: z.infer<typeof pieFedFeedSchema>) {
+    return {
+      createdAt: feed.published,
+      id: feed.id,
+      apId: feed.actor_id,
+      slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+      name: feed.name,
+      icon: feed.icon ?? null,
+      banner: feed.banner ?? null,
+      nsfw: feed.nsfw,
+      communityCount: feed.communities_count,
+      subscriberCount: feed.subscriptions_count,
+      description: feed.description ?? null,
+      subscribed: feed.subscribed ?? null,
+      communitySlugs: feed.communities.map(
+        (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+      ),
+    };
+  }
+
   async getMultiCommunityFeeds(
     form: Forms.GetMultiCommunityFeeds,
     options?: RequestOptions,
   ) {
-    const json = await this.get("/feed/list", {}, options);
+    const json = await this.get(
+      "/feed/list",
+      {
+        include_communities: false,
+      },
+      options,
+    );
     try {
       const { feeds } = z
         .object({
           feeds: z.array(pieFedFeedSchema),
         })
         .parse(json);
-
-      const communities = feeds.flatMap(({ communities }) =>
-        communities.map((community) =>
-          convertCommunity(
-            {
-              community,
-            },
-            "partial",
-          ),
-        ),
-      );
-
       return {
-        multiCommunityFeeds: feeds.map((feed) => ({
-          createdAt: feed.published,
-          id: feed.id,
-          apId: feed.actor_id,
-          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
-          name: feed.name,
-          icon: feed.icon ?? null,
-          banner: feed.banner ?? null,
-          nsfw: feed.nsfw,
-          communityCount: feed.communities_count,
-          subscriberCount: feed.subscriptions_count,
-          description: feed.description ?? null,
-          communitySlugs: feed.communities.map(
-            (community) =>
-              createSlug({ apId: community.actor_id, name: community.name })
-                .slug,
-          ),
-        })),
-        communities,
+        multiCommunityFeeds: feeds.map((feed) => this.convertFeed(feed)),
         nextCursor: null,
       };
     } catch (err) {
@@ -1502,35 +1498,18 @@ export class PieFedApi implements ApiBlueprint<null> {
     form: Forms.GetMultiCommunityFeed,
     options?: RequestOptions,
   ) {
-    const json = await this.get("/resolve_object", { q: form.apId }, options);
     try {
-      const { feed } = z
-        .object({
-          feed: pieFedFeedSchema,
-        })
-        .parse(json);
+      const { feed_id } = await this.resolveObjectId(form.apId);
+
+      const feedJson = await this.get("/feed", { id: feed_id }, options);
+      const feed = pieFedFeedSchema.parse(feedJson);
 
       const communities = feed.communities.map((community) =>
         convertCommunity({ community }, "partial"),
       );
 
       return {
-        feed: {
-          createdAt: feed.published,
-          id: feed.id,
-          apId: feed.actor_id,
-          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
-          name: feed.name,
-          icon: feed.icon ?? null,
-          banner: feed.banner ?? null,
-          nsfw: feed.nsfw,
-          communityCount: feed.communities_count,
-          subscriberCount: feed.subscriptions_count,
-          description: feed.description ?? null,
-          communitySlugs: feed.communities.map(
-            (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
-          ),
-        },
+        feed: this.convertFeed(feed),
         communities,
       };
     } catch (err) {

@@ -410,7 +410,7 @@ export function usePostsKey(config?: Forms.GetPosts) {
 }
 
 export function useMostRecentPost(
-  featuredContext: "local" | "community",
+  featuredContext: "local" | "community" | "feed",
   form: Forms.GetPosts,
 ) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -446,6 +446,8 @@ export function useMostRecentPost(
               return !post.featuredLocal;
             case "community":
               return !post.featuredCommunity;
+            case "feed":
+              return true;
           }
         })?.post.apId ?? null
       );
@@ -627,7 +629,6 @@ export function useListMultiCommunityFeeds(
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
-  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const queryKey = [...queryKeyPrefix, "getMultiCommunityFeeds", form];
   return useThrottledInfiniteQuery({
     queryKey,
@@ -637,11 +638,7 @@ export function useListMultiCommunityFeeds(
         getCachePrefixer(),
         res.multiCommunityFeeds.map((feedView) => ({ feedView })),
       );
-      cacheCommunities(
-        getCachePrefixer(),
-        res.communities.map((communityView) => ({ communityView })),
-      );
-      return res;
+      return res.multiCommunityFeeds.map((f) => f.apId);
     },
     getNextPageParam: () => null,
     initialPageParam: INIT_PAGE_TOKEN,
@@ -667,7 +664,7 @@ export function useMultiCommunityFeed(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),
       );
-      return res;
+      return res.feed.apId;
     },
     ...options,
   });
