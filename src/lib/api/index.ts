@@ -2153,6 +2153,52 @@ export function useFollowCommunity() {
   });
 }
 
+export function useFollowFeed() {
+  const { api, queryKeyPrefix } = useApiClients();
+
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const patchFeed = useMultiCommunityFeedStore((s) => s.patchFeed);
+
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (form: {
+      feed: Schemas.MultiCommunityFeed;
+      follow: boolean;
+    }) => {
+      return (await api).followFeed({
+        feedId: form.feed.id,
+        follow: form.follow,
+      });
+    },
+    onMutate: (form) => {
+      patchFeed(form.feed.apId, getCachePrefixer(), {
+        optimisticSubscribed: "Pending",
+      });
+    },
+    onSuccess: (data) => {
+      patchFeed(data.apId, getCachePrefixer(), {
+        ...data,
+        optimisticSubscribed: undefined,
+      });
+    },
+    onError: (_err, form) => {
+      patchFeed(form.feed.apId, getCachePrefixer(), {
+        optimisticSubscribed: undefined,
+      });
+      toast.error("Couldn't follow feed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeyPrefix, "getMultiCommunityFeeds"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeyPrefix, "getMultiCommunityFeed"],
+      });
+    },
+  });
+}
+
 export function useMarkAllRead() {
   const { api, queryKeyPrefix } = useApiClients();
   const queryClient = useQueryClient();

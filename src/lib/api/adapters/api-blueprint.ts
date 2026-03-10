@@ -167,6 +167,9 @@ const multiCommunityFeedSchema = z.object({
   description: z.string().nullable(),
   communitySlugs: z.array(z.string()),
   subscribed: z.boolean().nullish(),
+  optimisticSubscribed: z
+    .enum(["Subscribed", "NotSubscribed", "Pending"])
+    .optional(),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -567,6 +570,11 @@ export namespace Forms {
     follow: boolean;
   };
 
+  export type FollowFeed = {
+    feedId: number;
+    follow: boolean;
+  };
+
   export type GetComments = {
     postApId?: string;
     parentId?: number;
@@ -880,6 +888,10 @@ export abstract class ApiBlueprint<C> {
   abstract followCommunity(
     form: Forms.FollowCommunity,
   ): Promise<Schemas.Community>;
+
+  abstract followFeed(
+    form: Forms.FollowFeed,
+  ): Promise<Schemas.MultiCommunityFeed>;
 
   abstract logout(): Promise<void>;
 

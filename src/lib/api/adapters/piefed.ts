@@ -1518,6 +1518,17 @@ export class PieFedApi implements ApiBlueprint<null> {
     }
   }
 
+  async followFeed(
+    form: Forms.FollowFeed,
+  ): Promise<Schemas.MultiCommunityFeed> {
+    const json = await this.post("/feed/follow", {
+      feed_id: form.feedId,
+      follow: form.follow,
+    });
+    const feed = pieFedFeedSchema.parse(json);
+    return this.convertFeed(feed);
+  }
+
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
     if (!form.slug) {
       throw new Error("community slug required");

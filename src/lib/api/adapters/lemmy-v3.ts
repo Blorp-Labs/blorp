@@ -1094,6 +1094,11 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     return {} as any;
   }
 
+  async followFeed() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
+  }
+
   async followCommunity(form: Forms.FollowCommunity) {
     return translateErrors(async () => {
       const { community_view } = await this.client.followCommunity({

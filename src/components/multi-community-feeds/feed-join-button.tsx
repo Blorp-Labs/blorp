@@ -1,6 +1,10 @@
+import { Deferred } from "@/src/lib/deferred";
 import { Button } from "../ui/button";
+import { useFollowFeed } from "@/src/lib/api/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
+import { useIonAlert } from "@ionic/react";
+import { getFeedSubscribed } from "@/src/lib/api/adapters/utils";
 
 interface Props {
   feedApId: string | undefined;
@@ -8,17 +12,60 @@ interface Props {
 }
 
 export function FeedJoinButton({ feedApId, ...props }: Props) {
+  const [alrt] = useIonAlert();
+
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const follow = useFollowFeed();
+
   const feed = useMultiCommunityFeedFromStore(feedApId)?.feedView;
-  const subscribed = feed?.subscribed;
+
+  const effectiveSubscribed = feed ? getFeedSubscribed(feed) : "NotSubscribed";
+
+  let copy = "Follow";
+  if (effectiveSubscribed === "Pending") {
+    copy = "Pending";
+  } else if (effectiveSubscribed === "Subscribed") {
+    copy = "Followed";
+  }
 
   if (!isLoggedIn) {
     return null;
   }
 
   return (
-    <Button size="sm" variant={subscribed ? "outline" : "default"} {...props}>
-      {subscribed ? "Followed" : "Follow"}
+    <Button
+      size="sm"
+      variant={effectiveSubscribed === "NotSubscribed" ? "default" : "outline"}
+      {...props}
+      onClick={async () => {
+        if (feed) {
+          const shouldFollow = effectiveSubscribed === "NotSubscribed";
+
+          if (!shouldFollow) {
+            const deferred = new Deferred();
+            alrt({
+              message: `Are you sure you want to unfollow ${feed.name}`,
+              buttons: [
+                {
+                  text: "Cancel",
+                  role: "cancel",
+                  handler: () => deferred.reject(),
+                },
+                {
+                  text: "Unfollow",
+                  role: "destructive",
+                  handler: () => deferred.resolve(),
+                },
+              ],
+            });
+            await deferred.promise;
+          }
+
+          follow.mutate({ feed, follow: shouldFollow });
+        }
+      }}
+    >
+      {copy}
     </Button>
   );
 }
