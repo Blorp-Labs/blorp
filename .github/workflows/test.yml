@@ -96,7 +96,7 @@ jobs:
           retention-days: 30
 
   lint:
-    name: Lint (Oxlint)
+    name: Lint (ESLint)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -115,4 +115,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - uses: oxc-project/oxlint-action@v2.0.1
+      - name: Run ESLint
+        run: pnpm lint
