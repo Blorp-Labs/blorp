@@ -1,12 +1,6 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import {
-  IonContent,
-  IonHeader,
-  IonToggle,
-  IonToolbar,
-  useIonAlert,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonAlert } from "@ionic/react";
 import { FiHelpCircle } from "react-icons/fi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
@@ -35,6 +29,33 @@ const VOTE_DISPLAY_OPTIONS: { value: ScoreDisplay; label: string }[] = [
   { value: "downvotes", label: "Downvotes only" },
   { value: "none", label: "Hidden" },
 ];
+
+type NsfwDisplay = "hidden" | "blur" | "show";
+
+const NSFW_DISPLAY_OPTIONS: { value: NsfwDisplay; label: string }[] = [
+  { value: "hidden", label: "Hidden" },
+  { value: "blur", label: "Blur" },
+  { value: "show", label: "Show" },
+];
+
+function toNsfwDisplay(showNsfw: boolean, blurNsfw: boolean): NsfwDisplay {
+  if (!showNsfw) return "hidden";
+  return blurNsfw ? "blur" : "show";
+}
+
+function fromNsfwDisplay(mode: NsfwDisplay): {
+  showNsfw: boolean;
+  blurNsfw: boolean;
+} {
+  switch (mode) {
+    case "hidden":
+      return { showNsfw: false, blurNsfw: true };
+    case "blur":
+      return { showNsfw: true, blurNsfw: true };
+    case "show":
+      return { showNsfw: true, blurNsfw: false };
+  }
+}
 
 // Note: this conversion is intentionally lossy. Lemmy has three separate
 // boolean fields (showUpvotes, showDownvotes, showScores) but the UI collapses
@@ -128,11 +149,11 @@ export default function SettingsPage() {
   const [_bio, setBio] = useState<string>();
   const bio = _bio ?? site?.me?.bio ?? "";
 
-  const [_showNsfw, setShowNsfw] = useState<boolean>();
-  const showNsfw = _showNsfw ?? site?.showNsfw ?? false;
-
-  const [_blurNsfw, setBlurNsfw] = useState<boolean>();
-  const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
+  const [_nsfwDisplay, setNsfwDisplay] = useState<NsfwDisplay>();
+  const nsfwDisplay =
+    _nsfwDisplay ??
+    toNsfwDisplay(site?.showNsfw ?? false, site?.blurNsfw ?? true);
+  const { showNsfw, blurNsfw } = fromNsfwDisplay(nsfwDisplay);
 
   const serverEnablesDownvotes =
     site?.enablePostDownvotes !== false ||
@@ -307,33 +328,17 @@ export default function SettingsPage() {
               </div>
 
               {canShowNsfwSetting && (
-                <>
-                  <div className="flex flex-col gap-1">
-                    <IonToggle
-                      className="flex-1 font-light"
-                      checked={showNsfw}
-                      onIonChange={(e) => {
-                        setShowNsfw(e.detail.checked);
-                        if (e.detail.checked) {
-                          setBlurNsfw(true);
-                        }
-                      }}
-                    >
-                      Show NSFW content
-                    </IonToggle>
-                  </div>
-                  {showNsfw && (
-                    <div className="flex flex-col gap-1">
-                      <IonToggle
-                        className="flex-1 font-light"
-                        checked={blurNsfw}
-                        onIonChange={(e) => setBlurNsfw(e.detail.checked)}
-                      >
-                        Blur NSFW images
-                      </IonToggle>
-                    </div>
-                  )}
-                </>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="font-light">NSFW content</label>
+                  <SimpleSelect
+                    options={NSFW_DISPLAY_OPTIONS}
+                    value={nsfwDisplay}
+                    onChange={(opt) => setNsfwDisplay(opt.value)}
+                    valueGetter={(o) => o.value}
+                    labelGetter={(o) => o.label}
+                    className="w-[160px]"
+                  />
+                </div>
               )}
 
               {isLemmy && (
