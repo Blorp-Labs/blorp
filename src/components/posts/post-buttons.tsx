@@ -55,6 +55,7 @@ export function usePostVoting(apId?: string) {
   );
 
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
+  console.log({ enableDownvotes });
   const scoreDisplay = useScoreDisplay();
 
   const { mutate: mutateVote } = useLikePost();
@@ -262,7 +263,7 @@ export function PostVoting({
     const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
     return (
       <Button
-        size="sm"
+        size={!showCount ? "icon" : "sm"}
         variant={variant}
         onClick={() =>
           vote({

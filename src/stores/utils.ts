@@ -13,13 +13,14 @@ export function useShouldShowDownvotes(
     useAuth(
       (s) => getAccountSite(s.getSelectedAccount())?.[serverCapabilityKey],
     ) ?? true;
-  const accountShowsDownvotes =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showDownvotes) ??
-    true;
+  const scoreDisplay = useScoreDisplay();
 
   if (voteDisplaySetting === "none") return false;
   if (voteDisplaySetting === "account") {
-    return accountShowsDownvotes && serverCapability;
+    // Use the resolved display mode rather than site.showDownvotes directly.
+    // e.g. "score" mode has showDownvotes=false on the account but the
+    // downvote button should still appear when the server supports it.
+    return scoreDisplay !== "none" && serverCapability;
   }
   // Any explicit display mode still shows the downvote button if the server allows it.
   return serverCapability;
