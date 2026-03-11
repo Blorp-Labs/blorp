@@ -337,6 +337,7 @@ export default function SettingsPage() {
                     valueGetter={(o) => o.value}
                     labelGetter={(o) => o.label}
                     className="w-[160px]"
+                    side="top"
                   />
                 </div>
               )}
@@ -359,6 +360,7 @@ export default function SettingsPage() {
                         valueGetter={(o) => o.value}
                         labelGetter={(o) => o.label}
                         className="w-[160px]"
+                        side="top"
                       />
                     </div>
                   ) : (

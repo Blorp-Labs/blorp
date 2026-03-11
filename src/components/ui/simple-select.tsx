@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ interface SimpleSelectProps<O, V extends string | number> {
   labelGetter: (option: O) => string;
   placeholder?: string;
   className?: string;
+  side?: React.ComponentPropsWithoutRef<typeof SelectContent>["side"];
 }
 
 export function SimpleSelect<O, V extends string | number>({
@@ -25,6 +27,7 @@ export function SimpleSelect<O, V extends string | number>({
   labelGetter,
   placeholder,
   className,
+  side,
 }: SimpleSelectProps<O, V>) {
   return (
     <Select
@@ -37,7 +40,7 @@ export function SimpleSelect<O, V extends string | number>({
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent side={side}>
         {options.map((o) => (
           <SelectItem key={valueGetter(o)} value={String(valueGetter(o))}>
             {labelGetter(o)}
