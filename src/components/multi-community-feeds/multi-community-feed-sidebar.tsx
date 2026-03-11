@@ -28,6 +28,7 @@ import { DateTime } from "../datetime";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import { CommunityCard } from "../communities/community-card";
 import { encodeApId } from "@/src/lib/api/utils";
+import { FeedJoinButton } from "./feed-join-button";
 
 dayjs.extend(localizedFormat);
 
@@ -102,6 +103,8 @@ export function SmallScreenSidebar({
             actions={actions}
             aria-label="Community actions"
           />
+
+          <FeedJoinButton feedApId={apId} />
         </div>
       </div>
 
