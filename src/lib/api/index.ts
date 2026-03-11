@@ -447,6 +447,7 @@ export function useMostRecentPost(
             case "community":
               return !post.featuredCommunity;
             case "feed":
+              // Feeds don't have pinned posts, so no filtering needed.
               return true;
           }
         })?.post.apId ?? null

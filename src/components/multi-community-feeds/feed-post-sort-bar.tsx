@@ -11,6 +11,7 @@ export function FeedPostSortBar({ apId }: { apId: string | undefined }) {
         <div className="flex-1" />
         <FeedJoinButton feedApId={apId} />
       </div>
+      {/* ContentGutters requires a second child for the sidebar slot */}
       <></>
     </ContentGutters>
   );

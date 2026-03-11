@@ -1,5 +1,5 @@
 import { Deferred } from "@/src/lib/deferred";
-import { Button } from "../ui/button";
+import { LoadingButton } from "../ui/button";
 import { useFollowFeed } from "@/src/lib/api/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
@@ -21,8 +21,11 @@ export function FeedJoinButton({ feedApId, ...props }: Props) {
 
   const effectiveSubscribed = feed ? getFeedSubscribed(feed) : "NotSubscribed";
 
+  // Show "Pending" text only after the mutation has settled and the server
+  // still reports a pending state (e.g. waiting for federation or approval).
+  // While the mutation itself is in-flight, the spinner communicates progress.
   let copy = "Follow";
-  if (effectiveSubscribed === "Pending") {
+  if (!follow.isPending && effectiveSubscribed === "Pending") {
     copy = "Pending";
   } else if (effectiveSubscribed === "Subscribed") {
     copy = "Followed";
@@ -33,8 +36,9 @@ export function FeedJoinButton({ feedApId, ...props }: Props) {
   }
 
   return (
-    <Button
+    <LoadingButton
       size="sm"
+      loading={follow.isPending}
       variant={effectiveSubscribed === "NotSubscribed" ? "default" : "outline"}
       {...props}
       onClick={async () => {
@@ -66,6 +70,6 @@ export function FeedJoinButton({ feedApId, ...props }: Props) {
       }}
     >
       {copy}
-    </Button>
+    </LoadingButton>
   );
 }

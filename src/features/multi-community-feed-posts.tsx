@@ -65,6 +65,9 @@ export default function MultiCommunityFeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
+  // Fetch the individual feed to hydrate the store with communities and
+  // subscription state. The UI reads from the store directly via
+  // useMultiCommunityFeedFromStore; feedQuery is only used for its error state.
   const feedQuery = useMultiCommunityFeed({
     apId,
   });

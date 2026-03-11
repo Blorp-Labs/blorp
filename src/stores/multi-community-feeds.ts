@@ -86,10 +86,12 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
                 ...view.feedView,
                 // Clear any stuck optimistic state when fresh server data arrives
                 optimisticSubscribed: undefined,
-                // Preserve previously cached community slugs if new data has none
-                // (e.g. list endpoint fetches feeds without communities)
+                // communitySlugs is undefined when the API omitted communities
+                // (e.g. list endpoint with include_communities=false). In that
+                // case, preserve whatever was previously cached. An explicit []
+                // means the feed genuinely has no communities and should clear.
                 communitySlugs:
-                  view.feedView.communitySlugs.length > 0
+                  view.feedView.communitySlugs !== undefined
                     ? view.feedView.communitySlugs
                     : (prevData?.feedView.communitySlugs ?? []),
               },

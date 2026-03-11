@@ -119,7 +119,7 @@ export const pieFedFeedSchema = z.object({
   id: z.number(),
   name: z.string(),
   nsfw: z.boolean(),
-  communities: z.array(pieFedCommunitySchema),
+  communities: z.array(pieFedCommunitySchema).nullish(),
   subscribed: z.boolean().nullish(),
 });
 
@@ -1362,7 +1362,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         ],
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1412,7 +1412,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1442,7 +1442,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         communities: communities.map((c) => convertCommunity(c, "partial")),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1461,9 +1461,16 @@ export class PieFedApi implements ApiBlueprint<null> {
       subscriberCount: feed.subscriptions_count,
       description: feed.description ?? null,
       subscribed: feed.subscribed ?? null,
-      communitySlugs: feed.communities.map(
-        (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
-      ),
+      // If communities is absent or empty despite a non-zero count, the endpoint
+      // didn't include them (e.g. include_communities=false). Return undefined so
+      // callers can distinguish "not loaded" from "genuinely empty".
+      communitySlugs:
+        feed.communities != null &&
+        (feed.communities.length > 0 || feed.communities_count === 0)
+          ? feed.communities.map(
+              (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+            )
+          : undefined,
     };
   }
 
@@ -1489,7 +1496,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         nextCursor: null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1504,7 +1511,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const feedJson = await this.get("/feed", { id: feed_id }, options);
       const feed = pieFedFeedSchema.parse(feedJson);
 
-      const communities = feed.communities.map((community) =>
+      const communities = (feed.communities ?? []).map((community) =>
         convertCommunity({ community }, "partial"),
       );
 
@@ -1513,7 +1520,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         communities,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1563,7 +1570,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         flairs: community_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1647,7 +1654,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1660,7 +1667,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       return z.object({ jwt: z.string() }).parse(json);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1674,7 +1681,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1701,7 +1708,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertPost({ postView: post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1715,7 +1722,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1833,7 +1840,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1863,7 +1870,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1883,7 +1890,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertCommunity(data.community_view, "partial");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1959,7 +1966,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         nextCursor: hasNextCursor ? String(nextCursor) : null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1979,7 +1986,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -2112,7 +2119,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -2678,7 +2685,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       );
       return { items, nextCursor: hasNextPage ? String(page) : null };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }

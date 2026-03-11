@@ -165,7 +165,7 @@ const multiCommunityFeedSchema = z.object({
   communityCount: z.number(),
   subscriberCount: z.number(),
   description: z.string().nullable(),
-  communitySlugs: z.array(z.string()),
+  communitySlugs: z.array(z.string()).optional(),
   subscribed: z.boolean().nullish(),
   optimisticSubscribed: z
     .enum(["Subscribed", "NotSubscribed", "Pending"])
