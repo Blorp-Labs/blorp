@@ -1,6 +1,7 @@
 import { ContentGutters } from "@/src/components/gutters";
 import _, { parseInt } from "lodash";
-import { IonContent, IonHeader, IonToggle, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonAlert } from "@ionic/react";
+import { FiHelpCircle } from "react-icons/fi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -19,6 +20,77 @@ import { Input } from "@/src/components/ui/input";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { isCapacitor, isIos } from "@/src/lib/device";
 import { useSettingsStore } from "@/src/stores/settings";
+import { SimpleSelect } from "@/src/components/ui/simple-select";
+import { type ScoreDisplay } from "@/src/stores/utils";
+
+const VOTE_DISPLAY_OPTIONS: { value: ScoreDisplay; label: string }[] = [
+  { value: "score", label: "Score" },
+  { value: "upvotes", label: "Upvotes only" },
+  { value: "downvotes", label: "Downvotes only" },
+  { value: "none", label: "Hidden" },
+];
+
+type NsfwDisplay = "hidden" | "blur" | "show";
+
+const NSFW_DISPLAY_OPTIONS: { value: NsfwDisplay; label: string }[] = [
+  { value: "hidden", label: "Hidden" },
+  { value: "blur", label: "Blur" },
+  { value: "show", label: "Show" },
+];
+
+function toNsfwDisplay(showNsfw: boolean, blurNsfw: boolean): NsfwDisplay {
+  if (!showNsfw) return "hidden";
+  return blurNsfw ? "blur" : "show";
+}
+
+function fromNsfwDisplay(mode: NsfwDisplay): {
+  showNsfw: boolean;
+  blurNsfw: boolean;
+} {
+  switch (mode) {
+    case "hidden":
+      return { showNsfw: false, blurNsfw: true };
+    case "blur":
+      return { showNsfw: true, blurNsfw: true };
+    case "show":
+      return { showNsfw: true, blurNsfw: false };
+  }
+}
+
+// Note: this conversion is intentionally lossy. Lemmy has three separate
+// boolean fields (showUpvotes, showDownvotes, showScores) but the UI collapses
+// them into a single mode. For example, showUpvotes=true+showDownvotes=true is
+// treated the same as showScores=true ("score" mode). Saving any mode other
+// than the original combination will normalise those fields on the server, which
+// is acceptable because the visible behaviour is identical.
+function toScoreDisplay(
+  showUpvotes: boolean,
+  showDownvotes: boolean,
+  showScores: boolean,
+): ScoreDisplay {
+  if (showUpvotes && showDownvotes) return "score";
+  if (showUpvotes) return "upvotes";
+  if (showDownvotes) return "downvotes";
+  if (showScores) return "score";
+  return "none";
+}
+
+function fromScoreDisplay(mode: ScoreDisplay): {
+  showUpvotes: boolean;
+  showDownvotes: boolean;
+  showScores: boolean;
+} {
+  switch (mode) {
+    case "score":
+      return { showUpvotes: false, showDownvotes: false, showScores: true };
+    case "upvotes":
+      return { showUpvotes: true, showDownvotes: false, showScores: false };
+    case "downvotes":
+      return { showUpvotes: false, showDownvotes: true, showScores: false };
+    case "none":
+      return { showUpvotes: false, showDownvotes: false, showScores: false };
+  }
+}
 
 function FileUpload({
   placeholder,
@@ -65,7 +137,7 @@ function FileUpload({
 }
 
 export default function SettingsPage() {
-  const { index: indexStr } = useParams("/settings/manage-blocks/:index");
+  const { index: indexStr } = useParams("/settings/update-profile/:index");
   const index = parseInt(indexStr);
 
   const account = useAuth((s) => s.accounts[index]);
@@ -77,15 +149,63 @@ export default function SettingsPage() {
   const [_bio, setBio] = useState<string>();
   const bio = _bio ?? site?.me?.bio ?? "";
 
-  const [_showNsfw, setShowNsfw] = useState<boolean>();
-  const showNsfw = _showNsfw ?? site?.showNsfw ?? false;
+  const [_nsfwDisplay, setNsfwDisplay] = useState<NsfwDisplay>();
+  const nsfwDisplay =
+    _nsfwDisplay ??
+    toNsfwDisplay(site?.showNsfw ?? false, site?.blurNsfw ?? true);
+  const { showNsfw, blurNsfw } = fromNsfwDisplay(nsfwDisplay);
 
-  const [_blurNsfw, setBlurNsfw] = useState<boolean>();
-  const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
+  const serverEnablesDownvotes =
+    site?.enablePostDownvotes !== false ||
+    site?.enableCommentDownvotes !== false;
+
+  const [_voteDisplay, setVoteDisplay] = useState<ScoreDisplay>();
+  const voteDisplay =
+    _voteDisplay ??
+    toScoreDisplay(
+      site?.showUpvotes ?? true,
+      (site?.showDownvotes ?? true) && serverEnablesDownvotes,
+      site?.showScores ?? true,
+    );
+  const { showUpvotes, showDownvotes, showScores } =
+    fromScoreDisplay(voteDisplay);
+
+  const [_replyCollapseThreshold, setReplyCollapseThreshold] =
+    useState<number>();
+  const replyCollapseThreshold =
+    _replyCollapseThreshold ?? site?.replyCollapseThreshold ?? -10;
+
+  const [_replyHideThreshold, setReplyHideThreshold] = useState<number>();
+  const replyHideThreshold =
+    _replyHideThreshold ?? site?.replyHideThreshold ?? -20;
 
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
   );
+  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
+  const setVoteDisplaySetting = useSettingsStore(
+    (s) => s.setVoteDisplaySetting,
+  );
+  const collapseThresholdSetting = useSettingsStore(
+    (s) => s.collapseThresholdSetting,
+  );
+  const setCollapseThresholdSetting = useSettingsStore(
+    (s) => s.setCollapseThresholdSetting,
+  );
+  const hideThresholdSetting = useSettingsStore((s) => s.hideThresholdSetting);
+  const setHideThresholdSetting = useSettingsStore(
+    (s) => s.setHideThresholdSetting,
+  );
+
+  const isPieFed = site?.software === "piefed";
+
+  const [presentAlert] = useIonAlert();
+  const showOverrideInfo = () =>
+    presentAlert({
+      header: "Blorp is overriding this setting",
+      message: `Your Blorp app settings are overriding this account preference. Tap "Use account setting" to let your ${_.capitalize(site?.software)} account preference take effect.`,
+      buttons: [{ text: "OK", role: "cancel" }],
+    });
   const canShowNsfwSetting =
     !(isCapacitor() && isIos()) || nsfwPreviouslyEnabled;
 
@@ -97,6 +217,7 @@ export default function SettingsPage() {
     ? parseAccountInfo(account)
     : { person: undefined };
   const slug = person?.slug;
+  const isLemmy = site?.software === "lemmy";
 
   const handleSubmit = () => {
     if (account) {
@@ -108,6 +229,11 @@ export default function SettingsPage() {
             email,
             showNsfw,
             blurNsfw,
+            showUpvotes,
+            showDownvotes,
+            showScores,
+            replyCollapseThreshold,
+            replyHideThreshold,
           },
         })
         .then(() => history.goBack());
@@ -202,30 +328,143 @@ export default function SettingsPage() {
               </div>
 
               {canShowNsfwSetting && (
+                <div className="flex items-center justify-between gap-2">
+                  <label className="font-light">NSFW content</label>
+                  <SimpleSelect
+                    options={NSFW_DISPLAY_OPTIONS}
+                    value={nsfwDisplay}
+                    onChange={(opt) => setNsfwDisplay(opt.value)}
+                    valueGetter={(o) => o.value}
+                    labelGetter={(o) => o.label}
+                    className="w-[160px]"
+                    side="top"
+                  />
+                </div>
+              )}
+
+              {isLemmy && (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <IonToggle
-                      className="flex-1 font-light"
-                      checked={showNsfw}
-                      onIonChange={(e) => {
-                        setShowNsfw(e.detail.checked);
-                        if (e.detail.checked) {
-                          setBlurNsfw(true);
+                  {voteDisplaySetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Vote display</label>
+                      <SimpleSelect
+                        options={
+                          serverEnablesDownvotes
+                            ? VOTE_DISPLAY_OPTIONS
+                            : VOTE_DISPLAY_OPTIONS.filter(
+                                (o) => o.value !== "downvotes",
+                              )
                         }
-                      }}
-                    >
-                      Show NSFW content
-                    </IonToggle>
-                  </div>
-                  {showNsfw && (
-                    <div className="flex flex-col gap-1">
-                      <IonToggle
-                        className="flex-1 font-light"
-                        checked={blurNsfw}
-                        onIonChange={(e) => setBlurNsfw(e.detail.checked)}
-                      >
-                        Blur NSFW images
-                      </IonToggle>
+                        value={voteDisplay}
+                        onChange={(opt) => setVoteDisplay(opt.value)}
+                        valueGetter={(o) => o.value}
+                        labelGetter={(o) => o.label}
+                        className="w-[160px]"
+                        side="top"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Vote display</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setVoteDisplaySetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isPieFed && (
+                <>
+                  {collapseThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Collapse comments</label>
+                      <SimpleSelect
+                        options={_.sortBy(
+                          _.uniq([-5, -10, -15, -20, replyCollapseThreshold]),
+                          (o) => -o,
+                        )}
+                        value={replyCollapseThreshold}
+                        onChange={setReplyCollapseThreshold}
+                        valueGetter={(o) => o}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Collapse comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setCollapseThresholdSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {hideThresholdSetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Hide comments</label>
+                      <SimpleSelect
+                        options={_.sortBy(
+                          _.uniq([-5, -10, -15, -20, replyHideThreshold]),
+                          (o) => -o,
+                        )}
+                        value={replyHideThreshold}
+                        onChange={setReplyHideThreshold}
+                        valueGetter={(o) => o}
+                        labelGetter={(o) => `Score \u2264 ${o}`}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-light">Hide comments</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => setHideThresholdSetting("account")}
+                        >
+                          Use account setting
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          type="button"
+                          onClick={showOverrideInfo}
+                        >
+                          <FiHelpCircle />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </>

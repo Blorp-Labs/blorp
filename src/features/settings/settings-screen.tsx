@@ -4,6 +4,9 @@ import {
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
+  THRESHOLD_OPTIONS,
+  ThresholdSetting,
+  VoteDisplaySetting,
   useSettingsStore,
 } from "@/src/stores/settings";
 import { useLogout, useSoftware } from "@/src/lib/api/index";
@@ -306,6 +309,28 @@ export default function SettingsPage() {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
 
+  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
+  const setVoteDisplaySetting = useSettingsStore(
+    (s) => s.setVoteDisplaySetting,
+  );
+
+  const collapseThresholdSetting = useSettingsStore(
+    (s) => s.collapseThresholdSetting,
+  );
+  const setCollapseThresholdSetting = useSettingsStore(
+    (s) => s.setCollapseThresholdSetting,
+  );
+  const hideThresholdSetting = useSettingsStore((s) => s.hideThresholdSetting);
+  const setHideThresholdSetting = useSettingsStore(
+    (s) => s.setHideThresholdSetting,
+  );
+  const collapseRemovedComments = useSettingsStore(
+    (s) => s.collapseRemovedComments,
+  );
+  const setCollapseRemovedComments = useSettingsStore(
+    (s) => s.setCollapseRemovedComments,
+  );
+
   const keywords = [...filterKeywords, ""];
 
   return (
@@ -326,6 +351,35 @@ export default function SettingsPage() {
         <ContentGutters className="pt-4 pb-12 max-md:px-3.5">
           <div className="flex-1 gap-9 flex flex-col">
             <AccountSection />
+
+            <Section title="SHARING">
+              <SectionItem>
+                <label htmlFor={`${id}-share-link-type`}>Share links as</label>
+                <Select
+                  value={shareLinkType ?? "blorp"}
+                  onValueChange={(val) =>
+                    setShareLinkType(val as ShareLinkType)
+                  }
+                >
+                  <SelectTrigger
+                    className="w-[160px]"
+                    id={`${id}-share-link-type`}
+                  >
+                    <SelectValue placeholder="Choose style" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectGroup>
+                      <SelectLabel>Share link style</SelectLabel>
+                      {SHARE_LINK_TYPE_OPTIONS.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </SectionItem>
+            </Section>
 
             <Section title="ACCESSIBILITY">
               <SectionItem>
@@ -380,8 +434,11 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </SectionItem>
+            </Section>
+
+            <Section title="APPEARANCE">
               <SectionItem>
-                <label>Appearance</label>
+                <label>Dark / Light mode</label>
                 <SimpleSelect
                   options={["system", "light", "dark"] satisfies DarkMode[]}
                   value={darkMode}
@@ -400,58 +457,85 @@ export default function SettingsPage() {
                   className="w-[160px]"
                 />
               </SectionItem>
-            </Section>
-
-            <Section title="POSTS">
               <SectionItem>
-                <label htmlFor={`${id}-post-display`}>Display posts as</label>
-                <Select value={postCardStyle} onValueChange={setPostCardStyle}>
-                  <SelectTrigger
-                    className="w-[120px]"
-                    id={`${id}-post-display`}
-                  >
-                    <SelectValue placeholder="Select a fruit" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectGroup>
-                      <SelectLabel>Display posts as</SelectLabel>
-                      {POST_CARD_STYLE_OPTIONS.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <label>Display posts as</label>
+                <SimpleSelect
+                  options={POST_CARD_STYLE_OPTIONS}
+                  value={postCardStyle}
+                  onChange={(opt) => setPostCardStyle(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
               </SectionItem>
-            </Section>
-
-            <Section title="SHARING">
               <SectionItem>
-                <label htmlFor={`${id}-share-link-type`}>Share links as</label>
-                <Select
-                  value={shareLinkType ?? "blorp"}
-                  onValueChange={(val) =>
-                    setShareLinkType(val as ShareLinkType)
+                <label>Vote display</label>
+                <SimpleSelect
+                  options={
+                    [
+                      "account",
+                      "score",
+                      "upvotes",
+                      "downvotes",
+                      "none",
+                    ] satisfies VoteDisplaySetting[]
+                  }
+                  value={voteDisplaySetting}
+                  onChange={setVoteDisplaySetting}
+                  valueGetter={(o) => o}
+                  labelGetter={(o) => {
+                    switch (o) {
+                      case "account":
+                        return "Account setting";
+                      case "score":
+                        return "Score";
+                      case "upvotes":
+                        return "Upvotes only";
+                      case "downvotes":
+                        return "Downvotes only";
+                      case "none":
+                        return "Hidden";
+                    }
+                  }}
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Collapse comments</label>
+                <SimpleSelect
+                  options={THRESHOLD_OPTIONS}
+                  value={collapseThresholdSetting}
+                  onChange={setCollapseThresholdSetting}
+                  valueGetter={(o) => o}
+                  labelGetter={(o: ThresholdSetting) =>
+                    o === "account" ? "Account setting" : `Score \u2264 ${o}`
+                  }
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Hide comments</label>
+                <SimpleSelect
+                  options={THRESHOLD_OPTIONS}
+                  value={hideThresholdSetting}
+                  onChange={setHideThresholdSetting}
+                  valueGetter={(o) => o}
+                  labelGetter={(o: ThresholdSetting) =>
+                    o === "account" ? "Account setting" : `Score \u2264 ${o}`
+                  }
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={collapseRemovedComments}
+                  onIonChange={(e) =>
+                    setCollapseRemovedComments(e.detail.checked)
                   }
                 >
-                  <SelectTrigger
-                    className="w-[160px]"
-                    id={`${id}-share-link-type`}
-                  >
-                    <SelectValue placeholder="Choose style" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectGroup>
-                      <SelectLabel>Share link style</SelectLabel>
-                      {SHARE_LINK_TYPE_OPTIONS.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  Collapse removed comments
+                </IonToggle>
               </SectionItem>
             </Section>
 

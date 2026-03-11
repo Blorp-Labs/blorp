@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -5,18 +6,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import _ from "lodash";
 
-interface SimpleSelectProps<O> {
+interface SimpleSelectProps<O, V extends string | number> {
   options: O[];
-  value: O | undefined;
+  value: V | undefined;
   onChange: (value: O) => void;
-  valueGetter: (option: O) => string;
+  valueGetter: (option: O) => V;
   labelGetter: (option: O) => string;
   placeholder?: string;
   className?: string;
+  side?: React.ComponentPropsWithoutRef<typeof SelectContent>["side"];
 }
 
-export function SimpleSelect<O>({
+export function SimpleSelect<O, V extends string | number>({
   options,
   value,
   onChange,
@@ -24,21 +27,22 @@ export function SimpleSelect<O>({
   labelGetter,
   placeholder,
   className,
-}: SimpleSelectProps<O>) {
+  side,
+}: SimpleSelectProps<O, V>) {
   return (
     <Select
-      value={value !== undefined ? valueGetter(value) : undefined}
+      value={_.isNil(value) ? value : String(value)}
       onValueChange={(key) => {
-        const match = options.find((o) => valueGetter(o) === key);
+        const match = options.find((o) => String(valueGetter(o)) === key);
         if (match !== undefined) onChange(match);
       }}
     >
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent side={side}>
         {options.map((o) => (
-          <SelectItem key={valueGetter(o)} value={valueGetter(o)}>
+          <SelectItem key={valueGetter(o)} value={String(valueGetter(o))}>
             {labelGetter(o)}
           </SelectItem>
         ))}

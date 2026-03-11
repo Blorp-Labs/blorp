@@ -1,4 +1,4 @@
-import { useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { useLinkContext } from "../../routing/link-context";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { useAuth } from "@/src/stores/auth";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostsStore } from "@/src/stores/posts";
@@ -43,6 +43,8 @@ import {
   useAddPostReactionEmoji,
   useLikePost,
 } from "@/src/lib/api/post-mutations";
+import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
+import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 
@@ -52,10 +54,8 @@ export function usePostVoting(apId?: string) {
     apId ? s.posts[getCachePrefixer()(apId)]?.data : null,
   );
 
-  const enableDownvotes =
-    useAuth(
-      (s) => getAccountSite(s.getSelectedAccount())?.enablePostDownvotes,
-    ) ?? true;
+  const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
+  const scoreDisplay = useScoreDisplay();
 
   const { mutate: mutateVote } = useLikePost();
 
@@ -74,24 +74,23 @@ export function usePostVoting(apId?: string) {
 
   if (!postView) return null;
 
-  const diff =
-    typeof postView?.optimisticMyVote === "number"
-      ? postView.optimisticMyVote - (postView.myVote ?? 0)
-      : 0;
-  const score = postView.upvotes - postView.downvotes + diff;
-
-  const myVote = postView.optimisticMyVote ?? postView.myVote ?? 0;
-  const isUpvoted = myVote > 0;
-  const isDownvoted = myVote < 0;
+  const {
+    displayUpvotes,
+    displayDownvotes,
+    displayScore,
+    isUpvoted,
+    isDownvoted,
+  } = resolveVoteCounts(postView);
 
   return {
-    score,
-    upvotes: postView.upvotes,
-    downvotes: postView.downvotes,
+    displayScore,
+    displayUpvotes,
+    displayDownvotes,
     isUpvoted,
     isDownvoted,
     vote,
     enableDownvotes,
+    scoreDisplay,
     postId: postView.id,
   };
 }
@@ -236,15 +235,30 @@ export function PostVoting({
     return null;
   }
 
-  const { score, isUpvoted, isDownvoted, enableDownvotes, vote, postId } =
-    voting;
+  const {
+    displayScore,
+    displayUpvotes,
+    displayDownvotes,
+    isUpvoted,
+    isDownvoted,
+    enableDownvotes,
+    scoreDisplay,
+    vote,
+    postId,
+  } = voting;
 
-  const abbriviatedScore = abbriviateNumberParts(score);
+  const abbrvScore = abbriviateNumberParts(displayScore);
+  const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);
+  const abbrvDownvotes = abbriviateNumberParts(-displayDownvotes);
 
+  // Heart mode — server has disabled downvotes.
+  // Show count for score/upvotes modes; downvotes-only mode shows nothing
+  // since the server doesn't support them.
   if (!enableDownvotes) {
+    const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
     return (
       <Button
-        size="sm"
+        size={!showCount ? "icon" : "sm"}
         variant={variant}
         onClick={() =>
           vote({
@@ -254,16 +268,56 @@ export function PostVoting({
           })
         }
         className={cn(
-          "text-md font-normal",
-          isUpvoted && "text-brand",
+          "text-md bg-transparent font-normal",
+          isUpvoted && "text-brand hover:text-brand",
           className,
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {abbriviateNumber(score)}
+        {showCount &&
+          abbriviateNumber(
+            scoreDisplay === "upvotes" ? displayUpvotes : displayScore,
+          )}
       </Button>
     );
   }
+
+  const isDownvoteSide = scoreDisplay === "downvotes";
+  const downvoteId = `${id}-down`;
+
+  const abbrv = isDownvoteSide
+    ? abbrvDownvotes
+    : scoreDisplay === "upvotes"
+      ? abbrvUpvotes
+      : abbrvScore;
+  const tooltipText = isDownvoteSide
+    ? `${displayDownvotes} downvotes`
+    : scoreDisplay === "upvotes"
+      ? `${displayUpvotes} upvotes`
+      : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
+
+  const scoreNode = scoreDisplay !== "none" && (
+    <Tooltip>
+      <TooltipTrigger aria-label={tooltipText}>
+        <label htmlFor={isDownvoteSide ? downvoteId : id}>
+          <NumberFlow
+            className={cn(
+              "-mx-px cursor-pointer text-md",
+              isDownvoteSide
+                ? isDownvoted && "text-brand-secondary"
+                : cn(
+                    isUpvoted && "text-brand",
+                    isDownvoted && "text-brand-secondary",
+                  ),
+            )}
+            suffix={abbrv.suffix}
+            value={abbrv.number}
+          />
+        </label>
+      </TooltipTrigger>
+      <TooltipContent>{tooltipText}</TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <div
@@ -296,25 +350,19 @@ export function PostVoting({
           <PiArrowFatUpBold className="scale-115" aria-label="upvote" />
         )}
       </Button>
-      <Tooltip>
-        <TooltipTrigger aria-label={`${score} score`}>
-          <label htmlFor={id}>
-            <NumberFlow
-              className={cn(
-                "-mx-px cursor-pointer text-md",
-                isUpvoted && "text-brand",
-                isDownvoted && "text-brand-secondary",
-              )}
-              suffix={abbriviatedScore.suffix}
-              value={abbriviatedScore.number}
-            />
-          </label>
-        </TooltipTrigger>
-        <TooltipContent>
-          {voting.upvotes} upvotes, {voting.downvotes} downvotes
-        </TooltipContent>
-      </Tooltip>
+
+      {/* Separator left of score — only in downvotes mode */}
+      {isDownvoteSide && <Separator orientation="vertical" className="h-4" />}
+
+      {scoreNode}
+
+      {/* Separator right of score — only in upvotes mode */}
+      {scoreDisplay === "upvotes" && (
+        <Separator orientation="vertical" className="h-4" />
+      )}
+
       <Button
+        id={downvoteId}
         size="icon"
         variant="ghost"
         onClick={() =>

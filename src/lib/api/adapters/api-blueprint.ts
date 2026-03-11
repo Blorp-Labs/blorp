@@ -199,6 +199,11 @@ export const siteSchema = z.object({
   blurNsfw: z.boolean(),
   enablePostDownvotes: z.boolean(),
   enableCommentDownvotes: z.boolean(),
+  showScores: z.boolean().optional(),
+  showUpvotes: z.boolean().optional(),
+  showDownvotes: z.boolean().optional(),
+  replyCollapseThreshold: z.number().optional(),
+  replyHideThreshold: z.number().optional(),
   software: z.nativeEnum(Software),
 });
 export const commentSchema = z.object({
@@ -731,6 +736,11 @@ export namespace Forms {
     email?: string;
     showNsfw?: boolean;
     blurNsfw?: boolean;
+    showScores?: boolean;
+    showUpvotes?: boolean;
+    showDownvotes?: boolean;
+    replyCollapseThreshold?: number;
+    replyHideThreshold?: number;
   };
 
   export type ResolveObject = {

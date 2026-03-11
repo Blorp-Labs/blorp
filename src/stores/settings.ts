@@ -9,6 +9,16 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
+// How vote counts are displayed in the UI.
+// "score"    → combined score in the middle between buttons
+// "upvotes"  → upvote count on the left, separator before downvote button
+// "downvotes"→ downvote count on the right, separator after upvote button
+// "none"     → no count shown, heart button instead of up/down arrows
+export type ScoreDisplay = "none" | "score" | "upvotes" | "downvotes";
+
+// App-level vote display override. "account" defers to account/server settings.
+export type VoteDisplaySetting = "account" | ScoreDisplay;
+
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
   value: PostCardStyle;
@@ -25,6 +35,15 @@ export const POST_CARD_STYLE_OPTIONS: {
     value: "extra-small",
     label: "Extra Compact",
   },
+];
+
+export type ThresholdSetting = "account" | -5 | -10 | -15 | -20;
+export const THRESHOLD_OPTIONS: ThresholdSetting[] = [
+  "account",
+  -5,
+  -10,
+  -15,
+  -20,
 ];
 
 export type ShareLinkType = "blorp" | "instance" | "threadiverse.link";
@@ -69,6 +88,14 @@ type SettingsStore = {
   // an account with showNsfw=true, and is never cleared programmatically.
   nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
+  voteDisplaySetting: VoteDisplaySetting;
+  setVoteDisplaySetting: (newVal: VoteDisplaySetting) => void;
+  collapseThresholdSetting: ThresholdSetting;
+  setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
+  hideThresholdSetting: ThresholdSetting;
+  setHideThresholdSetting: (newVal: ThresholdSetting) => void;
+  collapseRemovedComments: boolean;
+  setCollapseRemovedComments: (newVal: boolean) => void;
   reset: () => void;
 };
 
@@ -85,6 +112,10 @@ const INIT_STATE = {
   paginationMode: "infinite",
   darkMode: "system",
   nsfwPreviouslyEnabled: false,
+  voteDisplaySetting: "account",
+  collapseThresholdSetting: -10,
+  hideThresholdSetting: "account",
+  collapseRemovedComments: true,
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -117,6 +148,14 @@ export const useSettingsStore = create<SettingsStore>()(
       setDarkMode: (darkMode) => set({ darkMode }),
       setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
         set({ nsfwPreviouslyEnabled }),
+      setVoteDisplaySetting: (voteDisplaySetting) =>
+        set({ voteDisplaySetting }),
+      setCollapseThresholdSetting: (collapseThresholdSetting) =>
+        set({ collapseThresholdSetting }),
+      setHideThresholdSetting: (hideThresholdSetting) =>
+        set({ hideThresholdSetting }),
+      setCollapseRemovedComments: (collapseRemovedComments) =>
+        set({ collapseRemovedComments }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
