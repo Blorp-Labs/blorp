@@ -14,15 +14,16 @@ import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Button } from "../ui/button";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import _ from "lodash";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
 import {
   useShouldShowDownvotes,
-  useShouldShowScores,
+  useScoreDisplay,
+  type ScoreDisplay,
 } from "@/src/stores/utils";
+import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "../posts/config";
 import {
@@ -155,36 +156,44 @@ export function CommentVoting({
   fixRightAlignment?: boolean;
 }) {
   const enableDownvotes = useShouldShowDownvotes("enableCommentDownvotes");
-  const showScores = useShouldShowScores();
+  const scoreDisplay = useScoreDisplay();
 
-  const id = useId();
+  const upvoteId = useId();
+  const downvoteId = useId();
 
   const vote = usePostVoting();
 
-  const myVote = commentView?.optimisticMyVote ?? commentView?.myVote ?? 0;
+  const prevVote = commentView?.myVote ?? 0;
+  const curVote = commentView?.optimisticMyVote ?? prevVote;
 
-  const isUpvoted = myVote > 0;
-  const isDownvoted = myVote < 0;
+  const isUpvoted = curVote > 0;
+  const isDownvoted = curVote < 0;
 
-  const diff = _.isNumber(commentView?.optimisticMyVote)
-    ? commentView?.optimisticMyVote - (commentView?.myVote ?? 0)
-    : 0;
+  // Compute optimistic per-side counts.
+  const upvoteDiff = (curVote > 0 ? 1 : 0) - (prevVote > 0 ? 1 : 0);
+  const downvoteDiff = (curVote < 0 ? 1 : 0) - (prevVote < 0 ? 1 : 0);
+  const displayUpvotes = commentView.upvotes + upvoteDiff;
+  const displayDownvotes = commentView.downvotes + downvoteDiff;
+  const displayScore = displayUpvotes - displayDownvotes;
 
-  const score = commentView.upvotes - commentView.downvotes + diff;
+  const abbrvScore = abbriviateNumberParts(displayScore);
+  const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);
+  const abbrvDownvotes = abbriviateNumberParts(-displayDownvotes);
 
-  const abbriviatedScore = abbriviateNumberParts(score);
-
+  // Heart mode — server has disabled downvotes.
+  // Only show a count for score/upvotes display modes; downvotes-only makes no
+  // sense when the server doesn't support them.
   if (!enableDownvotes) {
+    const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
     return (
       <Button
         size="sm"
         variant="ghost"
         onClick={async () => {
-          const newVote = isUpvoted ? 0 : 1;
           vote({
             postId: commentView.postId,
             id: commentView.id,
-            score: newVote,
+            score: isUpvoted ? 0 : 1,
             path: commentView.path,
           });
         }}
@@ -195,8 +204,55 @@ export function CommentVoting({
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {showScores && abbriviateNumber(score)}
+        {showCount &&
+          abbriviateNumber(
+            scoreDisplay === "upvotes" ? displayUpvotes : displayScore,
+          )}
       </Button>
+    );
+  }
+
+  // Helpers for the count element shared across modes.
+  function CountNumber({
+    display,
+    forId,
+  }: {
+    display: Exclude<ScoreDisplay, "none">;
+    forId: string;
+  }) {
+    const isDownvoteSide = display === "downvotes";
+    const abbrv = isDownvoteSide
+      ? abbrvDownvotes
+      : display === "upvotes"
+        ? abbrvUpvotes
+        : abbrvScore;
+    const tooltipText = isDownvoteSide
+      ? `${displayDownvotes} downvotes`
+      : display === "upvotes"
+        ? `${displayUpvotes} upvotes`
+        : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
+
+    return (
+      <Tooltip>
+        <TooltipTrigger aria-label={tooltipText}>
+          <label htmlFor={forId}>
+            <NumberFlow
+              className={cn(
+                "-mx-0.5 cursor-pointer",
+                isDownvoteSide
+                  ? isDownvoted && "text-brand-secondary"
+                  : cn(
+                      isUpvoted && "text-brand",
+                      isDownvoted && "text-brand-secondary",
+                    ),
+              )}
+              suffix={abbrv.suffix}
+              value={abbrv.number}
+            />
+          </label>
+        </TooltipTrigger>
+        <TooltipContent>{tooltipText}</TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -209,15 +265,14 @@ export function CommentVoting({
       )}
     >
       <Button
-        id={id}
+        id={upvoteId}
         size="icon"
         variant="ghost"
         onClick={async () => {
-          const newVote = isUpvoted ? 0 : 1;
           vote({
             postId: commentView.postId,
             id: commentView.id,
-            score: newVote,
+            score: isUpvoted ? 0 : 1,
             path: commentView.path,
           });
         }}
@@ -233,35 +288,33 @@ export function CommentVoting({
           <PiArrowFatUpBold aria-label="Upvote" />
         )}
       </Button>
-      {showScores && (
-        <Tooltip>
-          <TooltipTrigger aria-label={`${score} score`}>
-            <label htmlFor={id}>
-              <NumberFlow
-                className={cn(
-                  "-mx-0.5 cursor-pointer",
-                  isUpvoted && "text-brand",
-                  isDownvoted && "text-brand-secondary",
-                )}
-                suffix={abbriviatedScore.suffix}
-                value={abbriviatedScore.number}
-              />
-            </label>
-          </TooltipTrigger>
-          <TooltipContent>
-            {commentView.upvotes} upvotes, {commentView.downvotes} downvotes
-          </TooltipContent>
-        </Tooltip>
+
+      {/* Separator left of count — only in downvotes mode */}
+      {scoreDisplay === "downvotes" && (
+        <Separator orientation="vertical" className="h-4" />
       )}
+
+      {scoreDisplay !== "none" && (
+        <CountNumber
+          display={scoreDisplay}
+          forId={scoreDisplay === "downvotes" ? downvoteId : upvoteId}
+        />
+      )}
+
+      {/* Separator right of count — only in upvotes mode */}
+      {scoreDisplay === "upvotes" && (
+        <Separator orientation="vertical" className="h-4" />
+      )}
+
       <Button
+        id={downvoteId}
         size="icon"
         variant="ghost"
         onClick={async () => {
-          const newVote = isDownvoted ? 0 : -1;
           vote({
             postId: commentView.postId,
             id: commentView.id,
-            score: newVote,
+            score: isDownvoted ? 0 : -1,
             path: commentView.path,
           });
         }}

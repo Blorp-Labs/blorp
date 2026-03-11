@@ -43,10 +43,8 @@ import {
   useAddPostReactionEmoji,
   useLikePost,
 } from "@/src/lib/api/post-mutations";
-import {
-  useShouldShowDownvotes,
-  useShouldShowScores,
-} from "@/src/stores/utils";
+import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
+import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 
@@ -57,7 +55,7 @@ export function usePostVoting(apId?: string) {
   );
 
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
-  const showScores = useShouldShowScores();
+  const scoreDisplay = useScoreDisplay();
 
   const { mutate: mutateVote } = useLikePost();
 
@@ -76,25 +74,27 @@ export function usePostVoting(apId?: string) {
 
   if (!postView) return null;
 
-  const diff =
-    typeof postView?.optimisticMyVote === "number"
-      ? postView.optimisticMyVote - (postView.myVote ?? 0)
-      : 0;
-  const score = postView.upvotes - postView.downvotes + diff;
+  const prevVote = postView.myVote ?? 0;
+  const curVote = postView.optimisticMyVote ?? prevVote;
 
-  const myVote = postView.optimisticMyVote ?? postView.myVote ?? 0;
-  const isUpvoted = myVote > 0;
-  const isDownvoted = myVote < 0;
+  const isUpvoted = curVote > 0;
+  const isDownvoted = curVote < 0;
+
+  const upvoteDiff = (curVote > 0 ? 1 : 0) - (prevVote > 0 ? 1 : 0);
+  const downvoteDiff = (curVote < 0 ? 1 : 0) - (prevVote < 0 ? 1 : 0);
+  const displayUpvotes = postView.upvotes + upvoteDiff;
+  const displayDownvotes = postView.downvotes + downvoteDiff;
+  const displayScore = displayUpvotes - displayDownvotes;
 
   return {
-    score,
-    upvotes: postView.upvotes,
-    downvotes: postView.downvotes,
+    displayScore,
+    displayUpvotes,
+    displayDownvotes,
     isUpvoted,
     isDownvoted,
     vote,
     enableDownvotes,
-    showScores,
+    scoreDisplay,
     postId: postView.id,
   };
 }
@@ -240,18 +240,26 @@ export function PostVoting({
   }
 
   const {
-    score,
+    displayScore,
+    displayUpvotes,
+    displayDownvotes,
     isUpvoted,
     isDownvoted,
     enableDownvotes,
-    showScores,
+    scoreDisplay,
     vote,
     postId,
   } = voting;
 
-  const abbriviatedScore = abbriviateNumberParts(score);
+  const abbrvScore = abbriviateNumberParts(displayScore);
+  const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);
+  const abbrvDownvotes = abbriviateNumberParts(-displayDownvotes);
 
+  // Heart mode — server has disabled downvotes.
+  // Show count for score/upvotes modes; downvotes-only mode shows nothing
+  // since the server doesn't support them.
   if (!enableDownvotes) {
+    const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
     return (
       <Button
         size="sm"
@@ -270,10 +278,50 @@ export function PostVoting({
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {showScores && abbriviateNumber(score)}
+        {showCount &&
+          abbriviateNumber(
+            scoreDisplay === "upvotes" ? displayUpvotes : displayScore,
+          )}
       </Button>
     );
   }
+
+  const isDownvoteSide = scoreDisplay === "downvotes";
+  const downvoteId = `${id}-down`;
+
+  const abbrv = isDownvoteSide
+    ? abbrvDownvotes
+    : scoreDisplay === "upvotes"
+      ? abbrvUpvotes
+      : abbrvScore;
+  const tooltipText = isDownvoteSide
+    ? `${displayDownvotes} downvotes`
+    : scoreDisplay === "upvotes"
+      ? `${displayUpvotes} upvotes`
+      : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
+
+  const scoreNode = scoreDisplay !== "none" && (
+    <Tooltip>
+      <TooltipTrigger aria-label={tooltipText}>
+        <label htmlFor={isDownvoteSide ? downvoteId : id}>
+          <NumberFlow
+            className={cn(
+              "-mx-px cursor-pointer text-md",
+              isDownvoteSide
+                ? isDownvoted && "text-brand-secondary"
+                : cn(
+                    isUpvoted && "text-brand",
+                    isDownvoted && "text-brand-secondary",
+                  ),
+            )}
+            suffix={abbrv.suffix}
+            value={abbrv.number}
+          />
+        </label>
+      </TooltipTrigger>
+      <TooltipContent>{tooltipText}</TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <div
@@ -306,27 +354,19 @@ export function PostVoting({
           <PiArrowFatUpBold className="scale-115" aria-label="upvote" />
         )}
       </Button>
-      {showScores && (
-        <Tooltip>
-          <TooltipTrigger aria-label={`${score} score`}>
-            <label htmlFor={id}>
-              <NumberFlow
-                className={cn(
-                  "-mx-px cursor-pointer text-md",
-                  isUpvoted && "text-brand",
-                  isDownvoted && "text-brand-secondary",
-                )}
-                suffix={abbriviatedScore.suffix}
-                value={abbriviatedScore.number}
-              />
-            </label>
-          </TooltipTrigger>
-          <TooltipContent>
-            {voting.upvotes} upvotes, {voting.downvotes} downvotes
-          </TooltipContent>
-        </Tooltip>
+
+      {/* Separator left of score — only in downvotes mode */}
+      {isDownvoteSide && <Separator orientation="vertical" className="h-4" />}
+
+      {scoreNode}
+
+      {/* Separator right of score — only in upvotes mode */}
+      {scoreDisplay === "upvotes" && (
+        <Separator orientation="vertical" className="h-4" />
       )}
+
       <Button
+        id={downvoteId}
         size="icon"
         variant="ghost"
         onClick={() =>

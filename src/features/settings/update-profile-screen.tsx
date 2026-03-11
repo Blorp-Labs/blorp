@@ -27,6 +27,43 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { isCapacitor, isIos } from "@/src/lib/device";
 import { useSettingsStore } from "@/src/stores/settings";
 import { SimpleSelect } from "@/src/components/ui/simple-select";
+import { type ScoreDisplay } from "@/src/stores/utils";
+
+const VOTE_DISPLAY_OPTIONS: { value: ScoreDisplay; label: string }[] = [
+  { value: "score", label: "Score" },
+  { value: "upvotes", label: "Upvotes only" },
+  { value: "downvotes", label: "Downvotes only" },
+  { value: "none", label: "Hidden" },
+];
+
+function toScoreDisplay(
+  showUpvotes: boolean,
+  showDownvotes: boolean,
+  showScores: boolean,
+): ScoreDisplay {
+  if (showUpvotes && showDownvotes) return "score";
+  if (showUpvotes) return "upvotes";
+  if (showDownvotes) return "downvotes";
+  if (showScores) return "score";
+  return "none";
+}
+
+function fromScoreDisplay(mode: ScoreDisplay): {
+  showUpvotes: boolean;
+  showDownvotes: boolean;
+  showScores: boolean;
+} {
+  switch (mode) {
+    case "score":
+      return { showUpvotes: false, showDownvotes: false, showScores: true };
+    case "upvotes":
+      return { showUpvotes: true, showDownvotes: false, showScores: false };
+    case "downvotes":
+      return { showUpvotes: false, showDownvotes: true, showScores: false };
+    case "none":
+      return { showUpvotes: false, showDownvotes: false, showScores: false };
+  }
+}
 
 function FileUpload({
   placeholder,
@@ -91,20 +128,20 @@ export default function SettingsPage() {
   const [_blurNsfw, setBlurNsfw] = useState<boolean>();
   const blurNsfw = _blurNsfw ?? site?.blurNsfw ?? true;
 
-  const [_showUpvotes, setShowUpvotes] = useState<boolean>();
-  const showUpvotes = _showUpvotes ?? site?.showUpvotes ?? true;
+  const serverEnablesDownvotes =
+    site?.enablePostDownvotes !== false ||
+    site?.enableCommentDownvotes !== false;
 
-  const [_showScores, setShowScores] = useState<boolean>();
-  const showScores = _showScores ?? site?.showScores ?? true;
-
-  const downvotesDisabled =
-    !site?.enablePostDownvotes && !site?.enableCommentDownvotes;
-
-  const [_showDownvotes, setShowDownvotes] = useState<boolean>();
-  const showDownvotes =
-    !downvotesDisabled && (_showDownvotes ?? site?.showDownvotes ?? true);
-
-  const scoresOverriddenByVotes = showUpvotes || showDownvotes;
+  const [_voteDisplay, setVoteDisplay] = useState<ScoreDisplay>();
+  const voteDisplay =
+    _voteDisplay ??
+    toScoreDisplay(
+      site?.showUpvotes ?? true,
+      (site?.showDownvotes ?? true) && serverEnablesDownvotes,
+      site?.showScores ?? true,
+    );
+  const { showUpvotes, showDownvotes, showScores } =
+    fromScoreDisplay(voteDisplay);
 
   const [_replyCollapseThreshold, setReplyCollapseThreshold] =
     useState<number>();
@@ -295,31 +332,19 @@ export default function SettingsPage() {
 
               {isLemmy && (
                 <>
-                  <IonToggle
-                    className="flex-1 font-light"
-                    checked={showUpvotes}
-                    onIonChange={(e) => setShowUpvotes(e.detail.checked)}
-                  >
-                    Show upvotes
-                  </IonToggle>
-                  {downvotesSetting === "account" ? (
-                    <IonToggle
-                      className="flex-1 font-light"
-                      checked={showDownvotes}
-                      onIonChange={(e) => setShowDownvotes(e.detail.checked)}
-                      disabled={downvotesDisabled}
-                    >
-                      Show downvotes
-                    </IonToggle>
-                  ) : (
+                  {downvotesSetting !== "account" ||
+                  scoresSetting !== "account" ? (
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-light">Show downvotes</span>
+                      <span className="font-light">Vote display</span>
                       <div className="flex items-center gap-1">
                         <Button
                           variant="outline"
                           size="sm"
                           type="button"
-                          onClick={() => setDownvotesSetting("account")}
+                          onClick={() => {
+                            setDownvotesSetting("account");
+                            setScoresSetting("account");
+                          }}
                         >
                           Use account setting
                         </Button>
@@ -333,45 +358,23 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     </div>
-                  )}
-                  {scoresSetting === "account" ? (
-                    <div className="flex flex-col gap-1">
-                      <IonToggle
-                        className="flex-1 font-light"
-                        checked={showScores}
-                        disabled={scoresOverriddenByVotes}
-                        onIonChange={(e) => setShowScores(e.detail.checked)}
-                      >
-                        Show scores
-                      </IonToggle>
-                      {scoresOverriddenByVotes && (
-                        <p className="text-sm text-muted-foreground">
-                          No effect while show upvotes or show downvotes is
-                          enabled.
-                        </p>
-                      )}
-                    </div>
                   ) : (
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-light">Show scores</span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          type="button"
-                          onClick={() => setScoresSetting("account")}
-                        >
-                          Use account setting
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          type="button"
-                          onClick={showOverrideInfo}
-                        >
-                          <FiHelpCircle />
-                        </Button>
-                      </div>
+                      <label className="font-light">Vote display</label>
+                      <SimpleSelect
+                        options={
+                          serverEnablesDownvotes
+                            ? VOTE_DISPLAY_OPTIONS
+                            : VOTE_DISPLAY_OPTIONS.filter(
+                                (o) => o.value !== "downvotes",
+                              )
+                        }
+                        value={voteDisplay}
+                        onChange={(opt) => setVoteDisplay(opt.value)}
+                        valueGetter={(o) => o.value}
+                        labelGetter={(o) => o.label}
+                        className="w-[160px]"
+                      />
                     </div>
                   )}
                 </>

@@ -32,17 +32,35 @@ export function useShouldShowDownvotes(
   );
 }
 
-export function useShouldShowScores(): boolean {
+// How vote counts are displayed in the UI.
+// "score"    → combined score in the middle between buttons
+// "upvotes"  → upvote count on the left, separator before downvote button
+// "downvotes"→ downvote count on the right, separator after upvote button
+// "none"     → no count shown
+export type ScoreDisplay = "none" | "score" | "upvotes" | "downvotes";
+
+export function useScoreDisplay(): ScoreDisplay {
   const scoresSetting = useSettingsStore((s) => s.scoresSetting);
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
-  // Lemmy ignores show_scores when show_upvotes or show_downvotes is enabled,
-  // so treat any of the three being true as "account shows scores".
-  const accountShowsScores = site
-    ? (site.showUpvotes ?? true) ||
-      (site.showDownvotes ?? true) ||
-      (site.showScores ?? true)
-    : true;
-  return resolveVoteSetting(scoresSetting, accountShowsScores, true);
+
+  if (scoresSetting === "hide") return "none";
+  if (scoresSetting === "show") return "score";
+
+  // "account" mode — derive from account settings.
+  // When both showUpvotes and showDownvotes are enabled Lemmy ignores
+  // showScores and shows separate counts; we treat that as combined score
+  // since the visual result is equivalent.
+  const serverEnablesDownvotes = site?.enableCommentDownvotes ?? true;
+  const showUpvotes = site?.showUpvotes ?? true;
+  // Treat showDownvotes as false when the server has disabled downvotes entirely.
+  const showDownvotes = (site?.showDownvotes ?? true) && serverEnablesDownvotes;
+  const showScores = site?.showScores ?? true;
+
+  if (showUpvotes && showDownvotes) return "score";
+  if (showUpvotes) return "upvotes";
+  if (showDownvotes) return "downvotes";
+  if (showScores) return "score";
+  return "none";
 }
 
 export function useCommentCollapseThreshold(): number | null {
