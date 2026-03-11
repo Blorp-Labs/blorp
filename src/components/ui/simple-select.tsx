@@ -30,9 +30,7 @@ export function SimpleSelect<O, V extends string | number>({
     <Select
       value={_.isNil(value) ? value : String(value)}
       onValueChange={(key) => {
-        const match = options.find(
-          (o) => valueGetter(o) === key || String(valueGetter(o)) === key,
-        );
+        const match = options.find((o) => String(valueGetter(o)) === key);
         if (match !== undefined) onChange(match);
       }}
     >

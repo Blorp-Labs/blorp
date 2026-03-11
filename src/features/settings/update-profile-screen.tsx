@@ -36,6 +36,12 @@ const VOTE_DISPLAY_OPTIONS: { value: ScoreDisplay; label: string }[] = [
   { value: "none", label: "Hidden" },
 ];
 
+// Note: this conversion is intentionally lossy. Lemmy has three separate
+// boolean fields (showUpvotes, showDownvotes, showScores) but the UI collapses
+// them into a single mode. For example, showUpvotes=true+showDownvotes=true is
+// treated the same as showScores=true ("score" mode). Saving any mode other
+// than the original combination will normalise those fields on the server, which
+// is acceptable because the visible behaviour is identical.
 function toScoreDisplay(
   showUpvotes: boolean,
   showDownvotes: boolean,
@@ -332,7 +338,25 @@ export default function SettingsPage() {
 
               {isLemmy && (
                 <>
-                  {voteDisplaySetting !== "account" ? (
+                  {voteDisplaySetting === "account" ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-light">Vote display</label>
+                      <SimpleSelect
+                        options={
+                          serverEnablesDownvotes
+                            ? VOTE_DISPLAY_OPTIONS
+                            : VOTE_DISPLAY_OPTIONS.filter(
+                                (o) => o.value !== "downvotes",
+                              )
+                        }
+                        value={voteDisplay}
+                        onChange={(opt) => setVoteDisplay(opt.value)}
+                        valueGetter={(o) => o.value}
+                        labelGetter={(o) => o.label}
+                        className="w-[160px]"
+                      />
+                    </div>
+                  ) : (
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-light">Vote display</span>
                       <div className="flex items-center gap-1">
@@ -354,24 +378,6 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="font-light">Vote display</label>
-                      <SimpleSelect
-                        options={
-                          serverEnablesDownvotes
-                            ? VOTE_DISPLAY_OPTIONS
-                            : VOTE_DISPLAY_OPTIONS.filter(
-                                (o) => o.value !== "downvotes",
-                              )
-                        }
-                        value={voteDisplay}
-                        onChange={(opt) => setVoteDisplay(opt.value)}
-                        valueGetter={(o) => o.value}
-                        labelGetter={(o) => o.label}
-                        className="w-[160px]"
-                      />
-                    </div>
                   )}
                 </>
               )}
@@ -382,7 +388,10 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <label className="font-light">Collapse comments</label>
                       <SimpleSelect
-                        options={[-5, -10, -15, -20]}
+                        options={_.sortBy(
+                          _.uniq([-5, -10, -15, -20, replyCollapseThreshold]),
+                          (o) => -o,
+                        )}
                         value={replyCollapseThreshold}
                         onChange={setReplyCollapseThreshold}
                         valueGetter={(o) => o}
@@ -417,7 +426,10 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <label className="font-light">Hide comments</label>
                       <SimpleSelect
-                        options={[-5, -10, -15, -20]}
+                        options={_.sortBy(
+                          _.uniq([-5, -10, -15, -20, replyHideThreshold]),
+                          (o) => -o,
+                        )}
                         value={replyHideThreshold}
                         onChange={setReplyHideThreshold}
                         valueGetter={(o) => o}

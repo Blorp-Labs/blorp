@@ -114,7 +114,7 @@ const INIT_STATE = {
   nsfwPreviouslyEnabled: false,
   voteDisplaySetting: "account",
   collapseThresholdSetting: -10,
-  hideThresholdSetting: -20,
+  hideThresholdSetting: "account",
   collapseRemovedComments: true,
 } satisfies Partial<SettingsStore>;
 

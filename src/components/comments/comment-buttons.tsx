@@ -18,11 +18,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/lib/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
-import {
-  useShouldShowDownvotes,
-  useScoreDisplay,
-  type ScoreDisplay,
-} from "@/src/stores/utils";
+import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "../posts/config";
@@ -39,7 +35,7 @@ type Vote = {
   path: string;
 };
 
-function usePostVoting() {
+function useVoteComment() {
   const requireAuth = useRequireAuth();
   const vote = useLikeComment();
   const voteHaptics = useVoteHaptics();
@@ -53,7 +49,7 @@ function usePostVoting() {
 
 export function useDoubleTapLike(config?: Vote) {
   const media = useMedia();
-  const vote = usePostVoting();
+  const vote = useVoteComment();
   return useDoubleTap(() => {
     if (config && media.maxMd) {
       vote(config);
@@ -161,7 +157,7 @@ export function CommentVoting({
   const upvoteId = useId();
   const downvoteId = useId();
 
-  const vote = usePostVoting();
+  const vote = useVoteComment();
 
   const prevVote = commentView?.myVote ?? 0;
   const curVote = commentView?.optimisticMyVote ?? prevVote;
@@ -212,49 +208,40 @@ export function CommentVoting({
     );
   }
 
-  // Helpers for the count element shared across modes.
-  function CountNumber({
-    display,
-    forId,
-  }: {
-    display: Exclude<ScoreDisplay, "none">;
-    forId: string;
-  }) {
-    const isDownvoteSide = display === "downvotes";
-    const abbrv = isDownvoteSide
-      ? abbrvDownvotes
-      : display === "upvotes"
-        ? abbrvUpvotes
-        : abbrvScore;
-    const tooltipText = isDownvoteSide
-      ? `${displayDownvotes} downvotes`
-      : display === "upvotes"
-        ? `${displayUpvotes} upvotes`
-        : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
+  const isDownvoteSide = scoreDisplay === "downvotes";
+  const countAbbrv = isDownvoteSide
+    ? abbrvDownvotes
+    : scoreDisplay === "upvotes"
+      ? abbrvUpvotes
+      : abbrvScore;
+  const tooltipText = isDownvoteSide
+    ? `${displayDownvotes} downvotes`
+    : scoreDisplay === "upvotes"
+      ? `${displayUpvotes} upvotes`
+      : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
 
-    return (
-      <Tooltip>
-        <TooltipTrigger aria-label={tooltipText}>
-          <label htmlFor={forId}>
-            <NumberFlow
-              className={cn(
-                "-mx-0.5 cursor-pointer",
-                isDownvoteSide
-                  ? isDownvoted && "text-brand-secondary"
-                  : cn(
-                      isUpvoted && "text-brand",
-                      isDownvoted && "text-brand-secondary",
-                    ),
-              )}
-              suffix={abbrv.suffix}
-              value={abbrv.number}
-            />
-          </label>
-        </TooltipTrigger>
-        <TooltipContent>{tooltipText}</TooltipContent>
-      </Tooltip>
-    );
-  }
+  const countNode = scoreDisplay !== "none" && (
+    <Tooltip>
+      <TooltipTrigger aria-label={tooltipText}>
+        <label htmlFor={isDownvoteSide ? downvoteId : upvoteId}>
+          <NumberFlow
+            className={cn(
+              "-mx-0.5 cursor-pointer",
+              isDownvoteSide
+                ? isDownvoted && "text-brand-secondary"
+                : cn(
+                    isUpvoted && "text-brand",
+                    isDownvoted && "text-brand-secondary",
+                  ),
+            )}
+            suffix={countAbbrv.suffix}
+            value={countAbbrv.number}
+          />
+        </label>
+      </TooltipTrigger>
+      <TooltipContent>{tooltipText}</TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <div
@@ -290,16 +277,9 @@ export function CommentVoting({
       </Button>
 
       {/* Separator left of count — only in downvotes mode */}
-      {scoreDisplay === "downvotes" && (
-        <Separator orientation="vertical" className="h-4" />
-      )}
+      {isDownvoteSide && <Separator orientation="vertical" className="h-4" />}
 
-      {scoreDisplay !== "none" && (
-        <CountNumber
-          display={scoreDisplay}
-          forId={scoreDisplay === "downvotes" ? downvoteId : upvoteId}
-        />
-      )}
+      {countNode}
 
       {/* Separator right of count — only in upvotes mode */}
       {scoreDisplay === "upvotes" && (
