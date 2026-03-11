@@ -55,7 +55,6 @@ export function usePostVoting(apId?: string) {
   );
 
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
-  console.log({ enableDownvotes });
   const scoreDisplay = useScoreDisplay();
 
   const { mutate: mutateVote } = useLikePost();
