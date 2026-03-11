@@ -13,7 +13,9 @@ import {
   useMostRecentPost,
   useMultiCommunityFeed,
   usePosts,
+  useSoftware,
 } from "../lib/api";
+import { supportsFeeds } from "../lib/api/adapters/support";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
@@ -68,6 +70,7 @@ export default function MultiCommunityFeedPosts() {
   // Fetch the individual feed to hydrate the store with communities and
   // subscription state. The UI reads from the store directly via
   // useMultiCommunityFeedFromStore; feedQuery is only used for its error state.
+  const software = useSoftware();
   const feedQuery = useMultiCommunityFeed({
     apId,
   });
@@ -125,7 +128,13 @@ export default function MultiCommunityFeedPosts() {
   };
 
   return (
-    <Page notFound={feedQuery.isError && !feed} notFoundCommunitySlug={apId}>
+    <Page
+      notFound={
+        (software.software !== undefined && !supportsFeeds(software)) ||
+        (feedQuery.isError && !feed)
+      }
+      notFoundApId={apId}
+    >
       <PageTitle>{feed?.slug ?? apId}</PageTitle>
       <IonHeader>
         <IonToolbar

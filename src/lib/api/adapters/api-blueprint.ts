@@ -411,6 +411,7 @@ export const resolveObjectResponseSchema = z.object({
       path: true,
     })
     .nullable(),
+  feed: multiCommunityFeedSchema.pick({ apId: true }).nullable(),
 });
 
 export namespace Schemas {

@@ -1570,6 +1570,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
       comment: comment ? convertComment(comment) : null,
+      feed: null,
     });
   }
 

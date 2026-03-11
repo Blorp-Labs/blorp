@@ -2599,12 +2599,13 @@ export class PieFedApi implements ApiBlueprint<null> {
         options,
       );
 
-      const { post, community, person, comment } = z
+      const { post, community, person, comment, feed } = z
         .object({
           post: pieFedPostViewSchema.nullish(),
           community: pieFedCommentViewSchema.nullish(),
           person: pieFedPersonViewSchema.nullish(),
           comment: pieFedCommentViewSchema.nullish(),
+          feed: pieFedFeedSchema.nullish(),
         })
         .parse(json);
 
@@ -2613,6 +2614,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
         comment: comment ? convertComment(comment) : null,
+        feed: feed ? this.convertFeed(feed) : null,
       });
     } catch (err) {
       console.error(err);
