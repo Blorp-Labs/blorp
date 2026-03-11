@@ -1,23 +1,14 @@
 import { getAccountSite, useAuth } from "./auth";
-import { useSettingsStore, type VoteSetting } from "./settings";
-
-function resolveVoteSetting(
-  setting: VoteSetting,
-  accountValue: boolean,
-  serverCapability: boolean,
-): boolean {
-  const map: Record<VoteSetting, boolean> = {
-    hide: false,
-    show: serverCapability,
-    account: accountValue && serverCapability,
-  };
-  return map[setting];
-}
+import {
+  useSettingsStore,
+  type ScoreDisplay,
+  type VoteDisplaySetting,
+} from "./settings";
 
 export function useShouldShowDownvotes(
   serverCapabilityKey: "enablePostDownvotes" | "enableCommentDownvotes",
 ): boolean {
-  const downvotesSetting = useSettingsStore((s) => s.downvotesSetting);
+  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const serverCapability =
     useAuth(
       (s) => getAccountSite(s.getSelectedAccount())?.[serverCapabilityKey],
@@ -25,28 +16,22 @@ export function useShouldShowDownvotes(
   const accountShowsDownvotes =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showDownvotes) ??
     true;
-  return resolveVoteSetting(
-    downvotesSetting,
-    accountShowsDownvotes,
-    serverCapability,
-  );
+
+  if (voteDisplaySetting === "none") return false;
+  if (voteDisplaySetting === "account") {
+    return accountShowsDownvotes && serverCapability;
+  }
+  // Any explicit display mode still shows the downvote button if the server allows it.
+  return serverCapability;
 }
 
-// How vote counts are displayed in the UI.
-// "score"    → combined score in the middle between buttons
-// "upvotes"  → upvote count on the left, separator before downvote button
-// "downvotes"→ downvote count on the right, separator after upvote button
-// "none"     → no count shown
-export type ScoreDisplay = "none" | "score" | "upvotes" | "downvotes";
-
 export function useScoreDisplay(): ScoreDisplay {
-  const scoresSetting = useSettingsStore((s) => s.scoresSetting);
+  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
 
-  if (scoresSetting === "hide") return "none";
-  if (scoresSetting === "show") return "score";
+  if (voteDisplaySetting !== "account") return voteDisplaySetting;
 
-  // "account" mode — derive from account settings.
+  // "account" mode — derive from account/server settings.
   // When both showUpvotes and showDownvotes are enabled Lemmy ignores
   // showScores and shows separate counts; we treat that as combined score
   // since the visual result is equivalent.
@@ -84,3 +69,6 @@ export function useCommentHideThreshold(): number | null {
   }
   return setting;
 }
+
+// Re-export so consumers don't need to import from two places.
+export type { ScoreDisplay, VoteDisplaySetting };

@@ -155,10 +155,10 @@ export default function SettingsPage() {
   const nsfwPreviouslyEnabled = useSettingsStore(
     (s) => s.nsfwPreviouslyEnabled,
   );
-  const downvotesSetting = useSettingsStore((s) => s.downvotesSetting);
-  const setDownvotesSetting = useSettingsStore((s) => s.setDownvotesSetting);
-  const scoresSetting = useSettingsStore((s) => s.scoresSetting);
-  const setScoresSetting = useSettingsStore((s) => s.setScoresSetting);
+  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
+  const setVoteDisplaySetting = useSettingsStore(
+    (s) => s.setVoteDisplaySetting,
+  );
   const collapseThresholdSetting = useSettingsStore(
     (s) => s.collapseThresholdSetting,
   );
@@ -332,8 +332,7 @@ export default function SettingsPage() {
 
               {isLemmy && (
                 <>
-                  {downvotesSetting !== "account" ||
-                  scoresSetting !== "account" ? (
+                  {voteDisplaySetting !== "account" ? (
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-light">Vote display</span>
                       <div className="flex items-center gap-1">
@@ -341,10 +340,7 @@ export default function SettingsPage() {
                           variant="outline"
                           size="sm"
                           type="button"
-                          onClick={() => {
-                            setDownvotesSetting("account");
-                            setScoresSetting("account");
-                          }}
+                          onClick={() => setVoteDisplaySetting("account")}
                         >
                           Use account setting
                         </Button>

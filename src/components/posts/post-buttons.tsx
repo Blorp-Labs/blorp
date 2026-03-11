@@ -272,7 +272,7 @@ export function PostVoting({
           })
         }
         className={cn(
-          "text-md font-normal",
+          "text-md bg-transparent font-normal",
           isUpvoted && "text-brand hover:text-brand",
           className,
         )}

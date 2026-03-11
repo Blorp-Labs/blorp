@@ -9,7 +9,15 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
-export type VoteSetting = "account" | "hide" | "show";
+// How vote counts are displayed in the UI.
+// "score"    → combined score in the middle between buttons
+// "upvotes"  → upvote count on the left, separator before downvote button
+// "downvotes"→ downvote count on the right, separator after upvote button
+// "none"     → no count shown, heart button instead of up/down arrows
+export type ScoreDisplay = "none" | "score" | "upvotes" | "downvotes";
+
+// App-level vote display override. "account" defers to account/server settings.
+export type VoteDisplaySetting = "account" | ScoreDisplay;
 
 export const POST_CARD_STYLE_OPTIONS: {
   label: string;
@@ -80,10 +88,8 @@ type SettingsStore = {
   // an account with showNsfw=true, and is never cleared programmatically.
   nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
-  downvotesSetting: VoteSetting;
-  setDownvotesSetting: (newVal: VoteSetting) => void;
-  scoresSetting: VoteSetting;
-  setScoresSetting: (newVal: VoteSetting) => void;
+  voteDisplaySetting: VoteDisplaySetting;
+  setVoteDisplaySetting: (newVal: VoteDisplaySetting) => void;
   collapseThresholdSetting: ThresholdSetting;
   setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
   hideThresholdSetting: ThresholdSetting;
@@ -106,8 +112,7 @@ const INIT_STATE = {
   paginationMode: "infinite",
   darkMode: "system",
   nsfwPreviouslyEnabled: false,
-  downvotesSetting: "account",
-  scoresSetting: "account",
+  voteDisplaySetting: "account",
   collapseThresholdSetting: -10,
   hideThresholdSetting: -20,
   collapseRemovedComments: true,
@@ -143,8 +148,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setDarkMode: (darkMode) => set({ darkMode }),
       setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
         set({ nsfwPreviouslyEnabled }),
-      setDownvotesSetting: (downvotesSetting) => set({ downvotesSetting }),
-      setScoresSetting: (scoresSetting) => set({ scoresSetting }),
+      setVoteDisplaySetting: (voteDisplaySetting) =>
+        set({ voteDisplaySetting }),
       setCollapseThresholdSetting: (collapseThresholdSetting) =>
         set({ collapseThresholdSetting }),
       setHideThresholdSetting: (hideThresholdSetting) =>
