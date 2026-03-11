@@ -2,6 +2,10 @@ name: Chromatic
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: "chromatic-${{ github.sha }}"
@@ -10,6 +14,7 @@ concurrency:
 jobs:
   chromatic:
     name: Run Chromatic
+    if: github.event.pull_request.draft == false || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
