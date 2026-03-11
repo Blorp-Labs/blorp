@@ -1527,7 +1527,6 @@ export class PieFedApi
                   id: c.id,
                   choice_text: c.text,
                   sort_order: c.sortOrder,
-                  num_votes: 0,
                 })),
               },
             }
