@@ -3,12 +3,7 @@ import { Link, ParamsFor } from "@/src/routing/index";
 import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import {
-  getAccountSite,
-  useAuth,
-  useShouldBlurNsfw,
-  useShouldShowNsfw,
-} from "@/src/stores/auth";
+import { getAccountSite, useAuth, useShouldShowNsfw } from "@/src/stores/auth";
 import {
   useModeratingCommunities,
   useNotificationCount,
@@ -43,6 +38,11 @@ import { ChevronLeft, ChevronRight } from "../components/icons";
 import { useMedia } from "../lib/hooks";
 import { usePathname } from "./hooks";
 import { Skeleton } from "../components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "../components/ui/tooltip";
 
 function useMainSidebarCollapsed() {
   const media = useMedia();
@@ -61,41 +61,52 @@ function SidebarTabs() {
       {TABS.map((t) => {
         const isActive = pathname.startsWith(t.to);
         return (
-          <button
-            key={t.id}
-            onClick={() => {
-              const tab = document.querySelector(`ion-tab-button[tab=${t.id}]`);
-              if (tab && "click" in tab && _.isFunction(tab.click)) {
-                tab.click();
-              }
-            }}
-            className={twMerge(
-              "relative max-md:hidden text-md flex flex-row items-center py-2 px-3 rounded-xl hover:bg-secondary",
-              isActive ? "bg-secondary" : "text-muted-foreground",
-              mainSidebarCollapsed && "mx-auto",
+          <Tooltip key={t.id}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  const tab = document.querySelector(
+                    `ion-tab-button[tab=${t.id}]`,
+                  );
+                  if (tab && "click" in tab && _.isFunction(tab.click)) {
+                    tab.click();
+                  }
+                }}
+                className={twMerge(
+                  "relative max-md:hidden text-md flex flex-row items-center py-2 px-3 rounded-xl hover:bg-secondary",
+                  isActive ? "bg-secondary" : "text-muted-foreground",
+                  mainSidebarCollapsed && "mx-auto",
+                )}
+              >
+                <BadgeCount
+                  showBadge={
+                    t.id === "inbox"
+                      ? !!inboxCount
+                      : t.id === "messages"
+                        ? !!messageCount
+                        : false
+                  }
+                >
+                  <IonIcon
+                    icon={t.icon(isActive)}
+                    key={isActive ? "active" : "inactive"}
+                    className="text-2xl"
+                  />
+                </BadgeCount>
+                <span
+                  className={cn(
+                    "text-sm ml-2",
+                    mainSidebarCollapsed && "sr-only",
+                  )}
+                >
+                  {t.label}
+                </span>
+              </button>
+            </TooltipTrigger>
+            {mainSidebarCollapsed && (
+              <TooltipContent side="right">{t.label}</TooltipContent>
             )}
-          >
-            <BadgeCount
-              showBadge={
-                t.id === "inbox"
-                  ? !!inboxCount
-                  : t.id === "messages"
-                    ? !!messageCount
-                    : false
-              }
-            >
-              <IonIcon
-                icon={t.icon(isActive)}
-                key={isActive ? "active" : "inactive"}
-                className="text-2xl"
-              />
-            </BadgeCount>
-            <span
-              className={cn("text-sm ml-2", mainSidebarCollapsed && "sr-only")}
-            >
-              {t.label}
-            </span>
-          </button>
+          </Tooltip>
         );
       })}
     </>
@@ -253,21 +264,29 @@ export function MainSidebar() {
                 )}
               >
                 {fiveRecentCommunities.map((c, index) => (
-                  <IonMenuToggle
-                    key={index}
-                    menu={LEFT_SIDEBAR_MENU_ID}
-                    autoHide={false}
-                  >
-                    <CommunityCard
-                      communitySlug={c.slug}
-                      size="sm"
-                      className={cn(
-                        "hover:bg-secondary px-3 h-10 md:rounded-xl",
-                        mainSidebarCollapsed && "px-2",
-                      )}
-                      hideText={mainSidebarCollapsed}
-                    />
-                  </IonMenuToggle>
+                  <Tooltip key={index}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <IonMenuToggle
+                          menu={LEFT_SIDEBAR_MENU_ID}
+                          autoHide={false}
+                        >
+                          <CommunityCard
+                            communitySlug={c.slug}
+                            size="sm"
+                            className={cn(
+                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              mainSidebarCollapsed && "px-2",
+                            )}
+                            hideText={mainSidebarCollapsed}
+                          />
+                        </IonMenuToggle>
+                      </div>
+                    </TooltipTrigger>
+                    {mainSidebarCollapsed && (
+                      <TooltipContent side="right">{c.slug}</TooltipContent>
+                    )}
+                  </Tooltip>
                 ))}
               </CollapsibleContent>
             </Collapsible>
@@ -300,21 +319,29 @@ export function MainSidebar() {
                 )}
               >
                 {moderatingCommunities.map((c, index) => (
-                  <IonMenuToggle
-                    key={index}
-                    menu={LEFT_SIDEBAR_MENU_ID}
-                    autoHide={false}
-                  >
-                    <CommunityCard
-                      communitySlug={c}
-                      size="sm"
-                      className={cn(
-                        "hover:bg-secondary px-3 h-10 md:rounded-xl",
-                        mainSidebarCollapsed && "px-2",
-                      )}
-                      hideText={mainSidebarCollapsed}
-                    />
-                  </IonMenuToggle>
+                  <Tooltip key={index}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <IonMenuToggle
+                          menu={LEFT_SIDEBAR_MENU_ID}
+                          autoHide={false}
+                        >
+                          <CommunityCard
+                            communitySlug={c}
+                            size="sm"
+                            className={cn(
+                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              mainSidebarCollapsed && "px-2",
+                            )}
+                            hideText={mainSidebarCollapsed}
+                          />
+                        </IonMenuToggle>
+                      </div>
+                    </TooltipTrigger>
+                    {mainSidebarCollapsed && (
+                      <TooltipContent side="right">{c}</TooltipContent>
+                    )}
+                  </Tooltip>
                 ))}
               </CollapsibleContent>
             </Collapsible>
@@ -347,21 +374,29 @@ export function MainSidebar() {
                 )}
               >
                 {subscribedCommunities.map((c, index) => (
-                  <IonMenuToggle
-                    key={index}
-                    menu={LEFT_SIDEBAR_MENU_ID}
-                    autoHide={false}
-                  >
-                    <CommunityCard
-                      communitySlug={c}
-                      size="sm"
-                      className={cn(
-                        "hover:bg-secondary px-3 h-10 md:rounded-xl",
-                        mainSidebarCollapsed && "px-2",
-                      )}
-                      hideText={mainSidebarCollapsed}
-                    />
-                  </IonMenuToggle>
+                  <Tooltip key={index}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <IonMenuToggle
+                          menu={LEFT_SIDEBAR_MENU_ID}
+                          autoHide={false}
+                        >
+                          <CommunityCard
+                            communitySlug={c}
+                            size="sm"
+                            className={cn(
+                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              mainSidebarCollapsed && "px-2",
+                            )}
+                            hideText={mainSidebarCollapsed}
+                          />
+                        </IonMenuToggle>
+                      </div>
+                    </TooltipTrigger>
+                    {mainSidebarCollapsed && (
+                      <TooltipContent side="right">{c}</TooltipContent>
+                    )}
+                  </Tooltip>
                 ))}
               </CollapsibleContent>
             </Collapsible>
