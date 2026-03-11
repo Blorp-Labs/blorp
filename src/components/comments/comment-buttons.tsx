@@ -1,5 +1,5 @@
 import { useLikeComment } from "@/src/lib/api/index";
-import { useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import { ButtonHTMLAttributes, DetailedHTMLProps, useId } from "react";
 import { cn } from "@/src/lib/utils";
@@ -159,18 +159,13 @@ export function CommentVoting({
 
   const vote = useVoteComment();
 
-  const prevVote = commentView?.myVote ?? 0;
-  const curVote = commentView?.optimisticMyVote ?? prevVote;
-
-  const isUpvoted = curVote > 0;
-  const isDownvoted = curVote < 0;
-
-  // Compute optimistic per-side counts.
-  const upvoteDiff = (curVote > 0 ? 1 : 0) - (prevVote > 0 ? 1 : 0);
-  const downvoteDiff = (curVote < 0 ? 1 : 0) - (prevVote < 0 ? 1 : 0);
-  const displayUpvotes = commentView.upvotes + upvoteDiff;
-  const displayDownvotes = commentView.downvotes + downvoteDiff;
-  const displayScore = displayUpvotes - displayDownvotes;
+  const {
+    displayUpvotes,
+    displayDownvotes,
+    displayScore,
+    isUpvoted,
+    isDownvoted,
+  } = resolveVoteCounts(commentView);
 
   const abbrvScore = abbriviateNumberParts(displayScore);
   const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);

@@ -1,4 +1,4 @@
-import { useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
 import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
@@ -74,17 +74,13 @@ export function usePostVoting(apId?: string) {
 
   if (!postView) return null;
 
-  const prevVote = postView.myVote ?? 0;
-  const curVote = postView.optimisticMyVote ?? prevVote;
-
-  const isUpvoted = curVote > 0;
-  const isDownvoted = curVote < 0;
-
-  const upvoteDiff = (curVote > 0 ? 1 : 0) - (prevVote > 0 ? 1 : 0);
-  const downvoteDiff = (curVote < 0 ? 1 : 0) - (prevVote < 0 ? 1 : 0);
-  const displayUpvotes = postView.upvotes + upvoteDiff;
-  const displayDownvotes = postView.downvotes + downvoteDiff;
-  const displayScore = displayUpvotes - displayDownvotes;
+  const {
+    displayUpvotes,
+    displayDownvotes,
+    displayScore,
+    isUpvoted,
+    isDownvoted,
+  } = resolveVoteCounts(postView);
 
   return {
     displayScore,
