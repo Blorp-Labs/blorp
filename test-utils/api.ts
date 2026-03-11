@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import utcPlugin from "dayjs/plugin/utc";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas, Software } from "@/src/lib/api/adapters/api-blueprint";
 import { createSlug } from "@/src/lib/api/utils";
 import _ from "lodash";
 
@@ -205,6 +205,40 @@ export function getPost(config?: {
   return {
     creator,
     post,
+  };
+}
+
+export function getSite(overrides?: Partial<Schemas.Site>): Schemas.Site {
+  return {
+    privateInstance: false,
+    instance: API_ROOT,
+    description: null,
+    me: null,
+    myEmail: null,
+    admins: null,
+    moderates: null,
+    follows: null,
+    personBlocks: null,
+    communityBlocks: null,
+    version: "0.19.0",
+    sidebar: null,
+    userCount: null,
+    usersActiveDayCount: null,
+    usersActiveWeekCount: null,
+    usersActiveMonthCount: null,
+    usersActiveHalfYearCount: null,
+    postCount: null,
+    commentCount: null,
+    icon: null,
+    title: null,
+    applicationQuestion: null,
+    registrationMode: "Open",
+    showNsfw: false,
+    blurNsfw: true,
+    enablePostDownvotes: true,
+    enableCommentDownvotes: true,
+    software: Software.LEMMY,
+    ...overrides,
   };
 }
 
