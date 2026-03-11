@@ -521,6 +521,7 @@ function convertCommentReport(
 
 function convertFeed(
   multiCommunity: lemmyV4.MultiCommunityView,
+  communities?: lemmyV4.CommunityView[],
 ): Schemas.MultiCommunityFeed {
   const { multi } = multiCommunity;
   return {
@@ -538,7 +539,11 @@ function convertFeed(
     subscriberCount: multi.subscribers,
     communityCount: multi.communities,
     nsfw: false,
-    communitySlugs: [],
+    communitySlugs:
+      communities?.map(
+        (c) =>
+          createSlug({ apId: c.community.ap_id, name: c.community.name }).slug,
+      ) ?? [],
   };
 }
 
@@ -993,14 +998,22 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         : undefined,
     });
     return {
-      multiCommunityFeeds: items.map(convertFeed),
+      multiCommunityFeeds: items.map((item) => convertFeed(item)),
       nextCursor: null,
     };
   }
 
-  async getMultiCommunityFeed() {
-    throw Errors.NOT_IMPLEMENTED;
-    return {} as any;
+  async getMultiCommunityFeed(form: Forms.GetMultiCommunityFeed) {
+    const { multi_community_id } = await this.resolveObjectId(form.apId);
+    if (!multi_community_id) {
+      throw Errors.OBJECT_NOT_FOUND;
+    }
+    const { multi_community_view, communities } =
+      await this.client.getMultiCommunity({ id: multi_community_id });
+    return {
+      feed: convertFeed(multi_community_view, communities),
+      communities: communities.map((c) => convertCommunity(c)),
+    };
   }
 
   async followFeed() {
