@@ -677,11 +677,14 @@ export function CreatePost() {
                     <Label className="mb-2">Poll Options</Label>
                     {draft.poll?.choices.map((choice, i) => (
                       <Input
-                        key={i}
+                        key={choice.id || `new-${i}`}
                         placeholder={`Option ${i + 1}`}
                         value={choice.text}
                         onChange={(e) => patchPollChoice(i, e.target.value)}
-                        wrapperClassName="rounded-none first-of-type:rounded-t-lg h-10 pr-0.5 -mb-px bg-background focus-within:z-1"
+                        wrapperClassName={cn(
+                          "rounded-none h-10 pr-0.5 -mb-px bg-background focus-within:z-1",
+                          i === 0 && "rounded-t-lg",
+                        )}
                         endAdornment={
                           (draft.poll?.choices.length ?? 0) > 2 && (
                             <Button
@@ -749,9 +752,7 @@ export function CreatePost() {
                         )}
                         <SimpleSelect
                           options={POLL_UNIT_OPTIONS}
-                          value={POLL_UNIT_OPTIONS.find(
-                            (o) => o.value === (draft.poll?.endUnit ?? "days"),
-                          )}
+                          value={draft.poll?.endUnit ?? "days"}
                           onChange={(o) =>
                             draft.poll &&
                             patchDraft(draftId, {
