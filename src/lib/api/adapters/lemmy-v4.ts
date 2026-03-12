@@ -522,28 +522,36 @@ function convertCommentReport(
 function convertFeed(
   multiCommunity: lemmyV4.MultiCommunityView,
   communities?: lemmyV4.CommunityView[],
-): Schemas.MultiCommunityFeed {
-  const { multi } = multiCommunity;
+): { feed: Schemas.MultiCommunityFeed; owner: Schemas.Person | null } {
+  const { multi, owner } = multiCommunity;
+  const ownerPerson = owner ? convertPerson({ person: owner }) : null;
   return {
-    id: multi.id,
-    apId: multi.ap_id,
-    createdAt: multi.published_at,
-    name: multi.name,
-    slug: createSlug({
-      name: multi.name,
+    feed: {
+      id: multi.id,
       apId: multi.ap_id,
-    }).slug,
-    icon: null,
-    description: multi.summary ?? null,
-    banner: null,
-    subscriberCount: multi.subscribers,
-    communityCount: multi.communities,
-    nsfw: false,
-    communitySlugs:
-      communities?.map(
-        (c) =>
-          createSlug({ apId: c.community.ap_id, name: c.community.name }).slug,
-      ) ?? [],
+      createdAt: multi.published_at,
+      name: multi.name,
+      slug: createSlug({
+        name: multi.name,
+        apId: multi.ap_id,
+      }).slug,
+      icon: null,
+      description: multi.summary ?? null,
+      banner: null,
+      subscriberCount: multi.subscribers,
+      communityCount: multi.communities,
+      nsfw: false,
+      communitySlugs:
+        communities?.map(
+          (c) =>
+            createSlug({ apId: c.community.ap_id, name: c.community.name })
+              .slug,
+        ) ?? [],
+      ownerId: ownerPerson?.id ?? null,
+      ownerApId: ownerPerson?.apId ?? null,
+      ownerSlug: ownerPerson?.slug ?? null,
+    },
+    owner: ownerPerson,
   };
 }
 
@@ -998,7 +1006,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         : undefined,
     });
     return {
-      multiCommunityFeeds: items.map((item) => convertFeed(item)),
+      multiCommunityFeeds: items.map((item) => convertFeed(item).feed),
       nextCursor: null,
     };
   }
@@ -1010,9 +1018,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     }
     const { multi_community_view, communities } =
       await this.client.getMultiCommunity({ id: multi_community_id });
+    const { feed, owner } = convertFeed(multi_community_view, communities);
     return {
-      feed: convertFeed(multi_community_view, communities),
+      feed,
       communities: communities.map((c) => convertCommunity(c)),
+      owner,
     };
   }
 

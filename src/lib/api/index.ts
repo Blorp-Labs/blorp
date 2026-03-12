@@ -655,6 +655,7 @@ export function useMultiCommunityFeed(
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
   const queryKey = [...queryKeyPrefix, "getMultiCommunityFeed", form.apId];
   return useQuery({
     queryKey,
@@ -665,6 +666,9 @@ export function useMultiCommunityFeed(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),
       );
+      if (res.owner) {
+        cacheProfiles(getCachePrefixer(), [res.owner]);
+      }
       return res.feed.apId;
     },
     ...options,

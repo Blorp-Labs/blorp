@@ -29,6 +29,7 @@ import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-fee
 import { CommunityCard } from "../communities/community-card";
 import { encodeApId } from "@/src/lib/api/utils";
 import { FeedJoinButton } from "./feed-join-button";
+import { PersonCard } from "../person/person-card";
 
 dayjs.extend(localizedFormat);
 
@@ -136,6 +137,16 @@ export function SmallScreenSidebar({
               <CommunityCard key={slug} communitySlug={slug} size="sm" />
             ))}
           </section>
+
+          {feed?.ownerApId && (
+            <>
+              <Separator />
+              <section className="p-3 flex flex-col gap-2">
+                <h2>Created by</h2>
+                <PersonCard actorId={feed.ownerApId} size="sm" />
+              </section>
+            </>
+          )}
         </>
       )}
     </div>
@@ -264,6 +275,18 @@ export function FeedSidebar({
                 ))}
               </CollapsibleContent>
             </Collapsible>
+
+            {feed.ownerApId && (
+              <>
+                <Separator />
+                <section className="p-4 flex flex-col gap-2">
+                  <span className="uppercase text-xs font-medium text-muted-foreground">
+                    Created by
+                  </span>
+                  <PersonCard actorId={feed.ownerApId} size="sm" />
+                </section>
+              </>
+            )}
           </>
         </EasterEggBox>
       </SidebarContent>

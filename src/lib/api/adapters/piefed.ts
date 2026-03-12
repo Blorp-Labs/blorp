@@ -121,6 +121,7 @@ export const pieFedFeedSchema = z.object({
   nsfw: z.boolean(),
   communities: z.array(pieFedCommunitySchema).nullish(),
   subscribed: z.boolean().nullish(),
+  user_id: z.number().nullish(),
 });
 
 export const pieFedPostCountsSchema = z.object({
@@ -1447,7 +1448,10 @@ export class PieFedApi implements ApiBlueprint<null> {
     }
   }
 
-  private convertFeed(feed: z.infer<typeof pieFedFeedSchema>) {
+  private convertFeed(
+    feed: z.infer<typeof pieFedFeedSchema>,
+    owner?: Schemas.Person | null,
+  ) {
     return {
       createdAt: feed.published,
       id: feed.id,
@@ -1471,6 +1475,9 @@ export class PieFedApi implements ApiBlueprint<null> {
               (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
             )
           : undefined,
+      ownerId: owner?.id ?? null,
+      ownerApId: owner?.apId ?? null,
+      ownerSlug: owner?.slug ?? null,
     };
   }
 
@@ -1515,9 +1522,26 @@ export class PieFedApi implements ApiBlueprint<null> {
         convertCommunity({ community }, "partial"),
       );
 
+      // PieFed returns only the owner's local ID — fetch full person details.
+      let owner: Schemas.Person | null = null;
+      if (_.isNumber(feed.user_id)) {
+        try {
+          const personJson = await this.get("/user", {
+            person_id: feed.user_id,
+          });
+          const { person_view } = z
+            .object({ person_view: pieFedPersonViewSchema })
+            .parse(personJson);
+          owner = convertPerson({ person: person_view.person }, "partial");
+        } catch {
+          // Owner is optional — don't fail the whole request if fetch fails
+        }
+      }
+
       return {
-        feed: this.convertFeed(feed),
+        feed: this.convertFeed(feed, owner),
         communities,
+        owner,
       };
     } catch (err) {
       console.error(err);

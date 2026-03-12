@@ -170,6 +170,9 @@ const multiCommunityFeedSchema = z.object({
   optimisticSubscribed: z
     .enum(["Subscribed", "NotSubscribed", "Pending"])
     .optional(),
+  ownerId: z.number().nullable().optional(),
+  ownerApId: z.string().nullable().optional(),
+  ownerSlug: z.string().nullable().optional(),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -879,6 +882,7 @@ export abstract class ApiBlueprint<C> {
   ): Promise<{
     feed: Schemas.MultiCommunityFeed;
     communities: Schemas.Community[];
+    owner: Schemas.Person | null;
   }>;
 
   abstract getPerson(
