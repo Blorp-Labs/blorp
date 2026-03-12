@@ -671,6 +671,7 @@ export function useMultiCommunityFeed(
       }
       return res.feed.apId;
     },
+    enabled: !!form.apId,
     ...options,
   });
 }
@@ -2178,7 +2179,7 @@ export function useFollowFeed() {
     },
     onMutate: (form) => {
       patchFeed(form.feed.apId, getCachePrefixer(), {
-        optimisticSubscribed: "Pending",
+        optimisticSubscribed: form.follow ? "Pending" : "NotSubscribed",
       });
     },
     onSuccess: (data) => {

@@ -1526,9 +1526,11 @@ export class PieFedApi implements ApiBlueprint<null> {
       let owner: Schemas.Person | null = null;
       if (_.isNumber(feed.user_id)) {
         try {
-          const personJson = await this.get("/user", {
-            person_id: feed.user_id,
-          });
+          const personJson = await this.get(
+            "/user",
+            { person_id: feed.user_id },
+            options,
+          );
           const { person_view } = z
             .object({ person_view: pieFedPersonViewSchema })
             .parse(personJson);

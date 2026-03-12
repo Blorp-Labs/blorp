@@ -1,10 +1,9 @@
-import { Deferred } from "@/src/lib/deferred";
 import { LoadingButton } from "../ui/button";
 import { useFollowFeed } from "@/src/lib/api/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
-import { useIonAlert } from "@ionic/react";
 import { getFeedSubscribed } from "@/src/lib/api/adapters/utils";
+import { useConfirmationAlert } from "@/src/lib/hooks";
 
 interface Props {
   feedApId: string | undefined;
@@ -12,7 +11,7 @@ interface Props {
 }
 
 export function FeedJoinButton({ feedApId, ...props }: Props) {
-  const [alrt] = useIonAlert();
+  const getConfirmation = useConfirmationAlert();
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const follow = useFollowFeed();
@@ -41,31 +40,19 @@ export function FeedJoinButton({ feedApId, ...props }: Props) {
       loading={follow.isPending}
       variant={effectiveSubscribed === "NotSubscribed" ? "default" : "outline"}
       {...props}
-      onClick={async () => {
+      onClick={() => {
         if (feed) {
           const shouldFollow = effectiveSubscribed === "NotSubscribed";
 
           if (!shouldFollow) {
-            const deferred = new Deferred();
-            alrt({
-              message: `Are you sure you want to unfollow ${feed.name}`,
-              buttons: [
-                {
-                  text: "Cancel",
-                  role: "cancel",
-                  handler: () => deferred.reject(),
-                },
-                {
-                  text: "Unfollow",
-                  role: "destructive",
-                  handler: () => deferred.resolve(),
-                },
-              ],
-            });
-            await deferred.promise;
+            getConfirmation({
+              message: `Are you sure you want to unfollow ${feed.name}?`,
+              confirmText: "Unfollow",
+              danger: true,
+            }).then(() => follow.mutate({ feed, follow: shouldFollow }));
+          } else {
+            follow.mutate({ feed, follow: shouldFollow });
           }
-
-          follow.mutate({ feed, follow: shouldFollow });
         }
       }}
     >

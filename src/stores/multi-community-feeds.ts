@@ -93,7 +93,7 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
                 communitySlugs:
                   view.feedView.communitySlugs !== undefined
                     ? view.feedView.communitySlugs
-                    : (prevData?.feedView.communitySlugs ?? []),
+                    : prevData?.feedView.communitySlugs,
               },
             };
             newFeeds[cacheKey] = {
