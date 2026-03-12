@@ -245,8 +245,8 @@ importers:
         specifier: npm:lemmy-js-client@0.19.13-beta.1
         version: lemmy-js-client@0.19.13-beta.1
       lemmy-v4:
-        specifier: npm:lemmy-js-client@1.0.0-rename-paged-response-data.0
-        version: lemmy-js-client@1.0.0-rename-paged-response-data.0
+        specifier: npm:lemmy-js-client@1.0.0-search-optimizations-1.0
+        version: lemmy-js-client@1.0.0-search-optimizations-1.0
       lite-youtube-embed:
         specifier: ^0.3.3
         version: 0.3.4
@@ -5832,8 +5832,8 @@ packages:
   lemmy-js-client@0.19.13-beta.1:
     resolution: {integrity: sha512-GHlo17shJWl4OqA5m+7JdDbu/5jC7c7AAepFZNIPIDoVfc+dibaXFOH5ctHQh9p6n2jbVyGj23Di4P8L15Cwmw==}
 
-  lemmy-js-client@1.0.0-rename-paged-response-data.0:
-    resolution: {integrity: sha512-55U8XmuzWccD9NKd9cBtRzW+hCajtrjRVbi0WGTkFDKOtkOfIc0BJtq+dA7Coc6+O25BJBncOW0zfisMV7vNXw==}
+  lemmy-js-client@1.0.0-search-optimizations-1.0:
+    resolution: {integrity: sha512-xgAu4qQOntuMckr3HNh9DQcuAKomvC1U+uztIr2qVIxkXTtDpXW91u2OJbTaKIqv4KVyhD6zt+jDRlwfBZZxtg==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -13957,7 +13957,7 @@ snapshots:
 
   lemmy-js-client@0.19.13-beta.1: {}
 
-  lemmy-js-client@1.0.0-rename-paged-response-data.0:
+  lemmy-js-client@1.0.0-search-optimizations-1.0:
     dependencies:
       '@tsoa/runtime': 6.6.0
     transitivePeerDependencies:

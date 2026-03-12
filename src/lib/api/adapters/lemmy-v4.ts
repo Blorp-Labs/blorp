@@ -275,7 +275,7 @@ function convertCommunity(
     instanceId: community.instance_id,
     icon: community.icon ?? null,
     banner: community.banner ?? null,
-    description: community.description ?? null,
+    description: community.summary ?? null,
     nsfw: community.nsfw,
     usersActiveDayCount: community.users_active_day,
     usersActiveWeekCount: community.users_active_week,
@@ -372,7 +372,7 @@ function convertPost({
   };
 }
 function convertComment(
-  commentView: Omit<lemmyV4.CommentView, "post_tags" | "can_mod">,
+  commentView: Omit<lemmyV4.CommentView, "post_tags" | "can_mod" | "tags">,
 ): Schemas.Comment {
   const { post, creator, comment, community, comment_actions } = commentView;
   const myVote = comment_actions
@@ -533,7 +533,7 @@ function convertFeed(
       apId: multi.ap_id,
     }).slug,
     icon: null,
-    description: multi.description ?? null,
+    description: multi.summary ?? null,
     banner: null,
     subscriberCount: multi.subscribers,
     communityCount: multi.communities,
@@ -560,7 +560,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
           return local;
         }
       }
-      const { resolve } = await this.client.resolveObject({
+      const resolve = await this.client.resolveObject({
         q: apId,
       });
       const post = resolve?.type_ === "post" ? resolve : undefined;
@@ -632,7 +632,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
       privateInstance: lemmySite.site_view.local_site.private_instance,
-      description: lemmySite.site_view.site.description ?? null,
+      description: lemmySite.site_view.site.summary ?? null,
       instance: this.instance,
       admins: admins.map((a) => a.apId),
       myEmail: null,
@@ -839,30 +839,86 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async search(form: Forms.Search, options: RequestOptions) {
-    const topSort = form.type === "Communities" || form.type === "Users";
-    const { search, next_page } = await this.client.search(
-      {
-        q: form.q,
-        community_name: form.communitySlug,
-        page_cursor:
-          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        type_: remapEnum(form.type, {
-          Posts: "posts",
-          Users: "users",
-          Comments: "comments",
-          Communities: "communities",
-          All: "all",
-        }),
-        limit: form.limit ?? this.limit,
-        sort: topSort ? "top" : "new",
-        listing_type: "all",
-      },
-      options,
-    );
-    const posts = search.filter((r) => r.type_ === "post");
-    const communities = search.filter((r) => r.type_ === "community");
-    const comments = search.filter((r) => r.type_ === "comment");
-    const users = search.filter((r) => r.type_ === "person");
+    const pageCursor =
+      form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor;
+    const limit = form.limit ?? this.limit;
+
+    const fetchPosts =
+      form.type === "Posts" || form.type === "All"
+        ? this.client.getPosts(
+            {
+              search_term: form.q,
+              community_name: form.communitySlug,
+              page_cursor: pageCursor,
+              limit,
+              sort: "new",
+              type_: "all",
+            },
+            options,
+          )
+        : Promise.resolve({ items: [], next_page: undefined });
+
+    const fetchComments =
+      form.type === "Comments" || form.type === "All"
+        ? this.client.getComments(
+            {
+              search_term: form.q,
+              community_name: form.communitySlug,
+              page_cursor: pageCursor,
+              limit,
+              sort: "new",
+              type_: "all",
+            },
+            options,
+          )
+        : Promise.resolve({ items: [], next_page: undefined });
+
+    const fetchCommunities =
+      form.type === "Communities" || form.type === "All"
+        ? this.client.listCommunities(
+            {
+              search_term: form.q,
+              page_cursor: pageCursor,
+              limit,
+              sort: "new",
+              type_: "all",
+            },
+            options,
+          )
+        : Promise.resolve({ items: [], next_page: undefined });
+
+    const fetchUsers =
+      form.type === "Users" || form.type === "All"
+        ? this.client.listPersons(
+            {
+              search_term: form.q,
+              page_cursor: pageCursor,
+              limit,
+            },
+            options,
+          )
+        : Promise.resolve({ items: [], next_page: undefined });
+
+    const [postsResult, commentsResult, communitiesResult, usersResult] =
+      await Promise.all([
+        fetchPosts,
+        fetchComments,
+        fetchCommunities,
+        fetchUsers,
+      ]);
+
+    const posts = postsResult.items;
+    const comments = commentsResult.items;
+    const communities = communitiesResult.items;
+    const users = usersResult.items;
+
+    // Use the next_page cursor from the primary result type
+    const next_page =
+      postsResult.next_page ??
+      commentsResult.next_page ??
+      communitiesResult.next_page ??
+      usersResult.next_page;
+
     return {
       posts: posts.map(convertPost),
       communities: _.uniqBy(
@@ -1490,7 +1546,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async resolveObject(form: Forms.ResolveObject, options?: RequestOptions) {
-    const { resolve } = await this.client.resolveObject(
+    const resolve = await this.client.resolveObject(
       {
         q: form.q,
       },
