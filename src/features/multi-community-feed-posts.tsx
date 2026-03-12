@@ -19,7 +19,7 @@ import { supportsFeeds } from "../lib/api/adapters/support";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
-import { resolveRoute, useParams } from "@/src/routing/index";
+import { useParams } from "@/src/routing/index";
 import { MultiCommunityFeedBanner } from "../components/multi-community-feeds/multi-community-feed-banner";
 import {
   FeedSidebar,
@@ -29,7 +29,6 @@ import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "../routing/link-context";
-import { Link } from "@/src/routing/index";
 import { useFiltersStore } from "../stores/filters";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
@@ -40,10 +39,8 @@ import { FeedPostSortBar } from "../components/multi-community-feeds/feed-post-s
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
-import { Search } from "../components/icons";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
@@ -153,34 +150,7 @@ export default function MultiCommunityFeedPosts() {
               {feed?.slug ?? apId}
             </ToolbarTitle>
           </ToolbarButtons>
-          <SearchBar
-            placeholder={`Search ${apId}`}
-            value={search}
-            onValueChange={setSearch}
-            communitySlug={apId}
-            onSubmit={(newVal) => {
-              router.push(
-                resolveRoute(
-                  `${linkCtx.root}c/:communityName/s`,
-                  {
-                    communityName: apId,
-                  },
-                  `?q=${newVal ?? search}`,
-                ),
-              );
-            }}
-            className="max-md:hidden"
-          />
           <ToolbarButtons side="right">
-            <Link
-              to={`${linkCtx.root}c/:communityName/s`}
-              params={{
-                communityName: apId,
-              }}
-              className="text-2xl contents md:hidden"
-            >
-              <Search className="scale-110 text-muted-foreground" />
-            </Link>
             <div className="md:hidden contents">
               <PostSortButton align="end" className="text-muted-foreground" />
             </div>
