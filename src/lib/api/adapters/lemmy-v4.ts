@@ -1588,12 +1588,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     const community = resolve?.type_ === "community" ? resolve : undefined;
     const person = resolve?.type_ === "person" ? resolve : undefined;
     const comment = resolve?.type_ === "comment" ? resolve : undefined;
+    const multiCommunity =
+      resolve?.type_ === "multi_community" ? resolve : undefined;
     return resolveObjectResponseSchema.parse({
       post: post ? convertPost(post) : null,
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
       comment: comment ? convertComment(comment) : null,
-      feed: null,
+      feed: multiCommunity ? convertFeed(multiCommunity).feed : null,
     });
   }
 
