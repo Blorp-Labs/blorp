@@ -1,18 +1,14 @@
-import { ContentGutters } from "../gutters";
 import { PostCardStyleButton, PostSortButton } from "../lemmy-sort";
 import { FeedJoinButton } from "./feed-join-button";
+import { StickyFilterBar } from "../sticky-filter-bar";
 
 export function FeedPostSortBar({ apId }: { apId: string | undefined }) {
   return (
-    <ContentGutters className="max-md:hidden">
-      <div className="flex flex-row md:h-12 md:border-b md:bg-background flex-1 items-center gap-2">
-        <PostSortButton align="start" variant="button" />
-        <PostCardStyleButton align="start" variant="button" />
-        <div className="flex-1" />
-        <FeedJoinButton feedApId={apId} />
-      </div>
-      {/* ContentGutters requires a second child for the sidebar slot */}
-      <></>
-    </ContentGutters>
+    <StickyFilterBar className="max-md:hidden">
+      <PostSortButton align="start" variant="button" />
+      <PostCardStyleButton align="start" variant="button" />
+      <div className="flex-1" />
+      <FeedJoinButton feedApId={apId} />
+    </StickyFilterBar>
   );
 }

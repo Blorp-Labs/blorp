@@ -26,6 +26,7 @@ import z from "zod";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { StickyFilterBar } from "../components/sticky-filter-bar";
 
 function NothingSavedMessage() {
   return (
@@ -168,26 +169,23 @@ export default function SavedContent() {
             scrollHost
             data={data}
             header={[
-              <ContentGutters
-                className="max-md:hidden"
+              <StickyFilterBar
                 key="header-type-select"
+                className="max-md:hidden"
               >
-                <div className="flex flex-row md:h-12 md:border-b md:bg-background flex-1 items-center">
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    size="sm"
-                    value={type}
-                    onValueChange={(val) =>
-                      val && typeParam.set(val as "posts" | "comments")
-                    }
-                  >
-                    <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
-                    <ToggleGroupItem value="comments">Comments</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <></>
-              </ContentGutters>,
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  size="sm"
+                  value={type}
+                  onValueChange={(val) =>
+                    val && typeParam.set(val as "posts" | "comments")
+                  }
+                >
+                  <ToggleGroupItem value="posts">Posts</ToggleGroupItem>
+                  <ToggleGroupItem value="comments">Comments</ToggleGroupItem>
+                </ToggleGroup>
+              </StickyFilterBar>,
             ]}
             noItems={
               data.length === 0 &&
