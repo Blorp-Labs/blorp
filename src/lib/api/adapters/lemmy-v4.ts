@@ -13,8 +13,41 @@ import {
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import { isErrorLike } from "../../utils";
+import { ErrorLike, isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
+
+function translateError(err: ErrorLike): Error {
+  const name = err.name.trim().toLowerCase();
+  const msg = err.message.trim().toLowerCase();
+
+  // Not found errors
+  if (
+    name === "couldnt_find_object" ||
+    name === "couldnt_find_community" ||
+    msg === "federation disabled" ||
+    name === "resolve_object_failed"
+  ) {
+    return Errors.OBJECT_NOT_FOUND;
+  }
+
+  // MFA errors
+  if (
+    name.includes("missing_totp_token") ||
+    msg.includes("missing_totp_token")
+  ) {
+    return Errors.MFA_REQUIRED;
+  }
+
+  return err;
+}
+
+async function translateErrors<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    throw isErrorLike(err) ? translateError(err) : err;
+  }
+}
 
 function remapEnum<Value extends PropertyKey, Output>(
   value: Value,
@@ -692,11 +725,9 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
   async getPost(form: { apId: string }, options: RequestOptions) {
     const { post_id } = await this.resolveObjectId(form.apId);
-    console.log("HERE", post_id);
     if (_.isNil(post_id)) {
       throw new Error("post not found");
     }
-    console.log("THERE", post_id);
     const fullPost = await this.client.getPost(
       {
         id: post_id,
@@ -1012,18 +1043,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getMultiCommunityFeed(form: Forms.GetMultiCommunityFeed) {
-    const { multi_community_id } = await this.resolveObjectId(form.apId);
-    if (!multi_community_id) {
-      throw Errors.OBJECT_NOT_FOUND;
-    }
-    const { multi_community_view, communities } =
-      await this.client.getMultiCommunity({ id: multi_community_id });
-    const { feed, owner } = convertFeed(multi_community_view, communities);
-    return {
-      feed,
-      communities: communities.map((c) => convertCommunity(c)),
-      owner,
-    };
+    return translateErrors(async () => {
+      const { multi_community_id } = await this.resolveObjectId(form.apId);
+      if (!multi_community_id) {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+      const { multi_community_view, communities } =
+        await this.client.getMultiCommunity({ id: multi_community_id });
+      const { feed, owner } = convertFeed(multi_community_view, communities);
+      return {
+        feed,
+        communities: communities.map((c) => convertCommunity(c)),
+        owner,
+      };
+    });
   }
 
   async followFeed() {
