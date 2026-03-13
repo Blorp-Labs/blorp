@@ -505,6 +505,7 @@ function TipTapEditor({
           "flex flex-row justify-between py-1.5 px-2 pb-0 max-md:hidden",
           hideMenu && "hidden",
         )}
+        onMouseDown={(e) => e.preventDefault()}
       >
         <MenuBar
           editor={editor}
@@ -554,6 +555,7 @@ function TipTapEditor({
           "flex flex-row justify-between px-2 py-1 md:hidden sticky bottom-0 bg-background/50 backdrop-blur",
           hideMenu && "hidden",
         )}
+        onMouseDown={(e) => e.preventDefault()}
       >
         <MenuBar
           className="gap-2.5"
@@ -626,6 +628,7 @@ function TextAreaEditor({
           "flex flex-row justify-end py-1.5 px-2 pb-0 max-md:hidden",
           hideMenu && "hidden",
         )}
+        onMouseDown={(e) => e.preventDefault()}
       >
         <Button
           size="sm"
@@ -662,6 +665,7 @@ function TextAreaEditor({
           "flex flex-row justify-end px-2 py-1 sticky bottom-0 md:hidden",
           hideMenu && "hidden",
         )}
+        onMouseDown={(e) => e.preventDefault()}
       >
         <Button
           size="sm"
@@ -694,6 +698,7 @@ export function MarkdownEditor({
   autoFocus: autoFocusDefault,
   placeholder,
   onFocus,
+  onBlur,
   onChageEditorType,
   footer,
   id,
@@ -705,6 +710,7 @@ export function MarkdownEditor({
   autoFocus?: boolean;
   placeholder?: string;
   onFocus?: () => void;
+  onBlur?: () => void;
   onChageEditorType?: () => void;
   footer?: React.ReactNode;
   id?: string;
@@ -728,6 +734,7 @@ export function MarkdownEditor({
           autoFocus={autoFocus}
           placeholder={placeholder}
           onFocus={onFocus}
+          onBlur={onBlur}
           id={id}
           hideMenu={hideMenu}
         />
@@ -743,6 +750,7 @@ export function MarkdownEditor({
           autoFocus={autoFocus}
           placeholder={placeholder}
           onFocus={onFocus}
+          onBlur={onBlur}
           id={id}
           hideMenu={hideMenu}
         />

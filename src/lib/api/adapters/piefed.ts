@@ -1103,6 +1103,25 @@ function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
   );
 }
 
+const POLL_UNIT_MS: Record<string, number> = {
+  minutes: 60 * 1000,
+  hours: 60 * 60 * 1000,
+  days: 24 * 60 * 60 * 1000,
+  weeks: 7 * 24 * 60 * 60 * 1000,
+  months: 30 * 24 * 60 * 60 * 1000,
+};
+
+function pollEndDate(poll: Forms.PollInput): string {
+  if (poll.endUnit === "permanent") {
+    return new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  }
+  return new Date(
+    Date.now() +
+      poll.endAmount *
+        (POLL_UNIT_MS[poll.endUnit] ?? POLL_UNIT_MS["days"] ?? 0),
+  ).toISOString();
+}
+
 export class PieFedApi implements ApiBlueprint<null> {
   software = Software.PIEFED;
   softwareVersion: string;
@@ -2091,9 +2110,23 @@ export class PieFedApi implements ApiBlueprint<null> {
     const res = await this.put("/post", {
       post_id,
       title: form.title,
-      url: form.url,
+      url: form.poll ? undefined : form.url,
       body: form.body,
       nsfw: form.nsfw ?? false,
+      ...(form.poll
+        ? {
+            poll: {
+              end_poll: pollEndDate(form.poll),
+              mode: form.poll.mode,
+              local_only: form.poll.localOnly,
+              choices: form.poll.choices.map((c) => ({
+                id: c.id,
+                choice_text: c.text,
+                sort_order: c.sortOrder,
+              })),
+            },
+          }
+        : {}),
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
@@ -2131,6 +2164,20 @@ export class PieFedApi implements ApiBlueprint<null> {
       url: form.url ?? undefined,
       body: form.body ?? undefined,
       nsfw: form.nsfw ?? false,
+      ...(form.poll
+        ? {
+            poll: {
+              end_poll: pollEndDate(form.poll),
+              mode: form.poll.mode,
+              local_only: form.poll.localOnly,
+              choices: form.poll.choices.map((c) => ({
+                id: c.id,
+                choice_text: c.text,
+                sort_order: c.sortOrder,
+              })),
+            },
+          }
+        : {}),
     });
     try {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
