@@ -7,14 +7,14 @@ import {
 } from "@tiptap/react";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
+import { Markdown } from "@tiptap/markdown";
 import {
   DetailsWithMarkdown,
   DetailsContentWithMarkdown,
   DetailsSummaryWithMarkdown,
 } from "./editor-extensions/spoiler-plugin";
-import SubScript from "./editor-extensions/subscript";
-import SupScript from "./editor-extensions/supscript";
+import Subscript from "./editor-extensions/subscript";
+import Superscript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
@@ -43,6 +43,13 @@ import { EllipsisActionMenu } from "../adaptable/action-menu";
 import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
+
+/** Strip trailing &nbsp; markers that @tiptap/extension-paragraph emits for empty paragraphs */
+function stripTrailingNbsp(md: string): string {
+  let result = md.replace(/(\n\n&nbsp;)+$/, "");
+  if (result === "&nbsp;") result = "";
+  return result;
+}
 
 const CustomLink = Link.extend({
   inclusive: false,
@@ -104,9 +111,9 @@ function useRenderOnTipTapChange(editor: Editor | null) {
   useEffect(() => {
     if (!editor) return;
     const rerender = () => setSignal((x) => x + 1);
-    editor.on("selectionUpdate", rerender);
+    editor.on("transaction", rerender);
     return () => {
-      editor.off("selectionUpdate", rerender);
+      editor.off("transaction", rerender);
     };
   }, [editor]);
 }
@@ -185,7 +192,13 @@ const MenuBar = ({
 
             if (url.trim() === "") {
               editor.chain().focus().unsetLink().run();
-            } else if (isLinkActive) {
+            } else if (isLinkActive && linkInfo) {
+              // Collect existing marks (bold, italic, etc.) excluding the old link
+              const nodeAtStart = editor.state.doc.nodeAt(linkInfo.range.from);
+              const existingMarks = (nodeAtStart?.marks ?? [])
+                .filter((m) => m.type.name !== "link")
+                .map((m) => ({ type: m.type.name, attrs: m.attrs }));
+
               editor
                 .chain()
                 .focus()
@@ -194,7 +207,10 @@ const MenuBar = ({
                   {
                     type: "text",
                     text: description,
-                    marks: [{ type: "link", attrs: { href: url } }],
+                    marks: [
+                      ...existingMarks,
+                      { type: "link", attrs: { href: url } },
+                    ],
                   },
                 ])
                 .run();
@@ -291,14 +307,11 @@ const MenuBar = ({
 
       <EllipsisActionMenu
         aria-label="More formatting options"
+        preventFocusReturnOnClose
         actions={[
           {
             text: "Horizontal Line",
             onClick: () => editor.chain().focus().setHorizontalRule().run(),
-          },
-          {
-            text: "Code",
-            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
           },
           {
             text: "Spoiler",
@@ -313,20 +326,29 @@ const MenuBar = ({
             },
           },
           {
+            text: "Code",
+            checked: editor.isActive("codeBlock"),
+            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+          },
+          {
             text: "Unordered List",
+            checked: editor.isActive("bulletList"),
             onClick: () => editor.chain().focus().toggleBulletList().run(),
           },
           {
             text: "Ordered List",
+            checked: editor.isActive("orderedList"),
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
           },
           {
             text: "Subscript",
-            onClick: () => editor.chain().focus().toggleMark("subscript").run(),
+            checked: editor.isActive("subscript"),
+            onClick: () => editor.chain().focus().toggleSubscript().run(),
           },
           {
             text: "Superscript",
-            onClick: () => editor.chain().focus().toggleMark("supscript").run(),
+            checked: editor.isActive("superscript"),
+            onClick: () => editor.chain().focus().toggleSuperscript().run(),
           },
         ]}
       />
@@ -382,8 +404,8 @@ function TipTapEditor({
         editor.commands.focus("end");
       }
     },
-    content,
     extensions: [
+      Markdown,
       Placeholder.configure({
         placeholder,
       }),
@@ -391,7 +413,6 @@ function TipTapEditor({
         codeBlock: false,
       }),
       Image,
-      Markdown,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockEditor);
@@ -412,8 +433,8 @@ function TipTapEditor({
         },
         suggestions: mentionSuggestions,
       }),
-      SubScript,
-      SupScript,
+      Subscript,
+      Superscript,
       DetailsWithMarkdown.configure({
         HTMLAttributes: {
           class: "details",
@@ -423,9 +444,7 @@ function TipTapEditor({
       DetailsContentWithMarkdown,
     ],
     onUpdate: ({ editor }) => {
-      // @ts-expect-error types too hard lol
-      const markdown = editor?.storage["markdown"].getMarkdown();
-      onChange(markdown);
+      onChange(stripTrailingNbsp(editor.getMarkdown()));
     },
     onFocus: () => onFocus?.(),
     onBlur,
@@ -492,11 +511,10 @@ function TipTapEditor({
   });
 
   useEffect(() => {
-    // @ts-expect-error types also too hard
-    if (editor?.storage["markdown"].getMarkdown() !== content) {
-      editor?.commands.setContent(content);
+    if (stripTrailingNbsp(editor.getMarkdown()) !== content) {
+      editor.commands.setContent(content, { contentType: "markdown" });
     }
-  }, [content]);
+  }, [content, editor]);
 
   return (
     <>
