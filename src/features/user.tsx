@@ -42,6 +42,7 @@ import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
+import { StickyFilterBar } from "../components/sticky-filter-bar";
 import { Page } from "../components/page";
 import { NoPersonPostsMessage } from "../components/person/no-person-posts-message";
 
@@ -218,28 +219,25 @@ export default function User() {
             data={data}
             header={[
               <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
-              <ContentGutters
+              <StickyFilterBar
                 key="header-type-select"
-                className="max-md:border-b-[.5px] max-md:pb-2"
+                innerClassName="h-auto pb-2"
               >
-                <div className="flex md:h-12 md:border-b md:bg-background flex-1 items-center">
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    size="sm"
-                    value={type}
-                    onValueChange={(val) =>
-                      val && typeParam.set(val as "Posts" | "Comments")
-                    }
-                  >
-                    <ToggleGroupItem value="Posts">Posts</ToggleGroupItem>
-                    <ToggleGroupItem value="Comments">
-                      <span>Comments</span>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <></>
-              </ContentGutters>,
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  size="sm"
+                  value={type}
+                  onValueChange={(val) =>
+                    val && typeParam.set(val as "Posts" | "Comments")
+                  }
+                >
+                  <ToggleGroupItem value="Posts">Posts</ToggleGroupItem>
+                  <ToggleGroupItem value="Comments">
+                    <span>Comments</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </StickyFilterBar>,
             ]}
             noItems={(data.length === 0 && !isFetching) || isBlocked}
             noItemsComponent={

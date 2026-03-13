@@ -26,8 +26,13 @@ import { Skeleton } from "../ui/skeleton";
 import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
-import { CommunityCard } from "../communities/community-card";
+import {
+  CommunityCard,
+  CommunityCardSkeleton,
+} from "../communities/community-card";
 import { encodeApId } from "@/src/lib/api/utils";
+import { FeedJoinButton } from "./feed-join-button";
+import { PersonCard } from "../person/person-card";
 
 dayjs.extend(localizedFormat);
 
@@ -40,7 +45,7 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const actions = useMultiCommunityActions({
     apId,
@@ -102,6 +107,8 @@ export function SmallScreenSidebar({
             actions={actions}
             aria-label="Community actions"
           />
+
+          <FeedJoinButton feedApId={apId} />
         </div>
       </div>
 
@@ -129,10 +136,24 @@ export function SmallScreenSidebar({
 
           <section className="p-3 flex flex-col gap-2">
             <h2>Communities</h2>
-            {feed?.communitySlugs?.map((slug) => (
-              <CommunityCard key={slug} communitySlug={slug} size="sm" />
-            ))}
+            {feed?.communitySlugs?.length
+              ? feed.communitySlugs.map((slug) => (
+                  <CommunityCard key={slug} communitySlug={slug} size="sm" />
+                ))
+              : Array.from({ length: feed?.communityCount ?? 0 }).map(
+                  (_, i) => <CommunityCardSkeleton key={i} size="sm" />,
+                )}
           </section>
+
+          {feed?.ownerApId && (
+            <>
+              <Separator />
+              <section className="p-3 flex flex-col gap-2">
+                <h2>Created by</h2>
+                <PersonCard actorId={feed.ownerApId} size="sm" />
+              </section>
+            </>
+          )}
         </>
       )}
     </div>
@@ -164,7 +185,7 @@ export function FeedSidebar({
   hideDescription?: boolean;
   asPage?: boolean;
 }) {
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const aboutOpen = useSidebarStore((s) => s.communityAboutExpanded);
   const setAboutOpen = useSidebarStore((s) => s.setCommunityAboutExpanded);
@@ -256,11 +277,31 @@ export function FeedSidebar({
               </CollapsibleTrigger>
 
               <CollapsibleContent className="flex flex-col gap-2 pt-3">
-                {feed.communitySlugs?.map((slug) => (
-                  <CommunityCard key={slug} communitySlug={slug} size="sm" />
-                ))}
+                {feed.communitySlugs?.length
+                  ? feed.communitySlugs.map((slug) => (
+                      <CommunityCard
+                        key={slug}
+                        communitySlug={slug}
+                        size="sm"
+                      />
+                    ))
+                  : Array.from({ length: feed.communityCount ?? 0 }).map(
+                      (_, i) => <CommunityCardSkeleton key={i} size="sm" />,
+                    )}
               </CollapsibleContent>
             </Collapsible>
+
+            {feed.ownerApId && (
+              <>
+                <Separator />
+                <section className="p-4 flex flex-col gap-2">
+                  <span className="uppercase text-xs font-medium text-muted-foreground">
+                    Created by
+                  </span>
+                  <PersonCard actorId={feed.ownerApId} size="sm" />
+                </section>
+              </>
+            )}
           </>
         </EasterEggBox>
       </SidebarContent>

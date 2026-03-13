@@ -114,13 +114,14 @@ export const pieFedFeedSchema = z.object({
   banner: z.string().nullish(),
   communities_count: z.number(),
   subscriptions_count: z.number(),
-  description: z.string(),
-  description_html: z.string(),
+  description: z.string().nullish(),
   icon: z.string().nullish(),
   id: z.number(),
   name: z.string(),
   nsfw: z.boolean(),
-  communities: z.array(pieFedCommunitySchema),
+  communities: z.array(pieFedCommunitySchema).nullish(),
+  subscribed: z.boolean().nullish(),
+  user_id: z.number().nullish(),
 });
 
 export const pieFedPostCountsSchema = z.object({
@@ -1362,7 +1363,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         ],
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1412,7 +1413,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         })),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1442,60 +1443,123 @@ export class PieFedApi implements ApiBlueprint<null> {
         communities: communities.map((c) => convertCommunity(c, "partial")),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
+  }
+
+  private convertFeed(
+    feed: z.infer<typeof pieFedFeedSchema>,
+    owner?: Schemas.Person | null,
+  ) {
+    return {
+      createdAt: feed.published,
+      id: feed.id,
+      apId: feed.actor_id,
+      slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+      name: feed.name,
+      icon: feed.icon ?? null,
+      banner: feed.banner ?? null,
+      nsfw: feed.nsfw,
+      communityCount: feed.communities_count,
+      subscriberCount: feed.subscriptions_count,
+      description: feed.description ?? null,
+      subscribed: feed.subscribed ?? null,
+      // If communities is absent or empty despite a non-zero count, the endpoint
+      // didn't include them (e.g. include_communities=false). Return undefined so
+      // callers can distinguish "not loaded" from "genuinely empty".
+      communitySlugs:
+        feed.communities != null &&
+        (feed.communities.length > 0 || feed.communities_count === 0)
+          ? feed.communities.map(
+              (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+            )
+          : undefined,
+      ownerId: owner?.id ?? null,
+      ownerApId: owner?.apId ?? null,
+      ownerSlug: owner?.slug ?? null,
+    };
   }
 
   async getMultiCommunityFeeds(
     form: Forms.GetMultiCommunityFeeds,
     options?: RequestOptions,
   ) {
-    const json = await this.get("/feed/list", {}, options);
+    const json = await this.get(
+      "/feed/list",
+      {
+        include_communities: false,
+      },
+      options,
+    );
     try {
       const { feeds } = z
         .object({
           feeds: z.array(pieFedFeedSchema),
         })
         .parse(json);
-
-      const communities = feeds.flatMap(({ communities }) =>
-        communities.map((community) =>
-          convertCommunity(
-            {
-              community,
-            },
-            "partial",
-          ),
-        ),
-      );
-
       return {
-        multiCommunityFeeds: feeds.map((feed) => ({
-          createdAt: feed.published,
-          id: feed.id,
-          apId: feed.actor_id,
-          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
-          name: feed.name,
-          icon: feed.icon ?? null,
-          banner: feed.banner ?? null,
-          nsfw: feed.nsfw,
-          communityCount: feed.communities_count,
-          subscriberCount: feed.subscriptions_count,
-          description: feed.description ?? null,
-          communitySlugs: feed.communities.map(
-            (community) =>
-              createSlug({ apId: community.actor_id, name: community.name })
-                .slug,
-          ),
-        })),
-        communities,
+        multiCommunityFeeds: feeds.map((feed) => this.convertFeed(feed)),
         nextCursor: null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
+  }
+
+  async getMultiCommunityFeed(
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
+  ) {
+    try {
+      const { feed_id } = await this.resolveObjectId(form.apId);
+
+      const feedJson = await this.get("/feed", { id: feed_id }, options);
+      const feed = pieFedFeedSchema.parse(feedJson);
+
+      const communities = (feed.communities ?? []).map((community) =>
+        convertCommunity({ community }, "partial"),
+      );
+
+      // PieFed returns only the owner's local ID — fetch full person details.
+      let owner: Schemas.Person | null = null;
+      if (_.isNumber(feed.user_id)) {
+        try {
+          const personJson = await this.get(
+            "/user",
+            { person_id: feed.user_id },
+            options,
+          );
+          const { person_view } = z
+            .object({ person_view: pieFedPersonViewSchema })
+            .parse(personJson);
+          owner = convertPerson({ person: person_view.person }, "partial");
+        } catch {
+          // Owner is optional — don't fail the whole request if fetch fails
+        }
+      }
+
+      return {
+        feed: this.convertFeed(feed, owner),
+        communities,
+        owner,
+      };
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async followFeed(
+    form: Forms.FollowFeed,
+  ): Promise<Schemas.MultiCommunityFeed> {
+    const json = await this.post("/feed/follow", {
+      feed_id: form.feedId,
+      follow: form.follow,
+    });
+    const feed = pieFedFeedSchema.parse(json);
+    return this.convertFeed(feed);
   }
 
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
@@ -1532,7 +1596,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         flairs: community_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1616,7 +1680,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1629,7 +1693,7 @@ export class PieFedApi implements ApiBlueprint<null> {
     try {
       return z.object({ jwt: z.string() }).parse(json);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1643,7 +1707,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1670,7 +1734,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertPost({ postView: post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1684,7 +1748,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1802,7 +1866,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1832,7 +1896,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1852,7 +1916,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         .parse(json);
       return convertCommunity(data.community_view, "partial");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1928,7 +1992,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         nextCursor: hasNextCursor ? String(nextCursor) : null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1948,7 +2012,7 @@ export class PieFedApi implements ApiBlueprint<null> {
 
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -2081,7 +2145,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -2561,12 +2625,13 @@ export class PieFedApi implements ApiBlueprint<null> {
         options,
       );
 
-      const { post, community, person, comment } = z
+      const { post, community, person, comment, feed } = z
         .object({
           post: pieFedPostViewSchema.nullish(),
           community: pieFedCommentViewSchema.nullish(),
           person: pieFedPersonViewSchema.nullish(),
           comment: pieFedCommentViewSchema.nullish(),
+          feed: pieFedFeedSchema.nullish(),
         })
         .parse(json);
 
@@ -2575,6 +2640,7 @@ export class PieFedApi implements ApiBlueprint<null> {
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
         comment: comment ? convertComment(comment) : null,
+        feed: feed ? this.convertFeed(feed) : null,
       });
     } catch (err) {
       console.error(err);
@@ -2647,7 +2713,7 @@ export class PieFedApi implements ApiBlueprint<null> {
       );
       return { items, nextCursor: hasNextPage ? String(page) : null };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }

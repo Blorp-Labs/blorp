@@ -51,6 +51,11 @@ function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
       },
     );
   }
+  if (data.feed) {
+    return resolveRoute("/home/f/:apId", {
+      apId: encodeApId(data.feed.apId),
+    });
+  }
   return undefined;
 }
 

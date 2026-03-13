@@ -1,14 +1,11 @@
-import { ContentGutters } from "../gutters";
 import { PostSortButton, PostCardStyleButton } from "../lemmy-sort";
+import { StickyFilterBar } from "../sticky-filter-bar";
 
 export function PostsSortBar() {
   return (
-    <ContentGutters className="max-md:hidden">
-      <div className="flex flex-row md:h-12 md:border-b md:bg-background flex-1 items-center gap-2">
-        <PostSortButton align="start" variant="button" />
-        <PostCardStyleButton align="start" variant="button" />
-      </div>
-      <></>
-    </ContentGutters>
+    <StickyFilterBar className="max-md:hidden">
+      <PostSortButton align="start" variant="button" />
+      <PostCardStyleButton align="start" variant="button" />
+    </StickyFilterBar>
   );
 }

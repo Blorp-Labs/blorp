@@ -51,6 +51,7 @@ import {
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
+import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 
 const EMPTY_ARR: never[] = [];
 
@@ -366,47 +367,44 @@ export default function SearchFeed({
             fullscreen
             data={data}
             header={[
-              <ContentGutters
-                className="max-md:hidden"
+              <StickyFilterBar
                 key="header-type-toggle"
+                className="max-md:hidden"
               >
-                <div className="flex flex-row h-12 md:border-b md:bg-background flex-1 items-center">
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    size="sm"
-                    value={type}
-                    onValueChange={(val) =>
-                      val &&
-                      typeParam.set(
-                        val as "posts" | "communities" | "users" | "comments",
-                      )
-                    }
-                  >
-                    <ToggleGroupItem value="posts">
-                      Posts
-                      <KeyboardShortcut>1</KeyboardShortcut>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  size="sm"
+                  value={type}
+                  onValueChange={(val) =>
+                    val &&
+                    typeParam.set(
+                      val as "posts" | "communities" | "users" | "comments",
+                    )
+                  }
+                >
+                  <ToggleGroupItem value="posts">
+                    Posts
+                    <KeyboardShortcut>1</KeyboardShortcut>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="comments">
+                    Comments
+                    <KeyboardShortcut>2</KeyboardShortcut>
+                  </ToggleGroupItem>
+                  {scope === "global" && (
+                    <ToggleGroupItem value="communities">
+                      Communities
+                      <KeyboardShortcut>3</KeyboardShortcut>
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="comments">
-                      Comments
-                      <KeyboardShortcut>2</KeyboardShortcut>
+                  )}
+                  {scope === "global" && (
+                    <ToggleGroupItem value="users">
+                      Users
+                      <KeyboardShortcut>4</KeyboardShortcut>
                     </ToggleGroupItem>
-                    {scope === "global" && (
-                      <ToggleGroupItem value="communities">
-                        Communities
-                        <KeyboardShortcut>3</KeyboardShortcut>
-                      </ToggleGroupItem>
-                    )}
-                    {scope === "global" && (
-                      <ToggleGroupItem value="users">
-                        Users
-                        <KeyboardShortcut>4</KeyboardShortcut>
-                      </ToggleGroupItem>
-                    )}
-                  </ToggleGroup>
-                </div>
-                <></>
-              </ContentGutters>,
+                  )}
+                </ToggleGroup>
+              </StickyFilterBar>,
               <ContentGutters
                 key="recent-searches"
                 className={cn(

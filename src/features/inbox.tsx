@@ -51,6 +51,7 @@ import {
   useCommentActions,
 } from "../components/comments/post-comment";
 import { Page } from "../components/page";
+import { StickyFilterBar } from "../components/sticky-filter-bar";
 import { usePostFromStore } from "../stores/posts";
 import { SmallPostCard } from "../components/posts/post";
 import { getAccountSite, useAuth } from "../stores/auth";
@@ -729,54 +730,55 @@ export default function Inbox() {
         <VirtualList<Item>
           key={type}
           header={[
-            <ContentGutters className="max-md:hidden" key="type-select-header">
-              <div className="py-1.5 flex flex-row justify-between bg-background border-b-[.5px]">
-                <ToggleGroup
-                  type="single"
-                  variant="outline"
-                  size="sm"
-                  value={type}
-                  onValueChange={(val) =>
-                    val &&
-                    setType(val as "all" | "unread" | "mentions" | "replies")
-                  }
-                >
-                  <ToggleGroupItem value="all">All</ToggleGroupItem>
-                  <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
-                  <BadgeCount showBadge={hasUnreadReply}>
-                    <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
-                  </BadgeCount>
-                  <BadgeCount showBadge={hasUnreadMention}>
-                    <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
-                  </BadgeCount>
-                  <BadgeCount showBadge={hasUnresolvedPostReport}>
-                    <ToggleGroupItem value="post-reports">
-                      Post Reports
-                    </ToggleGroupItem>
-                  </BadgeCount>
-                  <BadgeCount showBadge={hasUnresolvedCommentReport}>
-                    <ToggleGroupItem value="comment-reports">
-                      Comment Reports
-                    </ToggleGroupItem>
-                  </BadgeCount>
-                </ToggleGroup>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => markAllRead.mutate()}
-                    >
-                      <DoubleCheck />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="end">
-                    Mark all replies and mentions as read
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <></>
-            </ContentGutters>,
+            <StickyFilterBar
+              key="type-select-header"
+              className="max-md:hidden"
+              innerClassName="justify-between"
+            >
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={type}
+                onValueChange={(val) =>
+                  val &&
+                  setType(val as "all" | "unread" | "mentions" | "replies")
+                }
+              >
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="unread">Unread</ToggleGroupItem>
+                <BadgeCount showBadge={hasUnreadReply}>
+                  <ToggleGroupItem value="replies">Replies</ToggleGroupItem>
+                </BadgeCount>
+                <BadgeCount showBadge={hasUnreadMention}>
+                  <ToggleGroupItem value="mentions">Mentions</ToggleGroupItem>
+                </BadgeCount>
+                <BadgeCount showBadge={hasUnresolvedPostReport}>
+                  <ToggleGroupItem value="post-reports">
+                    Post Reports
+                  </ToggleGroupItem>
+                </BadgeCount>
+                <BadgeCount showBadge={hasUnresolvedCommentReport}>
+                  <ToggleGroupItem value="comment-reports">
+                    Comment Reports
+                  </ToggleGroupItem>
+                </BadgeCount>
+              </ToggleGroup>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => markAllRead.mutate()}
+                  >
+                    <DoubleCheck />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="end">
+                  Mark all replies and mentions as read
+                </TooltipContent>
+              </Tooltip>
+            </StickyFilterBar>,
           ]}
           stickyIndicies={[0]}
           data={displayData}

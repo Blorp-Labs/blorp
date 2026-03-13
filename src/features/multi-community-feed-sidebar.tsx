@@ -1,15 +1,16 @@
 import { SmallScreenSidebar } from "@/src/components/multi-community-feeds/multi-community-feed-sidebar";
 import { useMemo } from "react";
-import _ from "lodash";
 import {
   IonContent,
   IonHeader,
-  IonPage,
   IonRefresher,
   IonRefresherContent,
   IonToolbar,
 } from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
+import { useSoftware } from "@/src/lib/api/index";
+import { supportsFeeds } from "@/src/lib/api/adapters/support";
+import { Page } from "@/src/components/page";
 
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
@@ -28,8 +29,13 @@ export default function MultiCommunitySidebar() {
   const { apId: encodedApId } = useParams(`${linkCtx.root}f/:apId/sidebar`);
   const apId = useMemo(() => decodeURIComponent(encodedApId), [encodedApId]);
 
+  const software = useSoftware();
+
   return (
-    <IonPage>
+    <Page
+      notFound={software.software !== undefined && !supportsFeeds(software)}
+      notFoundApId={apId}
+    >
       <PageTitle>{apId}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -76,6 +82,6 @@ export default function MultiCommunitySidebar() {
           <></>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

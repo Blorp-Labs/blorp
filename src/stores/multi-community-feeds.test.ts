@@ -1,0 +1,208 @@
+import { describe, test, expect, afterEach } from "vitest";
+import * as api from "@/test-utils/api";
+import { useMultiCommunityFeedStore } from "./multi-community-feeds";
+import { renderHook, act } from "@testing-library/react";
+import { getCachePrefixer } from "./auth";
+import { getFeedSubscribed } from "../lib/api/adapters/utils";
+
+const prefix = getCachePrefixer({ instance: "123" });
+
+afterEach(() => {
+  const { result } = renderHook(() => useMultiCommunityFeedStore());
+  act(() => {
+    result.current.reset();
+  });
+});
+
+describe("useMultiCommunityFeedStore", () => {
+  describe("cacheFeeds", () => {
+    test("loads feed into store", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed();
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView,
+      ).toMatchObject(feedView);
+    });
+
+    test("clears optimisticSubscribed when fresh server data arrives", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed();
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [
+          { feedView: { ...feedView, optimisticSubscribed: "Pending" } },
+        ]);
+      });
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView
+          .optimisticSubscribed,
+      ).toBeUndefined();
+    });
+
+    test("preserves cached communitySlugs when incoming view omits them", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const communitySlugs = ["a@example.com", "b@example.com"];
+      const feedView = api.getFeed({ communitySlugs });
+
+      // Prime the cache with communitySlugs
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      // Simulate a list-endpoint response that omits communitySlugs
+      act(() => {
+        result.current.cacheFeeds(prefix, [
+          { feedView: { ...feedView, communitySlugs: undefined } },
+        ]);
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView
+          .communitySlugs,
+      ).toEqual(communitySlugs);
+    });
+
+    test("respects explicit empty communitySlugs as genuinely empty", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed({
+        communitySlugs: ["a@example.com"],
+      });
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [
+          { feedView: { ...feedView, communitySlugs: [] } },
+        ]);
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView
+          .communitySlugs,
+      ).toEqual([]);
+    });
+
+    test("communitySlugs remains undefined on cold cache when incoming view omits them", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed({ communitySlugs: undefined });
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView
+          .communitySlugs,
+      ).toBeUndefined();
+    });
+  });
+
+  describe("patchFeed", () => {
+    test("does not patch a feed that is not already in the store", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed();
+
+      act(() => {
+        result.current.patchFeed(feedView.apId, prefix, {
+          optimisticSubscribed: "Pending",
+        });
+      });
+
+      expect(result.current.feeds[prefix(feedView.apId)]?.data).toBeUndefined();
+    });
+
+    test("applies patch to an existing feed", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed();
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      act(() => {
+        result.current.patchFeed(feedView.apId, prefix, {
+          optimisticSubscribed: "Pending",
+        });
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView
+          .optimisticSubscribed,
+      ).toBe("Pending");
+    });
+
+    test("preserves unpatched fields", () => {
+      const { result } = renderHook(() => useMultiCommunityFeedStore());
+      const feedView = api.getFeed({ name: "My Feed" });
+
+      act(() => {
+        result.current.cacheFeeds(prefix, [{ feedView }]);
+      });
+
+      act(() => {
+        result.current.patchFeed(feedView.apId, prefix, {
+          optimisticSubscribed: "NotSubscribed",
+        });
+      });
+
+      expect(
+        result.current.feeds[prefix(feedView.apId)]?.data.feedView.name,
+      ).toBe("My Feed");
+    });
+  });
+});
+
+describe("getFeedSubscribed", () => {
+  test("returns Subscribed when subscribed is true", () => {
+    expect(getFeedSubscribed(api.getFeed({ subscribed: true }))).toBe(
+      "Subscribed",
+    );
+  });
+
+  test("returns NotSubscribed when subscribed is false", () => {
+    expect(getFeedSubscribed(api.getFeed({ subscribed: false }))).toBe(
+      "NotSubscribed",
+    );
+  });
+
+  test("returns NotSubscribed when subscribed is null", () => {
+    expect(getFeedSubscribed(api.getFeed({ subscribed: null }))).toBe(
+      "NotSubscribed",
+    );
+  });
+
+  test("optimisticSubscribed takes precedence over subscribed", () => {
+    expect(
+      getFeedSubscribed(
+        api.getFeed({ subscribed: false, optimisticSubscribed: "Subscribed" }),
+      ),
+    ).toBe("Subscribed");
+
+    expect(
+      getFeedSubscribed(
+        api.getFeed({
+          subscribed: true,
+          optimisticSubscribed: "NotSubscribed",
+        }),
+      ),
+    ).toBe("NotSubscribed");
+
+    expect(
+      getFeedSubscribed(
+        api.getFeed({ subscribed: false, optimisticSubscribed: "Pending" }),
+      ),
+    ).toBe("Pending");
+  });
+});
