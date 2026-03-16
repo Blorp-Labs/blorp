@@ -135,6 +135,8 @@ function VirtualListInternal<T>({
   noItems,
   noItemsComponent,
   paginationControls,
+  scrollToNextRef,
+  jumpMinItemHeight = 5,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -153,6 +155,8 @@ function VirtualListInternal<T>({
   noItems?: boolean;
   noItemsComponent?: ReactNode;
   paginationControls?: ReactNode;
+  scrollToNextRef?: React.MutableRefObject<(() => void) | null>;
+  jumpMinItemHeight?: number;
 }) {
   const index = useRef(0);
   const offset = useRef(0);
@@ -270,6 +274,45 @@ function VirtualListInternal<T>({
     virtualizer: rowVirtualizer,
   });
 
+  if (scrollToNextRef) {
+    scrollToNextRef.current = () => {
+      const scrollOffset = scrollRef.current?.scrollTop ?? 0;
+      const firstItem = rowVirtualizer
+        .getVirtualItems()
+        .find((item) => item.start >= scrollOffset);
+      const currentIndex = firstItem?.index ?? 0;
+      const startIndex =
+        currentIndex < headerLen ? headerLen : currentIndex + 1;
+      let nextIndex = startIndex;
+      while (true) {
+        // Reached end of list
+        if (nextIndex >= count) break;
+
+        // Skip sticky headers (e.g. sort bar) so we don't get stuck
+        if (stickyIndicies?.includes(nextIndex)) {
+          nextIndex++;
+          continue;
+        }
+
+        // Skip items below minimum height (e.g. spacers/dividers)
+        if (
+          (cache.current[nextIndex]?.size ?? estimatedItemSize) <
+          jumpMinItemHeight
+        ) {
+          nextIndex++;
+          continue;
+        }
+
+        // Found a valid item to jump to
+        rowVirtualizer.scrollToIndex(nextIndex, {
+          align: "start",
+          behavior: "smooth",
+        });
+        break;
+      }
+    };
+  }
+
   useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
     if (!lastItem || _.isNil(dataLen)) {
@@ -349,6 +392,7 @@ export function VirtualList<T>({
   refresh,
   scrollHost,
   fullscreen,
+  renderJumpButton,
   ...props
 }: {
   data?: T[] | readonly T[];
@@ -373,6 +417,8 @@ export function VirtualList<T>({
   noItems?: boolean;
   noItemsComponent?: ReactNode;
   paginationControls?: ReactNode;
+  renderJumpButton?: (onClick: () => void) => ReactNode;
+  jumpMinItemHeight?: number;
 }) {
   const media = useMedia();
   const focused = useRef(false);
@@ -392,6 +438,8 @@ export function VirtualList<T>({
 
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
+
+  const scrollToNextRef = useRef<(() => void) | null>(null);
 
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
@@ -435,6 +483,7 @@ export function VirtualList<T>({
         <VirtualListInternal
           listKey={`${key}-${props.numColumns}`}
           {...props}
+          scrollToNextRef={renderJumpButton ? scrollToNextRef : undefined}
           ref={scrollRef}
           onFocusChange={(newFocused) => {
             focused.current = newFocused;
@@ -442,6 +491,8 @@ export function VirtualList<T>({
           }}
         />
       </div>
+
+      {renderJumpButton && renderJumpButton(() => scrollToNextRef.current?.())}
     </>
   );
 }
