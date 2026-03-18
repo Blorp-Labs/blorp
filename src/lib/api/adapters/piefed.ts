@@ -15,6 +15,7 @@ import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
+import { createClient } from "@blorp-labs/piefed-api-client";
 
 const POST_SORTS = [
   "Active",
@@ -144,7 +145,7 @@ export const pieFedPersonSchema = z.object({
   id: z.number(),
   instance_id: z.number().optional().nullable(),
   //local: z.boolean(),
-  published: z.string(),
+  published: z.string().optional(),
   //title: z.string().nullable(),
   user_name: z.string(),
 });
@@ -641,7 +642,7 @@ function convertPerson(
     matrixUserId: null,
     slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
     deleted: person.deleted,
-    createdAt: person.published,
+    createdAt: person.published ?? "",
     isBot: person.bot,
     isBanned: person.banned ?? false,
   };
@@ -1103,11 +1104,13 @@ function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
   );
 }
 
-export class PieFedApi implements ApiBlueprint<null> {
+export class PieFedApi
+  implements ApiBlueprint<ReturnType<typeof createClient>>
+{
   software = Software.PIEFED;
   softwareVersion: string;
 
-  client = null;
+  client: ReturnType<typeof createClient>;
   instance: string;
   limit = 25;
 
@@ -1127,6 +1130,24 @@ export class PieFedApi implements ApiBlueprint<null> {
     } else {
       return json;
     }
+  }
+
+  // Use this when calling with a pre-built path from piefedApi URL builder functions
+  // (e.g. piefedApi.getGetApiAlphaCommunityUrl({ name: "foo" }) → "/api/alpha/community?name=foo")
+  private async getByPath(fullPath: string, options?: RequestOptions) {
+    const res = await fetch(`${this.instance}${fullPath}`, {
+      headers: {
+        ...DEFAULT_HEADERS,
+        ...(this.jwt
+          ? {
+              authorization: `Bearer ${this.jwt}`,
+            }
+          : {}),
+      },
+      cache: "no-store",
+      ...options,
+    });
+    return await this.parseResponse(res);
   }
 
   private async get(
@@ -1274,6 +1295,13 @@ export class PieFedApi implements ApiBlueprint<null> {
     this.softwareVersion = softwareVersion;
     this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
+    this.client = createClient(this.instance, {
+      headers: this.jwt
+        ? {
+            authorization: `Bearer ${this.jwt}`,
+          }
+        : {},
+    });
   }
 
   async getSite(options: RequestOptions) {
@@ -1503,27 +1531,10 @@ export class PieFedApi implements ApiBlueprint<null> {
       throw new Error("community slug required");
     }
 
-    const json = await this.get(
-      "/community",
-      {
-        name: form.slug,
-      },
-      options,
-    );
+    const { community_view, moderators } =
+      await this.client.getApiAlphaCommunity({ name: form.slug }, options);
 
     try {
-      const { community_view, moderators } = z
-        .object({
-          community_view: pieFedCommunityViewSchema,
-          moderators: z.array(
-            z.object({
-              community: pieFedCommunitySchema,
-              moderator: pieFedPersonSchema,
-            }),
-          ),
-        })
-        .parse(json);
-
       return {
         community: convertCommunity(community_view, "full"),
         mods: moderators.map((m) =>
