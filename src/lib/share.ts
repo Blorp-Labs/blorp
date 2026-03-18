@@ -8,7 +8,7 @@ import { privilegedFetch } from "./privileged-fetch";
 import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { isAndroid, isCapacitor, isFirefox, isTauri, isWeb } from "./device";
+import { isAndroid, isCapacitor, isFirefox, isTauri } from "./device";
 import { ActionMenuProps } from "../components/adaptable/action-menu";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
@@ -73,10 +73,30 @@ export function getFileExtension(blob: Blob, url?: string): string {
   return "png";
 }
 
-function getFileName(blob: Blob, url: string) {
+export function normalizeFilename(url: string): string {
+  // Strip scheme (https:// or http://)
+  // Strip query string and fragment by parsing only origin + pathname
+  let normalized: string;
+  try {
+    const parsed = new URL(url);
+    normalized = decodeURIComponent(parsed.host + parsed.pathname);
+  } catch {
+    normalized = url.replace(/^https?:\/\//, "");
+  }
+
+  return normalized
+    .replace(/[/\s]+/g, "-") // slashes and whitespace → dashes
+    .replace(/[^a-zA-Z0-9\-_]/g, "") // remove remaining unsafe chars
+    .replace(/-+/g, "-") // collapse consecutive dashes
+    .replace(/^-|-$/g, ""); // trim leading/trailing dashes
+}
+
+export function getFileName(blob: Blob, url: string) {
   const extension = getFileExtension(blob, url);
-  const fileName = url.replace(/^https:\/\//, "").replaceAll(/\//g, "-");
-  return `${fileName}.${extension}`;
+  // Strip the URL extension before normalizing to avoid duplication (e.g. "imagejpg.jpg")
+  const urlWithoutExt = url.replace(/\.[a-zA-Z0-9]+([?#]|$)/, "$1");
+  const baseName = normalizeFilename(urlWithoutExt);
+  return `${baseName}.${extension}`;
 }
 
 const DEFAULT_HEADERS = {
