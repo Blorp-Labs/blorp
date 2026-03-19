@@ -1622,12 +1622,11 @@ export class PieFedApi
   }
 
   async likePost(form: Forms.LikePost) {
-    const json = await this.post("/post/like", {
-      post_id: form.postId,
-      score: form.score,
-    });
     try {
-      const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
+      const data = await this.client.postApiAlphaPostLike({
+        post_id: form.postId,
+        score: form.score,
+      });
       return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
