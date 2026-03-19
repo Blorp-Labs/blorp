@@ -2271,7 +2271,7 @@ export class PieFedApi
   }
 
   async createCommentReport(form: Forms.CreateCommentReport) {
-    await this.post("/comment/report", {
+    await this.client.postApiAlphaCommentReport({
       comment_id: form.commentId,
       reason: form.reason,
     });
