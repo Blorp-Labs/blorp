@@ -1557,34 +1557,19 @@ export class PieFedApi
       if (_.isNil(person_id)) {
         throw new Error("person not found for apId");
       }
-      const json = await this.get(
-        "/user",
-        {
-          person_id,
-        },
-        options,
-      );
       try {
-        const data = z
-          .object({ person_view: pieFedPersonViewSchema })
-          .parse(json);
+        const data = await this.client.getApiAlphaUser({ person_id }, options);
         return convertPerson(data.person_view, "full");
       } catch (err) {
         console.log(err);
         throw err;
       }
     } else {
-      const json = await this.get(
-        "/user",
-        {
-          username: form.apIdOrUsername,
-        },
-        options,
-      );
       try {
-        const data = z
-          .object({ person_view: pieFedPersonViewSchema })
-          .parse(json);
+        const data = await this.client.getApiAlphaUser(
+          { username: form.apIdOrUsername },
+          options,
+        );
         return convertPerson(data.person_view, "full");
       } catch (err) {
         console.log(err);
