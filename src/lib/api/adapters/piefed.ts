@@ -2295,13 +2295,11 @@ export class PieFedApi
   }
 
   async markCommentAsAnswer(form: Forms.MarkCommentAsAnswer) {
-    const json = await this.post("/comment/mark_as_answer", {
-      comment_reply_id: form.commentId,
-      answer: form.answer,
-    });
-    const { comment_reply_view } = z
-      .object({ comment_reply_view: pieFedReplyViewSchema })
-      .parse(json);
+    const { comment_reply_view } =
+      await this.client.postApiAlphaCommentMarkAsAnswer({
+        comment_reply_id: form.commentId,
+        answer: form.answer,
+      });
     return convertComment({
       ...comment_reply_view,
       saved: null,
