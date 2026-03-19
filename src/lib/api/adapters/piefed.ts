@@ -2444,22 +2444,8 @@ export class PieFedApi
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
     try {
-      const json = await this.get(
-        "/resolve_object",
-        {
-          q: form.q,
-        },
-        options,
-      );
-
-      const { post, community, person, comment } = z
-        .object({
-          post: pieFedPostViewSchema.nullish(),
-          community: pieFedCommentViewSchema.nullish(),
-          person: pieFedPersonViewSchema.nullish(),
-          comment: pieFedCommentViewSchema.nullish(),
-        })
-        .parse(json);
+      const { post, community, person, comment } =
+        await this.client.getApiAlphaResolveObject({ q: form.q }, options);
 
       return resolveObjectResponseSchema.parse({
         post: post ? convertPost({ postView: post }) : null,
