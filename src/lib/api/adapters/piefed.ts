@@ -1660,12 +1660,11 @@ export class PieFedApi
   }
 
   async savePost(form: Forms.SavePost): Promise<Schemas.Post> {
-    const json = await this.put("/post/save", {
-      post_id: form.postId,
-      save: form.save,
-    });
     try {
-      const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
+      const data = await this.client.putApiAlphaPostSave({
+        post_id: form.postId,
+        save: form.save,
+      });
       return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
