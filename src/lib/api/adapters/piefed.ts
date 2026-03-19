@@ -16,10 +16,22 @@ import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 import {
+  Comment,
+  CommentReplyView,
+  CommentView,
   Community,
+  CommunityFlair,
+  CommunityView,
   createClient,
+  GetModLogResponse,
+  Person,
+  PersonView,
   Post,
+  PostEmojiReactions,
+  PostPoll,
   PostReplyView,
+  PostView,
+  PrivateMessageView,
 } from "@blorp-labs/piefed-api-client";
 
 // TODO: get post sort type from @blorp-labs/piefed-api-client
@@ -73,7 +85,7 @@ function pageCursorToInt(
   return cursor;
 }
 
-export function getIdFromLocalApId(apId: string) {
+function getIdFromLocalApId(apId: string) {
   try {
     const pathname = new URL(apId).pathname;
     const id = pathname.match(/^\/(post|comment)\/([0-9]+)$/)?.[2];
@@ -94,297 +106,8 @@ export function getIdFromLocalApId(apId: string) {
   return null;
 }
 
-const pieFedFlairSchema = z.object({
-  background_color: z.string().optional().nullable(),
-  // blur_images: false,
-  // community_id: 599,
-  flair_title: z.string(),
-  id: z.number(),
-  text_color: z.string().optional().nullable(),
-});
-
-const nextPageSchema = z.union([z.string(), z.number()]).nullish();
-
-export const pieFedCommunitySchema = z.object({
-  actor_id: z.string(),
-  //ap_domain: z.string(),
-  //banned: z.boolean(),
-  //deleted: z.boolean(),
-  //hidden: z.boolean(),
-  icon: z.string().nullable().optional(),
-  banner: z.string().nullable().optional(),
-  id: z.number(),
-  instance_id: z.number().optional().nullable(),
-  //local: z.boolean(),
-  name: z.string(),
-  nsfw: z.boolean(),
-  published: z.string(),
-  //removed: z.boolean(),
-  //restricted_to_mods: z.boolean(),
-  //title: z.string(),
-  description: z.string().nullable().optional(),
-  //updated: z.string().optional(),
-});
-
-export const pieFedFeedSchema = z.object({
-  published: z.string(),
-  actor_id: z.string(),
-  banner: z.string().nullish(),
-  communities_count: z.number(),
-  subscriptions_count: z.number(),
-  description: z.string(),
-  description_html: z.string(),
-  icon: z.string().nullish(),
-  id: z.number(),
-  name: z.string(),
-  nsfw: z.boolean(),
-  communities: z.array(pieFedCommunitySchema),
-});
-
-export const pieFedPostCountsSchema = z.object({
-  comments: z.number(),
-  downvotes: z.number(),
-  //newest_comment_time: z.string(),
-  //post_id: z.number(),
-  //published: z.string(),
-  //score: z.number(),
-  upvotes: z.number(),
-});
-
-export const pieFedPersonSchema = z.object({
-  about: z.string().nullable().optional(),
-  actor_id: z.string(),
-  avatar: z.string().nullable().optional(),
-  //banner: z.string().nullable().optional(),
-  banned: z.boolean().nullish(),
-  bot: z.boolean(),
-  deleted: z.boolean(),
-  id: z.number(),
-  instance_id: z.number().optional().nullable(),
-  //local: z.boolean(),
-  published: z.string().optional(),
-  //title: z.string().nullable(),
-  user_name: z.string(),
-});
-
-const pieFedPersonViewSchema = z.object({
-  person: pieFedPersonSchema,
-  counts: z.object({
-    //person_id: z.number(),
-    comment_count: z.number(),
-    post_count: z.number(),
-  }),
-});
-
-export const piefedPostPoll = z.object({
-  choices: z.array(
-    z.object({
-      choice_text: z.string(),
-      id: z.number(),
-      num_votes: z.number().optional(),
-      sort_order: z.number(),
-    }),
-  ),
-  end_poll: z.string().optional(),
-  local_only: z.boolean().optional(),
-  mode: z.enum(["single", "multiple"]),
-  my_votes: z.array(z.number()).nullish(),
-});
-
-const pieFedEmojiReactionSchema = z.object({
-  token: z.string().optional(),
-  count: z.number().optional(),
-  authors: z.array(z.string()).optional(),
-  url: z.string().nullish(),
-});
-
-export const pieFedPostSchema = z.object({
-  alt_text: z.string().nullable().optional(),
-  ap_id: z.string(),
-  body: z.string().nullable().optional(),
-  //community_id: z.number(),
-  deleted: z.boolean(),
-  //edited_at: z.string().optional(),
-  id: z.number(),
-  //language_id: z.number(),
-  //local: z.boolean(),
-  //locked: z.boolean(),
-  nsfw: z.boolean().nullable().optional(),
-  published: z.string(),
-  removed: z.boolean(),
-  //small_thumbnail_url: z.string().optional(),
-  sticky: z.boolean().nullish(),
-  instance_sticky: z.boolean().nullish(),
-  thumbnail_url: z.string().nullable().optional(),
-  title: z.string(),
-  url: z.string().nullable().optional(),
-  //user_id: z.number(),
-  locked: z.boolean().nullish(),
-  poll: piefedPostPoll.nullish(),
-  emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
-});
-
-export const pieFedPostViewSchema = z.object({
-  //activity_alert: z.boolean(),
-  // banned_from_community: z.boolean().nullish(),
-  community: pieFedCommunitySchema,
-  counts: pieFedPostCountsSchema,
-  creator: pieFedPersonSchema,
-  creator_banned_from_community: z.boolean().nullish(),
-  //creator_is_admin: z.boolean(),
-  //creator_is_moderator: z.boolean(),
-  //hidden: z.boolean(),
-  my_vote: z.number().optional(),
-  post: pieFedPostSchema,
-  read: z.boolean(),
-  saved: z.boolean(),
-  //subscribed: z.string(),
-  //unread_comments: z.number(),
-  flair_list: z.array(pieFedFlairSchema).optional().nullable(),
-});
-
-export const pieFedCommunityCountsSchema = z.object({
-  //id: z.number(),
-  //published: z.string(),
-  post_count: z.number().nullable().optional(),
-  post_reply_count: z.number().nullable().optional(),
-  subscriptions_count: z.number().nullable().optional(),
-  total_subscriptions_count: z.number().nullable().optional(),
-  active_6monthly: z.number().nullable().optional(),
-  active_daily: z.number().nullable().optional(),
-  active_monthly: z.number().nullable().optional(),
-  active_weekly: z.number().nullable().optional(),
-});
-
-export const pieFedCommunityViewSchema = z.object({
-  //activity_alert: z.boolean(),
-  //blocked: z.boolean(),
-  community: pieFedCommunitySchema,
-  counts: pieFedCommunityCountsSchema,
-  subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
-  flair_list: z.array(pieFedFlairSchema).optional().nullable(),
-});
-
-//export const pieFedAdminCountsSchema = z.object({
-//  comment_count: z.number(),
-//  person_id: z.number(),
-//  post_count: z.number(),
-//});
-
-export const pieFedAdminSchema = z.object({
-  //activity_alert: z.boolean(),
-  //counts: pieFedAdminCountsSchema,
-  //is_admin: z.boolean(),
-  person: pieFedPersonSchema,
-});
-
-//export const pieFedLanguageSchema = z.object({
-//  code: z.string(),
-//  id: z.number(),
-//  name: z.string(),
-//});
-
-export const pieFedSiteDetailsSchema = z.object({
-  //actor_id: z.string(),
-  //all_languages: z.array(pieFedLanguageSchema),
-  description: z.string().nullable().optional(),
-  enable_downvotes: z.boolean(),
-  icon: z.string().nullable().optional(),
-  name: z.string(),
-  registration_mode: z.enum(["Closed", "RequireApplication", "Open"]),
-  sidebar: z.string().nullable().optional(),
-  user_count: z.number(),
-});
-
-export const pieFedLocalUserSchema = z.object({
-  //default_listing_type: z.string(),
-  //default_sort_type: z.string(),
-  //show_bot_accounts: z.boolean(),
-  show_nsfw: z.boolean(),
-  nsfw_visibility: z.string().nullish(),
-  reply_collapse_threshold: z.number().nullish(),
-  reply_hide_threshold: z.number().nullish(),
-  //show_read_posts: z.boolean(),
-  //show_scores: z.boolean(),
-});
-
-export const pieFedLocalUserViewSchema = z.object({
-  //counts: z.object({
-  //  comment_count: z.number(),
-  //  person_id: z.number(),
-  //  post_count: z.number(),
-  //}),
-  local_user: pieFedLocalUserSchema,
-  person: pieFedPersonSchema,
-});
-
-export const pieFedMyUserSchema = z.object({
-  community_blocks: z
-    .array(z.object({ community: pieFedCommunitySchema }))
-    .optional()
-    .nullable(),
-  //discussion_languages: z.array(pieFedLanguageSchema).optional(),
-  follows: z
-    .array(z.object({ community: pieFedCommunitySchema }))
-    .optional()
-    .nullable(),
-  instance_blocks: z
-    .array(
-      z.object({ instance: z.object({ id: z.number(), domain: z.string() }) }),
-    )
-    .optional()
-    .nullable(),
-  local_user_view: pieFedLocalUserViewSchema.optional().nullable(),
-  moderates: z
-    .array(z.object({ community: pieFedCommunitySchema }))
-    .optional()
-    .nullable(),
-  person_blocks: z
-    .array(z.object({ target: pieFedPersonSchema }))
-    .optional()
-    .nullable(),
-});
-
-export const pieFedSiteSchema = z.object({
-  admins: z.array(pieFedAdminSchema),
-  my_user: pieFedMyUserSchema.optional().nullable(),
-  site: pieFedSiteDetailsSchema,
-  version: z.string(),
-});
-
-export const pieFedCommentSchema = z.object({
-  ap_id: z.string(),
-  body: z.string(),
-  deleted: z.boolean(),
-  //distinguished: z.boolean(),
-  answer: z.boolean().nullish(),
-  //edited_at: z.string().optional(),
-  id: z.number(),
-  //language_id: z.number(),
-  //local: z.boolean(),
-  path: z.string(),
-  //post_id: z.number(),
-  published: z.string(),
-  removed: z.boolean(),
-  //user_id: z.number(),
-  locked: z.boolean().nullish(),
-  emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
-});
-
-export const pieFedCommentCountsSchema = z.object({
-  child_count: z.number(),
-  //comment_id: z.number(),
-  downvotes: z.number(),
-  //published: z.string(),
-  //score: z.number(),
-  upvotes: z.number(),
-});
-
 function extractEmojiReactionData(
-  emojiReactions:
-    | z.infer<typeof pieFedEmojiReactionSchema>[]
-    | undefined
-    | null,
+  emojiReactions: PostEmojiReactions | undefined | null,
 ) {
   const reactions = emojiReactions ?? [];
   return {
@@ -396,117 +119,7 @@ function extractEmojiReactionData(
   };
 }
 
-type PieFedCommentChildView = {
-  comment: z.infer<typeof pieFedCommentSchema>;
-  counts: z.infer<typeof pieFedCommentCountsSchema>;
-  creator: z.infer<typeof pieFedPersonSchema>;
-  my_vote?: number;
-  replies: PieFedCommentChildView[];
-  emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[] | null;
-};
-
-const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
-  z.object({
-    comment: pieFedCommentSchema,
-    counts: pieFedCommentCountsSchema,
-    creator: pieFedPersonSchema,
-    my_vote: z.number().optional(),
-    replies: z.array(pieFedCommentChildSchema),
-    creator_banned_from_community: z.boolean().nullish(),
-    saved: z.boolean().nullable().optional(),
-    emoji_reactions: z.array(pieFedEmojiReactionSchema).nullish(),
-  }),
-);
-
-const pieFedCommentViewSchema = z.object({
-  //activity_alert: z.boolean(),
-  // banned_from_community: z.boolean().nullish(),
-  //can_auth_user_moderate: z.boolean().optional(),
-  comment: pieFedCommentSchema,
-  community: pieFedCommunitySchema,
-  counts: pieFedCommentCountsSchema,
-  creator: pieFedPersonSchema,
-  creator_banned_from_community: z.boolean().nullish(),
-  //creator_blocked: z.boolean(),
-  //creator_is_admin: z.boolean(),
-  //creator_is_moderator: z.boolean(),
-  my_vote: z.number().optional(),
-  post: pieFedPostSchema,
-  saved: z.boolean().nullable().optional(),
-  //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
-  replies: z.array(pieFedCommentChildSchema).nullable().optional(),
-});
-
-export const pieFedCommentReplySchema = z.object({
-  id: z.number(),
-  //recipient_id: z.number(),
-  //comment_id: z.number(),
-  read: z.boolean(),
-  published: z.string(),
-});
-
-export const pieFedReplyViewSchema = z.object({
-  comment_reply: pieFedCommentReplySchema,
-  comment: pieFedCommentSchema,
-  creator: pieFedPersonSchema,
-  post: pieFedPostSchema,
-  community: pieFedCommunitySchema,
-  //recipient: pieFedPersonSchema,
-  counts: pieFedCommentCountsSchema,
-  //creator_banned_from_community: z.boolean(),
-  //creator_is_moderator: z.boolean(),
-  //creator_is_admin: z.boolean(),
-  //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
-  //saved: z.boolean(),
-  //creator_blocked: z.boolean(),
-  my_vote: z.number(),
-});
-
-export const pieFedPrivateMessageSchema = z.object({
-  id: z.number(),
-  //creator_id: z.number(),
-  //recipient_id: z.number(),
-  content: z.string(),
-  //deleted: z.boolean(),
-  read: z.boolean(),
-  published: z.string(),
-  //updated: z.string().optional(),
-  //ap_id: z.string(),
-  //local: z.boolean(),
-});
-
-export const pieFedPrivateMessageViewSchema = z.object({
-  private_message: pieFedPrivateMessageSchema,
-  creator: pieFedPersonSchema,
-  recipient: pieFedPersonSchema,
-});
-
-export const pieFedCrosspostSchema = z.object({
-  //activity_alert: z.boolean(),
-  //banned_from_community: z.boolean(),
-  community: pieFedCommunitySchema.pick({
-    actor_id: true,
-    name: true,
-  }),
-  //counts: pieFedPostCountsSchema,
-  //creator: pieFedPersonSchema,
-  //creator_banned_from_community: z.boolean(),
-  //creator_is_admin: z.boolean(),
-  //creator_is_moderator: z.boolean(),
-  //hidden: z.boolean(),
-  //my_vote: z.number(),
-  post: pieFedPostSchema.pick({
-    ap_id: true,
-  }),
-  //read: z.boolean(),
-  //saved: z.boolean(),
-  //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
-  //unread_comments: z.number(),
-});
-
-function convertPoll(
-  poll: z.infer<typeof piefedPostPoll>,
-): Schemas.Post["poll"] {
+function convertPoll(poll: PostPoll): Schemas.Post["poll"] {
   return {
     choices: poll.choices.map((choise) => ({
       text: choise.choice_text,
@@ -520,7 +133,7 @@ function convertPoll(
   };
 }
 
-function convertFlair(flair: z.infer<typeof pieFedFlairSchema>): Schemas.Flair {
+function convertFlair(flair: CommunityFlair): Schemas.Flair {
   return {
     id: flair.id,
     title: flair.flair_title,
@@ -533,8 +146,8 @@ function convertPost({
   postView,
   crossPosts,
 }: {
-  postView: z.infer<typeof pieFedPostViewSchema>;
-  crossPosts?: z.infer<typeof pieFedCrosspostSchema>[];
+  postView: PostView;
+  crossPosts?: PostView[];
 }): Schemas.Post {
   const { post, counts, community, creator } = postView;
   return {
@@ -589,9 +202,7 @@ function convertPost({
 }
 
 function convertCommunity(
-  communityView:
-    | z.infer<typeof pieFedCommunityViewSchema>
-    | { community: z.infer<typeof pieFedCommunitySchema> },
+  communityView: CommunityView | { community: Community },
   mode: "full" | "partial",
 ): Schemas.Community {
   const counts = "counts" in communityView ? communityView.counts : null;
@@ -645,9 +256,9 @@ function convertPerson(
     person,
     counts,
   }:
-    | z.infer<typeof pieFedPersonViewSchema>
+    | PersonView
     | {
-        person: z.infer<typeof pieFedPersonSchema>;
+        person: Person;
         counts?: undefined;
       },
   mode: "full" | "partial",
@@ -681,7 +292,8 @@ function convertPerson(
 function convertComment(
   commentView:
     | (PostReplyView & { post: Post; community: Community })
-    | z.infer<typeof pieFedCommentViewSchema>,
+    | CommentView
+    | CommentReplyView,
 ): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
@@ -716,9 +328,7 @@ function convertComment(
   };
 }
 
-function convertReply(
-  replyView: z.infer<typeof pieFedReplyViewSchema>,
-): Schemas.Reply {
+function convertReply(replyView: CommentReplyView): Schemas.Reply {
   const { creator, community } = replyView;
   return {
     createdAt: replyView.comment_reply.published,
@@ -746,7 +356,7 @@ function convertReply(
 }
 
 function convertPrivateMessage(
-  pmView: z.infer<typeof pieFedPrivateMessageViewSchema>,
+  pmView: PrivateMessageView,
 ): Schemas.PrivateMessage {
   const { creator, recipient } = pmView;
   return {
@@ -769,9 +379,7 @@ function convertPrivateMessage(
   };
 }
 
-function convertMention(
-  replyView: z.infer<typeof pieFedReplyViewSchema>,
-): Schemas.Reply {
+function convertMention(replyView: CommentReplyView): Schemas.Reply {
   const { creator, community } = replyView;
   return {
     createdAt: replyView.comment_reply.published,
@@ -798,13 +406,7 @@ function convertMention(
   };
 }
 
-const errorResponseSchema = z.object({
-  error: z.string(),
-});
-
-export function flattenCommentViews(
-  comments: PostReplyView[],
-): PostReplyView[] {
+function flattenCommentViews(comments: PostReplyView[]): PostReplyView[] {
   const result: PostReplyView[] = [];
 
   function recurse(nodes: PostReplyView[]) {
@@ -827,108 +429,9 @@ export function flattenCommentViews(
   return result;
 }
 
-// Modlog schemas — reuse existing PieFed schemas
-const modlogActionSchema = z.object({
-  id: z.number(),
-  when_: z.string(),
-  reason: z.string().nullish(),
-});
-
-const pieFedModlogResponseSchema = z.object({
-  removed_posts: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        post: pieFedPostSchema.nullish(),
-        mod_remove_post: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  locked_posts: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        post: pieFedPostSchema.nullish(),
-        mod_lock_post: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  featured_posts: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        post: pieFedPostSchema.nullish(),
-        mod_feature_post: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  removed_comments: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        post: pieFedPostSchema.nullish(),
-        comment: pieFedCommentSchema.nullish(),
-        commenter: pieFedPersonSchema.nullish(),
-        mod_remove_comment: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  removed_communities: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema.nullish(),
-        mod_remove_community: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  banned_from_community: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        banned_person: pieFedPersonSchema.nullish(),
-        mod_ban_from_community: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  banned: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        banned_person: pieFedPersonSchema.nullish(),
-        mod_ban: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  added_to_community: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        community: pieFedCommunitySchema,
-        modded_person: pieFedPersonSchema.nullish(),
-        mod_add_community: modlogActionSchema,
-      }),
-    )
-    .default([]),
-  added: z
-    .array(
-      z.object({
-        moderator: pieFedPersonSchema.nullish(),
-        modded_person: pieFedPersonSchema.nullish(),
-        mod_add: modlogActionSchema,
-      }),
-    )
-    .default([]),
-});
-
-function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
-  const response = pieFedModlogResponseSchema.parse(json);
-
+function convertModlogResponsePieFed(
+  response: GetModLogResponse,
+): Schemas.ModlogItem[] {
   const baseItem = {
     userId: null,
     userApId: null,
@@ -950,39 +453,29 @@ function convertModlogResponsePieFed(json: unknown): Schemas.ModlogItem[] {
     slug: null,
   };
 
-  function modFields(
-    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
-  ) {
+  function modFields(person: Person | null | undefined) {
     const p = person ? convertPerson({ person }, "partial") : emptyObject;
     return { modId: p.id, modApId: p.apId, modSlug: p.slug };
   }
 
-  function userFields(
-    person: z.infer<typeof pieFedPersonSchema> | null | undefined,
-  ) {
+  function userFields(person: Person | null | undefined) {
     const p = person ? convertPerson({ person }, "partial") : emptyObject;
     return { userId: p.id, userApId: p.apId, userSlug: p.slug };
   }
 
-  function communityFields(
-    community: z.infer<typeof pieFedCommunitySchema> | null | undefined,
-  ) {
+  function communityFields(community: Community | null | undefined) {
     const c = community
       ? convertCommunity({ community }, "partial")
       : emptyObject;
     return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
   }
 
-  function postFields(
-    post: z.infer<typeof pieFedPostSchema> | null | undefined,
-  ) {
+  function postFields(post: Post | null | undefined) {
     if (!post) return {};
     return { postId: post.id, postApId: post.ap_id, postTitle: post.title };
   }
 
-  function commentFields(
-    comment: z.infer<typeof pieFedCommentSchema> | null | undefined,
-  ) {
+  function commentFields(comment: Comment | null | undefined) {
     if (!comment) return {};
     return {
       commentId: comment.id,
@@ -1135,119 +628,6 @@ export class PieFedApi
 
   jwt?: string;
 
-  private async parseResponse(res: Response) {
-    const json = await res.json();
-    if (res.status < 200 || res.status >= 300) {
-      if (res.status === 400 || res.status === 404) {
-        throw Errors.OBJECT_NOT_FOUND;
-      } else {
-        const { data } = errorResponseSchema.safeParse(json);
-        throw new Error(
-          data?.error ?? `unexpected error, status code ${res.status}`,
-        );
-      }
-    } else {
-      return json;
-    }
-  }
-
-  // Use this when calling with a pre-built path from piefedApi URL builder functions
-  // (e.g. piefedApi.getGetApiAlphaCommunityUrl({ name: "foo" }) → "/api/alpha/community?name=foo")
-  private async getByPath(fullPath: string, options?: RequestOptions) {
-    const res = await fetch(`${this.instance}${fullPath}`, {
-      headers: {
-        ...DEFAULT_HEADERS,
-        ...(this.jwt
-          ? {
-              authorization: `Bearer ${this.jwt}`,
-            }
-          : {}),
-      },
-      cache: "no-store",
-      ...options,
-    });
-    return await this.parseResponse(res);
-  }
-
-  private async get(
-    endpoint: string,
-    query: Record<string, any>,
-    options?: RequestOptions,
-  ) {
-    query = { ...query };
-    for (const key in query) {
-      if (_.isNil(query[key])) {
-        delete query[key];
-      }
-    }
-    const params = new URLSearchParams(query);
-
-    const res = await fetch(
-      `${this.instance}/api/alpha${endpoint}?${params.toString()}`,
-      {
-        headers: {
-          ...DEFAULT_HEADERS,
-          ...(this.jwt
-            ? {
-                authorization: `Bearer ${this.jwt}`,
-              }
-            : {}),
-        },
-        cache: "no-store",
-        ...options,
-      },
-    );
-    return await this.parseResponse(res);
-  }
-
-  private async post(endpoint: string, body: Record<string, any>) {
-    body = { ...body };
-    for (const key in body) {
-      if (_.isUndefined(body[key])) {
-        delete body[key];
-      }
-    }
-
-    const res = await fetch(`${this.instance}/api/alpha${endpoint}`, {
-      headers: {
-        ...DEFAULT_HEADERS,
-        ...(this.jwt
-          ? {
-              authorization: `Bearer ${this.jwt}`,
-            }
-          : {}),
-      },
-      body: JSON.stringify(body),
-      method: "POST",
-      cache: "no-store",
-    });
-    return await this.parseResponse(res);
-  }
-
-  private async put(endpoint: string, body: Record<string, any>) {
-    body = { ...body };
-    for (const key in body) {
-      if (_.isUndefined(body[key])) {
-        delete body[key];
-      }
-    }
-
-    const res = await fetch(`${this.instance}/api/alpha${endpoint}`, {
-      headers: {
-        ...DEFAULT_HEADERS,
-        ...(this.jwt
-          ? {
-              authorization: `Bearer ${this.jwt}`,
-            }
-          : {}),
-      },
-      body: JSON.stringify(body),
-      method: "PUT",
-      cache: "no-store",
-    });
-    return await this.parseResponse(res);
-  }
-
   private resolveObjectId = _.memoize(
     async (apId: string) => {
       // This shortcut only works for local objects
@@ -1258,34 +638,9 @@ export class PieFedApi
         }
       }
 
-      const json = await this.get("/resolve_object", {
-        q: apId,
-      });
-
       try {
-        const { post, comment, community, person, feed } = z
-          .object({
-            comment: z
-              .object({
-                comment: z.object({ id: z.number() }),
-              })
-              .nullish(),
-            post: z.object({ post: z.object({ id: z.number() }) }).nullish(),
-            community: z
-              .object({
-                community: z.object({ id: z.number() }),
-              })
-              .nullish(),
-            person: z
-              .object({ person: z.object({ id: z.number() }) })
-              .nullish(),
-            feed: z
-              .object({
-                id: z.number(),
-              })
-              .nullish(),
-          })
-          .parse(json);
+        const { post, comment, community, person, feed } =
+          await this.client.getApiAlphaResolveObject({ q: apId });
 
         return {
           post_id: post?.post.id,
@@ -2296,11 +1651,7 @@ export class PieFedApi
         comment_reply_id: form.commentId,
         answer: form.answer,
       });
-    return convertComment({
-      ...comment_reply_view,
-      saved: null,
-      creator_banned_from_community: null,
-    });
+    return convertComment(comment_reply_view);
   }
 
   async blockPerson(form: Forms.BlockPerson) {
