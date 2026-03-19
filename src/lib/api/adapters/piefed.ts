@@ -2132,18 +2132,12 @@ export class PieFedApi
   }
 
   async createPrivateMessage(form: Forms.CreatePrivateMessage) {
-    const json = await this.post("/private_message", {
-      content: form.body,
-      recipient_id: form.recipientId,
-    });
-
     try {
-      const { private_message_view } = z
-        .object({
-          private_message_view: pieFedPrivateMessageViewSchema,
-        })
-        .parse(json);
-
+      const { private_message_view } =
+        await this.client.postApiAlphaPrivateMessage({
+          content: form.body,
+          recipient_id: form.recipientId,
+        });
       return convertPrivateMessage(private_message_view);
     } catch (err) {
       console.error(err);
