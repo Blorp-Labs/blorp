@@ -56,6 +56,15 @@ const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
 
+function pageCursorToInt(
+  cursor: string | number | undefined,
+): number | undefined {
+  if (_.isString(cursor)) {
+    return _.parseInt(cursor);
+  }
+  return cursor;
+}
+
 export function getIdFromLocalApId(apId: string) {
   try {
     const pathname = new URL(apId).pathname;
@@ -1420,9 +1429,7 @@ export class PieFedApi
           page:
             form.pageCursor === INIT_PAGE_TOKEN
               ? undefined
-              : form.pageCursor
-                ? _.parseInt(form.pageCursor)
-                : undefined,
+              : pageCursorToInt(form.pageCursor),
           community_name: form.communitySlug,
           sort,
           type_: form.type,
@@ -1451,23 +1458,20 @@ export class PieFedApi
 
   async getCommunities(form: Forms.GetCommunities, options: RequestOptions) {
     const { data: sort } = communitySortSchema.safeParse(form.sort);
-    const json = await this.get(
-      "/community/list",
-      {
-        limit: this.limit,
-        page: form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        sort: sort === "TopAll" ? "Top" : sort,
-        type_: form.type,
-      },
-      options,
-    );
     try {
-      const { communities, next_page } = z
-        .object({
-          next_page: nextPageSchema,
-          communities: z.array(pieFedCommunityViewSchema),
-        })
-        .parse(json);
+      const { communities, next_page } =
+        await this.client.getApiAlphaCommunityList(
+          {
+            limit: this.limit,
+            page:
+              form.pageCursor === INIT_PAGE_TOKEN
+                ? undefined
+                : pageCursorToInt(form.pageCursor),
+            sort: sort === "TopAll" ? "Top" : sort,
+            type_: form.type,
+          },
+          options,
+        );
 
       return {
         nextCursor: isNotNil(next_page) ? String(next_page) : null,
