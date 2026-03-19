@@ -1610,12 +1610,11 @@ export class PieFedApi
   }
 
   async login(form: Forms.Login): Promise<{ jwt: string }> {
-    const json = await this.post("/user/login", {
-      username: form.username,
-      password: form.password,
-    });
     try {
-      return z.object({ jwt: z.string() }).parse(json);
+      return await this.client.postApiAlphaUserLogin({
+        username: form.username,
+        password: form.password,
+      });
     } catch (err) {
       console.log(err);
       throw err;
