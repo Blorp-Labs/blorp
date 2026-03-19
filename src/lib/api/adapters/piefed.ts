@@ -164,20 +164,20 @@ export const piefedPostPoll = z.object({
     z.object({
       choice_text: z.string(),
       id: z.number(),
-      num_votes: z.number(),
+      num_votes: z.number().optional(),
       sort_order: z.number(),
     }),
   ),
-  end_poll: z.string(),
-  local_only: z.boolean(),
+  end_poll: z.string().optional(),
+  local_only: z.boolean().optional(),
   mode: z.enum(["single", "multiple"]),
   my_votes: z.array(z.number()).nullish(),
 });
 
 const pieFedEmojiReactionSchema = z.object({
-  token: z.string(),
-  count: z.number(),
-  authors: z.array(z.string()),
+  token: z.string().optional(),
+  count: z.number().optional(),
+  authors: z.array(z.string()).optional(),
   url: z.string().nullish(),
 });
 
@@ -217,7 +217,7 @@ export const pieFedPostViewSchema = z.object({
   //creator_is_admin: z.boolean(),
   //creator_is_moderator: z.boolean(),
   //hidden: z.boolean(),
-  my_vote: z.number(),
+  my_vote: z.number().optional(),
   post: pieFedPostSchema,
   read: z.boolean(),
   saved: z.boolean(),
@@ -373,7 +373,7 @@ function extractEmojiReactionData(
   return {
     emojiReactions: reactions.map(({ token, count, url }) => ({
       token,
-      count,
+      count: count ?? 0,
       ...(url ? { url } : {}),
     })),
   };
@@ -494,10 +494,10 @@ function convertPoll(
     choices: poll.choices.map((choise) => ({
       text: choise.choice_text,
       id: choise.id,
-      numVotes: choise.num_votes,
+      numVotes: choise.num_votes ?? 0,
     })),
-    endDate: poll.end_poll,
-    localOnly: poll.local_only,
+    endDate: poll.end_poll ?? null,
+    localOnly: poll.local_only ?? false,
     mode: poll.mode,
     myVotes: poll.my_votes ?? undefined,
   };
@@ -1413,26 +1413,24 @@ export class PieFedApi
       }
     }
 
-    const json = await this.get(
-      "/post/list",
-      {
-        limit: this.limit,
-        page: form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        community_name: form.communitySlug,
-        sort,
-        type_: form.type,
-        saved_only: form.savedOnly,
-        feed_id,
-      },
-      options,
-    );
     try {
-      const { posts, next_page } = z
-        .object({
-          next_page: nextPageSchema,
-          posts: z.array(pieFedPostViewSchema),
-        })
-        .parse(json);
+      const { posts, next_page } = await this.client.getApiAlphaPostList(
+        {
+          limit: this.limit,
+          page:
+            form.pageCursor === INIT_PAGE_TOKEN
+              ? undefined
+              : form.pageCursor
+                ? _.parseInt(form.pageCursor)
+                : undefined,
+          community_name: form.communitySlug,
+          sort,
+          type_: form.type,
+          saved_only: form.savedOnly,
+          feed_id,
+        },
+        options,
+      );
       const filteredPosts = form.showRead
         ? posts
         : posts.filter((p) => !p.read);

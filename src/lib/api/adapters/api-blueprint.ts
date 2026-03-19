@@ -53,7 +53,7 @@ export const postPollSchema = z.object({
       numVotes: z.number(),
     }),
   ),
-  endDate: z.string(),
+  endDate: z.string().nullable(),
   localOnly: z.boolean(),
   mode: z.enum(["single", "multiple"]),
   myVotes: z.array(z.number()).optional(),
@@ -117,7 +117,7 @@ export const postSchema = z.object({
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       count: z.number(),
       url: z.string().optional(),
     }),
@@ -239,7 +239,7 @@ export const commentSchema = z.object({
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       count: z.number(),
       url: z.string().optional(),
     }),
@@ -688,13 +688,13 @@ export namespace Forms {
 
   export type AddCommentReactionEmoji = {
     commentId: number;
-    emoji: string | null;
+    emoji?: string | null;
     score?: number;
   };
 
   export type AddPostReactionEmoji = {
     postId: number;
-    emoji: string | null;
+    emoji?: string | null;
     score?: number;
   };
 
