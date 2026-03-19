@@ -1487,13 +1487,8 @@ export class PieFedApi
     form: Forms.GetMultiCommunityFeeds,
     options?: RequestOptions,
   ) {
-    const json = await this.get("/feed/list", {}, options);
     try {
-      const { feeds } = z
-        .object({
-          feeds: z.array(pieFedFeedSchema),
-        })
-        .parse(json);
+      const { feeds } = await this.client.getApiAlphaFeedList({}, options);
 
       const communities = feeds.flatMap(({ communities }) =>
         communities.map((community) =>
