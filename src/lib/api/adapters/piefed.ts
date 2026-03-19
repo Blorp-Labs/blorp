@@ -2227,7 +2227,7 @@ export class PieFedApi
   }
 
   async markAllRead() {
-    await this.post("/user/mark_all_as_read", {});
+    await this.client.postApiAlphaUserMarkAllAsRead();
   }
 
   async markReplyRead(form: Forms.MarkReplyRead) {
