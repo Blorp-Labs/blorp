@@ -2287,15 +2287,10 @@ export class PieFedApi
   }
 
   async lockComment(form: Forms.LockComment) {
-    const json = await this.post("/comment/lock", {
+    const { comment_view } = await this.client.postApiAlphaCommentLock({
       comment_id: form.commentId,
       locked: form.locked,
     });
-    const { comment_view } = z
-      .object({
-        comment_view: pieFedCommentViewSchema,
-      })
-      .parse(json);
     return convertComment(comment_view);
   }
 
