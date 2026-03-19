@@ -2263,18 +2263,11 @@ export class PieFedApi
   }
 
   async lockPost(form: Forms.LockPost) {
-    const json = await this.post("/post/lock", {
+    const { post_view } = await this.client.postApiAlphaPostLock({
       post_id: form.postId,
       locked: form.locked,
     });
-    const { post_view } = z
-      .object({
-        post_view: pieFedPostViewSchema,
-      })
-      .parse(json);
-    return convertPost({
-      postView: post_view,
-    });
+    return convertPost({ postView: post_view });
   }
 
   async createCommentReport(form: Forms.CreateCommentReport) {
