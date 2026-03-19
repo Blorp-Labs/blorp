@@ -2198,23 +2198,18 @@ export class PieFedApi
   }
 
   async getMentions(form: Forms.GetMentions, options: RequestOptions) {
-    const json = await this.get(
-      "/user/mentions",
-      {
-        page: form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: this.limit,
-        unread_only: form.unreadOnly,
-      },
-      options,
-    );
-
     try {
-      const { replies, next_page } = z
-        .object({
-          next_page: nextPageSchema,
-          replies: z.array(pieFedReplyViewSchema),
-        })
-        .parse(json);
+      const { replies, next_page } = await this.client.getApiAlphaUserMentions(
+        {
+          page:
+            form.pageCursor === INIT_PAGE_TOKEN
+              ? undefined
+              : pageCursorToInt(form.pageCursor),
+          limit: this.limit,
+          unread_only: form.unreadOnly,
+        },
+        options,
+      );
 
       return {
         mentions: replies.map(convertMention),
