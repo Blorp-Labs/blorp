@@ -22,6 +22,7 @@ import {
   PostReplyView,
 } from "@blorp-labs/piefed-api-client";
 
+// TODO: get post sort type from @blorp-labs/piefed-api-client
 const POST_SORTS = [
   "Active",
   "Hot",
@@ -44,12 +45,14 @@ const postSortSchema = z.custom<(typeof POST_SORTS)[number]>((sort) => {
   return _.isString(sort) && POST_SORTS.includes(sort as any);
 });
 
+// TODO: get comment sort type from @blorp-labs/piefed-api-client
 const COMMENT_SORTS = ["Hot", "Top", "New", "Old"] as const;
 
 const commentSortSchema = z.custom<(typeof COMMENT_SORTS)[number]>((sort) => {
   return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
 });
 
+// TODO: get community sort type from @blorp-labs/piefed-api-client
 const COMMUNITY_SORTS = ["Hot", "TopAll", "New"] as const;
 const communitySortSchema = z.custom<(typeof COMMUNITY_SORTS)[number]>(
   (sort) => {
@@ -2167,24 +2170,18 @@ export class PieFedApi
   }
 
   async getReplies(form: Forms.GetReplies, option: RequestOptions) {
-    const json = await this.get(
-      "/user/replies",
-      {
-        sort: form.sort,
-        page: form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: this.limit,
-        unread_only: form.unreadOnly,
-      },
-      option,
-    );
-
     try {
-      const { replies, next_page } = z
-        .object({
-          replies: z.array(pieFedReplyViewSchema),
-          next_page: nextPageSchema,
-        })
-        .parse(json);
+      const { replies, next_page } = await this.client.getApiAlphaUserReplies(
+        {
+          page:
+            form.pageCursor === INIT_PAGE_TOKEN
+              ? undefined
+              : pageCursorToInt(form.pageCursor),
+          limit: this.limit,
+          unread_only: form.unreadOnly,
+        },
+        option,
+      );
 
       return {
         replies: replies.map(convertReply),

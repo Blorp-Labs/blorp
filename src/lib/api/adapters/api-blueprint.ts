@@ -617,7 +617,6 @@ export namespace Forms {
 
   export type GetReplies = {
     pageCursor?: string;
-    sort?: string;
     unreadOnly?: boolean;
   };
 
