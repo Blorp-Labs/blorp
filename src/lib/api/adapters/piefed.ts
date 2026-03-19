@@ -1894,18 +1894,11 @@ export class PieFedApi
   }
 
   async deletePost(form: Forms.DeletePost): Promise<Schemas.Post> {
-    const json = await this.post("/post/delete", {
-      post_id: form.postId,
-      deleted: form.deleted,
-    });
-
     try {
-      const data = z
-        .object({
-          post_view: pieFedPostViewSchema,
-        })
-        .parse(json);
-
+      const data = await this.client.postApiAlphaPostDelete({
+        post_id: form.postId,
+        deleted: form.deleted,
+      });
       return convertPost({ postView: data.post_view });
     } catch (err) {
       console.log(err);
@@ -1915,20 +1908,16 @@ export class PieFedApi
 
   async createComment(form: Forms.CreateComment): Promise<Schemas.Comment> {
     const { post_id } = await this.resolveObjectId(form.postApId);
-
-    const json = await this.post("/comment", {
-      body: form.body,
-      post_id,
-      parent_id: form.parentId,
-    });
+    if (_.isNil(post_id)) {
+      throw new Error("post not found");
+    }
 
     try {
-      const { comment_view } = z
-        .object({
-          comment_view: pieFedCommentViewSchema,
-        })
-        .parse(json);
-
+      const { comment_view } = await this.client.postApiAlphaComment({
+        body: form.body,
+        post_id,
+        parent_id: form.parentId,
+      });
       return convertComment(comment_view);
     } catch (err) {
       console.error(err);
@@ -1937,18 +1926,11 @@ export class PieFedApi
   }
 
   async deleteComment(form: Forms.DeleteComment): Promise<Schemas.Comment> {
-    const json = await this.post("/comment/delete", {
-      comment_id: form.id,
-      deleted: form.deleted,
-    });
-
     try {
-      const { comment_view } = z
-        .object({
-          comment_view: pieFedCommentViewSchema,
-        })
-        .parse(json);
-
+      const { comment_view } = await this.client.postApiAlphaCommentDelete({
+        comment_id: form.id,
+        deleted: form.deleted,
+      });
       return convertComment(comment_view);
     } catch (err) {
       console.error(err);
@@ -1957,18 +1939,11 @@ export class PieFedApi
   }
 
   async editComment(form: Forms.EditComment): Promise<Schemas.Comment> {
-    const json = await this.put("/comment", {
-      comment_id: form.id,
-      body: form.body,
-    });
-
     try {
-      const { comment_view } = z
-        .object({
-          comment_view: pieFedCommentViewSchema,
-        })
-        .parse(json);
-
+      const { comment_view } = await this.client.putApiAlphaComment({
+        comment_id: form.id,
+        body: form.body,
+      });
       return convertComment(comment_view);
     } catch (err) {
       console.error(err);
@@ -1995,10 +1970,29 @@ export class PieFedApi
       personOrUsername.username = form.apIdOrUsername;
     }
 
-    const json =
-      form.type === "Posts"
-        ? await this.get(
-            "/post/list",
+    try {
+      if (form.type === "Posts") {
+        const { posts, next_page } = await this.client.getApiAlphaPostList(
+          {
+            ...personOrUsername,
+            limit: this.limit,
+            sort: "New",
+            page:
+              form.pageCursor === INIT_PAGE_TOKEN
+                ? undefined
+                : pageCursorToInt(form.pageCursor),
+            type_: "All",
+          },
+          options,
+        );
+        return {
+          posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
+          comments: [],
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        };
+      } else {
+        const { comments, next_page } =
+          await this.client.getApiAlphaCommentList(
             {
               ...personOrUsername,
               limit: this.limit,
@@ -2006,40 +2000,16 @@ export class PieFedApi
               page:
                 form.pageCursor === INIT_PAGE_TOKEN
                   ? undefined
-                  : form.pageCursor,
-              type_: "All",
-            },
-            options,
-          )
-        : await this.get(
-            "/comment/list",
-            {
-              ...personOrUsername,
-              limit: this.limit,
-              sort: "New",
-              page:
-                form.pageCursor === INIT_PAGE_TOKEN
-                  ? undefined
-                  : form.pageCursor,
-              type_: "All",
+                  : pageCursorToInt(form.pageCursor),
             },
             options,
           );
-
-    try {
-      const { posts, comments, next_page } = z
-        .object({
-          posts: z.array(pieFedPostViewSchema).nullable().optional(),
-          comments: z.array(pieFedCommentViewSchema).nullable().optional(),
-          next_page: nextPageSchema,
-        })
-        .parse(json);
-
-      return {
-        posts: posts?.map((p) => convertPost({ postView: p })) ?? [],
-        comments: comments?.map((c) => convertComment(c)) ?? [],
-        nextCursor: isNotNil(next_page) ? String(next_page) : null,
-      };
+        return {
+          posts: [],
+          comments: comments?.map((c) => convertComment(c)) ?? [],
+          nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        };
+      }
     } catch (err) {
       console.log(err);
       throw err;
@@ -2048,22 +2018,24 @@ export class PieFedApi
 
   async editPost(form: Forms.EditPost) {
     const { post_id } = await this.resolveObjectId(form.apId);
-    const res = await this.put("/post", {
-      post_id,
-      title: form.title,
-      url: form.url,
-      body: form.body,
-      nsfw: form.nsfw ?? false,
-    });
+    if (_.isNil(post_id)) {
+      throw new Error("post not found");
+    }
     try {
-      const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
+      const data = await this.client.putApiAlphaPost({
+        post_id,
+        title: form.title,
+        url: form.url,
+        body: form.body ?? undefined,
+        nsfw: form.nsfw ?? false,
+      });
       if (form.flairs) {
         const { flairs } = await this.getCommunity({
           slug: convertPost({ postView: data.post_view }).communitySlug,
         });
         const flairLookup = getFlairLookup(flairs);
         const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
-        await this.post("/post/assign_flair", {
+        await this.client.postApiAlphaPostAssignFlair({
           post_id: data.post_view.post.id,
           flair_id_list: selectedFlairs?.map((f) => f.id),
         });
@@ -2085,19 +2057,18 @@ export class PieFedApi
     const { community, flairs } = await this.getCommunity({
       slug: form.communitySlug,
     });
-    const res = await this.post("/post", {
-      title: form.title,
-      community_id: community.id,
-      url: form.url ?? undefined,
-      body: form.body ?? undefined,
-      nsfw: form.nsfw ?? false,
-    });
     try {
-      const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
+      const data = await this.client.postApiAlphaPost({
+        title: form.title,
+        community_id: community.id,
+        url: form.url ?? undefined,
+        body: form.body ?? undefined,
+        nsfw: form.nsfw ?? false,
+      });
       const flairLookup = getFlairLookup(flairs);
       const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
       if (selectedFlairs) {
-        await this.post("/post/assign_flair", {
+        await this.client.postApiAlphaPostAssignFlair({
           post_id: data.post_view.post.id,
           flair_id_list: selectedFlairs?.map((f) => f.id),
         });
@@ -2113,8 +2084,8 @@ export class PieFedApi
   }
 
   async markPostRead(form: Forms.MarkPostRead) {
-    await this.post("/post/mark_as_read", {
-      post_ids: [form.postIds],
+    await this.client.postApiAlphaPostMarkAsRead({
+      post_ids: form.postIds,
       read: form.read,
     });
   }
