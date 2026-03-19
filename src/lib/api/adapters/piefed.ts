@@ -2461,24 +2461,12 @@ export class PieFedApi
 
   async getLinkMetadata(form: Forms.GetLinkMetadata) {
     try {
-      const json = await this.get("/post/site_metadata", {
+      const { metadata } = await this.client.getApiAlphaPostSiteMetadata({
         url: form.url,
       });
-      const { metadata } = z
-        .object({
-          metadata: z.object({
-            title: z.string().nullish(),
-            description: z.string().nullish(),
-            content_type: z.string().nullish(),
-            image: z.string().nullish(),
-            embed_video_url: z.string().nullish(),
-          }),
-        })
-        .parse(json);
       return {
         title: metadata.title,
         description: metadata.title,
-        contentType: metadata.content_type,
         imageUrl: metadata.image,
         embedVideoUrl: metadata.embed_video_url,
       };
@@ -2507,24 +2495,21 @@ export class PieFedApi
       community_id = community.id;
     }
 
-    // TODO: next logic page seems broken
     const page =
-      !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
+      form.pageCursor === INIT_PAGE_TOKEN
         ? 1
-        : _.parseInt(form.pageCursor) + 1;
-
-    const json = await this.get(
-      "/modlog",
-      { ...(community_id ? { community_id } : {}), page, limit: this.limit },
-      options,
-    );
+        : (pageCursorToInt(form.pageCursor) ?? 1);
 
     try {
+      const json = await this.client.getApiAlphaModlog(
+        { ...(community_id ? { community_id } : {}), page, limit: this.limit },
+        options,
+      );
       const items = convertModlogResponsePieFed(json);
       const hasNextPage = Object.values(json).some(
         (arr) => Array.isArray(arr) && arr.length >= this.limit,
       );
-      return { items, nextCursor: hasNextPage ? String(page) : null };
+      return { items, nextCursor: hasNextPage ? String(page + 1) : null };
     } catch (err) {
       console.log(err);
       throw err;
