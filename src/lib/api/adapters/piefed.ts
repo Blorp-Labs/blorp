@@ -2242,7 +2242,7 @@ export class PieFedApi
   }
 
   async createPostReport(form: Forms.CreatePostReport) {
-    await this.post("/post/report", {
+    await this.client.postApiAlphaPostReport({
       post_id: form.postId,
       reason: form.reason,
     });
