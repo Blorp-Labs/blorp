@@ -1833,27 +1833,23 @@ export class PieFedApi
   async search(form: Forms.Search, options: RequestOptions) {
     const topSort = form.type === "Communities" || form.type === "Users";
     try {
+      const page =
+        form.pageCursor === INIT_PAGE_TOKEN
+          ? 1
+          : (pageCursorToInt(form.pageCursor) ?? 1);
+
       const { posts, communities, users, comments } =
         await this.client.getApiAlphaSearch(
           {
             q: form.q,
             community_name: form.communitySlug,
-            page:
-              _.isUndefined(form.pageCursor) ||
-              form.pageCursor === INIT_PAGE_TOKEN
-                ? 1
-                : _.parseInt(form.pageCursor) + 1,
+            page,
             type_: form.type === "All" ? "Posts" : form.type,
             limit: form.limit ?? this.limit,
             sort: topSort ? "TopAll" : "Active",
           },
           options,
         );
-
-      const nextCursor =
-        _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
-          ? 1
-          : _.parseInt(form.pageCursor) + 1;
 
       const hasMorePosts = posts.length >= this.limit;
       const hasMoreCommunities = communities.length >= this.limit;
@@ -1888,7 +1884,7 @@ export class PieFedApi
           ],
           (p) => p.apId,
         ),
-        nextCursor: hasNextCursor ? String(nextCursor) : null,
+        nextCursor: hasNextCursor ? String(page + 1) : null,
       };
     } catch (err) {
       console.log(err);
