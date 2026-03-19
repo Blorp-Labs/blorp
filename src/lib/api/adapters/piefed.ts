@@ -2278,16 +2278,11 @@ export class PieFedApi
   }
 
   async removeComment(form: Forms.RemoveComment) {
-    const json = await this.post("/comment/remove", {
+    const { comment_view } = await this.client.postApiAlphaCommentRemove({
       comment_id: form.commentId,
       removed: form.removed,
       reason: form.reason,
     });
-    const { comment_view } = z
-      .object({
-        comment_view: pieFedCommentViewSchema,
-      })
-      .parse(json);
     return convertComment(comment_view);
   }
 
