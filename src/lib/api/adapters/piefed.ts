@@ -2094,23 +2094,21 @@ export class PieFedApi
     form: Forms.GetPrivateMessages,
     options: RequestOptions,
   ) {
-    const json = await this.get(
-      "/private_message/list",
-      {
-        unread_only: form.unreadOnly ?? false,
-        page: form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: this.limit,
-      },
-      options,
-    );
-
     try {
-      const { private_messages, next_page } = z
-        .object({
-          private_messages: z.array(pieFedPrivateMessageViewSchema),
-          next_page: nextPageSchema,
-        })
-        .parse(json);
+      const page =
+        form.pageCursor === INIT_PAGE_TOKEN
+          ? 1
+          : (pageCursorToInt(form.pageCursor) ?? 1);
+
+      const { private_messages } =
+        await this.client.getApiAlphaPrivateMessageList(
+          {
+            unread_only: form.unreadOnly ?? false,
+            page,
+            limit: this.limit,
+          },
+          options,
+        );
 
       const profiles = _.uniqBy(
         [
@@ -2120,10 +2118,12 @@ export class PieFedApi
         (p) => p.actor_id,
       ).map((person) => convertPerson({ person }, "partial"));
 
+      const hasNextPage = private_messages.length >= this.limit;
+
       return {
         privateMessages: private_messages.map(convertPrivateMessage),
         profiles,
-        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        nextCursor: hasNextPage ? String(page + 1) : null,
       };
     } catch (err) {
       console.error(err);
@@ -2560,6 +2560,8 @@ export class PieFedApi
       );
       community_id = community.id;
     }
+
+    // TODO: next logic page seems broken
     const page =
       !form.pageCursor || form.pageCursor === INIT_PAGE_TOKEN
         ? 1

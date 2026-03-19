@@ -26,7 +26,7 @@
     "build-storybook": "storybook build --stats-json"
   },
   "dependencies": {
-    "@blorp-labs/piefed-api-client": "0.0.0-774e8e8",
+    "@blorp-labs/piefed-api-client": "0.0.0-cc3101d",
     "@capacitor-community/media": "^8.0.1",
     "@capacitor/android": "^7.4.0",
     "@capacitor/app": "^7.0.1",
