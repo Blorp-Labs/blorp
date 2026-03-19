@@ -1635,14 +1635,15 @@ export class PieFedApi
   }
 
   async addPostReactionEmoji(form: Forms.AddPostReactionEmoji) {
-    await this.post("/post/like", {
+    await this.client.postApiAlphaPostLike({
       post_id: form.postId,
-      emoji: form.emoji,
+      emoji: form.emoji ?? undefined,
       score: !form.score ? 1 : form.score,
     });
-    const json = await this.get("/post", { id: form.postId });
-    const data = z.object({ post_view: pieFedPostViewSchema }).parse(json);
-    return convertPost({ postView: data.post_view });
+    const { post_view } = await this.client.getApiAlphaPost({
+      id: form.postId,
+    });
+    return convertPost({ postView: post_view });
   }
 
   async votePostPoll(form: Forms.PostPollVote) {

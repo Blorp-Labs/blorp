@@ -694,7 +694,7 @@ export namespace Forms {
 
   export type AddPostReactionEmoji = {
     postId: number;
-    emoji?: string | null;
+    emoji?: string;
     score?: number;
   };
 
