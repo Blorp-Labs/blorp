@@ -2146,7 +2146,7 @@ export class PieFedApi
   }
 
   async markPrivateMessageRead(form: Forms.MarkPrivateMessageRead) {
-    await this.post("/private_message/mark_as_read", {
+    await this.client.postApiAlphaPrivateMessageMarkAsRead({
       private_message_id: form.id,
       read: form.read,
     });
