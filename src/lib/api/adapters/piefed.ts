@@ -2231,7 +2231,7 @@ export class PieFedApi
   }
 
   async markReplyRead(form: Forms.MarkReplyRead) {
-    await this.post("/comment/mark_as_read", {
+    await this.client.postApiAlphaCommentMarkAsRead({
       comment_reply_id: form.id,
       read: form.read,
     });
