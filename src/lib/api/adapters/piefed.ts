@@ -2315,7 +2315,7 @@ export class PieFedApi
   }
 
   async blockCommunity(form: Forms.BlockCommunity) {
-    await this.post("/community/block", {
+    await this.client.postApiAlphaCommunityBlock({
       community_id: form.communityId,
       block: form.block,
     });
