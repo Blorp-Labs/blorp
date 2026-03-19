@@ -1296,11 +1296,15 @@ export class PieFedApi
     this.instance = instance.replace(/\/$/, "");
     this.jwt = jwt;
     this.client = createClient(this.instance, {
-      headers: this.jwt
-        ? {
-            authorization: `Bearer ${this.jwt}`,
-          }
-        : {},
+      headers: {
+        ...DEFAULT_HEADERS,
+        ...(this.jwt
+          ? {
+              authorization: `Bearer ${this.jwt}`,
+            }
+          : {}),
+      },
+      cache: "no-store",
     });
   }
 
