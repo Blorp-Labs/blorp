@@ -1800,14 +1800,11 @@ export class PieFedApi
   }
 
   async saveComment(form: Forms.SaveComment): Promise<Schemas.Comment> {
-    const json = await this.put("/comment/save", {
-      comment_id: form.commentId,
-      save: form.save,
-    });
     try {
-      const data = z
-        .object({ comment_view: pieFedCommentViewSchema })
-        .parse(json);
+      const data = await this.client.putApiAlphaCommentSave({
+        comment_id: form.commentId,
+        save: form.save,
+      });
       return convertComment(data.comment_view);
     } catch (err) {
       console.log(err);
