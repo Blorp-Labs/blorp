@@ -1815,16 +1815,11 @@ export class PieFedApi
   async followCommunity(
     form: Forms.FollowCommunity,
   ): Promise<Schemas.Community> {
-    const json = await this.post("/community/follow", {
-      community_id: form.communityId,
-      follow: form.follow,
-    });
     try {
-      const data = z
-        .object({
-          community_view: pieFedCommunityViewSchema,
-        })
-        .parse(json);
+      const data = await this.client.postApiAlphaCommunityFollow({
+        community_id: form.communityId,
+        follow: form.follow,
+      });
       return convertCommunity(data.community_view, "partial");
     } catch (err) {
       console.log(err);
