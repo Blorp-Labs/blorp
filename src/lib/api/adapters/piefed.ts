@@ -1647,14 +1647,11 @@ export class PieFedApi
   }
 
   async votePostPoll(form: Forms.PostPollVote) {
-    const json = await this.post("/post/poll_vote", {
-      post_id: form.postId,
-      choice_id: form.choiceId,
-    });
     try {
-      const { post_view } = z
-        .object({ post_view: pieFedPostViewSchema })
-        .parse(json);
+      const { post_view } = await this.client.postApiAlphaPostPollVote({
+        post_id: form.postId,
+        choice_id: form.choiceId,
+      });
       return convertPost({ postView: post_view });
     } catch (err) {
       console.log(err);
