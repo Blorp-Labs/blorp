@@ -2308,7 +2308,7 @@ export class PieFedApi
   }
 
   async blockPerson(form: Forms.BlockPerson) {
-    await this.post("/user/block", {
+    await this.client.postApiAlphaUserBlock({
       person_id: form.personId,
       block: form.block,
     });
