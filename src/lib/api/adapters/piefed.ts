@@ -2249,17 +2249,13 @@ export class PieFedApi
   }
 
   async removePost(form: Forms.RemovePost) {
-    const json = await this.post("/post/remove", {
-      post_id: form.postId,
-      removed: form.removed,
-      reason: form.reason,
-    });
-    const { post_view, cross_posts } = z
-      .object({
-        post_view: pieFedPostViewSchema,
-        cross_posts: z.array(pieFedCrosspostSchema).nullish(),
-      })
-      .parse(json);
+    const { post_view, cross_posts } = await this.client.postApiAlphaPostRemove(
+      {
+        post_id: form.postId,
+        removed: form.removed,
+        reason: form.reason,
+      },
+    );
     return convertPost({
       postView: post_view,
       crossPosts: cross_posts ?? undefined,
