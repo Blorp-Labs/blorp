@@ -15,7 +15,12 @@ import { getFlairLookup } from "@/src/stores/create-post";
 import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
-import { createClient } from "@blorp-labs/piefed-api-client";
+import {
+  Community,
+  createClient,
+  Post,
+  PostReplyView,
+} from "@blorp-labs/piefed-api-client";
 
 const POST_SORTS = [
   "Active",
@@ -392,7 +397,7 @@ type PieFedCommentChildView = {
   comment: z.infer<typeof pieFedCommentSchema>;
   counts: z.infer<typeof pieFedCommentCountsSchema>;
   creator: z.infer<typeof pieFedPersonSchema>;
-  my_vote: number;
+  my_vote?: number;
   replies: PieFedCommentChildView[];
   emoji_reactions?: z.infer<typeof pieFedEmojiReactionSchema>[] | null;
 };
@@ -402,7 +407,7 @@ const pieFedCommentChildSchema: z.ZodType<PieFedCommentChildView> = z.lazy(() =>
     comment: pieFedCommentSchema,
     counts: pieFedCommentCountsSchema,
     creator: pieFedPersonSchema,
-    my_vote: z.number(),
+    my_vote: z.number().optional(),
     replies: z.array(pieFedCommentChildSchema),
     creator_banned_from_community: z.boolean().nullish(),
     saved: z.boolean().nullable().optional(),
@@ -422,7 +427,7 @@ const pieFedCommentViewSchema = z.object({
   //creator_blocked: z.boolean(),
   //creator_is_admin: z.boolean(),
   //creator_is_moderator: z.boolean(),
-  my_vote: z.number(),
+  my_vote: z.number().optional(),
   post: pieFedPostSchema,
   saved: z.boolean().nullable().optional(),
   //subscribed: z.enum(["Subscribed", "NotSubscribed", "Pending"]),
@@ -671,7 +676,9 @@ function convertPerson(
 }
 
 function convertComment(
-  commentView: z.infer<typeof pieFedCommentViewSchema>,
+  commentView:
+    | (PostReplyView & { post: Post; community: Community })
+    | z.infer<typeof pieFedCommentViewSchema>,
 ): Schemas.Comment {
   const { post, counts, creator, comment, community } = commentView;
   return {
@@ -793,11 +800,11 @@ const errorResponseSchema = z.object({
 });
 
 export function flattenCommentViews(
-  comments: z.infer<typeof pieFedCommentViewSchema>[],
-): z.infer<typeof pieFedCommentViewSchema>[] {
-  const result: z.infer<typeof pieFedCommentViewSchema>[] = [];
+  comments: PostReplyView[],
+): PostReplyView[] {
+  const result: PostReplyView[] = [];
 
-  function recurse(nodes: z.infer<typeof pieFedCommentViewSchema>[]) {
+  function recurse(nodes: PostReplyView[]) {
     for (const node of nodes) {
       const { community, post } = node;
       result.push(node);
@@ -1687,39 +1694,22 @@ export class PieFedApi
     try {
       const { data: sort } = commentSortSchema.safeParse(form.sort);
 
-      let post_id: number | undefined = undefined;
-
-      if (form.postApId) {
-        post_id = (await this.resolveObjectId(form.postApId)).post_id;
-
-        if (_.isNil(post_id)) {
-          throw new Error("could not find post");
-        }
-      }
-
       if (form.savedOnly) {
-        const json = await this.get(
-          "/comment/list",
-          {
-            limit: this.limit,
-            type_: "All",
-            sort,
-            page:
-              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-            parent_id: form.parentId,
-            post_id,
-            max_depth: form.maxDepth,
-            saved_only: form.savedOnly,
-          },
-          options,
-        );
-
-        const { comments, next_page } = z
-          .object({
-            next_page: nextPageSchema,
-            comments: z.array(pieFedCommentViewSchema),
-          })
-          .parse(json);
+        const { comments, next_page } =
+          await this.client.getApiAlphaCommentList(
+            {
+              limit: this.limit,
+              sort,
+              page:
+                form.pageCursor === INIT_PAGE_TOKEN
+                  ? undefined
+                  : pageCursorToInt(form.pageCursor),
+              parent_id: form.parentId,
+              max_depth: form.maxDepth,
+              saved_only: form.savedOnly,
+            },
+            options,
+          );
 
         return {
           comments: comments.map((c) => convertComment(c)),
@@ -1729,35 +1719,51 @@ export class PieFedApi
           nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       } else {
-        const json = await this.get(
-          "/post/replies",
-          {
-            limit: 100,
-            type_: "All",
-            sort,
-            page:
-              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-            parent_id: form.parentId,
-            post_id,
-            max_depth: form.maxDepth,
-          },
-          options,
-        );
+        const post_id = (await this.resolveObjectId(form.postApId)).post_id;
+        if (_.isNil(post_id)) {
+          throw new Error("could not find post");
+        }
 
-        const { comments, next_page } = z
-          .object({
-            comments: z.array(pieFedCommentViewSchema),
-            next_page: nextPageSchema,
-          })
-          .parse(json);
+        // PieFed has post and community as optional
+        // in the reply schema, so we need to stitch the data
+        // together from these two requests
+        const [{ comments, next_page }, { post_view }] = await Promise.all([
+          this.client.getApiAlphaPostReplies(
+            {
+              limit: 100,
+              sort,
+              page:
+                form.pageCursor === INIT_PAGE_TOKEN
+                  ? undefined
+                  : form.pageCursor,
+              parent_id: form.parentId,
+              post_id,
+              max_depth: form.maxDepth,
+            },
+            options,
+          ),
+          this.client.getApiAlphaPost({
+            id: post_id,
+          }),
+        ]);
 
-        const flattenedComments = flattenCommentViews(comments);
+        const flattenedComments = comments
+          ? flattenCommentViews(comments)
+          : undefined;
 
         return {
-          comments: flattenedComments.map((c) => convertComment(c)),
-          creators: flattenedComments.map(({ creator }) =>
-            convertPerson({ person: creator }, "partial"),
-          ),
+          comments:
+            flattenedComments?.map((c) =>
+              convertComment({
+                ...c,
+                post: post_view.post,
+                community: post_view.community,
+              }),
+            ) ?? [],
+          creators:
+            flattenedComments?.map(({ creator }) =>
+              convertPerson({ person: creator }, "partial"),
+            ) ?? [],
           nextCursor: isNotNil(next_page) ? String(next_page) : null,
         };
       }

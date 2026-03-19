@@ -271,11 +271,11 @@ export default function Post() {
 
   const comments = useComments(
     {
-      postApId: decodedApId,
+      postApId: decodedApId ?? "",
       parentId: parentId,
     },
     {
-      enabled: parentComment.status === "success",
+      enabled: parentComment.status === "success" && !!decodedApId,
     },
   );
 

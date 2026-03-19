@@ -562,14 +562,25 @@ export namespace Forms {
     follow: boolean;
   };
 
-  export type GetComments = {
-    postApId?: string;
-    parentId?: number;
-    sort?: string;
-    pageCursor?: string;
-    savedOnly?: boolean;
-    maxDepth?: number;
-  };
+  // Due to some PieFed weirdness we have to requrie
+  // postApId unless we're looking at saved content only
+  export type GetComments =
+    | {
+        postApId: string;
+        parentId?: number;
+        sort?: string;
+        pageCursor?: string;
+        savedOnly?: undefined;
+        maxDepth?: number;
+      }
+    | {
+        postApId?: undefined;
+        parentId?: number;
+        sort?: string;
+        pageCursor?: string;
+        savedOnly: true;
+        maxDepth?: number;
+      };
 
   export type CreateComment = {
     postApId: string;
