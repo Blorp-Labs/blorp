@@ -1583,34 +1583,23 @@ export class PieFedApi
     if (_.isNil(post_id)) {
       throw Errors.OBJECT_NOT_FOUND;
     }
-    const json = await this.get(
-      "/post",
-      {
-        id: post_id,
-      },
-      options,
-    );
-
-    this.post("/post/mark_as_read", {
+    this.client.postApiAlphaPostMarkAsRead({
       post_ids: [post_id],
       read: true,
     });
 
     try {
-      const { post_view, community_view, cross_posts } = z
-        .object({
-          post_view: pieFedPostViewSchema,
-          cross_posts: z.array(pieFedCrosspostSchema),
-          community_view: pieFedCommunityViewSchema,
-        })
-        .parse(json);
+      const { post_view, community_view, cross_posts } =
+        await this.client.getApiAlphaPost({ id: post_id }, options);
 
       return {
         post: convertPost({
           postView: post_view,
-          crossPosts: cross_posts,
+          crossPosts: cross_posts ?? [],
         }),
-        community_view: convertCommunity(community_view, "partial"),
+        community_view: community_view
+          ? convertCommunity(community_view, "partial")
+          : undefined,
         creator: convertPerson({ person: post_view.creator }, "partial"),
         flairs: post_view.flair_list?.map(convertFlair),
       };
