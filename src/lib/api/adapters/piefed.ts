@@ -2322,7 +2322,7 @@ export class PieFedApi
   }
 
   async blockInstance(form: Forms.BlockInstance) {
-    await this.post("/site/block", {
+    await this.client.postApiAlphaSiteBlock({
       instance_id: form.instanceId,
       block: form.block,
     });
