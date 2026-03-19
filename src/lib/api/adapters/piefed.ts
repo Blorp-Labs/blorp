@@ -1309,9 +1309,8 @@ export class PieFedApi
   }
 
   async getSite(options: RequestOptions) {
-    const json = await this.get("/site", {}, options);
     try {
-      const pieFedSite = pieFedSiteSchema.parse(json);
+      const pieFedSite = await this.client.getApiAlphaSite(options);
       const pieFedMe = pieFedSite.my_user?.local_user_view?.person;
 
       const moderates = pieFedSite.my_user?.moderates?.map(({ community }) =>
@@ -1322,9 +1321,12 @@ export class PieFedApi
         convertCommunity({ community }, "partial"),
       );
 
-      const communityBlocks = pieFedSite.my_user?.community_blocks?.map(
-        ({ community }) =>
-          shrinkBlockedCommunity(convertCommunity({ community }, "partial")),
+      const communityBlocks = _.compact(
+        pieFedSite.my_user?.community_blocks?.map(({ community }) =>
+          community
+            ? shrinkBlockedCommunity(convertCommunity({ community }, "partial"))
+            : undefined,
+        ),
       );
 
       const me = pieFedMe
@@ -1359,7 +1361,7 @@ export class PieFedApi
         usersActiveHalfYearCount: null,
         postCount: null,
         commentCount: null,
-        userCount: pieFedSite.site.user_count,
+        userCount: pieFedSite.site.user_count ?? null,
         sidebar: pieFedSite.site.sidebar ?? null,
         icon: pieFedSite.site.icon ?? null,
         title: pieFedSite.site.name,
@@ -1369,12 +1371,12 @@ export class PieFedApi
         communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
         instanceBlocks: instanceBlocks ?? null,
         applicationQuestion: null,
-        registrationMode: pieFedSite.site.registration_mode,
+        registrationMode: pieFedSite.site.registration_mode ?? "Closed",
         showNsfw:
           pieFedSite.my_user?.local_user_view?.local_user.show_nsfw ?? false,
         blurNsfw: nsfwVisibility !== "show",
-        enablePostDownvotes: pieFedSite.site.enable_downvotes,
-        enableCommentDownvotes: pieFedSite.site.enable_downvotes,
+        enablePostDownvotes: pieFedSite.site.enable_downvotes ?? true,
+        enableCommentDownvotes: pieFedSite.site.enable_downvotes ?? true,
         replyCollapseThreshold:
           pieFedSite.my_user?.local_user_view?.local_user
             .reply_collapse_threshold ?? undefined,
