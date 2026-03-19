@@ -73,29 +73,37 @@ export function getFileExtension(blob: Blob, url?: string): string {
   return "png";
 }
 
-export function normalizeFilename(url: string): string {
+export function normalizeFilename(name: string): string {
   // Strip scheme (https:// or http://)
   // Strip query string and fragment by parsing only origin + pathname
   let normalized: string;
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(name);
     normalized = decodeURIComponent(parsed.host + parsed.pathname);
   } catch {
-    normalized = url.replace(/^https?:\/\//, "");
+    normalized = name.replace(/^https?:\/\//, "");
   }
 
-  return normalized
+  // Preserve the extension so it survives sanitization intact.
+  // This way normalizeFilename("image.png") === "image.png" as expected.
+  const extMatch = normalized.match(/(\.[a-zA-Z0-9]+)$/);
+  const ext = extMatch?.[1] ?? "";
+  const base = ext ? normalized.slice(0, -ext.length) : normalized;
+
+  const sanitizedBase = base
     .replace(/[/\s]+/g, "-") // slashes and whitespace → dashes
     .replace(/[^a-zA-Z0-9\-_]/g, "") // remove remaining unsafe chars
     .replace(/-+/g, "-") // collapse consecutive dashes
     .replace(/^-|-$/g, ""); // trim leading/trailing dashes
+
+  return sanitizedBase + ext;
 }
 
 export function getFileName(blob: Blob, url: string) {
   const extension = getFileExtension(blob, url);
-  // Strip the URL extension before normalizing to avoid duplication (e.g. "imagejpg.jpg")
-  const urlWithoutExt = url.replace(/\.[a-zA-Z0-9]+([?#]|$)/, "$1");
-  const baseName = normalizeFilename(urlWithoutExt);
+  // Strip the preserved extension from normalizeFilename and replace it with
+  // the MIME-detected one so the two never disagree.
+  const baseName = normalizeFilename(url).replace(/\.[a-zA-Z0-9]+$/, "");
   return `${baseName}.${extension}`;
 }
 
