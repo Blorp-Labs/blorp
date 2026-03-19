@@ -2388,12 +2388,10 @@ export class PieFedApi
     } catch (e) {
       console.log(e);
     }
-    await this.put("/user/save_user_settings", {
+    await this.client.putApiAlphaUserSaveUserSettings({
       avatar: avatar,
       // banner: form.banner,
       bio: form.bio,
-      display_name: form.displayName,
-      email: form.email,
       nsfw_visibility: form.showNsfw
         ? form.blurNsfw
           ? "Blur"
@@ -2406,7 +2404,7 @@ export class PieFedApi
   }
 
   async removeUserAvatar() {
-    await this.put("/user/save_user_settings", {
+    await this.client.putApiAlphaUserSaveUserSettings({
       avatar: null,
     });
   }

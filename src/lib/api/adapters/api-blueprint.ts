@@ -742,7 +742,6 @@ export namespace Forms {
     avatar?: File;
     banner?: File;
     bio?: string;
-    displayName?: string;
     email?: string;
     showNsfw?: boolean;
     blurNsfw?: boolean;
