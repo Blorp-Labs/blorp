@@ -752,8 +752,8 @@ function convertPrivateMessage(
     creatorApId: creator.actor_id,
     creatorId: creator.id,
     creatorSlug: createSlug({
-      apId: recipient.actor_id,
-      name: recipient.user_name,
+      apId: creator.actor_id,
+      name: creator.user_name,
     }).slug,
     recipientApId: recipient.actor_id,
     recipientId: recipient.id,
@@ -2153,13 +2153,12 @@ export class PieFedApi
   }
 
   async featurePost(form: Forms.FeaturePost) {
-    const res = await this.post("/post/feature", {
-      post_id: form.postId,
-      featured: form.featured,
-      feature_type: form.featureType,
-    });
     try {
-      const data = z.object({ post_view: pieFedPostViewSchema }).parse(res);
+      const data = await this.client.postApiAlphaPostFeature({
+        post_id: form.postId,
+        featured: form.featured,
+        feature_type: form.featureType,
+      });
       return convertPost({ postView: data.post_view });
     } catch (err) {
       console.error(err);
