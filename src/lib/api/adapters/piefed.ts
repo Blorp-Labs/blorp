@@ -1829,33 +1829,23 @@ export class PieFedApi
 
   async search(form: Forms.Search, options: RequestOptions) {
     const topSort = form.type === "Communities" || form.type === "Users";
-    const json = await this.get(
-      "/search",
-      {
-        q: form.q,
-        community_name: form.communitySlug,
-        page:
-          _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
-            ? 1
-            : _.parseInt(form.pageCursor) + 1,
-        type_: form.type === "All" ? "Posts" : form.type,
-        limit: form.limit ?? this.limit,
-        sort: topSort ? "TopAll" : "Active",
-      },
-      options,
-    );
-
     try {
-      const { posts, communities, users, comments } = z
-        .object({
-          posts: z.array(pieFedPostViewSchema),
-          communities: z.array(pieFedCommunityViewSchema),
-          comments: z
-            .array(pieFedCommentViewSchema.omit({ replies: true }))
-            .optional(),
-          users: z.array(pieFedPersonViewSchema),
-        })
-        .parse(json);
+      const { posts, communities, users, comments } =
+        await this.client.getApiAlphaSearch(
+          {
+            q: form.q,
+            community_name: form.communitySlug,
+            page:
+              _.isUndefined(form.pageCursor) ||
+              form.pageCursor === INIT_PAGE_TOKEN
+                ? 1
+                : _.parseInt(form.pageCursor) + 1,
+            type_: form.type === "All" ? "Posts" : form.type,
+            limit: form.limit ?? this.limit,
+            sort: topSort ? "TopAll" : "Active",
+          },
+          options,
+        );
 
       const nextCursor =
         _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
