@@ -1774,21 +1774,13 @@ export class PieFedApi
   }
 
   async likeComment(form: Forms.LikeComment) {
-    await this.post("/comment/like", {
-      post_id: form.postId,
-      comment_id: form.id,
-      score: form.score,
-    });
-
-    const json = await this.get("/comment", {
-      id: form.id,
-    });
-
     try {
-      const data = z
-        .object({ comment_view: pieFedCommentViewSchema })
-        .parse(json);
+      await this.client.postApiAlphaCommentLike({
+        comment_id: form.id,
+        score: form.score,
+      });
 
+      const data = await this.client.getApiAlphaComment({ id: form.id });
       return convertComment(data.comment_view);
     } catch (err) {
       console.log(err);
@@ -1797,16 +1789,13 @@ export class PieFedApi
   }
 
   async addCommentReactionEmoji(form: Forms.AddCommentReactionEmoji) {
-    await this.post("/comment/like", {
+    await this.client.postApiAlphaCommentLike({
       comment_id: form.commentId,
       emoji: form.emoji,
       // PieFed requires a score of -1 or 1 to react
       score: !form.score ? 1 : form.score,
     });
-    const json = await this.get("/comment", { id: form.commentId });
-    const data = z
-      .object({ comment_view: pieFedCommentViewSchema })
-      .parse(json);
+    const data = await this.client.getApiAlphaComment({ id: form.commentId });
     return convertComment(data.comment_view);
   }
 

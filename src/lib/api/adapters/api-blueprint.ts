@@ -699,7 +699,7 @@ export namespace Forms {
 
   export type AddCommentReactionEmoji = {
     commentId: number;
-    emoji?: string | null;
+    emoji?: string;
     score?: number;
   };
 
