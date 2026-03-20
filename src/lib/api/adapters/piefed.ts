@@ -12,7 +12,7 @@ import {
 import z from "zod";
 import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
-import { isNotNil } from "../../utils";
+import { exhaustiveList, isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 import {
@@ -23,6 +23,9 @@ import {
   CommunityFlair,
   CommunityView,
   createClient,
+  GetApiAlphaCommentListSort,
+  GetApiAlphaCommunityListSort,
+  GetApiAlphaPostListSort,
   GetModLogResponse,
   Person,
   PersonView,
@@ -34,12 +37,12 @@ import {
   PrivateMessageView,
 } from "@blorp-labs/piefed-api-client";
 
-// TODO: get post sort type from @blorp-labs/piefed-api-client
-const POST_SORTS = [
+const POST_SORTS = exhaustiveList<GetApiAlphaPostListSort>()([
   "Active",
   "Hot",
   "New",
   "Old",
+  "Top",
   "TopAll",
   "TopHour",
   "TopSixHour",
@@ -52,20 +55,38 @@ const POST_SORTS = [
   "TopNineMonths",
   "TopYear",
   "Scaled",
-] as const;
+]);
+
 const postSortSchema = z.custom<(typeof POST_SORTS)[number]>((sort) => {
   return _.isString(sort) && POST_SORTS.includes(sort as any);
 });
 
-// TODO: get comment sort type from @blorp-labs/piefed-api-client
-const COMMENT_SORTS = ["Hot", "Top", "New", "Old"] as const;
+const COMMENT_SORTS = exhaustiveList<GetApiAlphaCommentListSort>()([
+  "Hot",
+  "Top",
+  "TopAll",
+  "New",
+  "Old",
+  "Controversial",
+]);
 
 const commentSortSchema = z.custom<(typeof COMMENT_SORTS)[number]>((sort) => {
   return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
 });
 
-// TODO: get community sort type from @blorp-labs/piefed-api-client
-const COMMUNITY_SORTS = ["Hot", "TopAll", "New"] as const;
+const COMMUNITY_SORTS = exhaustiveList<GetApiAlphaCommunityListSort>()([
+  "Active",
+  "Hot",
+  "New",
+  "Old",
+  "Top",
+  "TopAll",
+  "TopSubscribers",
+  "TopPosts",
+  "NewFederated",
+  "OldFederated",
+]);
+
 const communitySortSchema = z.custom<(typeof COMMUNITY_SORTS)[number]>(
   (sort) => {
     return _.isString(sort) && COMMUNITY_SORTS.includes(sort as any);

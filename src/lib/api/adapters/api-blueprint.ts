@@ -562,7 +562,7 @@ export namespace Forms {
     follow: boolean;
   };
 
-  // Due to some PieFed weirdness we have to requrie
+  // Due to some PieFed weirdness we have to require
   // postApId unless we're looking at saved content only
   export type GetComments =
     | {
