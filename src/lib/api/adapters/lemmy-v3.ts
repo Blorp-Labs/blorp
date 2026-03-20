@@ -13,7 +13,7 @@ import {
 import { createSlug } from "../utils";
 import _ from "lodash";
 import z from "zod";
-import { ErrorLike, isErrorLike } from "../../utils";
+import { ErrorLike, exhaustiveList, isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
@@ -49,7 +49,7 @@ async function translateErrors<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-const POST_SORTS: lemmyV3.SortType[] = [
+const POST_SORTS = exhaustiveList<lemmyV3.SortType>()([
   "Active",
   "Hot",
   "New",
@@ -69,24 +69,24 @@ const POST_SORTS: lemmyV3.SortType[] = [
   "NewComments",
   "Controversial",
   "Scaled",
-];
+]);
 const postSortSchema = z.custom<lemmyV3.SortType>((sort) => {
   return _.isString(sort) && POST_SORTS.includes(sort as any);
 });
 
-const COMMENT_SORTS: lemmyV3.CommentSortType[] = [
+const COMMENT_SORTS = exhaustiveList<lemmyV3.CommentSortType>()([
   "Hot",
   "Top",
   "New",
   "Old",
   "Controversial",
-];
+]);
 
 const commentSortSchema = z.custom<lemmyV3.CommentSortType>((sort) => {
   return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
 });
 
-const COMMUNITY_SORTS: lemmyV3.SortType[] = [
+const COMMUNITY_SORTS = exhaustiveList<lemmyV3.SortType>()([
   "Active",
   "Hot",
   "New",
@@ -106,7 +106,7 @@ const COMMUNITY_SORTS: lemmyV3.SortType[] = [
   "NewComments",
   "Controversial",
   "Scaled",
-] as const;
+]);
 const communitySortSchema = z.custom<lemmyV3.SortType>((sort) => {
   return _.isString(sort) && COMMUNITY_SORTS.includes(sort as any);
 });

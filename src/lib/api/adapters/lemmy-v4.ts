@@ -13,7 +13,7 @@ import {
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import { isErrorLike } from "../../utils";
+import { exhaustiveList, isErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 
 function remapEnum<Value extends PropertyKey, Output>(
@@ -23,7 +23,7 @@ function remapEnum<Value extends PropertyKey, Output>(
   return newEnum[value as never] as Output;
 }
 
-const POST_SORTS: lemmyV3.SortType[] = [
+const POST_SORTS = exhaustiveList<lemmyV3.SortType>()([
   "Active",
   "Hot",
   "New",
@@ -43,7 +43,7 @@ const POST_SORTS: lemmyV3.SortType[] = [
   "NewComments",
   "Controversial",
   "Scaled",
-];
+]);
 
 type PostSort = (typeof POST_SORTS)[number];
 
@@ -204,13 +204,13 @@ function mapCommunitySort(sort?: string) {
   return { sort: apiSort, timeRangeSeconds };
 }
 
-const COMMENT_SORTS: lemmyV3.CommentSortType[] = [
+const COMMENT_SORTS = exhaustiveList<lemmyV3.CommentSortType>()([
   "Hot",
   "Top",
   "New",
   "Old",
   "Controversial",
-];
+]);
 
 type CommentSort = (typeof COMMENT_SORTS)[number];
 
