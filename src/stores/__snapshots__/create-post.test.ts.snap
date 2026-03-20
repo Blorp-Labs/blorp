@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > create post store shape 1`] = `
+{
+  "draft-key": {
+    "communitySlug": "test@example.com",
+    "createdAt": 1704067200000,
+    "flairs": [],
+    "title": "Test Post",
+    "type": "text",
+  },
+}
+`;

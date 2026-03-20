@@ -1,4 +1,12 @@
-import { describe, test, expect, afterEach } from "vitest";
+import {
+  describe,
+  test,
+  expect,
+  afterEach,
+  beforeAll,
+  afterAll,
+  vi,
+} from "vitest";
 import * as api from "@/test-utils/api";
 import { useMultiCommunityFeedStore } from "./multi-community-feeds";
 import { renderHook, act } from "@testing-library/react";
@@ -204,5 +212,29 @@ describe("getFeedSubscribed", () => {
         api.getFeed({ subscribed: false, optimisticSubscribed: "Pending" }),
       ),
     ).toBe("Pending");
+  });
+});
+
+const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
+
+describe("persisted state snapshot", () => {
+  beforeAll(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_DATE);
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  test("feeds store shape", () => {
+    const feedView = api.getFeed({ id: 1 });
+    const { result } = renderHook(() => useMultiCommunityFeedStore());
+
+    act(() => {
+      result.current.cacheFeeds(prefix, [{ feedView }]);
+    });
+
+    expect(result.current.feeds).toMatchSnapshot();
   });
 });

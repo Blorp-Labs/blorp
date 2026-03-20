@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > profiles store shape 1`] = `
+{
+  "123_https://blorpblorp.xyz/u/789": {
+    "data": {
+      "apId": "https://blorpblorp.xyz/u/789",
+      "avatar": null,
+      "bio": "This is me",
+      "commentCount": 2000,
+      "createdAt": "2023-12-31T23:00:00.000000+00:00",
+      "deleted": false,
+      "id": 789,
+      "isBanned": false,
+      "isBot": false,
+      "matrixUserId": null,
+      "postCount": 100,
+      "slug": "789@blorpblorp.xyz",
+    },
+    "lastUsed": 1704067200000,
+  },
+}
+`;

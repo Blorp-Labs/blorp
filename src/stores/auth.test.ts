@@ -1,6 +1,7 @@
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
+
+vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
 import { useAuth } from "./auth";
-import _ from "lodash";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
@@ -156,5 +157,21 @@ describe("useAuthStore", () => {
     expect(result.current.getSelectedAccount()).toMatchObject({
       instance: "https://fakelemmyinstance.com",
     });
+  });
+});
+
+describe("persisted state snapshot", () => {
+  test("auth store shape", () => {
+    const { result } = renderHook(() => useAuth());
+
+    act(() => {
+      result.current.reset();
+      result.current.setAccountIndex(0);
+    });
+
+    expect({
+      accounts: result.current.accounts,
+      accountIndex: result.current.accountIndex,
+    }).toMatchSnapshot();
   });
 });

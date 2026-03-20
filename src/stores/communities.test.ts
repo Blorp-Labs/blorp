@@ -1,4 +1,12 @@
-import { describe, test, expect, afterEach } from "vitest";
+import {
+  describe,
+  test,
+  expect,
+  afterEach,
+  beforeAll,
+  afterAll,
+  vi,
+} from "vitest";
 import * as api from "@/test-utils/api";
 import { useCommunitiesStore } from "./communities";
 import _ from "lodash";
@@ -184,5 +192,29 @@ describe("useCommunitiesStore", () => {
     });
 
     test.todo("patches do not overwrite community mod list");
+  });
+});
+
+const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
+
+describe("persisted state snapshot", () => {
+  beforeAll(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_DATE);
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  test("communities store shape", () => {
+    const communityView = api.getCommunity({ id: 1 });
+    const { result } = renderHook(() => useCommunitiesStore());
+
+    act(() => {
+      result.current.cacheCommunity(prefix, { communityView });
+    });
+
+    expect(result.current.communities).toMatchSnapshot();
   });
 });

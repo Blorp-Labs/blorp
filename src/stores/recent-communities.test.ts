@@ -2,7 +2,6 @@ import { describe, test, expect, afterEach } from "vitest";
 import { useRecentCommunitiesStore, MAX_VISITED } from "./recent-communities";
 import * as api from "@/test-utils/api";
 import { renderHook, act } from "@testing-library/react";
-import _ from "lodash";
 
 afterEach(() => {
   const { result } = renderHook(() => useRecentCommunitiesStore());
@@ -58,5 +57,18 @@ describe("useRecentCommunitiesStore", () => {
     expect(result.current.recentlyVisited).toMatchObject(
       communities.slice(communities.length - MAX_VISITED).toReversed(),
     );
+  });
+});
+
+describe("persisted state snapshot", () => {
+  test("recent communities store shape", () => {
+    const community = api.getCommunity({ id: 1 });
+    const { result } = renderHook(() => useRecentCommunitiesStore());
+
+    act(() => {
+      result.current.update(community);
+    });
+
+    expect(result.current.recentlyVisited).toMatchSnapshot();
   });
 });

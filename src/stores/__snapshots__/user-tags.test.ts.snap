@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > user tags store shape 1`] = `
+{
+  "userTags": {
+    "user@example.com": "My Friend",
+  },
+}
+`;

@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > recent communities store shape 1`] = `
+[
+  {
+    "apId": "https://blorpblorp.xyz/c/1",
+    "banner": "https://picsum.photos/id/11/800/200",
+    "commentCount": 1324,
+    "createdAt": "2025-01-31T03:56:12.085000+00:00",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+",
+    "icon": "https://picsum.photos/id/12/200/200",
+    "id": 1,
+    "nsfw": false,
+    "postCount": 753,
+    "slug": "1@blorpblorp.xyz",
+    "subscribed": "NotSubscribed",
+    "subscriberCount": 562,
+    "subscribersLocalCount": 432,
+    "usersActiveDayCount": 34,
+    "usersActiveHalfYearCount": 426,
+    "usersActiveMonthCount": 235,
+    "usersActiveWeekCount": 73,
+  },
+]
+`;

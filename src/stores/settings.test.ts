@@ -42,3 +42,15 @@ describe("useSettingsStore", () => {
     expect(result.current.filterKeywords).toHaveLength(3);
   });
 });
+
+describe("persisted state snapshot", () => {
+  test("settings store initial shape", () => {
+    const { result } = renderHook(() => useSettingsStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
+  });
+});
