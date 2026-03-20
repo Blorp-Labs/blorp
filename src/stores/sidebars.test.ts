@@ -1,13 +1,10 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, test, expect, afterEach } from "vitest";
 import { useSidebarStore } from "./sidebars";
 import _ from "lodash";
 
 afterEach(() => {
-  const { result } = renderHook(() => useSidebarStore());
-  act(() => {
-    result.current.reset();
-  });
+  useSidebarStore.getState().reset();
 });
 
 describe("persisted state snapshot", () => {

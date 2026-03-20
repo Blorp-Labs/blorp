@@ -11,10 +11,7 @@ import {
 import { useCreatePostStore } from "./create-post";
 
 afterEach(() => {
-  const { result } = renderHook(() => useCreatePostStore());
-  act(() => {
-    result.current.reset();
-  });
+  useCreatePostStore.getState().reset();
 });
 
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");

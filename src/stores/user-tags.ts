@@ -3,16 +3,22 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { useConfirmationAlert } from "../lib/hooks";
 import z from "zod";
+import { isTest } from "../lib/device";
 
 type InboxStore = {
   userTags: Record<string, string>;
   setUserTag: (userSlug: string, tag: string) => any;
+  reset: () => void;
+};
+
+const INIT_STATE = {
+  userTags: {} as Record<string, string>,
 };
 
 export const useTagUserStore = create<InboxStore>()(
   persist(
     (set, get) => ({
-      userTags: {},
+      ...INIT_STATE,
       setUserTag: (userSlug, tag) => {
         const prev = get().userTags;
         if (!tag.trim()) {
@@ -26,6 +32,11 @@ export const useTagUserStore = create<InboxStore>()(
               [userSlug]: tag.trim(),
             },
           });
+        }
+      },
+      reset: () => {
+        if (isTest()) {
+          set(INIT_STATE);
         }
       },
     }),

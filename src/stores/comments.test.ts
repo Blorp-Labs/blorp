@@ -1,10 +1,22 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, test, expect, beforeAll, afterAll, vi } from "vitest";
+import {
+  describe,
+  test,
+  expect,
+  afterEach,
+  beforeAll,
+  afterAll,
+  vi,
+} from "vitest";
 import * as api from "@/test-utils/api";
 import { useCommentsStore } from "./comments";
 import { getCachePrefixer } from "./auth";
 
 const prefix = getCachePrefixer({ instance: "123" });
+
+afterEach(() => {
+  useCommentsStore.getState().reset();
+});
 
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 

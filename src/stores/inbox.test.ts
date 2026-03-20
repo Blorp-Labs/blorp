@@ -1,13 +1,10 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, test, expect, afterEach } from "vitest";
 import { useInboxStore } from "./inbox";
 import _ from "lodash";
 
 afterEach(() => {
-  const { result } = renderHook(() => useInboxStore());
-  act(() => {
-    result.current.reset();
-  });
+  useInboxStore.getState().reset();
 });
 
 describe("persisted state snapshot", () => {
