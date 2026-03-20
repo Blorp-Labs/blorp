@@ -285,7 +285,7 @@ function FeedSwiper({
   }, [registerRefresher]);
 
   const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
+    () => feeds.data?.pages.flatMap((p) => p),
     [feeds.data?.pages],
   );
 
@@ -354,16 +354,13 @@ function FeedSwiper({
               onActiveIndexChange={(swiper) => setIndex(swiper.activeIndex)}
             >
               {grouped.map((group) => (
-                <SwiperSlide
-                  key={group[0]?.apId}
-                  className="flex! flex-col gap-3"
-                >
-                  {group.map((feed) => (
+                <SwiperSlide key={group[0]} className="flex! flex-col gap-3">
+                  {group.map((apId) => (
                     <div
-                      key={feed.apId}
+                      key={apId}
                       className="border rounded-lg h-[88px] hover:bg-accent/75"
                     >
-                      <FeedCard {...feed} expand className="p-2" />
+                      <FeedCard apId={apId} expand className="p-2" />
                     </div>
                   ))}
                 </SwiperSlide>

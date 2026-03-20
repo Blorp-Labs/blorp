@@ -25,7 +25,7 @@ export default function ApResolver() {
   const { data } = resolveQuery;
 
   useEffect(() => {
-    const { post, community, user } = data ?? {};
+    const { post, community, user, feed } = data ?? {};
 
     if (post) {
       replace(
@@ -46,8 +46,14 @@ export default function ApResolver() {
           userId: encodeApId(user.apId),
         }),
       );
+    } else if (feed) {
+      replace(
+        resolveRoute("/home/f/:apId", {
+          apId: encodeApId(feed.apId),
+        }),
+      );
     }
-  }, [replace, data?.post, data?.community, data?.user]);
+  }, [replace, data?.post, data?.community, data?.user, data?.feed]);
 
   return <Page notFound />;
 }

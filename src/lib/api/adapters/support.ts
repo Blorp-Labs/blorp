@@ -18,7 +18,9 @@ export function supportsFeeds({ software, softwareVersion }: Software) {
   return (
     software === "piefed" ||
     (software === "lemmy" && softwareVersion?.startsWith("nightly")) ||
-    (softwareVersion && compareVersions(softwareVersion, "1.0.0"))
+    (software === "lemmy" &&
+      softwareVersion &&
+      compareVersions(softwareVersion, "1.0.0"))
   );
 }
 

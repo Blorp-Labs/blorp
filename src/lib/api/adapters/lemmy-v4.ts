@@ -13,8 +13,41 @@ import {
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import { exhaustiveList, isErrorLike } from "../../utils";
+import { exhaustiveList, isErrorLike, ErrorLike } from "../../utils";
 import { getIdFromLocalApId } from "./lemmy-common";
+
+function translateError(err: ErrorLike): Error {
+  const name = err.name.trim().toLowerCase();
+  const msg = err.message.trim().toLowerCase();
+
+  // Not found errors
+  if (
+    name === "couldnt_find_object" ||
+    name === "couldnt_find_community" ||
+    msg === "federation disabled" ||
+    name === "resolve_object_failed"
+  ) {
+    return Errors.OBJECT_NOT_FOUND;
+  }
+
+  // MFA errors
+  if (
+    name.includes("missing_totp_token") ||
+    msg.includes("missing_totp_token")
+  ) {
+    return Errors.MFA_REQUIRED;
+  }
+
+  return err;
+}
+
+async function translateErrors<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    throw isErrorLike(err) ? translateError(err) : err;
+  }
+}
 
 function remapEnum<Value extends PropertyKey, Output>(
   value: Value,
@@ -521,24 +554,37 @@ function convertCommentReport(
 
 function convertFeed(
   multiCommunity: lemmyV4.MultiCommunityView,
-): Schemas.MultiCommunityFeed {
-  const { multi } = multiCommunity;
+  communities?: lemmyV4.CommunityView[],
+): { feed: Schemas.MultiCommunityFeed; owner: Schemas.Person | null } {
+  const { multi, owner } = multiCommunity;
+  const ownerPerson = owner ? convertPerson({ person: owner }) : null;
   return {
-    id: multi.id,
-    apId: multi.ap_id,
-    createdAt: multi.published_at,
-    name: multi.name,
-    slug: createSlug({
-      name: multi.name,
+    feed: {
+      id: multi.id,
       apId: multi.ap_id,
-    }).slug,
-    icon: null,
-    description: multi.summary ?? null,
-    banner: null,
-    subscriberCount: multi.subscribers,
-    communityCount: multi.communities,
-    nsfw: false,
-    communitySlugs: [],
+      createdAt: multi.published_at,
+      name: multi.name,
+      slug: createSlug({
+        name: multi.name,
+        apId: multi.ap_id,
+      }).slug,
+      icon: null,
+      description: multi.summary ?? null,
+      banner: null,
+      subscriberCount: multi.subscribers,
+      communityCount: multi.communities,
+      nsfw: false,
+      communitySlugs:
+        communities?.map(
+          (c) =>
+            createSlug({ apId: c.community.ap_id, name: c.community.name })
+              .slug,
+        ) ?? [],
+      ownerId: ownerPerson?.id ?? null,
+      ownerApId: ownerPerson?.apId ?? null,
+      ownerSlug: ownerPerson?.slug ?? null,
+    },
+    owner: ownerPerson,
   };
 }
 
@@ -679,11 +725,9 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
   async getPost(form: { apId: string }, options: RequestOptions) {
     const { post_id } = await this.resolveObjectId(form.apId);
-    console.log("HERE", post_id);
     if (_.isNil(post_id)) {
       throw new Error("post not found");
     }
-    console.log("THERE", post_id);
     const fullPost = await this.client.getPost(
       {
         id: post_id,
@@ -993,10 +1037,31 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         : undefined,
     });
     return {
-      multiCommunityFeeds: items.map(convertFeed),
-      communities: [],
+      multiCommunityFeeds: items.map((item) => convertFeed(item).feed),
       nextCursor: null,
     };
+  }
+
+  async getMultiCommunityFeed(form: Forms.GetMultiCommunityFeed) {
+    return translateErrors(async () => {
+      const { multi_community_id } = await this.resolveObjectId(form.apId);
+      if (!multi_community_id) {
+        throw Errors.OBJECT_NOT_FOUND;
+      }
+      const { multi_community_view, communities } =
+        await this.client.getMultiCommunity({ id: multi_community_id });
+      const { feed, owner } = convertFeed(multi_community_view, communities);
+      return {
+        feed,
+        communities: communities.map((c) => convertCommunity(c)),
+        owner,
+      };
+    });
+  }
+
+  async followFeed() {
+    throw Errors.NOT_IMPLEMENTED;
+    return {} as any;
   }
 
   async followCommunity(form: Forms.FollowCommunity) {
@@ -1555,11 +1620,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     const community = resolve?.type_ === "community" ? resolve : undefined;
     const person = resolve?.type_ === "person" ? resolve : undefined;
     const comment = resolve?.type_ === "comment" ? resolve : undefined;
+    const multiCommunity =
+      resolve?.type_ === "multi_community" ? resolve : undefined;
     return resolveObjectResponseSchema.parse({
       post: post ? convertPost(post) : null,
       community: community ? convertCommunity(community) : null,
       user: person ? convertPerson(person) : null,
       comment: comment ? convertComment(comment) : null,
+      feed: multiCommunity ? convertFeed(multiCommunity).feed : null,
     });
   }
 

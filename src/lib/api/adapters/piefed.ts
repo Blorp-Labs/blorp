@@ -23,6 +23,7 @@ import {
   CommunityFlair,
   CommunityView,
   createClient,
+  FeedView,
   GetApiAlphaCommentListSort,
   GetApiAlphaCommunityListSort,
   GetApiAlphaPostListSort,
@@ -791,7 +792,7 @@ export class PieFedApi
         ],
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -837,7 +838,7 @@ export class PieFedApi
         })),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -864,9 +865,39 @@ export class PieFedApi
         communities: communities.map((c) => convertCommunity(c, "partial")),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
+  }
+
+  private convertFeed(feed: FeedView, owner?: Schemas.Person | null) {
+    return {
+      createdAt: feed.published,
+      id: feed.id,
+      apId: feed.actor_id,
+      slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+      name: feed.name,
+      icon: feed.icon ?? null,
+      banner: feed.banner ?? null,
+      nsfw: feed.nsfw,
+      communityCount: feed.communities_count,
+      subscriberCount: feed.subscriptions_count,
+      description: feed.description ?? null,
+      subscribed: feed.subscribed ?? null,
+      // If communities is absent or empty despite a non-zero count, the endpoint
+      // didn't include them (e.g. include_communities=false). Return undefined so
+      // callers can distinguish "not loaded" from "genuinely empty".
+      communitySlugs:
+        feed.communities != null &&
+        (feed.communities.length > 0 || feed.communities_count === 0)
+          ? feed.communities.map(
+              (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+            )
+          : undefined,
+      ownerId: owner?.id ?? null,
+      ownerApId: owner?.apId ?? null,
+      ownerSlug: owner?.slug ?? null,
+    };
   }
 
   async getMultiCommunityFeeds(
@@ -875,44 +906,62 @@ export class PieFedApi
   ) {
     try {
       const { feeds } = await this.client.getApiAlphaFeedList({}, options);
-
-      const communities = feeds.flatMap(({ communities }) =>
-        communities.map((community) =>
-          convertCommunity(
-            {
-              community,
-            },
-            "partial",
-          ),
-        ),
-      );
-
       return {
-        multiCommunityFeeds: feeds.map((feed) => ({
-          createdAt: feed.published,
-          id: feed.id,
-          apId: feed.actor_id,
-          slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
-          name: feed.name,
-          icon: feed.icon ?? null,
-          banner: feed.banner ?? null,
-          nsfw: feed.nsfw,
-          communityCount: feed.communities_count,
-          subscriberCount: feed.subscriptions_count,
-          description: feed.description ?? null,
-          communitySlugs: feed.communities.map(
-            (community) =>
-              createSlug({ apId: community.actor_id, name: community.name })
-                .slug,
-          ),
-        })),
-        communities,
+        multiCommunityFeeds: feeds.map((feed) => this.convertFeed(feed)),
         nextCursor: null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
+  }
+
+  async getMultiCommunityFeed(
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
+  ) {
+    try {
+      const { feed_id } = await this.resolveObjectId(form.apId);
+
+      const feed = await this.client.getApiAlphaFeed({ id: feed_id }, options);
+
+      const communities = (feed.communities ?? []).map((community) =>
+        convertCommunity({ community }, "partial"),
+      );
+
+      // PieFed returns only the owner's local ID — fetch full person details.
+      let owner: Schemas.Person | null = null;
+      if (_.isNumber(feed.user_id)) {
+        try {
+          const { person_view } = await this.client.getApiAlphaUser(
+            { person_id: feed.user_id },
+            options,
+          );
+          owner = convertPerson({ person: person_view.person }, "partial");
+        } catch {
+          // Owner is optional — don't fail the whole request if fetch fails
+        }
+      }
+
+      return {
+        feed: this.convertFeed(feed, owner),
+        communities,
+        owner,
+      };
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async followFeed(
+    form: Forms.FollowFeed,
+  ): Promise<Schemas.MultiCommunityFeed> {
+    const feed = await this.client.postApiAlphaFeedFollow({
+      feed_id: form.feedId,
+      follow: form.follow,
+    });
+    return this.convertFeed(feed);
   }
 
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
@@ -932,7 +981,7 @@ export class PieFedApi
         flairs: community_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -990,7 +1039,7 @@ export class PieFedApi
         flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1002,7 +1051,7 @@ export class PieFedApi
         password: form.password,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1015,7 +1064,7 @@ export class PieFedApi
       });
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1040,7 +1089,7 @@ export class PieFedApi
       });
       return convertPost({ postView: post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1053,7 +1102,7 @@ export class PieFedApi
       });
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1162,7 +1211,7 @@ export class PieFedApi
       const data = await this.client.getApiAlphaComment({ id: form.id });
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1186,7 +1235,7 @@ export class PieFedApi
       });
       return convertComment(data.comment_view);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1201,7 +1250,7 @@ export class PieFedApi
       });
       return convertCommunity(data.community_view, "partial");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1263,7 +1312,7 @@ export class PieFedApi
         nextCursor: hasNextCursor ? String(page + 1) : null,
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1276,7 +1325,7 @@ export class PieFedApi
       });
       return convertPost({ postView: data.post_view });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1386,7 +1435,7 @@ export class PieFedApi
         };
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }
@@ -1812,7 +1861,7 @@ export class PieFedApi
 
   async resolveObject(form: Forms.ResolveObject, options: RequestOptions) {
     try {
-      const { post, community, person, comment } =
+      const { post, community, person, comment, feed } =
         await this.client.getApiAlphaResolveObject({ q: form.q }, options);
 
       return resolveObjectResponseSchema.parse({
@@ -1820,6 +1869,7 @@ export class PieFedApi
         community: community ? convertCommunity(community, "partial") : null,
         user: person ? convertPerson(person, "partial") : null,
         comment: comment ? convertComment(comment) : null,
+        feed: feed ? this.convertFeed(feed) : null,
       });
     } catch (err) {
       console.error(err);
@@ -1879,7 +1929,7 @@ export class PieFedApi
       );
       return { items, nextCursor: hasNextPage ? String(page + 1) : null };
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw err;
     }
   }

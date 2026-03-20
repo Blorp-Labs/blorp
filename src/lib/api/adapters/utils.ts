@@ -65,3 +65,10 @@ export function getCommentMyVote(comment: Schemas.Comment) {
 export function getPostMyVote(post: Schemas.Post) {
   return post.optimisticMyVote ?? post.myVote;
 }
+
+export function getFeedSubscribed(feed: Schemas.MultiCommunityFeed) {
+  return (
+    feed.optimisticSubscribed ??
+    (feed.subscribed ? "Subscribed" : "NotSubscribed")
+  );
+}

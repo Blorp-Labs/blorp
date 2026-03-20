@@ -19,8 +19,6 @@ import { PageTitle } from "../../components/page-title";
 import { Link, useParams } from "@/src/routing/index";
 import { Search } from "../../components/icons";
 import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
-import { Schemas } from "../../lib/api/adapters/api-blueprint";
-import _ from "lodash";
 import { VirtualList } from "../../components/virtual-list";
 import { FeedCard, FEEDS } from "./feed-card";
 import { SortControlBar, SortControlBarContent } from "./sort-bar";
@@ -45,7 +43,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   );
 
   const feedsData = useMemo(
-    () => feeds.data?.pages.flatMap((p) => p.multiCommunityFeeds),
+    () => feeds.data?.pages.flatMap((p) => p),
     [feeds.data?.pages],
   );
 
@@ -99,7 +97,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   }
 
   const vlist = (
-    <VirtualList<string | Schemas.MultiCommunityFeed>
+    <VirtualList<string>
       key={listingType}
       fullscreen
       scrollHost
@@ -114,17 +112,17 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
           );
         }
 
-        if (_.isString(item)) {
+        if (sort === FEEDS) {
           return (
             <ContentGutters className="md:contents">
-              <CommunityCard communitySlug={item} className="mt-1" />
+              <FeedCard apId={item} className="mt-1" expand={false} />
             </ContentGutters>
           );
         }
 
         return (
           <ContentGutters className="md:contents">
-            <FeedCard {...item} className="mt-1" expand={false} />
+            <CommunityCard communitySlug={item} className="mt-1" />
           </ContentGutters>
         );
       }}

@@ -8,7 +8,7 @@ import { privilegedFetch } from "./privileged-fetch";
 import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { isAndroid, isCapacitor, isFirefox, isTauri, isWeb } from "./device";
+import { isAndroid, isCapacitor, isFirefox, isTauri } from "./device";
 import { ActionMenuProps } from "../components/adaptable/action-menu";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
@@ -73,10 +73,38 @@ export function getFileExtension(blob: Blob, url?: string): string {
   return "png";
 }
 
-function getFileName(blob: Blob, url: string) {
+export function normalizeFilename(name: string): string {
+  // Strip scheme (https:// or http://)
+  // Strip query string and fragment by parsing only origin + pathname
+  let normalized: string;
+  try {
+    const parsed = new URL(name);
+    normalized = decodeURIComponent(parsed.host + parsed.pathname);
+  } catch {
+    normalized = name.replace(/^https?:\/\//, "");
+  }
+
+  // Preserve the extension so it survives sanitization intact.
+  // This way normalizeFilename("image.png") === "image.png" as expected.
+  const extMatch = normalized.match(/(\.[a-zA-Z0-9]+)$/);
+  const ext = extMatch?.[1] ?? "";
+  const base = ext ? normalized.slice(0, -ext.length) : normalized;
+
+  const sanitizedBase = base
+    .replace(/[/\s]+/g, "-") // slashes and whitespace → dashes
+    .replace(/[^a-zA-Z0-9\-_]/g, "") // remove remaining unsafe chars
+    .replace(/-+/g, "-") // collapse consecutive dashes
+    .replace(/^-|-$/g, ""); // trim leading/trailing dashes
+
+  return sanitizedBase + ext;
+}
+
+export function getFileName(blob: Blob, url: string) {
   const extension = getFileExtension(blob, url);
-  const fileName = url.replace(/^https:\/\//, "").replaceAll(/\//g, "-");
-  return `${fileName}.${extension}`;
+  // Strip the preserved extension from normalizeFilename and replace it with
+  // the MIME-detected one so the two never disagree.
+  const baseName = normalizeFilename(url).replace(/\.[a-zA-Z0-9]+$/, "");
+  return `${baseName}.${extension}`;
 }
 
 const DEFAULT_HEADERS = {

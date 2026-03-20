@@ -242,6 +242,27 @@ export function getSite(overrides?: Partial<Schemas.Site>): Schemas.Site {
   };
 }
 
+export function getFeed(
+  overrides?: Partial<Schemas.MultiCommunityFeed>,
+): Schemas.MultiCommunityFeed {
+  const id = overrides?.id ?? 1;
+  return {
+    id,
+    apId: `${API_ROOT}/feed/${id}`,
+    slug: `feed-${id}@${HOST}`,
+    name: `Feed ${id}`,
+    createdAt: absoluteTime(),
+    icon: null,
+    banner: null,
+    nsfw: false,
+    communityCount: 3,
+    subscriberCount: 10,
+    description: null,
+    subscribed: false,
+    ...overrides,
+  };
+}
+
 export function getCommunity(
   overrides?: Partial<Schemas.Community>,
 ): Schemas.Community {

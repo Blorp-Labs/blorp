@@ -410,7 +410,7 @@ export function usePostsKey(config?: Forms.GetPosts) {
 }
 
 export function useMostRecentPost(
-  featuredContext: "local" | "community",
+  featuredContext: "local" | "community" | "feed",
   form: Forms.GetPosts,
 ) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -446,6 +446,9 @@ export function useMostRecentPost(
               return !post.featuredLocal;
             case "community":
               return !post.featuredCommunity;
+            case "feed":
+              // Feeds don't have pinned posts, so no filtering needed.
+              return true;
           }
         })?.post.apId ?? null
       );
@@ -627,21 +630,48 @@ export function useListMultiCommunityFeeds(
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
-  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const queryKey = [...queryKeyPrefix, "getMultiCommunityFeeds", form];
   return useThrottledInfiniteQuery({
     queryKey,
     queryFn: async ({ signal }) => {
       const res = await (await api).getMultiCommunityFeeds(form, { signal });
-      cacheFeeds(getCachePrefixer(), res.multiCommunityFeeds);
+      cacheFeeds(
+        getCachePrefixer(),
+        res.multiCommunityFeeds.map((feedView) => ({ feedView })),
+      );
+      return res.multiCommunityFeeds.map((f) => f.apId);
+    },
+    getNextPageParam: () => null,
+    initialPageParam: INIT_PAGE_TOKEN,
+    ...options,
+  });
+}
+
+export function useMultiCommunityFeed(
+  form: Forms.GetMultiCommunityFeed,
+  options?: QueryOverwriteOptions,
+) {
+  const { api, queryKeyPrefix } = useApiClients();
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const cacheFeeds = useMultiCommunityFeedStore((s) => s.cacheFeeds);
+  const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
+  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
+  const queryKey = [...queryKeyPrefix, "getMultiCommunityFeed", form.apId];
+  return useQuery({
+    queryKey,
+    queryFn: async ({ signal }) => {
+      const res = await (await api).getMultiCommunityFeed(form, { signal });
+      cacheFeeds(getCachePrefixer(), [{ feedView: res.feed }]);
       cacheCommunities(
         getCachePrefixer(),
         res.communities.map((communityView) => ({ communityView })),
       );
-      return res;
+      if (res.owner) {
+        cacheProfiles(getCachePrefixer(), [res.owner]);
+      }
+      return res.feed.apId;
     },
-    getNextPageParam: () => null,
-    initialPageParam: INIT_PAGE_TOKEN,
+    enabled: !!form.apId,
     ...options,
   });
 }
@@ -2124,6 +2154,52 @@ export function useFollowCommunity() {
       });
       queryClient.invalidateQueries({
         queryKey: refreshAuthKey,
+      });
+    },
+  });
+}
+
+export function useFollowFeed() {
+  const { api, queryKeyPrefix } = useApiClients();
+
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const patchFeed = useMultiCommunityFeedStore((s) => s.patchFeed);
+
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (form: {
+      feed: Schemas.MultiCommunityFeed;
+      follow: boolean;
+    }) => {
+      return (await api).followFeed({
+        feedId: form.feed.id,
+        follow: form.follow,
+      });
+    },
+    onMutate: (form) => {
+      patchFeed(form.feed.apId, getCachePrefixer(), {
+        optimisticSubscribed: form.follow ? "Pending" : "NotSubscribed",
+      });
+    },
+    onSuccess: (data) => {
+      patchFeed(data.apId, getCachePrefixer(), {
+        ...data,
+        optimisticSubscribed: undefined,
+      });
+    },
+    onError: (_err, form) => {
+      patchFeed(form.feed.apId, getCachePrefixer(), {
+        optimisticSubscribed: undefined,
+      });
+      toast.error("Couldn't follow feed");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeyPrefix, "getMultiCommunityFeeds"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeyPrefix, "getMultiCommunityFeed"],
       });
     },
   });

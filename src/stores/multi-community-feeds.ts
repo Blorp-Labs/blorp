@@ -9,7 +9,9 @@ import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
 
-type Data = Schemas.MultiCommunityFeed;
+type Data = {
+  feedView: Schemas.MultiCommunityFeed;
+};
 
 type CachedFeed = {
   data: Data;
@@ -21,9 +23,8 @@ type FeedStore = {
   patchFeed: (
     id: string,
     prefix: CachePrefixer,
-    feed: Partial<Schemas.MultiCommunityFeed>,
+    patch: Partial<Schemas.MultiCommunityFeed>,
   ) => void;
-  cacheFeed: (prefix: CachePrefixer, data: Data) => void;
   cacheFeeds: (
     prefix: CachePrefixer,
     data: Data[],
@@ -43,47 +44,29 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
       patchFeed: (slug, prefix, patch) => {
         const feeds = get().feeds;
         const cacheKey = prefix(slug);
-        const prevFeedData = feeds[cacheKey]?.data;
-        if (!prevFeedData) {
+        const prevData = feeds[cacheKey]?.data;
+        if (!prevData) {
           console.error(
             "attempted to patch a feed that does not exist in the cache",
           );
           return;
         }
-        const updatedFeedData: Data = {
-          ...prevFeedData,
-          ...patch,
+        const updatedData: Data = {
+          ...prevData,
+          feedView: {
+            ...prevData.feedView,
+            ...patch,
+          },
         };
         set({
           feeds: {
             ...feeds,
             [cacheKey]: {
-              data: updatedFeedData,
+              data: updatedData,
               lastUsed: Date.now(),
             },
           },
         });
-      },
-      cacheFeed: (prefix, view) => {
-        const prev = get();
-        const slug = view.apId;
-        if (slug) {
-          const cacheKey = prefix(slug);
-          const prevFeedData = prev.feeds[cacheKey]?.data;
-          const updatedFeedData: Data = {
-            ...prevFeedData,
-            ...view,
-          };
-          set({
-            feeds: {
-              ...prev.feeds,
-              [cacheKey]: {
-                data: updatedFeedData,
-                lastUsed: Date.now(),
-              },
-            },
-          });
-        }
       },
       cacheFeeds: (prefix, views) => {
         const prev = get().feeds;
@@ -91,13 +74,27 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
         const newFeeds: Record<string, CachedFeed> = {};
 
         for (const view of views) {
-          const slug = view.apId;
+          const slug = view.feedView.apId;
           if (slug) {
             const cacheKey = prefix(slug);
-            const prevFeedData = prev[cacheKey]?.data;
-            const data = {
-              ...prevFeedData,
+            const prevData = prev[cacheKey]?.data;
+            const data: Data = {
+              ...prevData,
               ...view,
+              feedView: {
+                ...prevData?.feedView,
+                ...view.feedView,
+                // Clear any stuck optimistic state when fresh server data arrives
+                optimisticSubscribed: undefined,
+                // communitySlugs is undefined when the API omitted communities
+                // (e.g. list endpoint with include_communities=false). In that
+                // case, preserve whatever was previously cached. An explicit []
+                // means the feed genuinely has no communities and should clear.
+                communitySlugs:
+                  view.feedView.communitySlugs !== undefined
+                    ? view.feedView.communitySlugs
+                    : prevData?.feedView.communitySlugs,
+              },
             };
             newFeeds[cacheKey] = {
               data,
@@ -143,7 +140,7 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
     {
       name: "multi-community-feeds",
       storage: createStorage<FeedStore>(),
-      version: 1,
+      version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
