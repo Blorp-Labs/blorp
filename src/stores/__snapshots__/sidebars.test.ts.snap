@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > sidebar store initial shape 1`] = `
+{
+  "communityAboutExpanded": true,
+  "communityFlairsExpanded": true,
+  "communityModsExpanded": true,
+  "mainSidebarCollapsed": false,
+  "mainSidebarModerating": true,
+  "mainSidebarRecent": true,
+  "mainSidebarSubscribed": true,
+  "personBioExpanded": true,
+  "recentSearchesExpanded": true,
+  "siteAboutExpanded": true,
+  "siteAdminsExpanded": true,
+}
+`;

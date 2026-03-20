@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > auth store shape 1`] = `
+{
+  "accountIndex": 0,
+  "accounts": [
+    {
+      "instance": "https://lemmy.zip",
+      "uuid": "fixed-uuid-value",
+    },
+    {
+      "instance": "https://lemmy.world",
+      "jwt": "test-jwt-token",
+      "uuid": "fixed-uuid-value",
+    },
+  ],
+}
+`;

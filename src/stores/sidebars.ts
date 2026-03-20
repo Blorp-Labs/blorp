@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
+import { isTest } from "../lib/device";
 
 type SidebarStore = {
   // Main (left) sidebar
@@ -35,51 +36,63 @@ type SidebarStore = {
   // Search
   recentSearchesExpanded: boolean;
   setRecentSearchesExpanded: (val: boolean) => void;
+
+  reset: () => void;
+};
+
+const INIT_STATE = {
+  mainSidebarCollapsed: false,
+  mainSidebarRecent: true,
+  mainSidebarSubscribed: true,
+  mainSidebarModerating: true,
+  siteAboutExpanded: true,
+  siteAdminsExpanded: true,
+  communityAboutExpanded: true,
+  communityFlairsExpanded: true,
+  communityModsExpanded: true,
+  personBioExpanded: true,
+  recentSearchesExpanded: true,
 };
 
 export const useSidebarStore = create<SidebarStore>()(
   persist(
     (set) => ({
+      ...INIT_STATE,
       // Main sidebar
-      mainSidebarCollapsed: false,
       setMainSidebarCollapsed: (mainSidebarCollapsed) =>
         set({ mainSidebarCollapsed }),
-      mainSidebarRecent: true,
       setMainSidebarRecent: (mainSidebarRecent) => set({ mainSidebarRecent }),
-      mainSidebarSubscribed: true,
       setMainSidebarSubscribed: (mainSidebarSubscribed) =>
         set({ mainSidebarSubscribed }),
-      mainSidebarModerating: true,
       setMainSidebarModerating: (mainSidebarModerating) =>
         set({ mainSidebarModerating }),
 
       // Site sidebar
-      siteAboutExpanded: true,
       setSiteAboutExpanded: (siteAboutExpanded) => set({ siteAboutExpanded }),
-      siteAdminsExpanded: true,
       setSiteAdminsExpanded: (siteAdminsExpanded: boolean) =>
         set({ siteAdminsExpanded }),
 
       // Community sidebar
-      communityAboutExpanded: true,
       setCommunityAboutExpanded: (communityAboutExpanded: boolean) =>
         set({ communityAboutExpanded }),
-      communityFlairsExpanded: true,
       setCommunityFlairsExpanded: (communityFlairsExpanded: boolean) =>
         set({ communityFlairsExpanded }),
-      communityModsExpanded: true,
       setCommunityModsExpanded: (communityModsExpanded: boolean) =>
         set({ communityModsExpanded }),
 
       // User sidebar
-      personBioExpanded: true,
       setPersonBioExpanded: (personBioExpanded: boolean) =>
         set({ personBioExpanded }),
 
       // Search
-      recentSearchesExpanded: true,
       setRecentSearchesExpanded: (recentSearchesExpanded) =>
         set({ recentSearchesExpanded }),
+
+      reset: () => {
+        if (isTest()) {
+          set(INIT_STATE);
+        }
+      },
     }),
     {
       name: "sidebar",

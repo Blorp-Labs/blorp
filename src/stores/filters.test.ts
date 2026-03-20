@@ -105,3 +105,15 @@ describe("useFiltersStore", () => {
     });
   });
 });
+
+describe("persisted state snapshot", () => {
+  test("filters store initial shape", () => {
+    const { result } = renderHook(() => useFiltersStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
+  });
+});

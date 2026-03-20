@@ -208,6 +208,42 @@ export function getPost(config?: {
   };
 }
 
+export function getComment(
+  overrides?: Partial<Schemas.Comment>,
+): Schemas.Comment {
+  const commentId = overrides?.id ?? 0;
+  const postId = overrides?.postId ?? POST_ID;
+  const creator = getPerson();
+  const community = getCommunity();
+  return {
+    locked: false,
+    createdAt: relativeTime(),
+    id: commentId,
+    apId: `${API_ROOT}/comment/${commentId}`,
+    path: `0.${commentId}`,
+    body: "This is a test comment.",
+    creatorId: creator.id,
+    creatorApId: creator.apId,
+    creatorSlug: creator.slug,
+    isBannedFromCommunity: false,
+    postId,
+    postApId: `${API_ROOT}/post/${postId}`,
+    downvotes: 0,
+    upvotes: 3,
+    myVote: null,
+    communitySlug: community.slug,
+    communityApId: community.apId,
+    removed: false,
+    deleted: false,
+    postTitle: "This is a test post",
+    childCount: 0,
+    saved: false,
+    answer: false,
+    emojiReactions: [],
+    ...overrides,
+  };
+}
+
 export function getSite(overrides?: Partial<Schemas.Site>): Schemas.Site {
   return {
     privateInstance: false,
