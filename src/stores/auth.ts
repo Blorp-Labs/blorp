@@ -34,11 +34,13 @@ const accountSchema = z.union([
     jwt: z.string().optional(),
     site: siteSchema,
     uuid: z.string().optional(),
+    siteUpdatedAt: z.number().optional(),
   }),
   z.object({
     instance: z.string(),
     jwt: z.string().optional(),
     uuid: z.string().optional(),
+    siteUpdatedAt: z.number().optional(),
   }),
 ]);
 
@@ -208,6 +210,9 @@ export const useAuth = create<AuthStore>()(
                 ...a,
                 uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
                 ...patch,
+                ...("site" in patch && patch.site
+                  ? { siteUpdatedAt: Date.now() }
+                  : null),
                 ...(patch.instance
                   ? {
                       instance: normalizeInstance(patch.instance),
@@ -228,6 +233,9 @@ export const useAuth = create<AuthStore>()(
                 ...a,
                 uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
                 ...patch,
+                ...("site" in patch && patch.site
+                  ? { siteUpdatedAt: Date.now() }
+                  : null),
               }
             : a,
         );
@@ -268,16 +276,38 @@ export const useAuth = create<AuthStore>()(
       },
       merge: (persisted, current) => {
         const persistedData = storeSchema.safeParse(persisted).data;
+        if (!persistedData?.accounts) {
+          return { ...current };
+        }
         const currentLoggedIn = current.accounts.filter((a) => !!a.jwt);
+        const currentByUuid = _.keyBy(currentLoggedIn, "uuid");
+        const persistedByUuid = _.keyBy(persistedData.accounts, "uuid");
+        // Preserve the account order from persisted (canonical source of order
+        // for accountIndex). For each account, pick the version with the newer
+        // siteUpdatedAt so that both single-tab (in-memory wins when IndexedDB
+        // lags) and multi-tab (storage wins when another tab updated the site)
+        // cases resolve correctly.
+        const mergedAccounts = persistedData.accounts.map(
+          (persistedAccount) => {
+            if (!persistedAccount.uuid) return persistedAccount;
+            const currentAccount = currentByUuid[persistedAccount.uuid];
+            if (!currentAccount) return persistedAccount;
+            const persistedTime = persistedAccount.siteUpdatedAt ?? 0;
+            const currentTime = currentAccount.siteUpdatedAt ?? 0;
+            return currentTime >= persistedTime
+              ? currentAccount
+              : persistedAccount;
+          },
+        );
+        // Append logged-in accounts not present in persisted (e.g. a login
+        // that raced with a rehydrate before the write reached IndexedDB).
+        const newAccounts = currentLoggedIn.filter(
+          (a) => a.uuid && !persistedByUuid[a.uuid],
+        );
         return {
           ...current,
           ...persistedData,
-          accounts: persistedData?.accounts
-            ? _.uniqBy(
-                [...persistedData.accounts, ...currentLoggedIn],
-                (a) => a.uuid,
-              )
-            : current.accounts,
+          accounts: [...mergedAccounts, ...newAccounts],
         };
       },
     },
