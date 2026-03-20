@@ -10,6 +10,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 import { MouseEventHandler, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { ABOVE_LINK_OVERLAY } from "../config";
+import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
 
 function getDisplayUrl(url: string) {
   try {
@@ -94,17 +95,20 @@ export function getLinkHandler(
 export function PostArticleMiniEmbed({
   url,
   thumbnail,
-  blurNsfw,
+  nsfw,
   className,
 }: {
   url?: string | null;
   thumbnail?: string | null;
-  blurNsfw: boolean;
+  nsfw?: boolean;
   className?: string;
 }) {
   const [imageStatus, setImageStatus] = useState<
     "loading" | "error" | "success"
   >("loading");
+  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
+    nsfw ?? false,
+  );
 
   const showImage = thumbnail && imageStatus !== "error";
 
@@ -132,7 +136,7 @@ export function PostArticleMiniEmbed({
             src={thumbnail}
             className={cn(
               "absolute inset-0 object-cover w-full h-full",
-              blurNsfw && "blur-3xl",
+              blurClassName,
             )}
             onLoad={() => setImageStatus("success")}
             onError={() => {
@@ -140,11 +144,7 @@ export function PostArticleMiniEmbed({
               setImageStatus("error");
             }}
           />
-          {blurNsfw && (
-            <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
-              NSFW
-            </div>
-          )}
+          {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
         </>
       ) : (
         <FaExternalLinkAlt className="text-2xl text-muted-foreground m-auto -translate-y-2" />
@@ -164,15 +164,18 @@ export function PostArticleMiniEmbed({
 export function PostArticleEmbed({
   url,
   thumbnail,
-  blurNsfw,
+  nsfw,
 }: {
   url?: string | null;
   thumbnail?: string | null;
-  blurNsfw: boolean;
+  nsfw?: boolean;
 }) {
   const [imageStatus, setImageStatus] = useState<
     "loading" | "error" | "success"
   >("loading");
+  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
+    nsfw ?? false,
+  );
 
   const showImage = thumbnail && imageStatus !== "error";
 
@@ -196,16 +199,12 @@ export function PostArticleEmbed({
             src={thumbnail}
             className={cn(
               "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
-              blurNsfw && "blur-3xl",
+              blurClassName,
             )}
             onLoad={() => setImageStatus("success")}
             onError={() => setImageStatus("error")}
           />
-          {blurNsfw && (
-            <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
-              NSFW
-            </div>
-          )}
+          {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
 
           {url && (
             <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
