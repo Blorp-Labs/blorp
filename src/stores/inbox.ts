@@ -18,7 +18,7 @@ type InboxStore = {
 };
 
 const INIT_STATE = {
-  inboxType: "all" as Type,
+  inboxType: "all" as const satisfies Type,
 };
 
 export const useInboxStore = create<InboxStore>()(

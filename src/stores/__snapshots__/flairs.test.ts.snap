@@ -14,3 +14,20 @@ exports[`persisted state snapshot > flairs store shape 1`] = `
   },
 }
 `;
+
+exports[`persisted state snapshot > flairs store shape 2`] = `
+{
+  "flairs": {
+    "123_100": {
+      "data": {
+        "apId": "https://blorpblorp.xyz/flair/100",
+        "backgroundColor": null,
+        "color": null,
+        "id": 100,
+        "title": "Test Flair",
+      },
+      "lastUsed": 1704067200000,
+    },
+  },
+}
+`;

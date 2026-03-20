@@ -11,6 +11,7 @@ import {
 import * as api from "@/test-utils/api";
 import { useCommentsStore } from "./comments";
 import { getCachePrefixer } from "./auth";
+import _ from "lodash";
 
 const prefix = getCachePrefixer({ instance: "123" });
 
@@ -39,5 +40,6 @@ describe("persisted state snapshot", () => {
     });
 
     expect(result.current.comments).toMatchSnapshot();
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
   });
 });

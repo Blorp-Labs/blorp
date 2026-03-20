@@ -25,3 +25,31 @@ exports[`persisted state snapshot > feeds store shape 1`] = `
   },
 }
 `;
+
+exports[`persisted state snapshot > feeds store shape 2`] = `
+{
+  "feeds": {
+    "123_https://blorpblorp.xyz/feed/1": {
+      "data": {
+        "feedView": {
+          "apId": "https://blorpblorp.xyz/feed/1",
+          "banner": null,
+          "communityCount": 3,
+          "communitySlugs": undefined,
+          "createdAt": "2025-01-31T03:56:12.085000+00:00",
+          "description": null,
+          "icon": null,
+          "id": 1,
+          "name": "Feed 1",
+          "nsfw": false,
+          "optimisticSubscribed": undefined,
+          "slug": "feed-1@blorpblorp.xyz",
+          "subscribed": false,
+          "subscriberCount": 10,
+        },
+      },
+      "lastUsed": 1704067200000,
+    },
+  },
+}
+`;

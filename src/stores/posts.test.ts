@@ -147,5 +147,6 @@ describe("persisted state snapshot", () => {
     });
 
     expect(result.current.posts).toMatchSnapshot();
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
   });
 });

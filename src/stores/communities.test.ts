@@ -216,5 +216,6 @@ describe("persisted state snapshot", () => {
     });
 
     expect(result.current.communities).toMatchSnapshot();
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
   });
 });

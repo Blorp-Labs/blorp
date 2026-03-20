@@ -12,7 +12,7 @@ type InboxStore = {
 };
 
 const INIT_STATE = {
-  userTags: {} as Record<string, string>,
+  userTags: {} satisfies Record<string, string>,
 };
 
 export const useTagUserStore = create<InboxStore>()(

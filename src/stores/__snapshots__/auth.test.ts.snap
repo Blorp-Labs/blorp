@@ -8,6 +8,11 @@ exports[`persisted state snapshot > auth store shape 1`] = `
       "instance": "https://lemmy.zip",
       "uuid": "fixed-uuid-value",
     },
+    {
+      "instance": "https://lemmy.world",
+      "jwt": "test-jwt-token",
+      "uuid": "fixed-uuid-value",
+    },
   ],
 }
 `;
