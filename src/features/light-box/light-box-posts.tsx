@@ -128,7 +128,7 @@ const Post = memo(
       nsfwHidden: blurImg,
       blurClassName,
       onReveal,
-    } = useBlurNsfwState(postView?.nsfw ?? false);
+    } = useBlurNsfwState(postView?.nsfw ?? false, { apId, detailView: true });
 
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;

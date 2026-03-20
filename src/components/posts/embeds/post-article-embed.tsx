@@ -167,16 +167,21 @@ export function PostArticleEmbed({
   url,
   thumbnail,
   nsfw,
+  apId,
+  detailView,
 }: {
   url?: string | null;
   thumbnail?: string | null;
   nsfw?: boolean;
+  apId?: string;
+  detailView?: boolean;
 }) {
   const [imageStatus, setImageStatus] = useState<
     "loading" | "error" | "success"
   >("loading");
   const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
     nsfw ?? false,
+    { apId, detailView },
   );
 
   const showImage = thumbnail && imageStatus !== "error";

@@ -58,15 +58,20 @@ export function RedGifEmbed({
   thumbnail,
   autoPlay = false,
   nsfw,
+  apId,
+  detailView,
 }: {
   url: string;
   thumbnail?: string | null;
   autoPlay?: boolean;
   nsfw?: boolean;
+  apId?: string;
+  detailView?: boolean;
 }) {
   const [data, setData] = useState<GifData>();
   const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
     nsfw ?? false,
+    { apId, detailView },
   );
 
   useEffect(() => {
