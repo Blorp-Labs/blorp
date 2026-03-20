@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { isTauri } from "@/src/lib/device";
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
 import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
+import { privilegedFetch } from "@/src/lib/privileged-fetch";
 
 type GifData = { src: string; width: number; height: number };
+
+const fetchJson = async (url: string, init?: RequestInit) => {
+  const res = await privilegedFetch(url, init);
+  return JSON.parse(await (await res.blob()).text());
+};
 
 const getRedGifData = async (url: string): Promise<GifData | undefined> => {
   const id = url.split("/").pop();
@@ -16,35 +19,10 @@ const getRedGifData = async (url: string): Promise<GifData | undefined> => {
   const gifUrl = `https://api.redgifs.com/v2/gifs/${id}`;
 
   try {
-    let token: string;
-
-    let gif: any;
-
-    if (isTauri()) {
-      const tokenRes = await tauriFetch(tokenUrl);
-      const tokenData = await tokenRes.json();
-      token = tokenData.token;
-      const gifRes = await tauriFetch(gifUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      gif = (await gifRes.json()).gif;
-    } else if (Capacitor.isNativePlatform()) {
-      const tokenRes = await CapacitorHttp.get({ url: tokenUrl });
-      token = tokenRes.data.token;
-      const gifRes = await CapacitorHttp.get({
-        url: gifUrl,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      gif = gifRes.data.gif;
-    } else {
-      const tokenRes = await fetch(tokenUrl);
-      const tokenData = await tokenRes.json();
-      token = tokenData.token;
-      const gifRes = await fetch(gifUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      gif = (await gifRes.json()).gif;
-    }
+    const { token } = await fetchJson(tokenUrl);
+    const { gif } = await fetchJson(gifUrl, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (!gif?.urls?.hd) return undefined;
     return { src: gif.urls.hd, width: gif.width, height: gif.height };
