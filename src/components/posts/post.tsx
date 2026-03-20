@@ -19,6 +19,7 @@ import {
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
 import { PostLoopsEmbed } from "./embeds/post-loops-embed";
+import { RedGifEmbed } from "./embeds/redgif-embed";
 import { YouTubeVideoEmbed } from "../youtube";
 import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
@@ -539,6 +540,17 @@ function LargePostCard({
         !post.removed &&
         embed.embedUrl && (
           <PostLoopsEmbed
+            url={embed.embedUrl}
+            thumbnail={embed.thumbnail}
+            autoPlay={detailView}
+            blurNsfw={blurImg}
+          />
+        )}
+      {embed?.type === "redgif" &&
+        !post.deleted &&
+        !post.removed &&
+        embed.embedUrl && (
+          <RedGifEmbed
             url={embed.embedUrl}
             thumbnail={embed.thumbnail}
             autoPlay={detailView}
