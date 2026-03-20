@@ -113,51 +113,53 @@ export function PostArticleMiniEmbed({
   const showImage = thumbnail && imageStatus !== "error";
 
   return (
-    <a
-      href={url ?? undefined}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={getLinkHandler(url)}
-      style={{
-        display: !url ? "none" : undefined,
-      }}
+    <div
+      style={{ display: !url ? "none" : undefined }}
       className={cn(
-        "flex flex-col relative overflow-hidden",
+        "relative overflow-hidden",
         !showImage && "bg-secondary",
         className,
       )}
     >
-      {thumbnail && showImage ? (
-        <>
-          {imageStatus === "loading" && (
-            <Skeleton className="absolute inset-0 rounded-b-none" />
-          )}
-          <img
-            src={thumbnail}
-            className={cn(
-              "absolute inset-0 object-cover w-full h-full",
-              blurClassName,
+      <a
+        href={url ?? undefined}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={getLinkHandler(url)}
+        className="absolute inset-0 flex flex-col"
+      >
+        {thumbnail && showImage ? (
+          <>
+            {imageStatus === "loading" && (
+              <Skeleton className="absolute inset-0 rounded-b-none" />
             )}
-            onLoad={() => setImageStatus("success")}
-            onError={() => {
-              console.log("err");
-              setImageStatus("error");
-            }}
-          />
-          {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
-        </>
-      ) : (
-        <FaExternalLinkAlt className="text-2xl text-muted-foreground m-auto -translate-y-2" />
-      )}
-      {url && (
-        <div className="absolute inset-x-1 bottom-1 bg-black/30 text-white rounded-sm px-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
-          <span className="text-xs truncate text-ellipsis flex-1">
-            {getDisplayUrl(url).host}
-          </span>
-          {showImage && <FaExternalLinkAlt className="text-xs scale-80" />}
-        </div>
-      )}
-    </a>
+            <img
+              src={thumbnail}
+              className={cn(
+                "absolute inset-0 object-cover w-full h-full",
+                blurClassName,
+              )}
+              onLoad={() => setImageStatus("success")}
+              onError={() => {
+                console.log("err");
+                setImageStatus("error");
+              }}
+            />
+          </>
+        ) : (
+          <FaExternalLinkAlt className="text-2xl text-muted-foreground m-auto -translate-y-2" />
+        )}
+        {url && (
+          <div className="absolute inset-x-1 bottom-1 bg-black/30 text-white rounded-sm px-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
+            <span className="text-xs truncate text-ellipsis flex-1">
+              {getDisplayUrl(url).host}
+            </span>
+            {showImage && <FaExternalLinkAlt className="text-xs scale-80" />}
+          </div>
+        )}
+      </a>
+      {nsfwHidden && showImage && <ShowNsfwButton onReveal={onReveal} />}
+    </div>
   );
 }
 
@@ -180,54 +182,55 @@ export function PostArticleEmbed({
   const showImage = thumbnail && imageStatus !== "error";
 
   return (
-    <a
-      href={url ?? undefined}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={getLinkHandler(url)}
-      style={{
-        display: !url ? "none" : undefined,
-      }}
-      className={cn("flex flex-col group/article", ABOVE_LINK_OVERLAY)}
+    <div
+      style={{ display: !url ? "none" : undefined }}
+      className={cn("relative", ABOVE_LINK_OVERLAY)}
     >
-      {thumbnail && showImage && (
-        <div className="relative aspect-video overflow-hidden">
-          {imageStatus === "loading" && (
-            <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
-          )}
-          <img
-            src={thumbnail}
-            className={cn(
-              "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
-              blurClassName,
+      <a
+        href={url ?? undefined}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={getLinkHandler(url)}
+        className="flex flex-col group/article"
+      >
+        {thumbnail && showImage && (
+          <div className="relative aspect-video overflow-hidden">
+            {imageStatus === "loading" && (
+              <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
             )}
-            onLoad={() => setImageStatus("success")}
-            onError={() => setImageStatus("error")}
-          />
-          {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
-
-          {url && (
-            <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
-              <span className="truncate text-ellipsis flex-1 group-hover/article:underline">
-                {getDisplayUrl(url).displayUrl}
-              </span>
-              <FaExternalLinkAlt className="text-sm" />
-            </div>
-          )}
-        </div>
-      )}
-      {url && !showImage && (
-        <div
-          className={cn(
-            "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
-          )}
-        >
-          <span className="truncate text-ellipsis group-hover/article:underline">
-            {getDisplayUrl(url).displayUrl}
-          </span>
-          <FaExternalLinkAlt className="text-sm" />
-        </div>
-      )}
-    </a>
+            <img
+              src={thumbnail}
+              className={cn(
+                "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
+                blurClassName,
+              )}
+              onLoad={() => setImageStatus("success")}
+              onError={() => setImageStatus("error")}
+            />
+            {url && (
+              <div className="absolute inset-x-2 bottom-2 bg-black/30 text-white rounded-lg px-3 py-1 backdrop-blur-sm backdrop-invert-25 flex items-center gap-1">
+                <span className="truncate text-ellipsis flex-1 group-hover/article:underline">
+                  {getDisplayUrl(url).displayUrl}
+                </span>
+                <FaExternalLinkAlt className="text-sm" />
+              </div>
+            )}
+          </div>
+        )}
+        {url && !showImage && (
+          <div
+            className={cn(
+              "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
+            )}
+          >
+            <span className="truncate text-ellipsis group-hover/article:underline">
+              {getDisplayUrl(url).displayUrl}
+            </span>
+            <FaExternalLinkAlt className="text-sm" />
+          </div>
+        )}
+      </a>
+      {nsfwHidden && showImage && <ShowNsfwButton onReveal={onReveal} />}
+    </div>
   );
 }
