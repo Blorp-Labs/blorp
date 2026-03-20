@@ -1,5 +1,4 @@
 import { Link } from "@/src/routing/index";
-import { Schemas } from "../../lib/api/adapters/api-blueprint";
 import _ from "lodash";
 import {
   Avatar,
@@ -11,24 +10,23 @@ import { abbriviateNumber } from "../../lib/format";
 import { useLinkContext } from "../../routing/link-context";
 import { removeMd } from "../../components/markdown/remove-md";
 import { encodeApId } from "../../lib/api/utils";
+import { useMultiCommunityFeedFromStore } from "../../stores/multi-community-feeds";
 
 export const FEEDS = "Feeds";
 
 export function FeedCard({
-  icon,
-  name,
-  communityCount,
-  slug,
   apId,
-  description,
   className,
   expand,
-}: Schemas.MultiCommunityFeed & {
+}: {
+  apId: string;
   className?: string;
   expand: boolean;
 }) {
   const ctx = useLinkContext();
-  const host = slug?.split("@")?.[1];
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
+  const host = feed?.slug?.split("@")?.[1];
+
   return (
     <Link
       className={cn("flex flex-col gap-2", className)}
@@ -40,10 +38,10 @@ export function FeedCard({
       <div className="flex flex-row gap-2 items-center flex-shrink-0 max-w-full text-foreground">
         <Avatar className="h-9 w-9">
           <AvatarImage
-            src={icon ?? undefined}
+            src={feed?.icon ?? undefined}
             className="object-cover absolute inset-0"
           />
-          <AvatarFallback>{name.substring(0, 1)}</AvatarFallback>
+          <AvatarFallback>{feed?.name.substring(0, 1)}</AvatarFallback>
         </Avatar>
 
         <div
@@ -52,12 +50,12 @@ export function FeedCard({
           )}
         >
           <span className={cn("text-sm overflow-hidden overflow-ellipsis")}>
-            {name}
+            {feed?.name}
             <span className="text-muted-foreground italic">@{host}</span>
           </span>
-          {_.isNumber(communityCount) && (
+          {_.isNumber(feed?.communityCount) && (
             <span className="text-xs text-muted-foreground">
-              {abbriviateNumber(communityCount)} communities
+              {abbriviateNumber(feed.communityCount)} communities
             </span>
           )}
         </div>
@@ -65,9 +63,9 @@ export function FeedCard({
 
       {expand && (
         <div className="flex flex-row overflow-hidden">
-          {description && (
+          {feed?.description && (
             <p className="line-clamp-2 -mt-1 text-xs text-muted-foreground">
-              {removeMd(description)}
+              {removeMd(feed.description)}
             </p>
           )}
         </div>

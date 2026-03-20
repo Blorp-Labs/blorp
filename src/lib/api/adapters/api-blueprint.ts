@@ -165,7 +165,14 @@ const multiCommunityFeedSchema = z.object({
   communityCount: z.number(),
   subscriberCount: z.number(),
   description: z.string().nullable(),
-  communitySlugs: z.array(z.string()),
+  communitySlugs: z.array(z.string()).optional(),
+  subscribed: z.boolean().nullish(),
+  optimisticSubscribed: z
+    .enum(["Subscribed", "NotSubscribed", "Pending"])
+    .optional(),
+  ownerId: z.number().nullable().optional(),
+  ownerApId: z.string().nullable().optional(),
+  ownerSlug: z.string().nullable().optional(),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -407,6 +414,7 @@ export const resolveObjectResponseSchema = z.object({
       path: true,
     })
     .nullable(),
+  feed: multiCommunityFeedSchema.pick({ apId: true }).nullable(),
 });
 
 export namespace Schemas {
@@ -557,8 +565,17 @@ export namespace Forms {
     type?: "All" | "Local" | "Subscribed";
   };
 
+  export type GetMultiCommunityFeed = {
+    apId: string;
+  };
+
   export type FollowCommunity = {
     communityId: number;
+    follow: boolean;
+  };
+
+  export type FollowFeed = {
+    feedId: number;
     follow: boolean;
   };
 
@@ -856,8 +873,16 @@ export abstract class ApiBlueprint<C> {
     options?: RequestOptions,
   ): Promise<{
     multiCommunityFeeds: Schemas.MultiCommunityFeed[];
-    communities: Schemas.Community[];
     nextCursor: null;
+  }>;
+
+  abstract getMultiCommunityFeed(
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
+  ): Promise<{
+    feed: Schemas.MultiCommunityFeed;
+    communities: Schemas.Community[];
+    owner: Schemas.Person | null;
   }>;
 
   abstract getPerson(
@@ -868,6 +893,10 @@ export abstract class ApiBlueprint<C> {
   abstract followCommunity(
     form: Forms.FollowCommunity,
   ): Promise<Schemas.Community>;
+
+  abstract followFeed(
+    form: Forms.FollowFeed,
+  ): Promise<Schemas.MultiCommunityFeed>;
 
   abstract logout(): Promise<void>;
 

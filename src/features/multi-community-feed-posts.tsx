@@ -8,17 +8,18 @@ import { Fragment, memo, useMemo, useState } from "react";
 import { usePagination } from "../lib/hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
-import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
+import {
+  useAvailableSorts,
+  useMostRecentPost,
+  useMultiCommunityFeed,
+  usePosts,
+  useSoftware,
+} from "../lib/api";
+import { supportsFeeds } from "../lib/api/adapters/support";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
-import { resolveRoute, useParams } from "@/src/routing/index";
+import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
+import { useParams } from "@/src/routing/index";
 import { MultiCommunityFeedBanner } from "../components/multi-community-feeds/multi-community-feed-banner";
 import {
   FeedSidebar,
@@ -28,25 +29,23 @@ import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "../routing/link-context";
-import { Link } from "@/src/routing/index";
 import { useFiltersStore } from "../stores/filters";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
 import { useMedia } from "../lib/hooks";
-import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
+import { FeedPostSortBar } from "../components/multi-community-feeds/feed-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useAuth, useIsCommunityBlocked } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
-import { Search } from "../components/icons";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { SearchBar } from "./search/search-bar";
 import { Separator } from "../components/ui/separator";
 import { decodeApId } from "../lib/api/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
+import { Page } from "../components/page";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -65,7 +64,14 @@ export default function MultiCommunityFeedPosts() {
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
 
-  const feed = useMultiCommunityFeedFromStore(apId);
+  // Fetch the individual feed to hydrate the store with communities and
+  // subscription state. The UI reads from the store directly via
+  // useMultiCommunityFeedFromStore; feedQuery is only used for its error state.
+  const software = useSoftware();
+  const feedQuery = useMultiCommunityFeed({
+    apId,
+  });
+  const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSorts();
@@ -75,7 +81,7 @@ export default function MultiCommunityFeedPosts() {
     multiCommunityFeedId: feed?.id,
   });
 
-  const mostRecentPost = useMostRecentPost("community", {
+  const mostRecentPost = useMostRecentPost("feed", {
     multiCommunityFeedApId: apId,
     multiCommunityFeedId: feed?.id,
   });
@@ -119,7 +125,13 @@ export default function MultiCommunityFeedPosts() {
   };
 
   return (
-    <IonPage>
+    <Page
+      notFound={
+        (software.software !== undefined && !supportsFeeds(software)) ||
+        (feedQuery.isError && !feed)
+      }
+      notFoundApId={apId}
+    >
       <PageTitle>{feed?.slug ?? apId}</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -138,34 +150,7 @@ export default function MultiCommunityFeedPosts() {
               {feed?.slug ?? apId}
             </ToolbarTitle>
           </ToolbarButtons>
-          <SearchBar
-            placeholder={`Search ${apId}`}
-            value={search}
-            onValueChange={setSearch}
-            communitySlug={apId}
-            onSubmit={(newVal) => {
-              router.push(
-                resolveRoute(
-                  `${linkCtx.root}c/:communityName/s`,
-                  {
-                    communityName: apId,
-                  },
-                  `?q=${newVal ?? search}`,
-                ),
-              );
-            }}
-            className="max-md:hidden"
-          />
           <ToolbarButtons side="right">
-            <Link
-              to={`${linkCtx.root}c/:communityName/s`}
-              params={{
-                communityName: apId,
-              }}
-              className="text-2xl contents md:hidden"
-            >
-              <Search className="scale-110 text-muted-foreground" />
-            </Link>
             <div className="md:hidden contents">
               <PostSortButton align="end" className="text-muted-foreground" />
             </div>
@@ -215,7 +200,7 @@ export default function MultiCommunityFeedPosts() {
                 </ContentGutters>
               </Fragment>,
               <Fragment key="community-sort-bar">
-                <CommunityPostSortBar communityName={apId} />
+                <FeedPostSortBar apId={apId} />
                 {!refreshing && (
                   <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
                 )}
@@ -254,6 +239,6 @@ export default function MultiCommunityFeedPosts() {
           <FeedSidebar apId={apId} />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

@@ -2,14 +2,14 @@ import { twMerge } from "tailwind-merge";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { useIsCommunityBlocked } from "@/src/stores/auth";
-import _ from "lodash";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 
 export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
   const [bannerReady, setBannerReady] = useState(false);
   const [iconReady, setIconReady] = useState(false);
 
-  const feed = useMultiCommunityFeedFromStore(apId);
+  const feedData = useMultiCommunityFeedFromStore(apId);
+  const feed = feedData?.feedView;
   const isBlocked = useIsCommunityBlocked(apId);
 
   const banner = feed?.banner ?? undefined;
