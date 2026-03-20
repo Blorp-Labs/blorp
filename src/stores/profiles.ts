@@ -28,7 +28,7 @@ type ProfilesStore = {
 };
 
 const INIT_STATE = {
-  profiles: {} as Record<CacheKey, CachedProfile>,
+  profiles: {} satisfies Record<CacheKey, CachedProfile>,
 };
 
 export const useProfilesStore = create<ProfilesStore>()(

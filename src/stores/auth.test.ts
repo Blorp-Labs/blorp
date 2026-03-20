@@ -166,6 +166,10 @@ describe("persisted state snapshot", () => {
 
     act(() => {
       result.current.reset();
+      result.current.addAccount({
+        instance: "https://lemmy.world",
+        jwt: "test-jwt-token",
+      });
       result.current.setAccountIndex(0);
     });
 

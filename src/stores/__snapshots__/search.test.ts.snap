@@ -1,6 +1,12 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`persisted state snapshot > search store shape 1`] = `
+[
+  "lemmy",
+]
+`;
+
+exports[`persisted state snapshot > search store shape 2`] = `
 {
   "searchHistory": [
     "lemmy",

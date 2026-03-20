@@ -34,7 +34,7 @@ type SortsStore = {
 };
 
 const INIT_STATE = {
-  comments: {} as Record<CommentPath, CachedComment>,
+  comments: {} satisfies Record<CommentPath, CachedComment>,
 };
 
 export const useCommentsStore = create<SortsStore>()(

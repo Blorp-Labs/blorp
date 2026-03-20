@@ -8,7 +8,8 @@ import {
   afterAll,
   vi,
 } from "vitest";
-import { useCreatePostStore } from "./create-post";
+import { useCreatePostStore, postToDraft } from "./create-post";
+import * as api from "@/test-utils/api";
 
 afterEach(() => {
   useCreatePostStore.getState().reset();
@@ -27,14 +28,12 @@ describe("persisted state snapshot", () => {
   });
 
   test("create post store shape", () => {
+    const post = api.getPost({ post: { id: 123 } });
+    const draft = postToDraft(post.post);
     const { result } = renderHook(() => useCreatePostStore());
 
     act(() => {
-      result.current.updateDraft("draft-key", {
-        title: "Test Post",
-        communitySlug: "test@example.com",
-        createdAt: 1704067200000,
-      });
+      result.current.updateDraft("draft-key", draft);
     });
 
     expect(result.current.drafts).toMatchSnapshot();

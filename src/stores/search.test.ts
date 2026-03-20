@@ -4,10 +4,7 @@ import { useSearchStore } from "./search";
 import _ from "lodash";
 
 afterEach(() => {
-  const { result } = renderHook(() => useSearchStore());
-  act(() => {
-    result.current.reset();
-  });
+  useSearchStore.getState().reset();
 });
 
 describe("persisted state snapshot", () => {
@@ -18,6 +15,7 @@ describe("persisted state snapshot", () => {
       result.current.saveSearch("lemmy");
     });
 
+    expect(result.current.searchHistory).toMatchSnapshot();
     expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
   });
 });

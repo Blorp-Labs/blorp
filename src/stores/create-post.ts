@@ -28,7 +28,7 @@ type CreatePostStore = {
 };
 
 const INIT_STATE = {
-  drafts: {} as Record<string, Draft>,
+  drafts: {} satisfies Record<string, Draft>,
 };
 
 export const NEW_DRAFT: Draft = {

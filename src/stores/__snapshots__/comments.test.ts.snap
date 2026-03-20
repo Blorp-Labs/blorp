@@ -33,3 +33,40 @@ exports[`persisted state snapshot > comments store shape 1`] = `
   },
 }
 `;
+
+exports[`persisted state snapshot > comments store shape 2`] = `
+{
+  "comments": {
+    "123_0.456": {
+      "data": {
+        "answer": false,
+        "apId": "https://blorpblorp.xyz/comment/456",
+        "body": "This is a test comment.",
+        "childCount": 0,
+        "communityApId": "https://blorpblorp.xyz/c/0",
+        "communitySlug": "0@blorpblorp.xyz",
+        "createdAt": "2023-12-31T23:00:00.000000+00:00",
+        "creatorApId": "https://blorpblorp.xyz/u/0",
+        "creatorId": 0,
+        "creatorSlug": "0@blorpblorp.xyz",
+        "deleted": false,
+        "downvotes": 0,
+        "emojiReactions": [],
+        "id": 456,
+        "isBannedFromCommunity": false,
+        "locked": false,
+        "myVote": null,
+        "path": "0.456",
+        "postApId": "https://blorpblorp.xyz/post/0",
+        "postId": 0,
+        "postTitle": "This is a test post",
+        "removed": false,
+        "saved": false,
+        "upvotes": 3,
+      },
+      "lastUsed": 1704067200000,
+    },
+  },
+  "optimisticComments": {},
+}
+`;
