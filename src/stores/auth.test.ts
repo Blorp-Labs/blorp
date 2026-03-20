@@ -1,6 +1,5 @@
 import { describe, test, expect, afterEach } from "vitest";
-import { useAuth } from "./auth";
-import _ from "lodash";
+import { useAuth, type Account } from "./auth";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
@@ -156,5 +155,70 @@ describe("useAuthStore", () => {
     expect(result.current.getSelectedAccount()).toMatchObject({
       instance: "https://fakelemmyinstance.com",
     });
+  });
+});
+
+describe("useAuthStore merge", () => {
+  const merge = useAuth.persist.getOptions().merge!;
+
+  function makeAccount(overrides?: Partial<Account>): Account {
+    return {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+      ...overrides,
+    };
+  }
+
+  function makeCurrent(accounts: Account[]) {
+    return { ...useAuth.getState(), accounts, accountIndex: 0 };
+  }
+
+  test("in-memory account wins when siteUpdatedAt is newer (single-tab revert bug)", () => {
+    const account = makeAccount();
+    const persisted = {
+      accounts: [{ ...account, siteUpdatedAt: 50 }],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([{ ...account, siteUpdatedAt: 100 }]);
+    const result = merge(persisted, current);
+    expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
+  });
+
+  test("persisted account wins when siteUpdatedAt is newer (multi-tab sync)", () => {
+    const account = makeAccount();
+    const persisted = {
+      accounts: [{ ...account, siteUpdatedAt: 100 }],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([{ ...account, siteUpdatedAt: 50 }]);
+    const result = merge(persisted, current);
+    expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
+  });
+
+  test("new account from another tab is appended", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+    const persisted = {
+      accounts: [account1, account2],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([account1]);
+    const result = merge(persisted, current);
+    expect(result.accounts).toHaveLength(2);
+    expect(result.accounts.map((a) => a.uuid)).toContain(account2.uuid);
+  });
+
+  test("account order from persisted is preserved", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+    const persisted = {
+      accounts: [account2, account1],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([account1, account2]);
+    const result = merge(persisted, current);
+    expect(result.accounts[0]!.uuid).toBe(account2.uuid);
+    expect(result.accounts[1]!.uuid).toBe(account1.uuid);
   });
 });
