@@ -50,6 +50,7 @@ import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
+import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -308,8 +309,11 @@ function LargePostCard({
 
   const id = useId();
 
+  const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
+
   const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
     post?.nsfw ?? false,
+    { apId, detailView },
   );
 
   if (!post) {
@@ -393,6 +397,7 @@ function LargePostCard({
         }}
         className="gap-2 flex flex-col after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]"
         disable={detailView}
+        onClick={() => revealPost(apId)}
       >
         <span
           className={twMerge(
@@ -435,6 +440,7 @@ function LargePostCard({
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
             className="max-md:-mx-3.5 flex flex-col relative overflow-hidden md:rounded-lg cursor-zoom-in"
+            onClick={() => revealPost(apId)}
           >
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
@@ -486,6 +492,8 @@ function LargePostCard({
           url={showArticle ? embed.embedUrl : undefined}
           thumbnail={showArticle ? embed.thumbnail : null}
           nsfw={post.nsfw ?? undefined}
+          apId={apId}
+          detailView={detailView}
         />
       )}
 
@@ -510,7 +518,12 @@ function LargePostCard({
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
-          <PostVideoEmbed url={embed.embedUrl} nsfw={post.nsfw ?? undefined} />
+          <PostVideoEmbed
+            url={embed.embedUrl}
+            nsfw={post.nsfw ?? undefined}
+            apId={apId}
+            detailView={detailView}
+          />
         )}
       {embed?.type === "loops" &&
         !post.deleted &&
@@ -521,6 +534,8 @@ function LargePostCard({
             thumbnail={embed.thumbnail}
             autoPlay={detailView}
             nsfw={post.nsfw ?? undefined}
+            apId={apId}
+            detailView={detailView}
           />
         )}
       {embed?.type === "redgif" &&
@@ -532,6 +547,8 @@ function LargePostCard({
             thumbnail={embed.thumbnail}
             autoPlay={detailView}
             nsfw={post.nsfw ?? undefined}
+            apId={apId}
+            detailView={detailView}
           />
         )}
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
@@ -584,6 +601,8 @@ export function SmallPostCard({
   className?: string;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
 
   const blurNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
@@ -656,6 +675,7 @@ export function SmallPostCard({
           }}
           searchParams={`?apId=${encodeApId(apId)}`}
           className="relative"
+          onClick={() => revealPost(apId)}
         >
           {!imageLoaded && (
             <Skeleton className="absolute inset-0 md:rounded-md" />
@@ -741,6 +761,7 @@ export function SmallPostCard({
             "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
+          onClick={() => revealPost(apId)}
         >
           <span
             className={cn(

@@ -16,9 +16,22 @@ const NO_BORDER_RADIUS = {
   borderRadius: 0,
 };
 
-export function PostVideoEmbed({ url, nsfw }: { url: string; nsfw?: boolean }) {
+export function PostVideoEmbed({
+  url,
+  nsfw,
+  apId,
+  detailView,
+}: {
+  url: string;
+  nsfw?: boolean;
+  apId?: string;
+  detailView?: boolean;
+}) {
   const media = useMedia();
-  const { nsfwHidden, onReveal } = useBlurNsfwState(nsfw ?? false);
+  const { nsfwHidden, onReveal } = useBlurNsfwState(nsfw ?? false, {
+    apId,
+    detailView,
+  });
   return (
     <div
       className={cn(
