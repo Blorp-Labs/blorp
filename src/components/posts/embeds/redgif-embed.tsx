@@ -4,6 +4,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
+import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
 
 type GifData = { src: string; width: number; height: number };
 
@@ -56,14 +57,17 @@ export function RedGifEmbed({
   url,
   thumbnail,
   autoPlay = false,
-  blurNsfw,
+  nsfw,
 }: {
   url: string;
   thumbnail?: string | null;
   autoPlay?: boolean;
-  blurNsfw: boolean;
+  nsfw?: boolean;
 }) {
   const [data, setData] = useState<GifData>();
+  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
+    nsfw ?? false,
+  );
 
   useEffect(() => {
     getRedGifData(url).then(setData);
@@ -77,23 +81,20 @@ export function RedGifEmbed({
         className="w-full relative md:max-w-sm mx-auto"
         style={{ aspectRatio: aspectRatio ?? "9 / 16" }}
       >
-        {!data && thumbnail && (
+        {(nsfwHidden || !data) && thumbnail && (
           <img
             src={thumbnail}
             className={cn(
               "absolute inset-0 w-full h-full object-cover",
-              blurNsfw && "blur-3xl",
+              blurClassName,
             )}
           />
         )}
-        {data && (
+        {!nsfwHidden && data && (
           <video
             src={data.src}
             controls
-            className={cn(
-              "absolute inset-0 h-full w-full object-cover",
-              blurNsfw && "blur-3xl",
-            )}
+            className="absolute inset-0 h-full w-full object-cover"
             autoPlay={autoPlay}
             playsInline
             poster={thumbnail ?? undefined}
@@ -101,11 +102,7 @@ export function RedGifEmbed({
         )}
       </div>
 
-      {blurNsfw && (
-        <div className="absolute top-1/2 inset-x-0 text-center z-0 font-bold text-xl">
-          NSFW
-        </div>
-      )}
+      {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
     </div>
   );
 }

@@ -49,7 +49,7 @@ import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { NsfwBlurToggle } from "./nsfw-blur-toggle";
+import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -276,9 +276,6 @@ function LargePostCard({
   modApIds?: string[];
   apId: string;
 }) {
-  const blurNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
-
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
   );
@@ -290,8 +287,6 @@ function LargePostCard({
   const [imageStatus, setImageStatus] = useState<
     "loading" | "error" | "success"
   >("loading");
-
-  const [removeBlur, setRemoveBlur] = useState(false);
 
   const linkCtx = useLinkContext();
 
@@ -313,6 +308,10 @@ function LargePostCard({
 
   const id = useId();
 
+  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
+    post?.nsfw ?? false,
+  );
+
   if (!post) {
     return <PostCardSkeleton />;
   }
@@ -333,7 +332,6 @@ function LargePostCard({
     imageStatus !== "error";
   const showArticle =
     embed?.type === "article" && !post?.deleted && !post.removed;
-  const blurImg = post.nsfw && !removeBlur ? blurNsfw : false;
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -446,7 +444,7 @@ function LargePostCard({
               highSrc={embed.fullResThumbnail}
               className={cn(
                 "md:rounded-lg object-cover relative",
-                blurImg && "blur-3xl",
+                blurClassName,
               )}
               onAspectRatio={(thumbnailAspectRatio) => {
                 setImageStatus("success");
@@ -462,9 +460,7 @@ function LargePostCard({
             />
           </Link>
 
-          {blurImg && !removeBlur && (
-            <NsfwBlurToggle onClick={() => setRemoveBlur(true)} />
-          )}
+          {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
 
           {post.altText && (
             <ResponsiveTooltip
@@ -489,7 +485,7 @@ function LargePostCard({
         <PostArticleEmbed
           url={showArticle ? embed.embedUrl : undefined}
           thumbnail={showArticle ? embed.thumbnail : null}
-          blurNsfw={blurImg}
+          nsfw={post.nsfw ?? undefined}
         />
       )}
 
@@ -514,7 +510,7 @@ function LargePostCard({
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
-          <PostVideoEmbed url={embed.embedUrl} blurNsfw={blurImg} />
+          <PostVideoEmbed url={embed.embedUrl} nsfw={post.nsfw ?? undefined} />
         )}
       {embed?.type === "loops" &&
         !post.deleted &&
@@ -524,7 +520,7 @@ function LargePostCard({
             url={embed.embedUrl}
             thumbnail={embed.thumbnail}
             autoPlay={detailView}
-            blurNsfw={blurImg}
+            nsfw={post.nsfw ?? undefined}
           />
         )}
       {embed?.type === "redgif" &&
@@ -535,7 +531,7 @@ function LargePostCard({
             url={embed.embedUrl}
             thumbnail={embed.thumbnail}
             autoPlay={detailView}
-            blurNsfw={blurImg}
+            nsfw={post.nsfw ?? undefined}
           />
         )}
       {embed?.type === "youtube" && !post.deleted && !post.removed && (
@@ -688,7 +684,7 @@ export function SmallPostCard({
         <PostArticleMiniEmbed
           url={embed.embedUrl}
           thumbnail={embed.thumbnail}
-          blurNsfw={blurImg ?? false}
+          nsfw={post.nsfw ?? undefined}
           className="h-32 w-28 md:h-36 md:w-40 md:rounded-md shrink-0"
         />
       )}

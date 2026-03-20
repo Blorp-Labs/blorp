@@ -18,7 +18,7 @@ import {
   useUrlSearchState,
 } from "@/src/lib/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { useAuth } from "@/src/stores/auth";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";
 import {
@@ -48,7 +48,10 @@ import "swiper/css/mousewheel";
 import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
 import { PanzoomProvider, usePanZoom } from "./panzoom";
-import { NsfwBlurToggle } from "@/src/components/posts/nsfw-blur-toggle";
+import {
+  ShowNsfwButton,
+  useBlurNsfwState,
+} from "@/src/components/posts/nsfw-blur-toggle";
 
 const EMPTY_ARR: never[] = [];
 
@@ -120,10 +123,11 @@ const Post = memo(
       (s) => s.posts[getCachePrefixer()(apId)]?.data,
     );
 
-    const [removeBlur, setRemoveBlur] = useState(false);
-    const blurNsfw =
-      useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
-    const blurImg = blurNsfw ? postView?.nsfw && !removeBlur : false;
+    const {
+      nsfwHidden: blurImg,
+      blurClassName,
+      onReveal,
+    } = useBlurNsfwState(postView?.nsfw ?? false);
 
     const embed = postView ? getPostEmbed(postView) : null;
     const img = embed?.thumbnail;
@@ -154,14 +158,12 @@ const Post = memo(
             style={{ top: paddingTop, bottom: paddingBottom }}
             className={cn(
               "absolute inset-x-0 bg-transparent overflow-visible",
-              blurImg && "blur-3xl",
+              blurClassName,
             )}
             imgClassName="object-contain"
             onAspectRatio={(ratio) => setAr(ratio)}
           />
-          {blurImg && !removeBlur && (
-            <NsfwBlurToggle onClick={() => setRemoveBlur(true)} />
-          )}
+          {blurImg && <ShowNsfwButton onReveal={onReveal} />}
         </div>
       </div>
     ) : (
