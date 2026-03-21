@@ -490,6 +490,7 @@ export default function Post() {
             <CommunitySidebar
               communityName={communityName}
               actorId={community?.communityView.apId}
+              postApId={post?.apId}
             />
           )}
         </ContentGutters>

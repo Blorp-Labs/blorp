@@ -371,6 +371,7 @@ function LargePostCard({
         }
         canMod={(myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin}
         isMod={modApIds?.includes(post.creatorApId)}
+        detailView={detailView}
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
@@ -734,6 +735,7 @@ export function SmallPostCard({
           canMod={canMod}
           isMod={modApIds?.includes(post.creatorApId)}
           showActions={media.md}
+          detailView={detailView}
         />
 
         {flairs && flairs.length > 0 && (

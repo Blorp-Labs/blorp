@@ -1,8 +1,14 @@
-import _ from "lodash";
 import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
-import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
+import {
+  useAuth,
+  getAccountActorId,
+  useIsAdmin,
+  useShouldBlurNsfw,
+} from "@/src/stores/auth";
+import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
+import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "@/src/components/communities/utils";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { RelativeTime } from "../relative-time";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
@@ -279,6 +285,7 @@ export function PostByline({
   showActions = true,
   hideImage,
   className,
+  detailView,
 }: {
   post: Schemas.Post;
   pinned: boolean;
@@ -289,6 +296,7 @@ export function PostByline({
   showActions?: boolean;
   hideImage?: boolean;
   className?: string;
+  detailView?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -298,6 +306,10 @@ export function PostByline({
   const creator = useProfileFromStore(post.creatorApId);
   const community = useCommunitiesStore(
     (s) => s.communities[getCachePrefixer()(post.communitySlug)]?.data,
+  );
+  const blurNsfw = useShouldBlurNsfw();
+  const isRevealed = useNsfwRevealedPostsStore(
+    (s) => !!(detailView && s.isRevealed(post.apId)),
   );
 
   const isAdmin = useIsAdmin(post.creatorApId);
@@ -335,7 +347,13 @@ export function PostByline({
         >
           <AvatarImage
             src={community?.communityView.icon ?? undefined}
-            className="object-cover"
+            className={cn(
+              "object-cover",
+              community?.communityView.nsfw &&
+                blurNsfw &&
+                !isRevealed &&
+                COMMUNITY_NSFW_ICON_BLUR_CLASS,
+            )}
           />
           <AvatarFallback>
             {communityName?.substring(0, 1).toUpperCase()}
