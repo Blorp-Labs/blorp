@@ -329,12 +329,6 @@ function LargePostCard({
     return <PostCardSkeleton />;
   }
 
-  let displayUrl = post.url;
-  if (displayUrl) {
-    const parsedUrl = new URL(displayUrl);
-    displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
-  }
-
   const encodedApId = encodeApId(apId);
   const embed = post ? getPostEmbed(post) : null;
 
