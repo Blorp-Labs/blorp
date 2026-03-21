@@ -954,7 +954,7 @@ function PostCardErrorFallback({
           variant={isLoggedIn ? "destructive" : "link"}
           onClick={reportViaCommunity}
         >
-          Report via Blorp
+          Report in App
         </Button>
         <Button size="sm" variant={isLoggedIn ? "link" : "destructive"} asChild>
           <a href={issueUrl} target="_blank" rel="noopener noreferrer">

@@ -98,7 +98,7 @@ function PageErrorFallback({
                   variant={isLoggedIn ? "destructive" : "link"}
                   onClick={reportViaCommunity}
                 >
-                  Report via Blorp
+                  Report in App
                 </Button>
                 <Button
                   size="sm"
