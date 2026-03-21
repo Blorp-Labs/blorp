@@ -299,20 +299,22 @@ export default function SettingsPage() {
               className="gap-4 flex flex-col"
               data-testid="signup-form"
             >
-              <div className="flex flex-col gap-1">
-                <label
-                  className="text-muted-foreground text-sm"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
-                <Input
-                  placeholder="Email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+              {!isPieFed && (
+                <div className="flex flex-col gap-1">
+                  <label
+                    className="text-muted-foreground text-sm"
+                    htmlFor="email"
+                  >
+                    Email
+                  </label>
+                  <Input
+                    placeholder="Email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-muted-foreground text-sm" htmlFor="bio">

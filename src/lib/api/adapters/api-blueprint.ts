@@ -53,7 +53,7 @@ export const postPollSchema = z.object({
       numVotes: z.number(),
     }),
   ),
-  endDate: z.string(),
+  endDate: z.string().nullable(),
   localOnly: z.boolean(),
   mode: z.enum(["single", "multiple"]),
   myVotes: z.array(z.number()).optional(),
@@ -117,7 +117,7 @@ export const postSchema = z.object({
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       count: z.number(),
       url: z.string().optional(),
     }),
@@ -246,7 +246,7 @@ export const commentSchema = z.object({
   optimisticMyEmojiReaction: z.string().nullable().optional(),
   emojiReactions: z.array(
     z.object({
-      token: z.string(),
+      token: z.string().optional(),
       count: z.number(),
       url: z.string().optional(),
     }),
@@ -579,14 +579,25 @@ export namespace Forms {
     follow: boolean;
   };
 
-  export type GetComments = {
-    postApId?: string;
-    parentId?: number;
-    sort?: string;
-    pageCursor?: string;
-    savedOnly?: boolean;
-    maxDepth?: number;
-  };
+  // Due to some PieFed weirdness we have to require
+  // postApId unless we're looking at saved content only
+  export type GetComments =
+    | {
+        postApId: string;
+        parentId?: number;
+        sort?: string;
+        pageCursor?: string;
+        savedOnly?: undefined;
+        maxDepth?: number;
+      }
+    | {
+        postApId?: undefined;
+        parentId?: number;
+        sort?: string;
+        pageCursor?: string;
+        savedOnly: true;
+        maxDepth?: number;
+      };
 
   export type CreateComment = {
     postApId: string;
@@ -623,7 +634,6 @@ export namespace Forms {
 
   export type GetReplies = {
     pageCursor?: string;
-    sort?: string;
     unreadOnly?: boolean;
   };
 
@@ -705,13 +715,13 @@ export namespace Forms {
 
   export type AddCommentReactionEmoji = {
     commentId: number;
-    emoji: string | null;
+    emoji?: string;
     score?: number;
   };
 
   export type AddPostReactionEmoji = {
     postId: number;
-    emoji: string | null;
+    emoji?: string;
     score?: number;
   };
 
@@ -749,7 +759,6 @@ export namespace Forms {
     avatar?: File;
     banner?: File;
     bio?: string;
-    displayName?: string;
     email?: string;
     showNsfw?: boolean;
     blurNsfw?: boolean;
