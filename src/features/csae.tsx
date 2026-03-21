@@ -60,7 +60,7 @@ export default function CSAE() {
       <PageTitle>Privacy</PageTitle>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Privacy Policy</IonTitle>
+          <IonTitle>CSAE</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>

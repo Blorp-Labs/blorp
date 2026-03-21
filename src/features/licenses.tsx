@@ -19,7 +19,7 @@ export default function Privacy() {
   const isActiveRoute = router.routeInfo.pathname.startsWith("/licenses");
   return (
     <Page>
-      <PageTitle>Privacy</PageTitle>
+      <PageTitle>Licenses</PageTitle>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Open Source Licenses</IonTitle>

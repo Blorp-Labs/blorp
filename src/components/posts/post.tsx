@@ -954,7 +954,7 @@ function PostCardErrorFallback({
       >
         {apId}
       </a>
-      <div className={cn("flex flex-wrap justify-end gap-2")}>
+      <div className="flex flex-wrap justify-end gap-2">
         <Button
           size="sm"
           variant={isLoggedIn ? "destructive" : "link"}
