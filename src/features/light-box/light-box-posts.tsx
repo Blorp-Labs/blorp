@@ -2,7 +2,7 @@ import { ContentGutters } from "@/src/components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommunity, usePost, usePosts } from "@/src/lib/api";
 import _ from "lodash";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useUpdateRecentCommunity } from "@/src/stores/recent-communities";
 import { BiHelpCircle } from "react-icons/bi";
 import { UserDropdown } from "@/src/components/nav";
@@ -49,6 +49,7 @@ import { Swiper as SwiperType } from "swiper/types";
 import { ProgressiveImage } from "@/src/components/progressive-image";
 import { PanzoomProvider, usePanZoom } from "./panzoom";
 import { NsfwBlurToggle } from "@/src/components/posts/nsfw-blur-toggle";
+import { Page } from "@/src/components/page";
 
 const EMPTY_ARR: never[] = [];
 
@@ -390,7 +391,7 @@ export default function LightBoxPosts() {
   const ref = useRef<SwiperRef>(null);
 
   return (
-    <IonPage className="dark">
+    <Page className="dark">
       <PageTitle>Image</PageTitle>
       <IonHeader>
         <IonToolbar
@@ -522,6 +523,6 @@ export default function LightBoxPosts() {
           </ContentGutters>
         </div>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

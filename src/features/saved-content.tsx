@@ -17,7 +17,7 @@ import { MarkdownRenderer } from "../components/markdown/renderer";
 import { useLinkContext } from "../routing/link-context";
 import { encodeApId } from "../lib/api/utils";
 import { Link } from "@/src/routing/index";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { useAuth } from "../stores/auth";
@@ -27,6 +27,7 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { StickyFilterBar } from "../components/sticky-filter-bar";
+import { Page } from "../components/page";
 
 function NothingSavedMessage() {
   return (
@@ -130,7 +131,7 @@ export default function SavedContent() {
   }, [type, postsPagination.flatData, commentsPagination.flatData]);
 
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Saved</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -220,6 +221,6 @@ export default function SavedContent() {
           />
         </PostReportProvider>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

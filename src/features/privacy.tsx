@@ -1,13 +1,8 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "../components/markdown/renderer";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
+import { Page } from "../components/page";
 
 const POLICY = `
 **Updated:** April 19, 2025
@@ -63,7 +58,7 @@ We may update this Privacy Policy from time to time. Any changes will be posted 
 
 export default function Privacy() {
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Privacy</PageTitle>
       <IonHeader>
         <IonToolbar>
@@ -75,6 +70,6 @@ export default function Privacy() {
           <MarkdownRenderer markdown={POLICY} className="flex-1 py-8" />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

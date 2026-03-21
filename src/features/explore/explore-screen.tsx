@@ -19,7 +19,6 @@ import { useIsActiveRoute, useMedia } from "../../lib/hooks";
 import {
   IonContent,
   IonHeader,
-  IonPage,
   IonRefresher,
   IonRefresherContent,
   IonToolbar,
@@ -53,6 +52,7 @@ import { FeedCard, FEEDS } from "./feed-card";
 import { ExpandedCommunities } from "./explore-expanded-section-screen";
 import { SortControlBarContent } from "./sort-bar";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";
+import { Page } from "@/src/components/page";
 
 function SortControlBar({ className }: { className?: string }) {
   return (
@@ -423,7 +423,7 @@ export default function Communities() {
   }, []);
 
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Communities</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -500,6 +500,6 @@ export default function Communities() {
           </ContentGutters>
         )}
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

@@ -16,7 +16,7 @@ import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { SearchType } from "lemmy-v3";
 import { Link, useParams } from "@/src/routing/index";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { UserDropdown } from "@/src/components/nav";
 import {
@@ -52,6 +52,7 @@ import {
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
+import { Page } from "@/src/components/page";
 
 const EMPTY_ARR: never[] = [];
 
@@ -305,7 +306,7 @@ export default function SearchFeed({
         : apiData;
 
   return (
-    <IonPage>
+    <Page>
       <PageTitle>
         {communityName ? `Search ${communityName}` : "Search"}
       </PageTitle>
@@ -508,6 +509,6 @@ export default function SearchFeed({
           )}
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

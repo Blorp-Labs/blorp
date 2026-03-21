@@ -1,5 +1,5 @@
 import { useModlog } from "../lib/api";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
@@ -10,6 +10,7 @@ import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ContentGutters } from "../components/gutters";
 import { useAuth } from "../stores/auth";
+import { Page } from "../components/page";
 
 export default function SiteModlog() {
   const instance = useAuth((s) => s.getSelectedAccount().instance);
@@ -31,7 +32,7 @@ export default function SiteModlog() {
   });
 
   return (
-    <IonPage>
+    <Page>
       <IonHeader>
         <IonToolbar>
           <ToolbarButtons side="left">
@@ -72,6 +73,6 @@ export default function SiteModlog() {
           )}
         />
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

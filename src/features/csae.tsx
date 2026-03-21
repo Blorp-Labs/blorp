@@ -1,13 +1,8 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "../components/markdown/renderer";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
+import { Page } from "../components/page";
 
 const POLICY = `
 # Child Sexual Abuse & Exploitation (CSAE) Policy
@@ -61,7 +56,7 @@ I maintain a strict zero‑tolerance stance toward any form of child sexual abus
 
 export default function CSAE() {
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Privacy</PageTitle>
       <IonHeader>
         <IonToolbar>
@@ -73,6 +68,6 @@ export default function CSAE() {
           <MarkdownRenderer markdown={POLICY} className="flex-1 py-8" />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

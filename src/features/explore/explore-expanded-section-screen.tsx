@@ -12,7 +12,7 @@ import { useMemo } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
 import { useMedia } from "../../lib/hooks";
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../../components/nav";
 import { CommunityFilter } from "../../components/lemmy-sort";
 import { PageTitle } from "../../components/page-title";
@@ -22,6 +22,7 @@ import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
 import { VirtualList } from "../../components/virtual-list";
 import { FeedCard, FEEDS } from "./feed-card";
 import { SortControlBar, SortControlBarContent } from "./sort-bar";
+import { Page } from "@/src/components/page";
 
 const NO_ITEMS = "NO_ITEMS";
 
@@ -163,7 +164,7 @@ export default function ExploreExpandedSectionScreen() {
   const { sort } = useParams("/communities/sort/:sort");
   const media = useMedia();
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Communities</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -189,6 +190,6 @@ export default function ExploreExpandedSectionScreen() {
       <IonContent fullscreen={media.maxMd} scrollY={false}>
         <ExpandedCommunities sort={sort} />
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }
