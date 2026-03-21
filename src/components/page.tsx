@@ -20,10 +20,11 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
-import { env } from "@/src/env";
-import pkgJson from "@/package.json";
-
-const BLORP_COMMUNITY = "blorp@lemmy.zip";
+import {
+  BLORP_COMMUNITY,
+  buildErrorReport,
+  buildIssueUrl,
+} from "@/src/lib/error-reporting";
 
 function PageErrorFallback({
   error,
@@ -41,29 +42,14 @@ function PageErrorFallback({
   const instance = useAuth(
     (s) => parseAccountInfo(s.getSelectedAccount()).instance,
   );
-  const err = error instanceof Error ? error : undefined;
-  const errorMessage = err?.message ?? String(error);
-  const stack = err?.stack ?? "";
   const host = window.location.host;
 
-  const body = [
-    `**Host:** ${host}`,
-    `**Path:** ${pathname}`,
-    `**User Instance:** ${instance}`,
-    `**App Version:** ${pkgJson.version}`,
-    `**Commit:** ${env.REACT_APP_COMMIT_SHA}`,
-    `**Error:** ${errorMessage}`,
-    `**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
-  ].join("\n\n");
+  const body = buildErrorReport(
+    { Host: host, Path: pathname, "User Instance": instance },
+    error,
+  );
 
-  const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
-    {
-      labels: "bug",
-      template: "bug_report.md",
-      title: "[Crash] Page rendering error",
-      body,
-    },
-  )}`;
+  const issueUrl = buildIssueUrl("[Crash] Page rendering error", body);
 
   const reportViaCommunity = () => {
     const draftId = uuid();

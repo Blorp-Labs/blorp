@@ -6,7 +6,7 @@ import { Page } from "../components/page";
 export default function Support() {
   return (
     <Page>
-      <PageTitle>Privacy</PageTitle>
+      <PageTitle>Support</PageTitle>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Support</IonTitle>
