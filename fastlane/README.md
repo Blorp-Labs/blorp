@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 One-time local setup: create certs and profiles in the Match repo
 
+### ios restore_signing
+
+```sh
+[bundle exec] fastlane ios restore_signing
+```
+
+Restore automatic signing for local Xcode builds (run after :beta)
+
 ### ios beta
 
 ```sh

@@ -18,6 +18,22 @@ platform :ios do
     )
   end
 
+  desc "Restore automatic signing for local Xcode builds (run after :beta)"
+  lane :restore_signing do
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "ios/App/App.xcodeproj",
+      targets: ["App"],
+      profile_name: ""
+    )
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "ios/App/App.xcodeproj",
+      targets: ["WidgetsExtension"],
+      profile_name: ""
+    )
+  end
+
   desc "Build and upload to TestFlight"
   lane :beta do
     setup_ci
