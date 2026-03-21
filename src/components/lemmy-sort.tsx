@@ -405,6 +405,7 @@ export function MobileFilterButton({
 }) {
   const setPostSort = useFiltersStore((s) => s.setPostSort);
   const { postSorts, postSort } = useAvailableSorts();
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
   const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
@@ -428,13 +429,17 @@ export function MobileFilterButton({
         ) as SubAction<string>[])
       : [];
 
+    const cardStyleLabel =
+      POST_CARD_STYLE_OPTIONS.find((o) => o.value === postCardStyle)?.label ??
+      postCardStyle;
+
     return [
       {
-        text: "Post sort",
+        text: `Post sort (${humanizeText(postSort)})`,
         actions: sortSubActions,
       },
       {
-        text: "Display posts as",
+        text: `Display posts as (${cardStyleLabel})`,
         actions: POST_CARD_STYLE_OPTIONS.map(({ label, value }) => ({
           text: label,
           value,
@@ -442,7 +447,7 @@ export function MobileFilterButton({
         })),
       },
     ];
-  }, [postSorts, setPostSort, setPostCardStyle]);
+  }, [postSorts, setPostSort, postSort, postCardStyle, setPostCardStyle]);
 
   return (
     <ActionMenu
