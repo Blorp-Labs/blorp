@@ -11,7 +11,7 @@ import { MouseEventHandler, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { ABOVE_LINK_OVERLAY } from "../config";
 
-function getDisplayUrl(url: string) {
+export function getDisplayUrl(url: string) {
   try {
     let displayUrl = url;
     let host = url;

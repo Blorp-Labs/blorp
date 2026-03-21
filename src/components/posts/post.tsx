@@ -24,7 +24,6 @@ import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
-import _ from "lodash";
 import {
   getAccountSite,
   useAmIAdmin,
@@ -315,12 +314,6 @@ function LargePostCard({
 
   if (!post) {
     return <PostCardSkeleton />;
-  }
-
-  let displayUrl = post.url;
-  if (displayUrl) {
-    const parsedUrl = new URL(displayUrl);
-    displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
   }
 
   const encodedApId = encodeApId(apId);
