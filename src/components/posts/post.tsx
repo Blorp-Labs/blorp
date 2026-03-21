@@ -24,7 +24,6 @@ import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
-import _ from "lodash";
 import {
   getAccountSite,
   useAmIAdmin,
@@ -50,6 +49,7 @@ import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
+import { ErrorBoundary } from "react-error-boundary";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -891,7 +891,48 @@ function ExtraSmallPostCard({
   );
 }
 
-export function PostCard(props: PostProps) {
+function PostCardErrorFallback({
+  apId,
+  error,
+}: {
+  apId: string;
+  error: Error;
+}) {
+  const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
+    {
+      labels: "bug",
+      template: "bug_report.md",
+      title: "Post rendering error",
+      body: `**Post apId:** ${apId}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``,
+    },
+  )}`;
+
+  return (
+    <div className="m-2 rounded border border-red-500 bg-red-50 p-4 text-sm dark:bg-red-950/20">
+      <p className="font-medium text-red-700 dark:text-red-400">
+        Failed to render post
+      </p>
+      <a
+        href={apId}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block break-all text-red-600 underline dark:text-red-300"
+      >
+        {apId}
+      </a>
+      <a
+        href={issueUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-red-600 underline dark:text-red-300"
+      >
+        Report bug
+      </a>
+    </div>
+  );
+}
+
+function PostCardInner(props: PostProps) {
   const showNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
 
@@ -978,4 +1019,17 @@ export function PostCard(props: PostProps) {
         />
       );
   }
+}
+
+export function PostCard(props: PostProps) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <PostCardErrorFallback apId={props.apId} error={error as Error} />
+      )}
+      resetKeys={[props.apId]}
+    >
+      <PostCardInner {...props} />
+    </ErrorBoundary>
+  );
 }
