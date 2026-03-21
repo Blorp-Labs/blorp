@@ -2,11 +2,19 @@ import { useFiltersStore } from "@/src/stores/filters";
 import { useMemo } from "react";
 import { useAuth } from "../stores/auth";
 import { useMedia } from "../lib/hooks";
-import { ActionMenu, ActionMenuProps } from "./adaptable/action-menu";
+import {
+  ActionMenu,
+  ActionMenuProps,
+  SubAction,
+} from "./adaptable/action-menu";
 import _ from "lodash";
 
 import { TbArrowsDownUp, TbMessageCircle } from "react-icons/tb";
-import { LuClock3, LuCalendarArrowUp } from "react-icons/lu";
+import {
+  LuClock3,
+  LuCalendarArrowUp,
+  LuSlidersHorizontal,
+} from "react-icons/lu";
 import {
   FaPersonRunning,
   FaArrowTrendUp,
@@ -383,6 +391,77 @@ export function PostCardStyleButton({
             <HiOutlineRectangleStack />
           </div>
         )
+      }
+    />
+  );
+}
+
+export function MobileFilterButton({
+  align = "end",
+  className,
+}: {
+  align?: "start" | "end";
+  className?: string;
+}) {
+  const setPostSort = useFiltersStore((s) => s.setPostSort);
+  const { postSorts, postSort } = useAvailableSorts();
+  const postCardStyle = useSettingsStore((s) => s.postCardStyle);
+  const setPostCardStyle = useSettingsStore((s) => s.setPostCardStyle);
+
+  const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
+    const sortSubActions: SubAction<string>[] = postSorts
+      ? (groupByFirstWord(postSorts).map((item) =>
+          _.isString(item)
+            ? {
+                text: humanizeText(item),
+                value: item,
+                onClick: () => setPostSort(item),
+              }
+            : {
+                text: humanizeText(item[0]),
+                value: item[0],
+                actions: item[1].map((subItem) => ({
+                  text: humanizeText(subItem || "Posts"),
+                  value: item[0] + subItem,
+                  onClick: () => setPostSort(item[0] + subItem),
+                })),
+              },
+        ) as SubAction<string>[])
+      : [];
+
+    const cardStyleLabel =
+      POST_CARD_STYLE_OPTIONS.find((o) => o.value === postCardStyle)?.label ??
+      postCardStyle;
+
+    return [
+      {
+        text: `Post sort (${humanizeText(postSort)})`,
+        actions: sortSubActions,
+      },
+      {
+        text: `Display posts as (${cardStyleLabel})`,
+        actions: POST_CARD_STYLE_OPTIONS.map(({ label, value }) => ({
+          text: label,
+          value,
+          onClick: () => setPostCardStyle(value),
+        })),
+      },
+    ];
+  }, [postSorts, setPostSort, postSort, postCardStyle, setPostCardStyle]);
+
+  return (
+    <ActionMenu
+      header="Filter"
+      align={align}
+      actions={actions}
+      selectedValue={postSort}
+      trigger={
+        <div
+          className={cn("text-2xl text-muted-foreground", className)}
+          aria-label="Filter"
+        >
+          <LuSlidersHorizontal />
+        </div>
       }
     />
   );

@@ -18,7 +18,7 @@ import {
 } from "@ionic/react";
 import { VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
-import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
+import { HomeFilter, MobileFilterButton } from "../components/lemmy-sort";
 import { useIsActiveRoute, useMedia } from "../lib/hooks";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
@@ -265,7 +265,7 @@ export default function HomePosts() {
               <Search className="scale-110" />
             </Link>
             <div className="md:hidden contents">
-              <PostSortButton align="end" />
+              <MobileFilterButton align="end" />
             </div>
             <UserDropdown />
           </ToolbarButtons>

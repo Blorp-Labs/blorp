@@ -131,16 +131,25 @@ export function ActionMenu<V extends string>({
 
     const btns: NonNullable<
       React.ComponentProps<typeof IonActionSheet>["buttons"]
-    > = currentSub.actions.map((a, index) => ({
-      text: a.text,
-      data: index,
-      cssClass: "actions" in a ? "detail" : undefined,
-      role: a.danger
-        ? "destructive"
-        : _.isString(a.value) && a.value === selectedValue
-          ? "selected"
-          : undefined,
-    }));
+    > = currentSub.actions.map((a, index) => {
+      const isDirectlySelected =
+        _.isString(a.value) && a.value === selectedValue;
+      const hasSelectedChild =
+        "actions" in a &&
+        a.actions.some(
+          (sa) => _.isString(sa.value) && sa.value === selectedValue,
+        );
+      return {
+        text: a.text,
+        data: index,
+        cssClass: "actions" in a ? "detail" : undefined,
+        role: a.danger
+          ? "destructive"
+          : isDirectlySelected || hasSelectedChild
+            ? "selected"
+            : undefined,
+      };
+    });
 
     if (showCancel) {
       btns.push({ text: "Cancel", role: "cancel" });
@@ -182,7 +191,13 @@ export function ActionMenu<V extends string>({
                       {a.actions.map((sa, saIndex) =>
                         "actions" in sa ? (
                           <DropdownMenuSub key={sa.text + saIndex}>
-                            <DropdownMenuSubTrigger>
+                            <DropdownMenuSubTrigger
+                              className={cn(
+                                sa.actions.some(
+                                  (leaf) => leaf.value === selectedValue,
+                                ) && "font-bold",
+                              )}
+                            >
                               {sa.text}
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
@@ -209,9 +224,7 @@ export function ActionMenu<V extends string>({
                             key={sa.text + saIndex}
                             onClick={sa.onClick}
                             className={cn(
-                              _.isString(a.value) &&
-                                sa.value === selectedValue &&
-                                "font-bold",
+                              sa.value === selectedValue && "font-bold",
                               sa.danger && "text-destructive!",
                             )}
                           >
