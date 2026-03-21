@@ -24,7 +24,6 @@ import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
-import _ from "lodash";
 import {
   getAccountSite,
   useAmIAdmin,
@@ -207,15 +206,20 @@ export function StickyPostHeader({
   const postView = usePostsStore(
     (s) => s.posts[getCachePrefixer()(apId)]?.data,
   );
+  const linkCtx = useLinkContext();
 
   if (!postView) {
     return null;
   }
+
+  const embed = getPostEmbed(postView);
+  const showThumbnail = postView.thumbnailUrl && embed.type !== "article";
+
   return (
     <div
       className={cn(
         "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
-        postView.thumbnailUrl && "max-md:pr-0",
+        showThumbnail && "max-md:pr-0",
       )}
     >
       <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden select-text">
@@ -225,11 +229,18 @@ export function StickyPostHeader({
             ? "removed"
             : postView.title}
       </div>
-      {postView.thumbnailUrl && (
-        <img
-          src={postView.thumbnailUrl}
-          className="w-[58px] aspect-square object-cover"
-        />
+      {showThumbnail && (
+        <Link
+          to={`${linkCtx.root}c/:communityName/lightbox`}
+          params={{ communityName: postView.communitySlug }}
+          searchParams={`?apId=${encodeApId(apId)}`}
+          className="cursor-zoom-in"
+        >
+          <img
+            src={postView.thumbnailUrl ?? undefined}
+            className="w-[58px] aspect-square object-cover"
+          />
+        </Link>
       )}
     </div>
   );
