@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Separator } from "@/src/components/ui/separator";
@@ -144,21 +143,27 @@ function InstanceAdmins({ asPage }: { asPage?: boolean }) {
   );
 }
 
-export function LocalSererSidebar() {
+function LocalSererSidebarInner() {
   const linkCtx = useLinkContext();
 
   return (
+    <SidebarContent>
+      <InstanceSidebar />
+      <InstanceAdmins />
+      <Separator />
+      <div className="p-3">
+        <Link to={`${linkCtx.root}modlog`} className="text-brand text-sm">
+          Modlog
+        </Link>
+      </div>
+    </SidebarContent>
+  );
+}
+
+export function LocalSererSidebar() {
+  return (
     <Sidebar>
-      <SidebarContent>
-        <InstanceSidebar />
-        <InstanceAdmins />
-        <Separator />
-        <div className="p-3">
-          <Link to={`${linkCtx.root}modlog`} className="text-brand text-sm">
-            Modlog
-          </Link>
-        </div>
-      </SidebarContent>
+      <LocalSererSidebarInner />
     </Sidebar>
   );
 }
