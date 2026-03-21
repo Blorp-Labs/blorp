@@ -24,7 +24,6 @@ import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
-import _ from "lodash";
 import {
   getAccountSite,
   useAmIAdmin,
@@ -50,6 +49,7 @@ import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
+import { ErrorBoundary } from "react-error-boundary";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -891,7 +891,15 @@ function ExtraSmallPostCard({
   );
 }
 
-export function PostCard(props: PostProps) {
+function PostCardErrorFallback() {
+  return (
+    <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
+      Failed to load post
+    </div>
+  );
+}
+
+function PostCardInner(props: PostProps) {
   const showNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
 
@@ -978,4 +986,15 @@ export function PostCard(props: PostProps) {
         />
       );
   }
+}
+
+export function PostCard(props: PostProps) {
+  return (
+    <ErrorBoundary
+      fallback={<PostCardErrorFallback />}
+      resetKeys={[props.apId]}
+    >
+      <PostCardInner {...props} />
+    </ErrorBoundary>
+  );
 }

@@ -15,6 +15,39 @@ import { ToolbarBackButton } from "./toolbar/toolbar-back-button";
 import { usePathname } from "../routing/hooks";
 import { STACK_ROOT_PATHS } from "../routing/routes";
 import { NotFoundPageContent } from "../features/not-found";
+import { ErrorBoundary } from "react-error-boundary";
+
+function PageErrorFallback({
+  resetErrorBoundary,
+}: {
+  resetErrorBoundary: () => void;
+}) {
+  const pathname = usePathname();
+  const isRoot = STACK_ROOT_PATHS.includes(pathname);
+  return (
+    <>
+      <IonHeader>
+        <IonToolbar data-tauri-drag-region>
+          <ToolbarButtons side="left">
+            {isRoot ? <MenuButton /> : <ToolbarBackButton />}
+            <ToolbarTitle numRightIcons={1}>Something went wrong</ToolbarTitle>
+          </ToolbarButtons>
+          <ToolbarButtons side="right">
+            <UserDropdown />
+          </ToolbarButtons>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <ContentGutters>
+          <div className="flex-1 py-8 flex flex-col gap-4 items-start">
+            <p>An unexpected error occurred on this page.</p>
+            <Button onClick={resetErrorBoundary}>Try again</Button>
+          </div>
+        </ContentGutters>
+      </IonContent>
+    </>
+  );
+}
 
 function LoginRequiredPageContent() {
   const requireAuth = useRequireAuth();
@@ -74,7 +107,9 @@ export function Page({
           communitySlug={notFoundCommunitySlug}
         />
       ) : (
-        children
+        <ErrorBoundary FallbackComponent={PageErrorFallback}>
+          {children}
+        </ErrorBoundary>
       )}
     </DefaultIonPage>
   );
