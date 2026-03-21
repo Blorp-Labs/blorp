@@ -26,6 +26,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import {
   getAccountSite,
+  parseAccountInfo,
   useAmIAdmin,
   useAuth,
   useIsInstanceBlocked,
@@ -910,8 +911,18 @@ function PostCardErrorFallback({
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const instance = useAuth(
+    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
+  );
 
-  const body = `**Post apId:** ${apId}\n**Version:** ${pkgJson.version}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\`\``;
+  const body = [
+    `**Post apId:** ${apId}`,
+    `**User Instance:** ${instance}`,
+    `**App Version:** ${pkgJson.version}`,
+    `**Commit:** ${env.REACT_APP_COMMIT_SHA}`,
+    `**Error:** ${error.message}`,
+    `**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``,
+  ].join("\n\n");
 
   const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
     {

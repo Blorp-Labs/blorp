@@ -1,4 +1,4 @@
-import { useAuth } from "@/src/stores/auth";
+import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import {
   IonPage as DefaultIonPage,
   IonContent,
@@ -37,17 +37,30 @@ function PageErrorFallback({
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
 
+  const instance = useAuth(
+    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
+  );
   const err = error instanceof Error ? error : undefined;
   const errorMessage = err?.message ?? String(error);
   const stack = err?.stack ?? "";
   const host = window.location.host;
+
+  const body = [
+    `**Host:** ${host}`,
+    `**Path:** ${pathname}`,
+    `**User Instance:** ${instance}`,
+    `**App Version:** ${pkgJson.version}`,
+    `**Commit:** ${env.REACT_APP_COMMIT_SHA}`,
+    `**Error:** ${errorMessage}`,
+    `**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+  ].join("\n\n");
 
   const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
     {
       labels: "bug",
       template: "bug_report.md",
       title: "[Crash] Page rendering error",
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Version:** ${pkgJson.version}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body,
     },
   )}`;
 
@@ -57,7 +70,7 @@ function PageErrorFallback({
       type: "text",
       communitySlug: BLORP_COMMUNITY,
       title: `[Crash] Page rendering error`,
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Version:** ${pkgJson.version}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body,
     });
     router.push(resolveRoute("/create_post", `?id=${draftId}`));
   };
