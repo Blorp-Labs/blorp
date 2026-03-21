@@ -211,11 +211,15 @@ export function StickyPostHeader({
   if (!postView) {
     return null;
   }
+
+  const embed = getPostEmbed(postView);
+  const showThumbnail = postView.thumbnailUrl && embed.type !== "article";
+
   return (
     <div
       className={cn(
         "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
-        postView.thumbnailUrl && "max-md:pr-0",
+        showThumbnail && "max-md:pr-0",
       )}
     >
       <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden select-text">
@@ -225,7 +229,7 @@ export function StickyPostHeader({
             ? "removed"
             : postView.title}
       </div>
-      {postView.thumbnailUrl && (
+      {showThumbnail && (
         <Link
           to={`${linkCtx.root}c/:communityName/lightbox`}
           params={{ communityName: postView.communitySlug }}
@@ -233,7 +237,7 @@ export function StickyPostHeader({
           className="cursor-zoom-in"
         >
           <img
-            src={postView.thumbnailUrl}
+            src={postView.thumbnailUrl ?? undefined}
             className="w-[58px] aspect-square object-cover"
           />
         </Link>
