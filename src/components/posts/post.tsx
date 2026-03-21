@@ -24,7 +24,6 @@ import { PostVideoEmbed } from "./embeds/post-video-embed";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
-import _ from "lodash";
 import {
   getAccountSite,
   useAmIAdmin,
@@ -207,6 +206,7 @@ export function StickyPostHeader({
   const postView = usePostsStore(
     (s) => s.posts[getCachePrefixer()(apId)]?.data,
   );
+  const linkCtx = useLinkContext();
 
   if (!postView) {
     return null;
@@ -226,10 +226,17 @@ export function StickyPostHeader({
             : postView.title}
       </div>
       {postView.thumbnailUrl && (
-        <img
-          src={postView.thumbnailUrl}
-          className="w-[58px] aspect-square object-cover"
-        />
+        <Link
+          to={`${linkCtx.root}c/:communityName/lightbox`}
+          params={{ communityName: postView.communitySlug }}
+          searchParams={`?apId=${encodeApId(apId)}`}
+          className="cursor-zoom-in"
+        >
+          <img
+            src={postView.thumbnailUrl}
+            className="w-[58px] aspect-square object-cover"
+          />
+        </Link>
       )}
     </div>
   );
