@@ -1,4 +1,10 @@
-import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonToolbar,
+  useIonRouter,
+} from "@ionic/react";
 import { ContentGutters } from "../components/gutters";
 import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
@@ -17,7 +23,6 @@ import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { useRequireAuth } from "../components/auth-context";
 import { apIdFromCommunitySlug } from "../lib/api/adapters/utils";
 import { env } from "../env";
-import { Page } from "../components/page";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {
@@ -304,9 +309,9 @@ export function NotFound({
   communitySlug?: string;
 }) {
   return (
-    <Page>
+    <IonPage>
       <NotFoundPageContent apId={apId} communitySlug={communitySlug} />
-    </Page>
+    </IonPage>
   );
 }
 

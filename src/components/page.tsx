@@ -168,18 +168,18 @@ export function Page({
   const needsLogin = requireLogin && !isLoggedIn;
   return (
     <DefaultIonPage ref={ref} {...props}>
-      {needsLogin ? (
-        <LoginRequiredPageContent />
-      ) : notFound ? (
-        <NotFoundPageContent
-          apId={notFoundApId}
-          communitySlug={notFoundCommunitySlug}
-        />
-      ) : (
-        <ErrorBoundary FallbackComponent={PageErrorFallback}>
-          {children}
-        </ErrorBoundary>
-      )}
+      <ErrorBoundary FallbackComponent={PageErrorFallback}>
+        {needsLogin ? (
+          <LoginRequiredPageContent />
+        ) : notFound ? (
+          <NotFoundPageContent
+            apId={notFoundApId}
+            communitySlug={notFoundCommunitySlug}
+          />
+        ) : (
+          children
+        )}
+      </ErrorBoundary>
     </DefaultIonPage>
   );
 }
