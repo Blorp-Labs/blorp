@@ -20,6 +20,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
+import { env } from "@/src/env";
 
 const BLORP_COMMUNITY = "blorp@lemmy.zip";
 
@@ -45,7 +46,7 @@ function PageErrorFallback({
       labels: "bug",
       template: "bug_report.md",
       title: "[Crash] Page rendering error",
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
     },
   )}`;
 
@@ -55,7 +56,7 @@ function PageErrorFallback({
       type: "text",
       communitySlug: BLORP_COMMUNITY,
       title: `[Crash] Page rendering error`,
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
     });
     router.push(resolveRoute("/create_post", `?id=${draftId}`));
   };

@@ -55,6 +55,7 @@ import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
 import { Button } from "../ui/button";
+import { env } from "@/src/env";
 
 const BLORP_COMMUNITY = "blorp@lemmy.zip";
 
@@ -908,7 +909,7 @@ function PostCardErrorFallback({
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
 
-  const body = `**Post apId:** ${apId}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``;
+  const body = `**Post apId:** ${apId}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``;
 
   const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
     {
