@@ -12,7 +12,7 @@ import {
 import z from "zod";
 import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
-import { exhaustiveList, isNotNil } from "../../utils";
+import { isNotNil } from "../../utils";
 import { parseOgData } from "../../html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 import {
@@ -38,12 +38,11 @@ import {
   PrivateMessageView,
 } from "@blorp-labs/piefed-api-client";
 
-const POST_SORTS = exhaustiveList<GetApiAlphaPostListSort>()([
+const POST_SORTS = [
   "Active",
   "Hot",
   "New",
   "Old",
-  "Top",
   "TopAll",
   "TopHour",
   "TopSixHour",
@@ -56,37 +55,28 @@ const POST_SORTS = exhaustiveList<GetApiAlphaPostListSort>()([
   "TopNineMonths",
   "TopYear",
   "Scaled",
-]);
+] as const satisfies GetApiAlphaPostListSort[];
 
 const postSortSchema = z.custom<(typeof POST_SORTS)[number]>((sort) => {
   return _.isString(sort) && POST_SORTS.includes(sort as any);
 });
 
-const COMMENT_SORTS = exhaustiveList<GetApiAlphaCommentListSort>()([
+const COMMENT_SORTS = [
   "Hot",
   "Top",
-  "TopAll",
   "New",
   "Old",
-  "Controversial",
-]);
+] as const satisfies GetApiAlphaCommentListSort[];
 
 const commentSortSchema = z.custom<(typeof COMMENT_SORTS)[number]>((sort) => {
   return _.isString(sort) && COMMENT_SORTS.includes(sort as any);
 });
 
-const COMMUNITY_SORTS = exhaustiveList<GetApiAlphaCommunityListSort>()([
-  "Active",
+const COMMUNITY_SORTS = [
   "Hot",
-  "New",
-  "Old",
-  "Top",
   "TopAll",
-  "TopSubscribers",
-  "TopPosts",
-  "NewFederated",
-  "OldFederated",
-]);
+  "New",
+] as const satisfies GetApiAlphaCommunityListSort[];
 
 const communitySortSchema = z.custom<(typeof COMMUNITY_SORTS)[number]>(
   (sort) => {
