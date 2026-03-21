@@ -18,12 +18,25 @@ import { NotFoundPageContent } from "../features/not-found";
 import { ErrorBoundary } from "react-error-boundary";
 
 function PageErrorFallback({
+  error,
   resetErrorBoundary,
 }: {
+  error: unknown;
   resetErrorBoundary: () => void;
 }) {
   const pathname = usePathname();
   const isRoot = STACK_ROOT_PATHS.includes(pathname);
+
+  const err = error instanceof Error ? error : undefined;
+  const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
+    {
+      labels: "bug",
+      template: "bug_report.md",
+      title: "Page rendering error",
+      body: `**Host:** ${window.location.host}\n**Path:** ${pathname}\n\n**Error:** ${err?.message ?? String(error)}\n\n**Stack:**\n\`\`\`\n${err?.stack ?? ""}\n\`\`\``,
+    },
+  )}`;
+
   return (
     <>
       <IonHeader>
@@ -41,7 +54,14 @@ function PageErrorFallback({
         <ContentGutters>
           <div className="flex-1 py-8 flex flex-col gap-4 items-start">
             <p>An unexpected error occurred on this page.</p>
-            <Button onClick={resetErrorBoundary}>Try again</Button>
+            <div className="flex gap-3">
+              <Button onClick={resetErrorBoundary}>Try again</Button>
+              <Button variant="outline" asChild>
+                <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+                  Report bug
+                </a>
+              </Button>
+            </div>
           </div>
         </ContentGutters>
       </IonContent>
