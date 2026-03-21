@@ -52,6 +52,7 @@ import {
 import { SimpleSelect } from "@/src/components/ui/simple-select";
 import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
 import { Page } from "@/src/components/page";
+import { env } from "@/src/env";
 
 const version =
   _.isObject(pkgJson) && "version" in pkgJson ? pkgJson.version : undefined;
@@ -603,7 +604,13 @@ export default function SettingsPage() {
 
             <div className="flex flex-col items-center pt-6">
               <Logo />
-              <span className="text-muted-foreground">v{version}</span>
+              <span className="text-muted-foreground">
+                v
+                {_.compact([
+                  version,
+                  env.REACT_APP_COMMIT_SHA.substring(0, 7),
+                ]).join("-")}
+              </span>
             </div>
           </div>
         </ContentGutters>

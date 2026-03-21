@@ -83,7 +83,7 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
   //server: {},
   clientPrefix: "REACT_APP_",
   client: {
-    REACT_APP_COMMIT_SHA: z.string().default("unknown"),
+    REACT_APP_COMMIT_SHA: z.string().default(""),
     REACT_APP_NAME: z.string().min(1),
     REACT_APP_DEFAULT_INSTANCE: z
       .string()
