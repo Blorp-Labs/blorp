@@ -56,6 +56,7 @@ import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
 import { Button } from "../ui/button";
 import { env } from "@/src/env";
+import pkgJson from "@/package.json";
 
 const BLORP_COMMUNITY = "blorp@lemmy.zip";
 
@@ -908,8 +909,9 @@ function PostCardErrorFallback({
 }) {
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
-  const body = `**Post apId:** ${apId}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``;
+  const body = `**Post apId:** ${apId}\n**Version:** ${pkgJson.version}\n**Commit:** ${env.REACT_APP_COMMIT_SHA}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\`\``;
 
   const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
     {
@@ -932,7 +934,7 @@ function PostCardErrorFallback({
   };
 
   return (
-    <div className="border-b p-4 text-sm flex flex-col gap-2">
+    <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">
       <p className="font-medium text-destructive">Failed to render post</p>
       <a
         href={apId}
@@ -942,11 +944,15 @@ function PostCardErrorFallback({
       >
         {apId}
       </a>
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={reportViaCommunity}>
+      <div className={cn("flex flex-wrap justify-end gap-2")}>
+        <Button
+          size="sm"
+          variant={isLoggedIn ? "destructive" : "link"}
+          onClick={reportViaCommunity}
+        >
           Report via Blorp
         </Button>
-        <Button size="sm" variant="link" asChild>
+        <Button size="sm" variant={isLoggedIn ? "link" : "destructive"} asChild>
           <a href={issueUrl} target="_blank" rel="noopener noreferrer">
             Report on GitHub
           </a>
