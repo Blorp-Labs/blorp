@@ -221,7 +221,7 @@ export default function User() {
               <SmallScreenSidebar key="small-screen-sidebar" person={person} />,
               <StickyFilterBar
                 key="header-type-select"
-                innerClassName="h-auto pb-2"
+                innerClassName="max-md:h-auto max-md:pb-2"
               >
                 <ToggleGroup
                   type="single"

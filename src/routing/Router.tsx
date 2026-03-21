@@ -13,7 +13,6 @@ import {
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { Route, Redirect } from "@/src/routing/index";
-import _ from "lodash";
 import { useMedia } from "@/src/lib/hooks/index";
 import { useNotificationCount, usePrivateMessagesCount } from "@/src/lib/api";
 import { lazy } from "react";
@@ -538,7 +537,7 @@ function Tabs() {
                     <IonLabel>{t.label}</IonLabel>
                     {((t.id === "inbox" && !!inboxCount) ||
                       (t.id === "messages" && !!messageCount)) && (
-                      <IonBadge className="aspect-square bg-brand"> </IonBadge>
+                      <IonBadge className="size-3 bg-brand p-0"> </IonBadge>
                     )}
                   </IonTabButton>
                 );

@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > filters store initial shape 1`] = `
+{
+  "commentSort": "Hot",
+  "communitiesListingType": "ModeratorView",
+  "communitySort": "TopAll",
+  "listingType": "All",
+  "postSort": "Active",
+}
+`;

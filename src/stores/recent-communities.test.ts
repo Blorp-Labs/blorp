@@ -60,3 +60,17 @@ describe("useRecentCommunitiesStore", () => {
     );
   });
 });
+
+describe("persisted state snapshot", () => {
+  test("recent communities store shape", () => {
+    const community = api.getCommunity({ id: 1 });
+    const { result } = renderHook(() => useRecentCommunitiesStore());
+
+    act(() => {
+      result.current.update(community);
+    });
+
+    expect(result.current.recentlyVisited).toMatchSnapshot();
+    expect(_.omitBy(result.current, _.isFunction)).toMatchSnapshot();
+  });
+});

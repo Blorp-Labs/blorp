@@ -5,6 +5,7 @@ import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CacheKey, CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { isTest } from "../lib/device";
 
 type CachedProfile = {
   data: Schemas.Person;
@@ -23,12 +24,17 @@ type ProfilesStore = {
     data: Schemas.Person[],
   ) => Record<string, CachedProfile>;
   cleanup: () => void;
+  reset: () => void;
+};
+
+const INIT_STATE = {
+  profiles: {} satisfies Record<CacheKey, CachedProfile>,
 };
 
 export const useProfilesStore = create<ProfilesStore>()(
   persist(
     (set, get) => ({
-      profiles: {},
+      ...INIT_STATE,
       patchProfile: (apId, prefix, patch) => {
         const profiles = get().profiles;
         const cacheKey = prefix(apId);
@@ -99,6 +105,11 @@ export const useProfilesStore = create<ProfilesStore>()(
         }
 
         set({ profiles });
+      },
+      reset: () => {
+        if (isTest()) {
+          set(INIT_STATE);
+        }
       },
     }),
     {

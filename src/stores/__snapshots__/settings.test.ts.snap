@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`persisted state snapshot > settings store initial shape 1`] = `
+{
+  "collapseRemovedComments": true,
+  "collapseThresholdSetting": -10,
+  "darkMode": "system",
+  "disableHaptics": false,
+  "filterKeywords": [],
+  "hideBotPosts": false,
+  "hideRead": false,
+  "hideThresholdSetting": "account",
+  "leftHandedMode": false,
+  "nsfwPreviouslyEnabled": false,
+  "paginationMode": "infinite",
+  "postCardStyle": "large",
+  "reduceMotion": false,
+  "shareLinkType": null,
+  "showMarkdown": false,
+  "voteDisplaySetting": "account",
+}
+`;

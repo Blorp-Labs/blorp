@@ -6,6 +6,7 @@ import _ from "lodash";
 import dayjs from "dayjs";
 import { Forms, Schemas } from "../lib/api/adapters/api-blueprint";
 import { isNotNil } from "../lib/utils";
+import { isTest } from "../lib/device";
 import { useMemo } from "react";
 
 export type CommunityPartial = Pick<
@@ -23,6 +24,11 @@ type CreatePostStore = {
   updateDraft: (key: string, patch: Partial<Draft>) => void;
   deleteDraft: (key: string) => any;
   cleanup: () => void;
+  reset: () => void;
+};
+
+const INIT_STATE = {
+  drafts: {} satisfies Record<string, Draft>,
 };
 
 export const NEW_DRAFT: Draft = {
@@ -155,7 +161,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
 export const useCreatePostStore = create<CreatePostStore>()(
   persist(
     (set) => ({
-      drafts: {},
+      ...INIT_STATE,
       updateDraft: (key, patch) => {
         set((prev) => {
           const drafts = { ...prev.drafts };
@@ -205,6 +211,11 @@ export const useCreatePostStore = create<CreatePostStore>()(
             drafts,
           };
         });
+      },
+      reset: () => {
+        if (isTest()) {
+          set(INIT_STATE);
+        }
       },
     }),
     {

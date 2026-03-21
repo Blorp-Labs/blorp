@@ -7,6 +7,7 @@ import { CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
+import { isTest } from "../lib/device";
 
 type CachedComment = {
   data: Schemas.Comment;
@@ -29,11 +30,17 @@ type SortsStore = {
   ) => Record<CommentPath, CachedComment>;
   markCommentForRemoval: (path: string, prefix: CachePrefixer) => void;
   cleanup: () => void;
+  reset: () => void;
 };
+
+const INIT_STATE = {
+  comments: {} satisfies Record<CommentPath, CachedComment>,
+};
+
 export const useCommentsStore = create<SortsStore>()(
   persist(
     (set, get) => ({
-      comments: {},
+      ...INIT_STATE,
       optimisticComments: {},
       patchComment: (path, prefix, patchFn) => {
         const prev = get().comments;
@@ -114,6 +121,11 @@ export const useCommentsStore = create<SortsStore>()(
         }
 
         set({ comments });
+      },
+      reset: () => {
+        if (isTest()) {
+          set(INIT_STATE);
+        }
       },
     }),
     {
