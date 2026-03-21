@@ -147,16 +147,18 @@ function LocalSererSidebarInner() {
   const linkCtx = useLinkContext();
 
   return (
-    <SidebarContent>
-      <InstanceSidebar />
-      <InstanceAdmins />
-      <Separator />
-      <div className="p-3">
-        <Link to={`${linkCtx.root}modlog`} className="text-brand text-sm">
-          Modlog
-        </Link>
-      </div>
-    </SidebarContent>
+    <>
+      <SidebarContent>
+        <InstanceSidebar />
+        <InstanceAdmins />
+        <Separator />
+        <div className="p-3">
+          <Link to={`${linkCtx.root}modlog`} className="text-brand text-sm">
+            Modlog
+          </Link>
+        </div>
+      </SidebarContent>
+    </>
   );
 }
 

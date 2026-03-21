@@ -106,66 +106,69 @@ function PersonSidebarInner({ person }: { person?: Schemas.Person }) {
   const isBlocked = useIsPersonBlocked(person?.apId);
 
   return (
-    <SidebarContent>
-      <div className="p-4 flex flex-col gap-3">
-        <div className="flex flex-row items-start justify-between flex-1">
-          <Avatar className="h-13 w-13">
-            <AvatarImage
-              src={person?.avatar ?? undefined}
-              className="object-cover"
-            />
-            <AvatarFallback className="text-xl">
-              {person?.slug?.substring(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+    <>
+      <SidebarContent>
+        <div className="p-4 flex flex-col gap-3">
+          <div className="flex flex-row items-start justify-between flex-1">
+            <Avatar className="h-13 w-13">
+              <AvatarImage
+                src={person?.avatar ?? undefined}
+                className="object-cover"
+              />
+              <AvatarFallback className="text-xl">
+                {person?.slug?.substring(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-          <PersonActionMenu person={person} />
-        </div>
+            <PersonActionMenu person={person} />
+          </div>
 
-        <span className="flex items-center text-ellipsis overflow-hidden">
-          <b>{name}</b>
-          {tag ? (
-            <Badge size="sm" variant="brand-secondary" className="ml-2">
-              {tag}
-            </Badge>
-          ) : (
-            <i className="text-muted-foreground">@{host}</i>
-          )}
-        </span>
-
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <LuCakeSlice />
-          <span>
-            Created <DateTime date={person ? dayjs(person.createdAt) : null} />
+          <span className="flex items-center text-ellipsis overflow-hidden">
+            <b>{name}</b>
+            {tag ? (
+              <Badge size="sm" variant="brand-secondary" className="ml-2">
+                {tag}
+              </Badge>
+            ) : (
+              <i className="text-muted-foreground">@{host}</i>
+            )}
           </span>
+
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <LuCakeSlice />
+            <span>
+              Created{" "}
+              <DateTime date={person ? dayjs(person.createdAt) : null} />
+            </span>
+          </div>
+
+          <AggregateBadges
+            className="mt-1"
+            aggregates={{
+              Posts: person?.postCount,
+              Comments: person?.commentCount,
+            }}
+          >
+            <PersonBadge person={person} />
+          </AggregateBadges>
         </div>
 
-        <AggregateBadges
-          className="mt-1"
-          aggregates={{
-            Posts: person?.postCount,
-            Comments: person?.commentCount,
-          }}
-        >
-          <PersonBadge person={person} />
-        </AggregateBadges>
-      </div>
-
-      {person?.bio && !isBlocked && (
-        <>
-          <Separator />
-          <Collapsible className="p-4" open={open} onOpenChange={setOpen}>
-            <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-              <span>BIO</span>
-              <ChevronsUpDown className="h-4 w-4" />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
-            </CollapsibleContent>
-          </Collapsible>
-        </>
-      )}
-    </SidebarContent>
+        {person?.bio && !isBlocked && (
+          <>
+            <Separator />
+            <Collapsible className="p-4" open={open} onOpenChange={setOpen}>
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                <span>BIO</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
+              </CollapsibleContent>
+            </Collapsible>
+          </>
+        )}
+      </SidebarContent>
+    </>
   );
 }
 
