@@ -45,7 +45,7 @@ function PageErrorFallback({
       labels: "bug",
       template: "bug_report.md",
       title: "[Crash] Page rendering error",
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
     },
   )}`;
 
@@ -55,7 +55,7 @@ function PageErrorFallback({
       type: "text",
       communitySlug: BLORP_COMMUNITY,
       title: `[Crash] Page rendering error`,
-      body: `**Host:** ${host}\n**Path:** ${pathname}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
+      body: `**Host:** ${host}\n**Path:** ${pathname}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${errorMessage}\n\n**Stack:**\n\`\`\`\n${stack}\n\`\`\``,
     });
     router.push(resolveRoute("/create_post", `?id=${draftId}`));
   };

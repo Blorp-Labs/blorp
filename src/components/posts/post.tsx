@@ -50,6 +50,13 @@ import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
 import { ErrorBoundary } from "react-error-boundary";
+import { useIonRouter } from "@ionic/react";
+import { useCreatePostStore } from "@/src/stores/create-post";
+import { resolveRoute } from "@/src/routing";
+import { v4 as uuid } from "uuid";
+import { Button } from "../ui/button";
+
+const BLORP_COMMUNITY = "blorp@lemmy.zip";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -898,36 +905,52 @@ function PostCardErrorFallback({
   apId: string;
   error: Error;
 }) {
+  const router = useIonRouter();
+  const updateDraft = useCreatePostStore((s) => s.updateDraft);
+
+  const body = `**Post apId:** ${apId}\n**Commit:** ${__COMMIT_SHA__}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``;
+
   const issueUrl = `https://github.com/Blorp-Labs/blorp/issues/new?${new URLSearchParams(
     {
       labels: "bug",
       template: "bug_report.md",
-      title: "Post rendering error",
-      body: `**Post apId:** ${apId}\n\n**Error:** ${error.message}\n\n**Stack:**\n\`\`\`\n${error.stack ?? ""}\n\`\`\``,
+      title: "[Crash] Post rendering error",
+      body,
     },
   )}`;
 
+  const reportViaCommunity = () => {
+    const draftId = uuid();
+    updateDraft(draftId, {
+      type: "text",
+      communitySlug: BLORP_COMMUNITY,
+      title: "[Crash] Post rendering error",
+      body,
+    });
+    router.push(resolveRoute("/create_post", `?id=${draftId}`));
+  };
+
   return (
-    <div className="m-2 rounded border border-red-500 bg-red-50 p-4 text-sm dark:bg-red-950/20">
-      <p className="font-medium text-red-700 dark:text-red-400">
-        Failed to render post
-      </p>
+    <div className="border-b p-4 text-sm flex flex-col gap-2">
+      <p className="font-medium text-destructive">Failed to render post</p>
       <a
         href={apId}
         target="_blank"
         rel="noopener noreferrer"
-        className="block break-all text-red-600 underline dark:text-red-300"
+        className="block break-all text-muted-foreground underline"
       >
         {apId}
       </a>
-      <a
-        href={issueUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-red-600 underline dark:text-red-300"
-      >
-        Report bug
-      </a>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={reportViaCommunity}>
+          Report via Blorp
+        </Button>
+        <Button size="sm" variant="link" asChild>
+          <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+            Report on GitHub
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }
