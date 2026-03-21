@@ -37,6 +37,7 @@ function PageErrorFallback({
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
 
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const instance = useAuth(
     (s) => parseAccountInfo(s.getSelectedAccount()).instance,
   );
@@ -90,16 +91,33 @@ function PageErrorFallback({
       </IonHeader>
       <IonContent>
         <ContentGutters>
-          <div className="flex-1 py-8 flex flex-col gap-4 items-start">
-            <p>An unexpected error occurred on this page.</p>
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={resetErrorBoundary}>Try again</Button>
-              <Button onClick={reportViaCommunity}>Report via Blorp</Button>
-              <Button variant="link" asChild>
-                <a href={issueUrl} target="_blank" rel="noopener noreferrer">
-                  Report on GitHub
-                </a>
-              </Button>
+          <div className="flex-1 py-4">
+            <div className="p-4 text-sm flex flex-col gap-5 bg-destructive/20 rounded-lg">
+              <p className="font-medium text-destructive text-lg">
+                An unexpected error occurred on this page.
+              </p>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button size="sm" variant="ghost" onClick={resetErrorBoundary}>
+                  Try again
+                </Button>
+                <div className="flex-1" />
+                <Button
+                  size="sm"
+                  variant={isLoggedIn ? "destructive" : "link"}
+                  onClick={reportViaCommunity}
+                >
+                  Report via Blorp
+                </Button>
+                <Button
+                  size="sm"
+                  variant={isLoggedIn ? "link" : "destructive"}
+                  asChild
+                >
+                  <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+                    Report on GitHub
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         </ContentGutters>

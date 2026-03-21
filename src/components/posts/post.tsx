@@ -946,7 +946,9 @@ function PostCardErrorFallback({
 
   return (
     <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">
-      <p className="font-medium text-destructive">Failed to render post</p>
+      <p className="font-medium text-destructive text-lg">
+        Failed to render post
+      </p>
       <a
         href={apId}
         target="_blank"
