@@ -1,17 +1,12 @@
 import { ContentGutters } from "@/src/components/gutters";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
+import { Page } from "../components/page";
 
 export default function Support() {
   return (
-    <IonPage>
-      <PageTitle>Privacy</PageTitle>
+    <Page>
+      <PageTitle>Support</PageTitle>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Support</IonTitle>
@@ -78,6 +73,6 @@ export default function Support() {
           </div>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

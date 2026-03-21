@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonPage, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "../../routing";
 import { useLinkContext } from "@/src/routing/link-context";
@@ -23,6 +23,7 @@ import "swiper/css";
 import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { PanzoomProvider, usePanZoom } from "./panzoom";
+import { Page } from "@/src/components/page";
 
 function Image({
   src,
@@ -101,7 +102,7 @@ export default function LightBox() {
     : tabbar.height + tabbar.inset;
 
   return (
-    <IonPage className="dark">
+    <Page className="dark">
       <PageTitle>Image</PageTitle>
       <IonHeader translucent={true}>
         <IonToolbar
@@ -160,6 +161,6 @@ export default function LightBox() {
           </ContentGutters>
         </div>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

@@ -7,6 +7,17 @@ import path from "path";
 import legacy from "@vitejs/plugin-legacy";
 import Sitemap from "vite-plugin-sitemap";
 import { resolveRoute } from "./src/routing/resolve-route";
+import { execSync } from "child_process";
+
+process.env["REACT_APP_COMMIT_SHA"] ??= (() => {
+  if (process.env["CF_PAGES_COMMIT_SHA"])
+    return process.env["CF_PAGES_COMMIT_SHA"];
+  try {
+    return execSync("git rev-parse HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+})();
 
 const VITE_FAST = process.env["VITE_FAST"];
 

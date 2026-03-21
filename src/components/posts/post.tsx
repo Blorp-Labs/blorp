@@ -26,6 +26,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import {
   getAccountSite,
+  parseAccountInfo,
   useAmIAdmin,
   useAuth,
   useIsInstanceBlocked,
@@ -49,6 +50,18 @@ import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { NsfwBlurToggle } from "./nsfw-blur-toggle";
+import { ErrorBoundary } from "react-error-boundary";
+import { useIonRouter } from "@ionic/react";
+import { useCreatePostStore } from "@/src/stores/create-post";
+import { resolveRoute } from "@/src/routing";
+import { v4 as uuid } from "uuid";
+import { Button } from "../ui/button";
+import {
+  BLORP_COMMUNITY,
+  buildErrorReport,
+  buildIssueUrl,
+} from "@/src/lib/error-reporting";
+import { useRequireAuth } from "../auth-context";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -326,12 +339,6 @@ function LargePostCard({
 
   if (!post) {
     return <PostCardSkeleton />;
-  }
-
-  let displayUrl = post.url;
-  if (displayUrl) {
-    const parsedUrl = new URL(displayUrl);
-    displayUrl = `${parsedUrl.host.replace(/^www\./, "")}${parsedUrl.pathname.replace(/\/$/, "")}`;
   }
 
   const encodedApId = encodeApId(apId);
@@ -902,7 +909,76 @@ function ExtraSmallPostCard({
   );
 }
 
-export function PostCard(props: PostProps) {
+function PostCardErrorFallback({
+  apId,
+  error,
+}: {
+  apId: string;
+  error: unknown;
+}) {
+  const router = useIonRouter();
+  const updateDraft = useCreatePostStore((s) => s.updateDraft);
+  const requireAuth = useRequireAuth();
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const instance = useAuth(
+    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
+  );
+
+  const body = buildErrorReport(
+    { "Post apId": apId, "User Instance": instance },
+    error,
+  );
+
+  const issueUrl = buildIssueUrl("[Crash] Post rendering error", body);
+
+  const reportViaCommunity = async () => {
+    try {
+      await requireAuth();
+    } catch {
+      return;
+    }
+    const draftId = uuid();
+    updateDraft(draftId, {
+      type: "text",
+      communitySlug: BLORP_COMMUNITY,
+      title: "[Crash] Post rendering error",
+      body,
+    });
+    router.push(resolveRoute("/create_post", `?id=${draftId}`));
+  };
+
+  return (
+    <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">
+      <p className="font-medium text-destructive text-lg">
+        Failed to render post
+      </p>
+      <a
+        href={apId}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block break-all text-muted-foreground underline"
+      >
+        {apId}
+      </a>
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          size="sm"
+          variant={isLoggedIn ? "destructive" : "link"}
+          onClick={reportViaCommunity}
+        >
+          Report in App
+        </Button>
+        <Button size="sm" variant={isLoggedIn ? "link" : "destructive"} asChild>
+          <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+            Report on GitHub
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PostCardInner(props: PostProps) {
   const showNsfw =
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
 
@@ -989,4 +1065,17 @@ export function PostCard(props: PostProps) {
         />
       );
   }
+}
+
+export function PostCard(props: PostProps) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <PostCardErrorFallback apId={props.apId} error={error} />
+      )}
+      resetKeys={[props.apId]}
+    >
+      <PostCardInner {...props} />
+    </ErrorBoundary>
+  );
 }

@@ -1,13 +1,8 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "../components/markdown/renderer";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
+import { Page } from "../components/page";
 
 const TERMS = `
 **Terms of Use for Blorp**  
@@ -107,7 +102,7 @@ _By using Blorp, you acknowledge that you have read, understood, and agree to th
 
 export default function Privacy() {
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Terms of Use</PageTitle>
       <IonHeader>
         <IonToolbar>
@@ -119,6 +114,6 @@ export default function Privacy() {
           <MarkdownRenderer markdown={TERMS} className="flex-1 py-8" />
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

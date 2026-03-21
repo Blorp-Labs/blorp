@@ -70,6 +70,16 @@ import {
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { usePersonActions } from "../person/person-action-menu";
+import { ErrorBoundary } from "react-error-boundary";
+import { useIonRouter } from "@ionic/react";
+import { useCreatePostStore } from "@/src/stores/create-post";
+import { v4 as uuid } from "uuid";
+import { parseAccountInfo } from "@/src/stores/auth";
+import {
+  BLORP_COMMUNITY,
+  buildErrorReport,
+  buildIssueUrl,
+} from "@/src/lib/error-reporting";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -400,7 +410,84 @@ function Byline({
   );
 }
 
-export function PostComment({
+function PostCommentErrorFallback({
+  commentTree,
+  error,
+}: {
+  commentTree: CommentTree;
+  error: unknown;
+}) {
+  const router = useIonRouter();
+  const updateDraft = useCreatePostStore((s) => s.updateDraft);
+  const requireAuth = useRequireAuth();
+  const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const instance = useAuth(
+    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
+  );
+  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
+  const commentView = useCommentsStore((s) =>
+    commentTree.comment
+      ? s.comments[getCachePrefixer()(commentTree.comment.path)]?.data
+      : undefined,
+  );
+  const apId = commentView?.apId;
+
+  const body = buildErrorReport(
+    { ...(apId ? { "Comment apId": apId } : {}), "User Instance": instance },
+    error,
+  );
+  const issueUrl = buildIssueUrl("[Crash] Comment rendering error", body);
+
+  const reportViaCommunity = async () => {
+    try {
+      await requireAuth();
+    } catch {
+      return;
+    }
+    const draftId = uuid();
+    updateDraft(draftId, {
+      type: "text",
+      communitySlug: BLORP_COMMUNITY,
+      title: "[Crash] Comment rendering error",
+      body,
+    });
+    router.push(resolveRoute("/create_post", `?id=${draftId}`));
+  };
+
+  return (
+    <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">
+      <p className="font-medium text-destructive text-lg">
+        Failed to render comment
+      </p>
+      {apId && (
+        <a
+          href={apId}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block break-all text-muted-foreground underline"
+        >
+          {apId}
+        </a>
+      )}
+      <div className={cn("flex flex-wrap justify-end gap-2")}>
+        <Button
+          size="sm"
+          variant={isLoggedIn ? "destructive" : "link"}
+          onClick={reportViaCommunity}
+        >
+          Report in App
+        </Button>
+        <Button size="sm" variant={isLoggedIn ? "link" : "destructive"} asChild>
+          <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+            Report on GitHub
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PostCommentInner({
   postApId,
   postLocked,
   queryKeyParentId,
@@ -792,4 +879,20 @@ export function PostComment({
   }
 
   return content;
+}
+
+export function PostComment(props: Parameters<typeof PostCommentInner>[0]) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <PostCommentErrorFallback
+          commentTree={props.commentTree}
+          error={error}
+        />
+      )}
+      resetKeys={[props.commentTree.comment?.id]}
+    >
+      <PostCommentInner {...props} />
+    </ErrorBoundary>
+  );
 }

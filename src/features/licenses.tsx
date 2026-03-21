@@ -3,13 +3,13 @@ import { MarkdownRenderer } from "../components/markdown/renderer";
 import {
   IonContent,
   IonHeader,
-  IonPage,
   IonTitle,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
 import MD from "@/THIRD-PARTY-NOTICES.md?raw";
+import { Page } from "../components/page";
 
 export default function Privacy() {
   const router = useIonRouter();
@@ -18,8 +18,8 @@ export default function Privacy() {
   // the active page.
   const isActiveRoute = router.routeInfo.pathname.startsWith("/licenses");
   return (
-    <IonPage>
-      <PageTitle>Privacy</PageTitle>
+    <Page>
+      <PageTitle>Licenses</PageTitle>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Open Source Licenses</IonTitle>
@@ -32,6 +32,6 @@ export default function Privacy() {
           )}
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

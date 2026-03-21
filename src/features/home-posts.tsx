@@ -9,13 +9,7 @@ import { useFiltersStore } from "../stores/filters";
 import { useAvailableSorts, useMostRecentPost, usePosts } from "../lib/api";
 import _ from "lodash";
 import { LocalSererSidebar } from "../components/local-server/local-server-sidebar";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToolbar,
-  useIonRouter,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
@@ -37,6 +31,7 @@ import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
 import { usePagination } from "../lib/hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
+import { Page } from "../components/page";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -239,7 +234,7 @@ export default function HomePosts() {
   const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
   return (
-    <IonPage className="home-page">
+    <Page className="home-page">
       <PageTitle />
       <IonHeader className="backdrop-blur-xs bg-gradient-to-b from-20% from-background to-background/30 dismissable">
         <IonToolbar data-tauri-drag-region className="dismissable">
@@ -334,6 +329,6 @@ export default function HomePosts() {
           <LocalSererSidebar />
         </ContentGutters>
       </WrappedIonContent>
-    </IonPage>
+    </Page>
   );
 }

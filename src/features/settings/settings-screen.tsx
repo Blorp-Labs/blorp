@@ -23,13 +23,7 @@ import _ from "lodash";
 import { Logo } from "@/src/components/logo";
 import pkgJson from "@/package.json";
 import { getDbSizes } from "@/src/lib/create-storage";
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonToggle,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonHeader, IonToggle, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { PersonCard } from "@/src/components/person/person-card";
@@ -57,6 +51,7 @@ import {
 } from "@/src/components/ui/select";
 import { SimpleSelect } from "@/src/components/ui/simple-select";
 import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
+import { Page } from "@/src/components/page";
 
 const version =
   _.isObject(pkgJson) && "version" in pkgJson ? pkgJson.version : undefined;
@@ -334,7 +329,7 @@ export default function SettingsPage() {
   const keywords = [...filterKeywords, ""];
 
   return (
-    <IonPage>
+    <Page>
       <PageTitle>Settings</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -613,6 +608,6 @@ export default function SettingsPage() {
           </div>
         </ContentGutters>
       </IonContent>
-    </IonPage>
+    </Page>
   );
 }

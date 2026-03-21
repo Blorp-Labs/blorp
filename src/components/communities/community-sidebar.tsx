@@ -299,7 +299,7 @@ export function useCommunityActions({
   ];
 }
 
-export function CommunitySidebar({
+function CommunitySidebarInner({
   communityName,
   actorId,
   hideDescription = false,
@@ -344,128 +344,135 @@ export function CommunitySidebar({
   const communityView = data.communityView;
 
   return (
-    <Sidebar>
-      <SidebarContent className="relative">
-        <EasterEggBox seed={communityName}>
-          <div className="p-4 flex flex-col gap-3">
-            <div className="flex flex-row items-start justify-between flex-1">
-              <Avatar className="h-13 w-13">
-                <AvatarImage
-                  src={communityView.icon ?? undefined}
-                  className="object-cover"
-                />
-                <AvatarFallback className="text-xl">
-                  {communityName.substring(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              <EllipsisActionMenu
-                header="Community"
-                align="end"
-                actions={actions}
+    <SidebarContent className="relative">
+      <EasterEggBox seed={communityName}>
+        <div className="p-4 flex flex-col gap-3">
+          <div className="flex flex-row items-start justify-between flex-1">
+            <Avatar className="h-13 w-13">
+              <AvatarImage
+                src={communityView.icon ?? undefined}
+                className="object-cover"
               />
-            </div>
+              <AvatarFallback className="text-xl">
+                {communityName.substring(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-            <span className="font-bold line-clamp-1">{communityView.slug}</span>
-
-            <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
-              <LuCakeSlice />
-              <span>
-                Created <DateTime date={dayjs(data.communityView.createdAt)} />
-              </span>
-            </div>
+            <EllipsisActionMenu
+              header="Community"
+              align="end"
+              actions={actions}
+            />
           </div>
 
-          {!isBlocked && (
-            <>
-              <Separator />
-              <Collapsible
-                className="p-4"
-                open={aboutOpen}
-                onOpenChange={setAboutOpen}
-              >
-                <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-                  <span>ABOUT</span>
-                  <ChevronsUpDown className="h-4 w-4" />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-1">
-                  {communityView.description && !hideDescription && (
-                    <MarkdownRenderer
-                      markdown={communityView.description}
-                      dim
-                      className="py-3"
-                    />
-                  )}
+          <span className="font-bold line-clamp-1">{communityView.slug}</span>
 
-                  <AggregateBadges
-                    className="mt-2"
-                    aggregates={{
-                      "users / day": communityView?.usersActiveDayCount,
-                      "users / week": communityView?.usersActiveWeekCount,
-                      "users / month": communityView?.usersActiveMonthCount,
-                      "users / 6 months":
-                        communityView?.usersActiveHalfYearCount,
-                      "Local subscribers": communityView?.subscribersLocalCount,
-                      Subscribers: communityView?.subscriberCount,
-                      Posts: communityView?.postCount,
-                      Comments: communityView?.commentCount,
-                    }}
+          <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+            <LuCakeSlice />
+            <span>
+              Created <DateTime date={dayjs(data.communityView.createdAt)} />
+            </span>
+          </div>
+        </div>
+
+        {!isBlocked && (
+          <>
+            <Separator />
+            <Collapsible
+              className="p-4"
+              open={aboutOpen}
+              onOpenChange={setAboutOpen}
+            >
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                <span>ABOUT</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="py-1">
+                {communityView.description && !hideDescription && (
+                  <MarkdownRenderer
+                    markdown={communityView.description}
+                    dim
+                    className="py-3"
                   />
-                </CollapsibleContent>
-              </Collapsible>
+                )}
 
-              {flairs && flairs.length > 0 && (
-                <>
-                  <Separator />
+                <AggregateBadges
+                  className="mt-2"
+                  aggregates={{
+                    "users / day": communityView?.usersActiveDayCount,
+                    "users / week": communityView?.usersActiveWeekCount,
+                    "users / month": communityView?.usersActiveMonthCount,
+                    "users / 6 months": communityView?.usersActiveHalfYearCount,
+                    "Local subscribers": communityView?.subscribersLocalCount,
+                    Subscribers: communityView?.subscriberCount,
+                    Posts: communityView?.postCount,
+                    Comments: communityView?.commentCount,
+                  }}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
-                  <Collapsible
-                    className="p-4"
-                    open={flairsOpen}
-                    onOpenChange={setFlairsOpen}
-                  >
-                    <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-                      <span>FLAIRS</span>
-                      <ChevronsUpDown className="h-4 w-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pb-1 pt-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {flairs?.map((flair) => (
-                          <Flair key={flair.id} flair={flair} />
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </>
-              )}
+            {flairs && flairs.length > 0 && (
+              <>
+                <Separator />
 
-              <Separator />
-              <Collapsible
-                className="p-4"
-                open={modsOpen}
-                onOpenChange={setModsOpen}
-              >
-                <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
-                  <span>MODS</span>
-                  <ChevronsUpDown className="h-4 w-4" />
-                </CollapsibleTrigger>
+                <Collapsible
+                  className="p-4"
+                  open={flairsOpen}
+                  onOpenChange={setFlairsOpen}
+                >
+                  <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                    <span>FLAIRS</span>
+                    <ChevronsUpDown className="h-4 w-4" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pb-1 pt-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {flairs?.map((flair) => (
+                        <Flair key={flair.id} flair={flair} />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </>
+            )}
 
-                <CollapsibleContent className="flex flex-col gap-2 pt-3">
-                  {data.mods?.map((m) => (
-                    <PersonCard key={m.apId} actorId={m.apId} size="sm" />
-                  ))}
-                  <Link
-                    to={`${linkCtx.root}c/:communityName/modlog`}
-                    params={{ communityName }}
-                    className="text-brand text-sm mt-1"
-                  >
-                    Modlog
-                  </Link>
-                </CollapsibleContent>
-              </Collapsible>
-            </>
-          )}
-        </EasterEggBox>
-      </SidebarContent>
+            <Separator />
+            <Collapsible
+              className="p-4"
+              open={modsOpen}
+              onOpenChange={setModsOpen}
+            >
+              <CollapsibleTrigger className="uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full">
+                <span>MODS</span>
+                <ChevronsUpDown className="h-4 w-4" />
+              </CollapsibleTrigger>
+
+              <CollapsibleContent className="flex flex-col gap-2 pt-3">
+                {data.mods?.map((m) => (
+                  <PersonCard key={m.apId} actorId={m.apId} size="sm" />
+                ))}
+                <Link
+                  to={`${linkCtx.root}c/:communityName/modlog`}
+                  params={{ communityName }}
+                  className="text-brand text-sm mt-1"
+                >
+                  Modlog
+                </Link>
+              </CollapsibleContent>
+            </Collapsible>
+          </>
+        )}
+      </EasterEggBox>
+    </SidebarContent>
+  );
+}
+
+export function CommunitySidebar(
+  props: Parameters<typeof CommunitySidebarInner>[0],
+) {
+  return (
+    <Sidebar>
+      <CommunitySidebarInner {...props} />
     </Sidebar>
   );
 }
