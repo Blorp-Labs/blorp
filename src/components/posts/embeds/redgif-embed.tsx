@@ -3,6 +3,7 @@ import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
 import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
 import { privilegedFetch } from "@/src/lib/privileged-fetch";
+import _ from "lodash";
 
 type GifData = { src: string; width: number; height: number };
 
@@ -56,12 +57,13 @@ export function RedGifEmbed({
     getRedGifData(url).then(setData);
   }, [url]);
 
-  const aspectRatio = data ? `${data.width} / ${data.height}` : undefined;
+  const aspectRatio = data ? data.width / data.height : undefined;
+  const isVertical = _.isNumber(aspectRatio) && aspectRatio < 1;
 
   return (
     <div className={cn("bg-muted relative", ABOVE_LINK_OVERLAY)}>
       <div
-        className="w-full relative md:max-w-sm mx-auto"
+        className={cn("w-full relative", isVertical && "md:max-w-sm mx-auto")}
         style={{ aspectRatio: aspectRatio ?? "9 / 16" }}
       >
         {(nsfwHidden || !data) && thumbnail && (

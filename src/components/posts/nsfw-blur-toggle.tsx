@@ -15,9 +15,16 @@ export function useBlurNsfwState(
       !!(options?.detailView && options?.apId && s.isRevealed(options.apId)),
   );
 
+  const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
+
   const nsfwHidden = nsfw && blurNsfw && !revealed && !isRevealedByNavigation;
   const blurClassName = nsfwHidden ? "blur-3xl" : "";
-  const onReveal = () => setRevealed(true);
+  const onReveal = () => {
+    setRevealed(true);
+    if (options?.apId) {
+      revealPost(options.apId);
+    }
+  };
 
   return { nsfwHidden, blurClassName, onReveal };
 }
