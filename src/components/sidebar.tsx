@@ -12,6 +12,7 @@ import {
   buildErrorReport,
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
+import { useRequireAuth } from "./auth-context";
 
 function SidebarErrorFallback({
   error,
@@ -23,6 +24,7 @@ function SidebarErrorFallback({
   const pathname = usePathname();
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
+  const requireAuth = useRequireAuth();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const instance = useAuth(
     (s) => parseAccountInfo(s.getSelectedAccount()).instance,
@@ -35,7 +37,12 @@ function SidebarErrorFallback({
   );
   const issueUrl = buildIssueUrl("[Crash] Sidebar rendering error", body);
 
-  const reportViaCommunity = () => {
+  const reportViaCommunity = async () => {
+    try {
+      await requireAuth();
+    } catch {
+      return;
+    }
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",

@@ -419,6 +419,7 @@ function PostCommentErrorFallback({
 }) {
   const router = useIonRouter();
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
+  const requireAuth = useRequireAuth();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const instance = useAuth(
     (s) => parseAccountInfo(s.getSelectedAccount()).instance,
@@ -437,7 +438,12 @@ function PostCommentErrorFallback({
   );
   const issueUrl = buildIssueUrl("[Crash] Comment rendering error", body);
 
-  const reportViaCommunity = () => {
+  const reportViaCommunity = async () => {
+    try {
+      await requireAuth();
+    } catch {
+      return;
+    }
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
