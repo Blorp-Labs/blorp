@@ -170,11 +170,24 @@ describe("editor commands", () => {
     expect(getMarkdown(editor)).toBe("> hello world");
   });
 
-  it("toggleBlockquote removes blockquote from already-quoted text", () => {
+  it("toggleBlockquote removes blockquote when text is manually selected", () => {
+    setMarkdown(editor, "> hello world");
+    // Select the text content directly rather than using selectAll —
+    // see the note below about selectAll behaving differently.
+    editor.commands.setTextSelection({ from: 1, to: 12 });
+    editor.commands.toggleBlockquote();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleBlockquote via selectAll is a no-op on existing blockquote", () => {
+    // Quirk: selectAll includes the blockquote node itself in the selection,
+    // so toggleBlockquote neither unwraps nor double-wraps — it does nothing.
+    // In the browser, Ctrl+A can behave differently (may add a second level).
+    // Use a manual setTextSelection to reliably toggle a blockquote off.
     setMarkdown(editor, "> hello world");
     editor.commands.selectAll();
     editor.commands.toggleBlockquote();
-    expect(getMarkdown(editor)).toBe("hello world");
+    expect(getMarkdown(editor)).toBe("> hello world");
   });
 
   it("toggleBulletList converts paragraph to unordered list", () => {
@@ -229,12 +242,11 @@ describe("editor commands", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Known upstream bugs — each comment links to the GitHub issue.
-// Use `it.fails` so CI stays green. When tiptap fixes the bug the test will
-// start unexpectedly passing; at that point promote it to a plain `it`.
+// Upstream bugs that have been fixed — regression tests to ensure they stay
+// fixed. If one of these starts failing, a tiptap update broke something.
 // ---------------------------------------------------------------------------
 
-describe("known upstream issues", () => {
+describe("upstream regressions", () => {
   let editor: Editor;
 
   beforeEach(() => {
@@ -247,10 +259,65 @@ describe("known upstream issues", () => {
 
   // https://github.com/ueberdosis/tiptap/issues/7495
   // getMarkdown returns `&nbsp;` when editor is empty. Our getMarkdown()
-  // wraps stripTrailingNbsp() specifically to work around this. This is a
-  // regression test — if the workaround ever breaks, this test will catch it.
+  // wraps stripTrailingNbsp() specifically to work around this.
   it("#7495: empty editor returns empty string, not &nbsp;", () => {
     expect(getMarkdown(editor)).toBe("");
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7256
+  // setContent with XML-like text (e.g. `<abc></abc>`) used to throw
+  // "Invalid content for node paragraph" instead of treating it as plain text.
+  it("#7256: setMarkdown with XML-like content does not throw", () => {
+    expect(() => setMarkdown(editor, "Test content <abc></abc>")).not.toThrow();
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7376
+  // Overlapping marks with different start/end positions used to serialize in
+  // the wrong nesting order. Bold + italic is the most common real-world case.
+  it("#7376: overlapping bold and italic marks serialize with correct nesting", () => {
+    // "hello world" — all bold, then "world" also italic
+    setMarkdown(editor, "hello world");
+    editor.commands.selectAll();
+    editor.commands.toggleBold();
+    editor.commands.setTextSelection({ from: 7, to: 12 });
+    editor.commands.toggleItalic();
+    expect(getMarkdown(editor)).toBe("**hello *world***");
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7590
+  // Fixed by https://github.com/ueberdosis/tiptap/pull/7601
+  // Truly overlapping bold+italic (bold "123456", italic "456789") produced
+  // invalid interleaved markdown: `**123*456**789*`
+  it("#7590: truly overlapping bold and italic produces valid markdown", () => {
+    setMarkdown(editor, "123456789");
+    editor.commands.setTextSelection({ from: 1, to: 7 }); // "123456"
+    editor.commands.toggleBold();
+    editor.commands.setTextSelection({ from: 4, to: 10 }); // "456789"
+    editor.commands.toggleItalic();
+    const md = getMarkdown(editor);
+    // The bug produced invalid interleaved delimiters — ensure it's gone
+    expect(md).not.toBe("**123*456**789*");
+    // Valid markdown must round-trip cleanly
+    setMarkdown(editor, md);
+    expect(getMarkdown(editor)).toBe(md);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Still-open upstream bugs — use `it.fails` so CI stays green.
+// When tiptap fixes the bug the test will start unexpectedly passing;
+// at that point move it to the "upstream regressions" block above.
+// ---------------------------------------------------------------------------
+
+describe("known upstream bugs", () => {
+  let editor: Editor;
+
+  beforeEach(() => {
+    editor = createEditor();
+  });
+
+  afterEach(() => {
+    editor.destroy();
   });
 
   // https://github.com/ueberdosis/tiptap/issues/7553
@@ -261,19 +328,11 @@ describe("known upstream issues", () => {
     "#7553: italic on partial link text keeps markers inside brackets",
     () => {
       setMarkdown(editor, "[hello world](https://google.com)");
-      // Select just "hello" (positions 1–6) and italicise it
       editor.commands.setTextSelection({ from: 1, to: 6 });
       editor.commands.toggleItalic();
       expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
     },
   );
-
-  // https://github.com/ueberdosis/tiptap/issues/7256
-  // setContent with XML-like text (e.g. `<abc></abc>`) throws
-  // "Invalid content for node paragraph" instead of treating it as plain text.
-  it("#7256: setMarkdown with XML-like content does not throw", () => {
-    expect(() => setMarkdown(editor, "Test content <abc></abc>")).not.toThrow();
-  });
 
   // https://github.com/ueberdosis/tiptap/issues/7539
   // HTML entities in markdown source (&lt; &gt;) are displayed as literal
@@ -282,4 +341,16 @@ describe("known upstream issues", () => {
     setMarkdown(editor, "foo &lt;bar&gt; baz");
     expect(editor.state.doc.textContent).toBe("foo <bar> baz");
   });
+
+  // https://github.com/ueberdosis/tiptap/issues/7258
+  // Escaped markdown characters (\*) are silently dropped instead of
+  // rendering as the literal character. Per the markdown spec, \* should
+  // produce a literal asterisk, not start italic formatting.
+  it.fails(
+    "#7258: escaped markdown characters render as literal characters",
+    () => {
+      setMarkdown(editor, "\\*not italic\\*");
+      expect(editor.state.doc.textContent).toBe("*not italic*");
+    },
+  );
 });
