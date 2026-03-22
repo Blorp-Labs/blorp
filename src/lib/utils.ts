@@ -98,6 +98,12 @@ export function urlStripAfterPath(url: string) {
   return url.slice(0, cut);
 }
 
+export const assert = import.meta.env.DEV
+  ? (condition: boolean, msg?: string) => {
+      if (!condition) throw new Error(msg ?? "Assertion failed");
+    }
+  : () => {};
+
 export function ensureValue<T>(
   options: T[] | readonly T[] | null | undefined,
   value: T,
