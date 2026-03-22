@@ -227,3 +227,59 @@ describe("editor commands", () => {
     expect(getMarkdown(editor)).toBe("hello world");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Known upstream bugs — each comment links to the GitHub issue.
+// Use `it.fails` so CI stays green. When tiptap fixes the bug the test will
+// start unexpectedly passing; at that point promote it to a plain `it`.
+// ---------------------------------------------------------------------------
+
+describe("known upstream issues", () => {
+  let editor: Editor;
+
+  beforeEach(() => {
+    editor = createEditor();
+  });
+
+  afterEach(() => {
+    editor.destroy();
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7495
+  // getMarkdown returns `&nbsp;` when editor is empty. Our getMarkdown()
+  // wraps stripTrailingNbsp() specifically to work around this. This is a
+  // regression test — if the workaround ever breaks, this test will catch it.
+  it("#7495: empty editor returns empty string, not &nbsp;", () => {
+    expect(getMarkdown(editor)).toBe("");
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7553
+  // Italic (and other marks) on partial link text serializes the mark
+  // delimiters *outside* the square brackets, producing invalid markdown.
+  // e.g. `*[hello* world](url)` instead of `[*hello* world](url)`
+  it.fails(
+    "#7553: italic on partial link text keeps markers inside brackets",
+    () => {
+      setMarkdown(editor, "[hello world](https://google.com)");
+      // Select just "hello" (positions 1–6) and italicise it
+      editor.commands.setTextSelection({ from: 1, to: 6 });
+      editor.commands.toggleItalic();
+      expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
+    },
+  );
+
+  // https://github.com/ueberdosis/tiptap/issues/7256
+  // setContent with XML-like text (e.g. `<abc></abc>`) throws
+  // "Invalid content for node paragraph" instead of treating it as plain text.
+  it("#7256: setMarkdown with XML-like content does not throw", () => {
+    expect(() => setMarkdown(editor, "Test content <abc></abc>")).not.toThrow();
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7539
+  // HTML entities in markdown source (&lt; &gt;) are displayed as literal
+  // text instead of being decoded to their character equivalents.
+  it.fails("#7539: &lt; and &gt; entities in markdown are decoded", () => {
+    setMarkdown(editor, "foo &lt;bar&gt; baz");
+    expect(editor.state.doc.textContent).toBe("foo <bar> baz");
+  });
+});
