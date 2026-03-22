@@ -31,6 +31,7 @@ import { EllipsisActionMenu } from "../components/adaptable/action-menu";
 import { PersonAvatar } from "../components/person/person-avatar";
 import { BadgeCount, BadgeIcon } from "../components/badge-count";
 import { DoubleCheck, Message, Person, Report } from "../components/icons";
+import { FaBookmark } from "react-icons/fa6";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -332,6 +333,9 @@ function Mention({
             <CommentButtonBar>
               <RelativeTime time={mention.createdAt} />
               <div className="flex-1" />
+              {(commentView?.optimisticSaved ?? commentView?.saved) && (
+                <FaBookmark className="text-lg text-brand mr-2" />
+              )}
               <EllipsisActionMenu
                 actions={[
                   {
@@ -437,6 +441,9 @@ function Reply({
             <CommentButtonBar>
               <RelativeTime time={replyView.createdAt} />
               <div className="flex-1" />
+              {(commentView?.optimisticSaved ?? commentView?.saved) && (
+                <FaBookmark className="text-lg text-brand mr-2" />
+              )}
               <EllipsisActionMenu
                 actions={[
                   {
