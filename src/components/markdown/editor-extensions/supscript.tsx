@@ -14,7 +14,7 @@ export default Superscript.extend({
     level: "inline",
     start: "^",
     tokenize(src, _tokens, lexer): MarkdownToken | undefined {
-      const match = src.match(/^\^([^\^\n]+)\^/);
+      const match = src.match(/^\^([^^\n]+)\^/);
       if (!match) return undefined;
       return {
         type: "superscript",
