@@ -67,6 +67,7 @@ import {
   commentIsAnswer,
   getCommentEmojiReactions,
   getCommentMyVote,
+  getCommentSaved,
 } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { usePersonActions } from "../person/person-action-menu";
@@ -145,7 +146,7 @@ export function useCommentActions({
       )
     : null;
 
-  const saved = commentView?.optimisticSaved ?? commentView?.saved;
+  const saved = commentView ? getCommentSaved(commentView) : undefined;
   const locked = commentView?.optimisticLocked ?? commentView?.locked;
 
   const showCommentRemoveModal = useShowCommentRemoveModal();
@@ -621,7 +622,7 @@ function PostCommentInner({
     commentView &&
     highlightCommentId === String(commentView.id);
 
-  const saved = commentView?.optimisticSaved ?? commentView?.saved;
+  const saved = commentView ? getCommentSaved(commentView) : undefined;
 
   const actions = useCommentActions({
     commentView,

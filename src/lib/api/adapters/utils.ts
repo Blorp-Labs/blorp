@@ -66,6 +66,14 @@ export function getPostMyVote(post: Schemas.Post) {
   return post.optimisticMyVote ?? post.myVote;
 }
 
+export function getCommentSaved(comment: Schemas.Comment) {
+  return comment.optimisticSaved ?? comment.saved;
+}
+
+export function getPostSaved(post: Schemas.Post) {
+  return post.optimisticSaved ?? post.saved;
+}
+
 export function getFeedSubscribed(feed: Schemas.MultiCommunityFeed) {
   return (
     feed.optimisticSubscribed ??

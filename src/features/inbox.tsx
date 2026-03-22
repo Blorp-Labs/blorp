@@ -42,6 +42,7 @@ import {
   TooltipTrigger,
 } from "../components/ui/tooltip";
 import { encodeApId } from "../lib/api/utils";
+import { getCommentSaved } from "../lib/api/adapters/utils";
 import {
   CommentButtonBar,
   CommentVoting,
@@ -333,7 +334,7 @@ function Mention({
             <CommentButtonBar>
               <RelativeTime time={mention.createdAt} />
               <div className="flex-1" />
-              {(commentView?.optimisticSaved ?? commentView?.saved) && (
+              {commentView && getCommentSaved(commentView) && (
                 <FaBookmark className="text-lg text-brand mr-2" />
               )}
               <EllipsisActionMenu
@@ -441,7 +442,7 @@ function Reply({
             <CommentButtonBar>
               <RelativeTime time={replyView.createdAt} />
               <div className="flex-1" />
-              {(commentView?.optimisticSaved ?? commentView?.saved) && (
+              {commentView && getCommentSaved(commentView) && (
                 <FaBookmark className="text-lg text-brand mr-2" />
               )}
               <EllipsisActionMenu

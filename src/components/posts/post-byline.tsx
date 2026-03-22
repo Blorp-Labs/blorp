@@ -42,7 +42,7 @@ import {
 } from "@/src/lib/api/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
-import { getPostMyVote } from "@/src/lib/api/adapters/utils";
+import { getPostMyVote, getPostSaved } from "@/src/lib/api/adapters/utils";
 import { useInputAlert } from "@/src/lib/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
@@ -103,7 +103,7 @@ export function usePostActions({
 
   const encodedApId = encodeApId(post.apId);
 
-  const saved = post.optimisticSaved ?? post.saved;
+  const saved = getPostSaved(post);
 
   const flairs = useFlairs(post.flairs?.map((f) => f.id));
 
@@ -304,7 +304,7 @@ export function PostByline({
 
   const encodedCreatorApId = encodeApId(post.creatorApId);
 
-  const saved = post.optimisticSaved ?? post.saved;
+  const saved = getPostSaved(post);
   const locked = post.optimisticLocked ?? post.locked;
 
   const [communityName, communityHost] = post.communitySlug.split("@");
