@@ -16,7 +16,6 @@ import { useIonRouter } from "@ionic/react";
 import { encodeApId } from "@/src/lib/api/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { FaBookmark } from "react-icons/fa";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
@@ -32,7 +31,7 @@ import { Badge } from "../ui/badge";
 import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
-import { Lock } from "../icons";
+import { Bookmark, Lock } from "../icons";
 import {
   useDeletePost,
   useFeaturePost,
@@ -423,7 +422,7 @@ export function PostByline({
       <div className="flex-1" />
 
       {saved && (
-        <FaBookmark className={cn("text-lg text-brand", ABOVE_LINK_OVERLAY)} />
+        <Bookmark className={cn("text-lg text-brand", ABOVE_LINK_OVERLAY)} />
       )}
       {pinned && (
         <BsFillPinAngleFill

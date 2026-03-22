@@ -39,8 +39,8 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
-import { FaBookmark } from "react-icons/fa6";
 import { getCommentSaved } from "../lib/api/adapters/utils";
+import { Bookmark } from "../components/icons";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";
 import { cn } from "../lib/utils";
@@ -109,7 +109,7 @@ const Comment = memo(function Comment({ path }: { path: string }) {
           <RelativeTime time={commentView.createdAt} />
           <div className="flex-1" />
           {getCommentSaved(commentView) && (
-            <FaBookmark className="text-lg text-brand mr-2" />
+            <Bookmark className="text-lg text-brand mr-2" />
           )}
           <EllipsisActionMenu actions={actions} aria-label="Comment actions" />
           <CommentVoting commentView={commentView} fixRightAlignment />

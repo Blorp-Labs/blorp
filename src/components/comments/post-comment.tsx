@@ -57,11 +57,10 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { FaBookmark } from "react-icons/fa6";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
-import { Check, Lock } from "../icons";
+import { Bookmark, Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
 import {
   commentIsAnswer,
@@ -772,7 +771,7 @@ function PostCommentInner({
               )}
             >
               {saved && (
-                <FaBookmark
+                <Bookmark
                   className={cn(
                     "text-lg text-brand",
                     leftHandedMode ? "ml-2" : "mr-2",
