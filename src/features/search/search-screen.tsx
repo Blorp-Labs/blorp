@@ -51,6 +51,8 @@ import {
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
+import { FaBookmark } from "react-icons/fa6";
+import { getCommentSaved } from "@/src/lib/api/adapters/utils";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 
@@ -148,6 +150,9 @@ function Comment({ commentPath }: { commentPath: string }) {
             <CommentButtonBar>
               <RelativeTime time={comment.createdAt} />
               <div className="flex-1" />
+              {getCommentSaved(comment) && (
+                <FaBookmark className="text-lg text-brand mr-2" />
+              )}
               <EllipsisActionMenu
                 actions={actions}
                 aria-label="Comment actions"
