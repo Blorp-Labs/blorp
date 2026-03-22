@@ -158,7 +158,6 @@ export function PostArticleMiniEmbed({
           </div>
         )}
       </a>
-      {nsfwHidden && showImage && <ShowNsfwButton onReveal={onReveal} />}
     </div>
   );
 }
