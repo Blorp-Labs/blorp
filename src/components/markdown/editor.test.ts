@@ -353,4 +353,25 @@ describe("known upstream bugs", () => {
       expect(editor.state.doc.textContent).toBe("*not italic*");
     },
   );
+
+  // https://github.com/ueberdosis/tiptap/issues/7502
+  // When parsing a markdown table with column alignment markers (:--- / :---: / ---:),
+  // tiptap v3 discards the alignment info. The markers are not preserved on
+  // serialization, so a round-trip loses all column alignment.
+  it.fails(
+    "#7502: markdown table column alignment markers are preserved in round-trip",
+    () => {
+      const input = [
+        "| Left | Center | Right |",
+        "| :--- | :----: | ----: |",
+        "| a    | b      | c     |",
+      ].join("\n");
+      setMarkdown(editor, input);
+      const output = getMarkdown(editor);
+      // At minimum the alignment colons must survive the round-trip
+      expect(output).toContain(":---");
+      expect(output).toContain(":----:");
+      expect(output).toContain("----:");
+    },
+  );
 });
