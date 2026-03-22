@@ -5,10 +5,22 @@ on:
     # Trigger only on tags like "v1.2.3"
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to deploy"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - ios
+          - android
+          - both
 
 jobs:
   ios:
     name: iOS – Build & Upload to TestFlight
+    if: ${{ github.event_name == 'push' || github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
@@ -40,6 +52,11 @@ jobs:
         run: pod install --repo-update
         working-directory: ios/App
 
+      - name: Compute build number
+        run: |
+          echo "BUILD_NUMBER=$(date -u +%s)" >> "$GITHUB_ENV"
+          echo "BETA_VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')" >> "$GITHUB_ENV"
+
       - name: Build and upload to TestFlight
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -62,6 +79,7 @@ jobs:
 
   android:
     name: Android – Build & Upload to Play Store + GitHub Release
+    if: ${{ github.event_name == 'push' || github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -103,6 +121,12 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/blorp-release.keystore"
 
+      - name: Compute build number and version name
+        run: |
+          echo "VERSION_CODE=$(date -u +%s)" >> "$GITHUB_ENV"
+          TAG=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "VERSION_NAME=${TAG}" >> "$GITHUB_ENV"
+
       - name: Build AAB + APK and upload to Play Store
         env:
           ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/blorp-release.keystore
@@ -132,6 +156,7 @@ jobs:
 
   tauri:
     name: macOS – Build, Sign & Notarize
+    if: ${{ github.event_name == 'push' }}
     runs-on: macos-15
     timeout-minutes: 90
     steps:
