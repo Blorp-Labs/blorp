@@ -1125,6 +1125,8 @@ export class PieFedApi
               parent_id: form.parentId,
               max_depth: form.maxDepth,
               saved_only: form.savedOnly,
+              // @ts-expect-error type_ is missing from piefed's input schema but is implemented
+              type_: "All",
             },
             options,
           );
@@ -1157,6 +1159,8 @@ export class PieFedApi
               parent_id: form.parentId,
               post_id,
               max_depth: form.maxDepth,
+              // @ts-expect-error type_ is missing from piefed's input schema but is implemented
+              type_: "All",
             },
             options,
           ),
@@ -1415,6 +1419,8 @@ export class PieFedApi
                 form.pageCursor === INIT_PAGE_TOKEN
                   ? undefined
                   : pageCursorToInt(form.pageCursor),
+              // @ts-expect-error type_ is missing from piefed's input schema but is implemented
+              type_: "All",
             },
             options,
           );
