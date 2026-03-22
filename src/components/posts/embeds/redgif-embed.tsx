@@ -13,13 +13,13 @@ const fetchJson = async (url: string, init?: RequestInit) => {
 };
 
 const getRedGifData = async (url: string): Promise<GifData | undefined> => {
-  const id = url.split("/").pop();
-  if (!id) return undefined;
-
   const tokenUrl = "https://api.redgifs.com/v2/auth/temporary";
-  const gifUrl = `https://api.redgifs.com/v2/gifs/${id}`;
 
   try {
+    const id = new URL(url).pathname.split("/").pop();
+    if (!id) return undefined;
+
+    const gifUrl = `https://api.redgifs.com/v2/gifs/${id}`;
     const { token } = await fetchJson(tokenUrl);
     const { gif } = await fetchJson(gifUrl, {
       headers: { Authorization: `Bearer ${token}` },
