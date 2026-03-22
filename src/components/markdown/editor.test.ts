@@ -316,19 +316,24 @@ describe("spoiler extension", () => {
     expect(md).toContain("Content B");
   });
 
-  // The tokenizer tracks nesting levels correctly, but @tiptap/extension-details
-  // schema does not allow a details node inside detailsContent, so the inner
-  // spoiler node gets ejected from the tree and nesting is lost.
-  it.fails("round-trips nested spoilers", () => {
-    setMarkdown(
-      editor,
-      "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::\n:::",
-    );
-    const md = getMarkdown(editor);
-    expect(md).toContain("::: spoiler Outer");
-    expect(md).toContain("::: spoiler Inner");
-    expect(md).toContain("Deep secret");
-  });
+  // Lemmy appears to use a single trailing ::: to close all nesting levels, not
+  // one per level. TODO: confirm whether this is intentional Lemmy behavior or
+  // an accidental side-effect of their parser before implementing.
+  // If intentional: change the tokenizer to stop at the first ::: it finds
+  // (instead of tracking nesting depth) so one ::: closes everything.
+  it.todo(
+    "round-trips nested spoilers (Lemmy format: one ::: closes all levels)",
+    () => {
+      setMarkdown(
+        editor,
+        "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::",
+      );
+      const md = getMarkdown(editor);
+      expect(md).toContain("::: spoiler Outer");
+      expect(md).toContain("::: spoiler Inner");
+      expect(md).toContain("Deep secret");
+    },
+  );
 });
 
 // ---------------------------------------------------------------------------
