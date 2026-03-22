@@ -21,12 +21,16 @@ jobs:
   ios:
     name: iOS – Build & Upload to TestFlight
     if: ${{ github.event_name == 'push' || github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26"
 
       - uses: pnpm/action-setup@v4
 
