@@ -2,6 +2,14 @@ import _ from "lodash";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+export function exhaustiveList<TUnion>() {
+  return <const T extends readonly TUnion[]>(
+    list: [Exclude<TUnion, T[number]>] extends [never]
+      ? T
+      : `Missing values: ${Exclude<TUnion, T[number]> & string}`,
+  ): T => list as T;
+}
+
 export function isNotNull<T extends Record<any, any>>(obj: T | null): obj is T {
   return !_.isNull(obj);
 }

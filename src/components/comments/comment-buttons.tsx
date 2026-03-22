@@ -62,9 +62,9 @@ export function CommentEmojiReactions({
   className,
   onReact,
 }: {
-  reactions?: { token: string; count: number; url?: string }[];
+  reactions?: { token?: string; count: number; url?: string }[];
   className?: string;
-  onReact?: (emoji: string) => void;
+  onReact?: (emoji?: string) => void;
 }) {
   const allReactions = reactions ?? [];
   if (allReactions.length === 0) return null;
