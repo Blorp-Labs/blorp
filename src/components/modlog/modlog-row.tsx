@@ -126,7 +126,6 @@ export function ModlogRowSkeleton() {
         <Skeleton className="w-28" />
         <Skeleton className="flex-1" />
       </div>
-      <></>
     </ContentGutters>
   );
 }
