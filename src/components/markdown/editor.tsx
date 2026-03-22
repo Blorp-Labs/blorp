@@ -35,7 +35,6 @@ import { useSettingsStore } from "@/src/stores/settings";
 import { IoLogoMarkdown, IoDocumentText, IoLink } from "react-icons/io5";
 import { useUploadImage } from "@/src/lib/api";
 import { LuImageUp } from "react-icons/lu";
-import _ from "lodash";
 import { useIonAlert } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
 import z from "zod";
@@ -342,6 +341,7 @@ function TipTapEditor({
   placeholder,
   onFocus,
   onBlur,
+  onSubmit,
   id,
   hideMenu,
 }: {
@@ -352,6 +352,7 @@ function TipTapEditor({
   placeholder?: string;
   onFocus?: () => void;
   onBlur?: () => void;
+  onSubmit?: () => void;
   id?: string;
   hideMenu?: boolean;
 }) {
@@ -436,6 +437,18 @@ function TipTapEditor({
       scrollMargin: 50,
       attributes: {
         class: "flex-1 min-h-full space-y-4 outline-none",
+      },
+      handleKeyDown: (_view, event) => {
+        if (
+          onSubmit &&
+          event.key === "Enter" &&
+          (event.metaKey || event.ctrlKey)
+        ) {
+          event.preventDefault();
+          onSubmit();
+          return true;
+        }
+        return false;
       },
       handlePaste: (view, event) => {
         if (event.clipboardData && event.clipboardData.files.length > 0) {
@@ -606,6 +619,7 @@ function TextAreaEditor({
   placeholder,
   onFocus,
   onBlur,
+  onSubmit,
   id,
   hideMenu,
 }: {
@@ -616,6 +630,7 @@ function TextAreaEditor({
   placeholder?: string;
   onFocus?: () => void;
   onBlur?: () => void;
+  onSubmit?: () => void;
   id?: string;
   hideMenu?: boolean;
 }) {
@@ -656,6 +671,12 @@ function TextAreaEditor({
         placeholder={placeholder}
         onFocus={onFocus}
         onBlur={onBlur}
+        onKeyDown={(e) => {
+          if (onSubmit && e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            onSubmit();
+          }
+        }}
       />
       <div
         className={cn(
@@ -695,6 +716,7 @@ export function MarkdownEditor({
   placeholder,
   onFocus,
   onChageEditorType,
+  onSubmit,
   footer,
   id,
   hideMenu,
@@ -706,6 +728,7 @@ export function MarkdownEditor({
   placeholder?: string;
   onFocus?: () => void;
   onChageEditorType?: () => void;
+  onSubmit?: () => void;
   footer?: React.ReactNode;
   id?: string;
   hideMenu?: boolean;
@@ -728,6 +751,7 @@ export function MarkdownEditor({
           autoFocus={autoFocus}
           placeholder={placeholder}
           onFocus={onFocus}
+          onSubmit={onSubmit}
           id={id}
           hideMenu={hideMenu}
         />
@@ -743,6 +767,7 @@ export function MarkdownEditor({
           autoFocus={autoFocus}
           placeholder={placeholder}
           onFocus={onFocus}
+          onSubmit={onSubmit}
           id={id}
           hideMenu={hideMenu}
         />
