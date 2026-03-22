@@ -417,7 +417,7 @@ function LargePostCard({
         }}
         className="gap-2 flex flex-col after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]"
         disable={detailView}
-        onClick={() => revealPost(apId)}
+        onClick={() => post.nsfw && revealPost(apId)}
       >
         <span
           className={twMerge(
@@ -460,7 +460,7 @@ function LargePostCard({
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
             className="max-md:-mx-3.5 flex flex-col relative overflow-hidden md:rounded-lg cursor-zoom-in"
-            onClick={() => revealPost(apId)}
+            onClick={() => post.nsfw && revealPost(apId)}
           >
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-none md:rounded-lg" />
@@ -695,7 +695,7 @@ export function SmallPostCard({
           }}
           searchParams={`?apId=${encodeApId(apId)}`}
           className="relative"
-          onClick={() => revealPost(apId)}
+          onClick={() => post.nsfw && revealPost(apId)}
         >
           {!imageLoaded && (
             <Skeleton className="absolute inset-0 md:rounded-md" />
@@ -782,7 +782,7 @@ export function SmallPostCard({
             "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
-          onClick={() => revealPost(apId)}
+          onClick={() => post.nsfw && revealPost(apId)}
         >
           <span
             className={cn(
