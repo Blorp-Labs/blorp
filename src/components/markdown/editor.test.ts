@@ -242,6 +242,96 @@ describe("editor commands", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Spoiler extension tests
+// ---------------------------------------------------------------------------
+
+describe("spoiler extension", () => {
+  let editor: Editor;
+
+  beforeEach(() => {
+    editor = createEditor();
+  });
+
+  afterEach(() => {
+    editor.destroy();
+  });
+
+  it("round-trips a basic spoiler", () => {
+    setMarkdown(editor, "::: spoiler Title\nSecret content\n:::");
+    expect(getMarkdown(editor)).toBe("::: spoiler Title\nSecret content\n:::");
+  });
+
+  it("preserves a multi-word title", () => {
+    setMarkdown(editor, "::: spoiler My Long Spoiler Title\nBody text\n:::");
+    expect(getMarkdown(editor)).toBe(
+      "::: spoiler My Long Spoiler Title\nBody text\n:::",
+    );
+  });
+
+  it("round-trips a spoiler with an empty body", () => {
+    setMarkdown(editor, "::: spoiler Empty\n:::");
+    const md = getMarkdown(editor);
+    // Must still open and close as a spoiler block
+    expect(md).toMatch(/^::: spoiler Empty\n/);
+    expect(md).toMatch(/\n:::$/);
+  });
+
+  it("round-trips a spoiler with a multi-paragraph body", () => {
+    setMarkdown(
+      editor,
+      "::: spoiler Title\nFirst paragraph\n\nSecond paragraph\n:::",
+    );
+    const md = getMarkdown(editor);
+    expect(md).toContain("First paragraph");
+    expect(md).toContain("Second paragraph");
+    expect(md).toMatch(/^::: spoiler Title\n/);
+    expect(md).toMatch(/\n:::$/);
+  });
+
+  it("round-trips a spoiler with bold text in the body", () => {
+    setMarkdown(editor, "::: spoiler Title\n**bold** text\n:::");
+    const md = getMarkdown(editor);
+    expect(md).toContain("**bold**");
+    expect(md).toMatch(/^::: spoiler Title\n/);
+  });
+
+  it("round-trips a spoiler with a bullet list in the body", () => {
+    setMarkdown(editor, "::: spoiler Title\n- item one\n- item two\n:::");
+    const md = getMarkdown(editor);
+    expect(md).toContain("item one");
+    expect(md).toContain("item two");
+    expect(md).toMatch(/^::: spoiler Title\n/);
+    expect(md).toMatch(/\n:::$/);
+  });
+
+  it("round-trips two consecutive spoilers without one consuming the other", () => {
+    setMarkdown(
+      editor,
+      "::: spoiler First\nContent A\n:::\n\n::: spoiler Second\nContent B\n:::",
+    );
+    const md = getMarkdown(editor);
+    expect(md).toContain("::: spoiler First");
+    expect(md).toContain("Content A");
+    expect(md).toContain("::: spoiler Second");
+    expect(md).toContain("Content B");
+  });
+
+  // The tokenizer tracks nesting levels correctly, but @tiptap/extension-details
+  // schema does not allow a details node inside detailsContent, so the inner
+  // spoiler node gets ejected from the tree and nesting is lost.
+  it.fails("round-trips nested spoilers", () => {
+    setMarkdown(
+      editor,
+      "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::\n:::",
+    );
+    const md = getMarkdown(editor);
+    expect(md).toContain("::: spoiler Outer");
+    expect(md).toContain("::: spoiler Inner");
+    expect(md).toContain("Deep secret");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Upstream bugs that have been fixed — regression tests to ensure they stay
 // fixed. If one of these starts failing, a tiptap update broke something.
 // ---------------------------------------------------------------------------
