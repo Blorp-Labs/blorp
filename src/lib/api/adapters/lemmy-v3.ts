@@ -975,7 +975,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
           ? 1
           : _.parseInt(form.pageCursor) + 1;
-      const hasNextCursor = posts.length >= this.limit;
+      const hasNextCursor =
+        posts.length >= this.limit || comments.length >= this.limit;
 
       return {
         posts: posts.map((p) => convertPost(p)),
