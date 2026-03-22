@@ -7,8 +7,8 @@ android {
         applicationId "xyz.blorpblorp.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv("VERSION_CODE")?.toInteger() ?: 53)
-        versionName (System.getenv("VERSION_NAME") ?: "1.10.8")
+        versionCode (System.getenv("VERSION_CODE")?.toInteger() ?: 54)
+        versionName (System.getenv("VERSION_NAME") ?: "1.11.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
