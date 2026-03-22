@@ -32,7 +32,7 @@ import { BadgeIcon } from "@/src/components/badge-count";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { RelativeTime } from "@/src/components/relative-time";
-import { Message, X } from "@/src/components/icons";
+import { Bookmark, Message, X } from "@/src/components/icons";
 import { Separator } from "@/src/components/ui/separator";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
@@ -51,6 +51,7 @@ import {
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
+import { getCommentSaved } from "@/src/lib/api/adapters/utils";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 
@@ -148,6 +149,9 @@ function Comment({ commentPath }: { commentPath: string }) {
             <CommentButtonBar>
               <RelativeTime time={comment.createdAt} />
               <div className="flex-1" />
+              {getCommentSaved(comment) && (
+                <Bookmark className="text-lg text-brand mr-2" />
+              )}
               <EllipsisActionMenu
                 actions={actions}
                 aria-label="Comment actions"
