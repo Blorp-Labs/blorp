@@ -5,6 +5,7 @@ import {
   ReactNodeViewRenderer,
   useEditor,
 } from "@tiptap/react";
+import type { NodeViewRenderer } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "@tiptap/markdown";
@@ -48,6 +49,14 @@ function stripTrailingNbsp(md: string): string {
   let result = md.replace(/(\n\n&nbsp;)+$/, "");
   if (result === "&nbsp;") result = "";
   return result;
+}
+
+export function getMarkdown(editor: Editor): string {
+  return stripTrailingNbsp(editor.getMarkdown());
+}
+
+export function setMarkdown(editor: Editor, md: string): void {
+  editor.commands.setContent(md, { contentType: "markdown" });
 }
 
 const CustomLink = Link.extend({
@@ -359,6 +368,58 @@ const MenuBar = ({
   );
 };
 
+export function getEditorExtensions({
+  placeholder,
+  codeBlockRenderer,
+  mentionSuggestions,
+}: {
+  placeholder?: string;
+  codeBlockRenderer?: NodeViewRenderer;
+  mentionSuggestions?: ReturnType<typeof useMentionSuggestions>;
+} = {}) {
+  return [
+    Markdown,
+    ...(placeholder !== undefined
+      ? [Placeholder.configure({ placeholder })]
+      : []),
+    StarterKit.configure({
+      codeBlock: false,
+    }),
+    Image.configure({ inline: true }),
+    codeBlockRenderer
+      ? CodeBlockLowlight.extend({
+          addNodeView() {
+            return codeBlockRenderer;
+          },
+        }).configure({ lowlight })
+      : CodeBlockLowlight.configure({ lowlight }),
+    CustomLink.configure({
+      autolink: true,
+      defaultProtocol: "https",
+    }),
+    TableKit.configure({
+      table: { resizable: true },
+    }),
+    ...(mentionSuggestions
+      ? [
+          Mention.configure({
+            HTMLAttributes: { class: "mention" },
+            suggestions: mentionSuggestions,
+          }),
+        ]
+      : []),
+    Subscript,
+    Superscript,
+    DetailsWithMarkdown.configure({
+      HTMLAttributes: {
+        class: "details",
+      },
+    }),
+    DetailsSummaryWithMarkdown,
+    DetailsContentWithMarkdown,
+  ];
+}
+
 function TipTapEditor({
   autoFocus,
   content,
@@ -409,48 +470,13 @@ function TipTapEditor({
         editor.commands.focus("end");
       }
     },
-    extensions: [
-      Markdown,
-      Placeholder.configure({
-        placeholder,
-      }),
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      Markdown,
-      Image.configure({ inline: true }),
-      CodeBlockLowlight.extend({
-        addNodeView() {
-          return ReactNodeViewRenderer(CodeBlockEditor);
-        },
-      }).configure({
-        lowlight,
-      }),
-      CustomLink.configure({
-        autolink: true,
-        defaultProtocol: "https",
-      }),
-      TableKit.configure({
-        table: { resizable: true },
-      }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestions: mentionSuggestions,
-      }),
-      Subscript,
-      Superscript,
-      DetailsWithMarkdown.configure({
-        HTMLAttributes: {
-          class: "details",
-        },
-      }),
-      DetailsSummaryWithMarkdown,
-      DetailsContentWithMarkdown,
-    ],
+    extensions: getEditorExtensions({
+      placeholder,
+      codeBlockRenderer: ReactNodeViewRenderer(CodeBlockEditor),
+      mentionSuggestions,
+    }),
     onUpdate: ({ editor }) => {
-      onChange(stripTrailingNbsp(editor.getMarkdown()));
+      onChange(getMarkdown(editor));
     },
     onFocus: () => onFocus?.(),
     onBlur,
@@ -541,8 +567,8 @@ function TipTapEditor({
   });
 
   useEffect(() => {
-    if (stripTrailingNbsp(editor.getMarkdown()) !== content) {
-      editor.commands.setContent(content, { contentType: "markdown" });
+    if (getMarkdown(editor) !== content) {
+      setMarkdown(editor, content);
     }
   }, [content, editor]);
 
