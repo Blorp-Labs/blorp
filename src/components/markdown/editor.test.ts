@@ -5,6 +5,8 @@ import {
   getMarkdown,
   setMarkdown,
   insertLink,
+  updateLink,
+  getActiveLinkInfo,
 } from "./editor";
 
 /**
@@ -243,6 +245,37 @@ describe("editor commands", () => {
     editor.commands.selectAll();
     insertLink(editor, "this is a test", "https://example.com");
     expect(getMarkdown(editor)).toBe("[this is a test](https://example.com)");
+  });
+
+  it("updateLink changes the href of an existing link", () => {
+    setMarkdown(editor, "[example](https://old.com)");
+    // Place cursor inside the link
+    editor.commands.setTextSelection(2);
+    const linkInfo = getActiveLinkInfo(editor);
+    expect(linkInfo).not.toBeNull();
+    updateLink(editor, "example", "https://new.com", linkInfo!);
+    expect(getMarkdown(editor)).toBe("[example](https://new.com)");
+  });
+
+  it("updateLink changes both the text and href of an existing link", () => {
+    setMarkdown(editor, "[old text](https://old.com)");
+    editor.commands.setTextSelection(2);
+    const linkInfo = getActiveLinkInfo(editor);
+    expect(linkInfo).not.toBeNull();
+    updateLink(editor, "new text", "https://new.com", linkInfo!);
+    expect(getMarkdown(editor)).toBe("[new text](https://new.com)");
+  });
+
+  it("updateLink preserves bold mark on the link text", () => {
+    setMarkdown(editor, "[**bold link**](https://example.com)");
+    editor.commands.setTextSelection(2);
+    const linkInfo = getActiveLinkInfo(editor);
+    expect(linkInfo).not.toBeNull();
+    updateLink(editor, "bold link", "https://new.com", linkInfo!);
+    // Tiptap serializes coincident marks (bold + link on the same span) with
+    // bold as the outer wrapper, producing **[text](url)** rather than
+    // [**text**](url). The bold is preserved — just wrapped differently.
+    expect(getMarkdown(editor)).toBe("**[bold link](https://new.com)**");
   });
 
   it("setHorizontalRule inserts --- into the document", () => {
