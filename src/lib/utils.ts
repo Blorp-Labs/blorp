@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function exhaustiveList<TUnion>() {
   return <const T extends readonly TUnion[]>(
@@ -96,6 +97,19 @@ export function urlStripAfterPath(url: string) {
   const cut =
     q === -1 ? (h === -1 ? url.length : h) : h === -1 ? q : Math.min(q, h);
   return url.slice(0, cut);
+}
+
+const jwtPayloadSchema = z.object({ exp: z.number() });
+
+export function unsafeParseJwt(token: string): { exp?: number } {
+  try {
+    const base64 = token.split(".")[1]?.replace(/-/g, "+").replace(/_/g, "/");
+    if (!base64) return {};
+    const parsed = jwtPayloadSchema.safeParse(JSON.parse(atob(base64)));
+    return parsed.success ? parsed.data : {};
+  } catch {
+    return {};
+  }
 }
 
 export const assert = import.meta.env.DEV

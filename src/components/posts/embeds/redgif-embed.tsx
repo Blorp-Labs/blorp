@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import { z } from "zod";
-import { assert, cn } from "@/src/lib/utils";
+import { assert, cn, unsafeParseJwt } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
 import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
 import { privilegedFetch } from "@/src/lib/privileged-fetch";
-import _ from "lodash";
 
 type GifData = { src: string; width: number; height: number };
 
@@ -15,8 +13,6 @@ const fetchJson = async (url: string, init?: RequestInit): Promise<any> => {
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
-const jwtPayloadSchema = z.object({ exp: z.number() });
-
 const getToken = async (): Promise<string> => {
   if (cachedToken && Date.now() < cachedToken.expiresAt - 60_000) {
     return cachedToken.value;
@@ -24,14 +20,12 @@ const getToken = async (): Promise<string> => {
   const { token } = await fetchJson(
     "https://api.redgifs.com/v2/auth/temporary",
   );
-  const parsed = jwtPayloadSchema.safeParse(
-    JSON.parse(atob(token.split(".")[1])),
-  );
+  const { exp } = unsafeParseJwt(token);
   // If parsing fails, skip caching and return the token anyway — the next
   // call will fetch a fresh token. assert() catches this in dev.
-  assert(parsed.success);
-  if (parsed.success) {
-    cachedToken = { value: token, expiresAt: parsed.data.exp * 1000 };
+  assert(exp !== undefined);
+  if (exp !== undefined) {
+    cachedToken = { value: token, expiresAt: exp * 1000 };
   }
   return token;
 };
@@ -94,7 +88,7 @@ export function RedGifEmbed({
   }, [url, nsfwHidden]);
 
   const aspectRatio = data ? data.width / data.height : 9 / 16;
-  const isVertical = _.isNumber(aspectRatio) && aspectRatio < 1;
+  const isVertical = aspectRatio < 1;
 
   return (
     <div className={cn("bg-muted relative", ABOVE_LINK_OVERLAY)}>

@@ -106,9 +106,7 @@ export function PostArticleMiniEmbed({
   const [imageStatus, setImageStatus] = useState<
     "loading" | "error" | "success"
   >("loading");
-  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
-    nsfw ?? false,
-  );
+  const { blurClassName } = useBlurNsfwState(nsfw ?? false);
 
   const showImage = thumbnail && imageStatus !== "error";
 
@@ -140,10 +138,7 @@ export function PostArticleMiniEmbed({
                 blurClassName,
               )}
               onLoad={() => setImageStatus("success")}
-              onError={() => {
-                console.log("err");
-                setImageStatus("error");
-              }}
+              onError={() => setImageStatus("error")}
             />
           </>
         ) : (
