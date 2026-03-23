@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { PostCard } from "./post";
-import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { usePostsStore } from "@/src/stores/posts";
 import { useEffect } from "react";
@@ -56,6 +55,27 @@ const bandcampPost = api.getPost({
 const pollPost = api.getPost({
   variant: "poll",
   post: { id: api.randomDbId() },
+});
+
+const nsfwImagePost = api.getPost({
+  variant: "image",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwArticlePost = api.getPost({
+  variant: "article",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwVideoPost = api.getPost({
+  variant: "video",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwLoopsPost = api.getPost({
+  variant: "loops",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwRedGifPost = api.getPost({
+  variant: "redgif",
+  post: { id: api.randomDbId(), nsfw: true },
 });
 
 const postWithSingleReaction = api.getPost({
@@ -134,6 +154,11 @@ const POSTS = [
   postWithCrossPosts,
   postWithSingleReaction,
   postWithManyReactions,
+  nsfwImagePost,
+  nsfwArticlePost,
+  nsfwVideoPost,
+  nsfwLoopsPost,
+  nsfwRedGifPost,
 ];
 
 function LoadData() {
@@ -317,6 +342,41 @@ export const WithSingleReaction: Story = {
 export const WithManyReactionsTruncated: Story = {
   args: {
     apId: postWithManyReactions.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwImage: Story = {
+  args: {
+    apId: nsfwImagePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwArticle: Story = {
+  args: {
+    apId: nsfwArticlePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwVideo: Story = {
+  args: {
+    apId: nsfwVideoPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwLoops: Story = {
+  args: {
+    apId: nsfwLoopsPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwRedGif: Story = {
+  args: {
+    apId: nsfwRedGifPost.post.apId,
     postCardStyle: "large",
   },
 };
