@@ -18,20 +18,22 @@ const NO_BORDER_RADIUS = {
 
 export function PostVideoEmbed({
   url,
+  thumbnail,
   nsfw,
   apId,
   detailView,
 }: {
   url: string;
+  thumbnail?: string | null;
   nsfw?: boolean;
   apId?: string;
   detailView?: boolean;
 }) {
   const media = useMedia();
-  const { nsfwHidden, onReveal } = useBlurNsfwState(nsfw ?? false, {
-    apId,
-    detailView,
-  });
+  const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
+    nsfw ?? false,
+    { apId, detailView },
+  );
   return (
     <div
       className={cn(
@@ -40,7 +42,17 @@ export function PostVideoEmbed({
       )}
     >
       {nsfwHidden ? (
-        <div className="aspect-video bg-muted" />
+        <div className={cn("aspect-video bg-muted relative overflow-hidden")}>
+          {thumbnail && (
+            <img
+              src={thumbnail}
+              className={cn(
+                "absolute inset-0 w-full h-full object-cover",
+                blurClassName,
+              )}
+            />
+          )}
+        </div>
       ) : (
         <ReactPlayer
           style={{

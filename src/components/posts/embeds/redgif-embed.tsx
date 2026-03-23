@@ -92,7 +92,10 @@ export function RedGifEmbed({
   return (
     <div className={cn("bg-muted relative", ABOVE_LINK_OVERLAY)}>
       <div
-        className={cn("w-full relative", isVertical && "md:max-w-sm mx-auto")}
+        className={cn(
+          "w-full relative overflow-hidden",
+          isVertical && "md:max-w-sm mx-auto",
+        )}
         style={{ aspectRatio: aspectRatio }}
       >
         {(nsfwHidden || !data) && thumbnail && (

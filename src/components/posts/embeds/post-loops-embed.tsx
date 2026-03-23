@@ -61,7 +61,7 @@ export function PostLoopsEmbed({
     <div
       className={cn("bg-muted max-md:contents relative", ABOVE_LINK_OVERLAY)}
     >
-      <div className="aspect-[9/16] md:max-w-xs mx-auto relative max-md:-mx-3.5">
+      <div className="aspect-[9/16] md:max-w-xs mx-auto relative max-md:-mx-3.5 overflow-hidden">
         {(nsfwHidden || !src) && thumbnail && (
           <img
             src={thumbnail}
@@ -98,7 +98,11 @@ export function PostLoopsEmbed({
       <a href={url} target="_blank" rel="noopener noreferrer">
         {content}
       </a>
-      {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
+      {nsfwHidden && (
+        <div className="absolute inset-0 z-[3]">
+          <ShowNsfwButton onReveal={onReveal} />
+        </div>
+      )}
     </div>
   ) : (
     content

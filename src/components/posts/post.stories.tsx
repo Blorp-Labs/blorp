@@ -182,6 +182,19 @@ function LoadData() {
   return null;
 }
 
+// showNsfw: true makes the post visible; blurNsfw: true keeps the blur overlay.
+function LoadNsfwSettings() {
+  const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
+
+  useEffect(() => {
+    updateSelectedAccount({
+      site: api.getSite({ showNsfw: true, blurNsfw: true }),
+    });
+  }, [updateSelectedAccount]);
+
+  return null;
+}
+
 //👇 This default export determines where your story goes in the story list
 const meta: Meta<typeof PostCard> = {
   component: PostCard,
@@ -346,7 +359,15 @@ export const WithManyReactionsTruncated: Story = {
   },
 };
 
+const nsfwDecorator: Story["decorators"] = (Story) => (
+  <>
+    <LoadNsfwSettings />
+    <Story />
+  </>
+);
+
 export const NsfwImage: Story = {
+  decorators: nsfwDecorator,
   args: {
     apId: nsfwImagePost.post.apId,
     postCardStyle: "large",
@@ -354,6 +375,7 @@ export const NsfwImage: Story = {
 };
 
 export const NsfwArticle: Story = {
+  decorators: nsfwDecorator,
   args: {
     apId: nsfwArticlePost.post.apId,
     postCardStyle: "large",
@@ -361,6 +383,7 @@ export const NsfwArticle: Story = {
 };
 
 export const NsfwVideo: Story = {
+  decorators: nsfwDecorator,
   args: {
     apId: nsfwVideoPost.post.apId,
     postCardStyle: "large",
@@ -368,6 +391,7 @@ export const NsfwVideo: Story = {
 };
 
 export const NsfwLoops: Story = {
+  decorators: nsfwDecorator,
   args: {
     apId: nsfwLoopsPost.post.apId,
     postCardStyle: "large",
@@ -375,6 +399,7 @@ export const NsfwLoops: Story = {
 };
 
 export const NsfwRedGif: Story = {
+  decorators: nsfwDecorator,
   args: {
     apId: nsfwRedGifPost.post.apId,
     postCardStyle: "large",

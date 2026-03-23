@@ -540,6 +540,7 @@ function LargePostCard({
         embed.embedUrl && (
           <PostVideoEmbed
             url={embed.embedUrl}
+            thumbnail={embed.thumbnail}
             nsfw={post.nsfw ?? undefined}
             apId={apId}
             detailView={detailView}
