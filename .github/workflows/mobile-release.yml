@@ -7,6 +7,14 @@ on:
       - "v*"
   workflow_dispatch:
     inputs:
+      confirm:
+        description: "I confirm this is a production release"
+        required: true
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes, deploy release"
       platform:
         description: "Platform to deploy"
         required: true
@@ -20,7 +28,7 @@ on:
 jobs:
   ios:
     name: iOS – Build & Upload to TestFlight
-    if: ${{ github.event_name == 'push' || github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
+    if: ${{ github.event_name == 'push' || (github.event.inputs.confirm == 'yes, deploy release' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both')) }}
     runs-on: macos-26
     timeout-minutes: 60
     steps:
@@ -93,7 +101,7 @@ jobs:
 
   android:
     name: Android – Build & Upload to Play Store + GitHub Release
-    if: ${{ github.event_name == 'push' || github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
+    if: ${{ github.event_name == 'push' || (github.event.inputs.confirm == 'yes, deploy release' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
