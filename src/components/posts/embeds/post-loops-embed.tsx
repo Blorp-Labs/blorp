@@ -89,19 +89,17 @@ export function PostLoopsEmbed({
         </div>
       )}
 
-      {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
+      {!linkOut && nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
     </div>
   );
 
   return linkOut ? (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={ABOVE_LINK_OVERLAY}
-    >
-      {content}
-    </a>
+    <div className={cn("relative", ABOVE_LINK_OVERLAY)}>
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {content}
+      </a>
+      {nsfwHidden && <ShowNsfwButton onReveal={onReveal} />}
+    </div>
   ) : (
     content
   );
