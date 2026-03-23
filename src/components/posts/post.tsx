@@ -633,8 +633,7 @@ export function SmallPostCard({
 
   const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
 
-  const blurNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
+  const { blurClassName } = useBlurNsfwState(post?.nsfw ?? false, { apId });
 
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -670,8 +669,6 @@ export function SmallPostCard({
     embed.type !== "article";
   const showArticle =
     !post.deleted && !post.removed && embed?.type === "article";
-  const blurImg = post.nsfw && blurNsfw;
-
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
 
@@ -713,10 +710,7 @@ export function SmallPostCard({
             <ProgressiveImage
               lowSrc={embed?.thumbnail}
               highSrc={embed?.fullResThumbnail}
-              className={cn(
-                "h-full w-full md:rounded-md",
-                blurImg && "blur-3xl",
-              )}
+              className={cn("h-full w-full md:rounded-md", blurClassName)}
               onAspectRatio={(thumbnailAspectRatio) => {
                 setImageLoaded(true);
                 if (!post.thumbnailAspectRatio) {
