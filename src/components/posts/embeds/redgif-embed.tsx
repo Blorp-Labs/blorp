@@ -8,9 +8,9 @@ import _ from "lodash";
 
 type GifData = { src: string; width: number; height: number };
 
-const fetchJson = async (url: string, init?: RequestInit) => {
+const fetchJson = async (url: string, init?: RequestInit): Promise<any> => {
   const res = await privilegedFetch(url, init);
-  return JSON.parse(await (await res.blob()).text());
+  return res.json();
 };
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
@@ -27,6 +27,8 @@ const getToken = async (): Promise<string> => {
   const parsed = jwtPayloadSchema.safeParse(
     JSON.parse(atob(token.split(".")[1])),
   );
+  // If parsing fails, skip caching and return the token anyway — the next
+  // call will fetch a fresh token. assert() catches this in dev.
   assert(parsed.success);
   if (parsed.success) {
     cachedToken = { value: token, expiresAt: parsed.data.exp * 1000 };
@@ -76,13 +78,18 @@ export function RedGifEmbed({
 
   useEffect(() => {
     if (!nsfwHidden) {
+      let aborted = false;
       getRedGifData(url).then((result) => {
+        if (aborted) return;
         if (result) {
           setData(result);
         } else {
           setFailed(true);
         }
       });
+      return () => {
+        aborted = true;
+      };
     }
   }, [url, nsfwHidden]);
 

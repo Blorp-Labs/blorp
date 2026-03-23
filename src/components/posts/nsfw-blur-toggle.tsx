@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { Button } from "../ui/button";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
@@ -19,12 +19,12 @@ export function useBlurNsfwState(
 
   const nsfwHidden = nsfw && blurNsfw && !revealed && !isRevealedByNavigation;
   const blurClassName = nsfwHidden ? "blur-3xl" : "";
-  const onReveal = () => {
+  const onReveal = useCallback(() => {
     setRevealed(true);
     if (options?.apId) {
       revealPost(options.apId);
     }
-  };
+  }, [options?.apId, revealPost]);
 
   return { nsfwHidden, blurClassName, onReveal };
 }

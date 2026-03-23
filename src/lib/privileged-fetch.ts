@@ -29,6 +29,7 @@ type CustomFetch = (
   init?: RequestInit,
 ) => Promise<{
   blob: () => Promise<Blob>;
+  json: () => Promise<unknown>;
   ok: boolean;
 }>;
 
