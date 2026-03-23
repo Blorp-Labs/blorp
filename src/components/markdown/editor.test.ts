@@ -135,6 +135,46 @@ describe("markdown round-trip", () => {
     setMarkdown(editor, "**bold** *italic* ~~strike~~");
     expect(getMarkdown(editor)).toBe("**bold** *italic* ~~strike~~");
   });
+
+  it("bold and italic combined", () => {
+    setMarkdown(editor, "***bold italic***");
+    expect(getMarkdown(editor)).toBe("***bold italic***");
+  });
+
+  it("fenced code block without language", () => {
+    setMarkdown(editor, "```\nhello world\n```");
+    expect(getMarkdown(editor)).toBe("```\nhello world\n```");
+  });
+
+  it("blockquote with inline formatting", () => {
+    setMarkdown(editor, "> **quoted bold**");
+    expect(getMarkdown(editor)).toBe("> **quoted bold**");
+  });
+
+  it("multiple paragraphs", () => {
+    setMarkdown(editor, "First paragraph\n\nSecond paragraph");
+    expect(getMarkdown(editor)).toBe("First paragraph\n\nSecond paragraph");
+  });
+
+  it("nested unordered list", () => {
+    setMarkdown(editor, "- item one\n  - nested item\n- item two");
+    const md = getMarkdown(editor);
+    expect(md).toContain("item one");
+    expect(md).toContain("nested item");
+    expect(md).toContain("item two");
+  });
+
+  it("basic table", () => {
+    setMarkdown(
+      editor,
+      "| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |",
+    );
+    const md = getMarkdown(editor);
+    expect(md).toContain("Header 1");
+    expect(md).toContain("Header 2");
+    expect(md).toContain("Cell 1");
+    expect(md).toContain("Cell 2");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -324,6 +364,69 @@ describe("editor commands", () => {
     editor.commands.selectAll();
     editor.commands.unsetAllMarks();
     expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("unsetAllMarks removes multiple marks from selected text", () => {
+    setMarkdown(editor, "***bold italic***");
+    editor.commands.selectAll();
+    editor.commands.unsetAllMarks();
+    expect(getMarkdown(editor)).toBe("bold italic");
+  });
+
+  it("toggleStrike removes ~~ from already-struck text", () => {
+    setMarkdown(editor, "~~hello world~~");
+    editor.commands.selectAll();
+    editor.commands.toggleStrike();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleCodeBlock removes code block markers when toggled off", () => {
+    setMarkdown(editor, "```\nhello world\n```");
+    editor.commands.setTextSelection({ from: 2, to: 12 });
+    editor.commands.toggleCodeBlock();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("unsetLink removes the link mark while keeping the text", () => {
+    setMarkdown(editor, "[example](https://example.com)");
+    editor.commands.setTextSelection(2);
+    editor.chain().focus().unsetLink().run();
+    expect(getMarkdown(editor)).toBe("example");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getActiveLinkInfo tests
+// ---------------------------------------------------------------------------
+
+describe("getActiveLinkInfo", () => {
+  let editor: Editor;
+
+  beforeEach(() => {
+    editor = createEditor();
+  });
+
+  afterEach(() => {
+    editor.destroy();
+  });
+
+  it("returns link info when cursor is inside a link", () => {
+    setMarkdown(editor, "[example](https://example.com)");
+    editor.commands.setTextSelection(2);
+    const linkInfo = getActiveLinkInfo(editor);
+    expect(linkInfo).not.toBeNull();
+    expect(linkInfo!.href).toBe("https://example.com");
+    expect(linkInfo!.text).toBe("example");
+  });
+
+  it("returns null when cursor is not inside a link", () => {
+    setMarkdown(editor, "hello world");
+    editor.commands.setTextSelection(2);
+    expect(getActiveLinkInfo(editor)).toBeNull();
+  });
+
+  it("returns null on an empty editor", () => {
+    expect(getActiveLinkInfo(editor)).toBeNull();
   });
 });
 
