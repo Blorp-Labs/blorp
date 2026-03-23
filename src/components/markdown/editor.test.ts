@@ -57,14 +57,16 @@ describe("markdown round-trip", () => {
     expect(getMarkdown(editor)).toBe("> a quote");
   });
 
-  it("heading level 1", () => {
-    setMarkdown(editor, "# Heading 1");
-    expect(getMarkdown(editor)).toBe("# Heading 1");
-  });
-
-  it("heading level 2", () => {
-    setMarkdown(editor, "## Heading 2");
-    expect(getMarkdown(editor)).toBe("## Heading 2");
+  it.each([
+    [1, "# Heading 1"],
+    [2, "## Heading 2"],
+    [3, "### Heading 3"],
+    [4, "#### Heading 4"],
+    [5, "##### Heading 5"],
+    [6, "###### Heading 6"],
+  ])("heading level %i", (_level, md) => {
+    setMarkdown(editor, md);
+    expect(getMarkdown(editor)).toBe(md);
   });
 
   it("unordered list", () => {
@@ -172,26 +174,6 @@ describe("markdown round-trip", () => {
     expect(md).toContain("item two");
   });
 
-  it("heading level 3", () => {
-    setMarkdown(editor, "### Heading 3");
-    expect(getMarkdown(editor)).toBe("### Heading 3");
-  });
-
-  it("heading level 4", () => {
-    setMarkdown(editor, "#### Heading 4");
-    expect(getMarkdown(editor)).toBe("#### Heading 4");
-  });
-
-  it("heading level 5", () => {
-    setMarkdown(editor, "##### Heading 5");
-    expect(getMarkdown(editor)).toBe("##### Heading 5");
-  });
-
-  it("heading level 6", () => {
-    setMarkdown(editor, "###### Heading 6");
-    expect(getMarkdown(editor)).toBe("###### Heading 6");
-  });
-
   it("image without alt text", () => {
     setMarkdown(editor, "![](https://example.com/img.png)");
     expect(getMarkdown(editor)).toBe("![](https://example.com/img.png)");
@@ -233,39 +215,32 @@ describe("editor commands", () => {
     editor.destroy();
   });
 
-  it("toggleBold wraps selected text in **", () => {
+  it.each([
+    ["toggleBold", "**hello world**"] as const,
+    ["toggleItalic", "*hello world*"] as const,
+    ["toggleStrike", "~~hello world~~"] as const,
+    ["toggleSubscript", "~hello world~"] as const,
+    ["toggleSuperscript", "^hello world^"] as const,
+    ["toggleCode", "`hello world`"] as const,
+  ])("%s wraps selected text", (command, expected) => {
     setMarkdown(editor, "hello world");
     editor.commands.selectAll();
-    editor.commands.toggleBold();
-    expect(getMarkdown(editor)).toBe("**hello world**");
+    editor.commands[command]();
+    expect(getMarkdown(editor)).toBe(expected);
   });
 
-  it("toggleBold removes ** from already-bold text", () => {
-    setMarkdown(editor, "**hello world**");
+  it.each([
+    ["toggleBold", "**hello world**"] as const,
+    ["toggleItalic", "*hello world*"] as const,
+    ["toggleStrike", "~~hello world~~"] as const,
+    ["toggleSubscript", "~hello world~"] as const,
+    ["toggleSuperscript", "^hello world^"] as const,
+    ["toggleCode", "`hello world`"] as const,
+  ])("%s removes marks from already-marked text", (command, input) => {
+    setMarkdown(editor, input);
     editor.commands.selectAll();
-    editor.commands.toggleBold();
+    editor.commands[command]();
     expect(getMarkdown(editor)).toBe("hello world");
-  });
-
-  it("toggleItalic wraps selected text in *", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleItalic();
-    expect(getMarkdown(editor)).toBe("*hello world*");
-  });
-
-  it("toggleItalic removes * from already-italic text", () => {
-    setMarkdown(editor, "*hello world*");
-    editor.commands.selectAll();
-    editor.commands.toggleItalic();
-    expect(getMarkdown(editor)).toBe("hello world");
-  });
-
-  it("toggleStrike wraps selected text in ~~", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleStrike();
-    expect(getMarkdown(editor)).toBe("~~hello world~~");
   });
 
   it("toggleBlockquote converts paragraph to blockquote", () => {
@@ -330,20 +305,6 @@ describe("editor commands", () => {
     editor.commands.selectAll();
     editor.commands.toggleCodeBlock();
     expect(getMarkdown(editor)).toBe("```\nhello world\n```");
-  });
-
-  it("toggleSubscript wraps selected text in ~", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleSubscript();
-    expect(getMarkdown(editor)).toBe("~hello world~");
-  });
-
-  it("toggleSuperscript wraps selected text in ^", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleSuperscript();
-    expect(getMarkdown(editor)).toBe("^hello world^");
   });
 
   it("insertLink via TextSelection (manual drag) links full text", () => {
@@ -414,13 +375,6 @@ describe("editor commands", () => {
     expect(getMarkdown(editor)).toBe("bold italic");
   });
 
-  it("toggleStrike removes ~~ from already-struck text", () => {
-    setMarkdown(editor, "~~hello world~~");
-    editor.commands.selectAll();
-    editor.commands.toggleStrike();
-    expect(getMarkdown(editor)).toBe("hello world");
-  });
-
   it("toggleCodeBlock removes code block markers when toggled off", () => {
     setMarkdown(editor, "```\nhello world\n```");
     editor.commands.setTextSelection({ from: 2, to: 12 });
@@ -433,34 +387,6 @@ describe("editor commands", () => {
     editor.commands.setTextSelection(2);
     editor.chain().focus().unsetLink().run();
     expect(getMarkdown(editor)).toBe("example");
-  });
-
-  it("toggleCode wraps selected text in backticks", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleCode();
-    expect(getMarkdown(editor)).toBe("`hello world`");
-  });
-
-  it("toggleCode removes backticks from already-code text", () => {
-    setMarkdown(editor, "`hello world`");
-    editor.commands.selectAll();
-    editor.commands.toggleCode();
-    expect(getMarkdown(editor)).toBe("hello world");
-  });
-
-  it("toggleSubscript removes ~ from already-subscript text", () => {
-    setMarkdown(editor, "~hello world~");
-    editor.commands.selectAll();
-    editor.commands.toggleSubscript();
-    expect(getMarkdown(editor)).toBe("hello world");
-  });
-
-  it("toggleSuperscript removes ^ from already-superscript text", () => {
-    setMarkdown(editor, "^hello world^");
-    editor.commands.selectAll();
-    editor.commands.toggleSuperscript();
-    expect(getMarkdown(editor)).toBe("hello world");
   });
 
   it("toggleBulletList with multiple items produces multiple paragraphs when toggled off", () => {
