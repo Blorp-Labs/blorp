@@ -60,6 +60,36 @@ export function setMarkdown(editor: Editor, md: string): void {
 }
 
 /**
+ * Update an existing link in the editor, replacing its text with `description`
+ * and its href with `href`. Non-link marks (bold, italic, etc.) on the first
+ * node of the link are preserved.
+ */
+export function updateLink(
+  editor: Editor,
+  description: string,
+  href: string,
+  linkInfo: NonNullable<ReturnType<typeof getActiveLinkInfo>>,
+): void {
+  const nodeAtStart = editor.state.doc.nodeAt(linkInfo.range.from);
+  const existingMarks = (nodeAtStart?.marks ?? [])
+    .filter((m) => m.type.name !== "link")
+    .map((m) => ({ type: m.type.name, attrs: m.attrs }));
+
+  editor
+    .chain()
+    .focus()
+    .extendMarkRange("link")
+    .insertContent([
+      {
+        type: "text",
+        text: description,
+        marks: [...existingMarks, { type: "link", attrs: { href } }],
+      },
+    ])
+    .run();
+}
+
+/**
  * Insert a link at the current selection, replacing the selected text with
  * `description` and applying `href`. Works correctly with both TextSelection
  * (manual drag) and AllSelection (Ctrl+A).
@@ -133,7 +163,7 @@ function IconFileInput({ onFiles }: { onFiles: (file: File[]) => void }) {
   );
 }
 
-function getActiveLinkInfo(editor: Editor) {
+export function getActiveLinkInfo(editor: Editor) {
   const { state } = editor;
   const linkType = state.schema.marks["link"];
   const { $from } = state.selection;
@@ -241,27 +271,7 @@ const MenuBar = ({
             if (url.trim() === "") {
               editor.chain().focus().unsetLink().run();
             } else if (isLinkActive && linkInfo) {
-              // Collect existing marks (bold, italic, etc.) excluding the old link
-              const nodeAtStart = editor.state.doc.nodeAt(linkInfo.range.from);
-              const existingMarks = (nodeAtStart?.marks ?? [])
-                .filter((m) => m.type.name !== "link")
-                .map((m) => ({ type: m.type.name, attrs: m.attrs }));
-
-              editor
-                .chain()
-                .focus()
-                .extendMarkRange("link")
-                .insertContent([
-                  {
-                    type: "text",
-                    text: description,
-                    marks: [
-                      ...existingMarks,
-                      { type: "link", attrs: { href: url } },
-                    ],
-                  },
-                ])
-                .run();
+              updateLink(editor, description, url, linkInfo);
             } else {
               insertLink(editor, description, url);
             }
