@@ -439,6 +439,15 @@ export function PostByline({
 
       <div className="flex-1" />
 
+      {post.nsfw && (
+        <Badge
+          variant="brand-secondary"
+          size="sm"
+          className={ABOVE_LINK_OVERLAY}
+        >
+          NSFW
+        </Badge>
+      )}
       {saved && (
         <Bookmark className={cn("text-lg text-brand", ABOVE_LINK_OVERLAY)} />
       )}

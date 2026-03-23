@@ -835,6 +835,8 @@ function ExtraSmallPostCard({
 
   const amIAdmin = useAmIAdmin();
 
+  const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
+
   const linkCtx = useLinkContext();
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
@@ -886,6 +888,7 @@ function ExtraSmallPostCard({
             "gap-2 flex flex-col flex-1 font-medium max-md:text-sm after:absolute after:inset-0 after:content-[''] after:z-[1]",
             !detailView && post.read && "text-muted-foreground",
           )}
+          onClick={() => post.nsfw && revealPost(apId)}
         >
           <span
             className={cn(
