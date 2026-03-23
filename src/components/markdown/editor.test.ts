@@ -121,6 +121,16 @@ describe("markdown round-trip", () => {
     );
   });
 
+  it("unordered list with bold item", () => {
+    setMarkdown(editor, "- **bold item**\n- normal item");
+    expect(getMarkdown(editor)).toBe("- **bold item**\n- normal item");
+  });
+
+  it("ordered list with italic item", () => {
+    setMarkdown(editor, "1. *italic item*\n2. normal item");
+    expect(getMarkdown(editor)).toBe("1. *italic item*\n2. normal item");
+  });
+
   it("mixed inline marks: bold, italic, strikethrough", () => {
     setMarkdown(editor, "**bold** *italic* ~~strike~~");
     expect(getMarkdown(editor)).toBe("**bold** *italic* ~~strike~~");
@@ -216,6 +226,22 @@ describe("editor commands", () => {
     editor.commands.selectAll();
     editor.commands.toggleOrderedList();
     expect(getMarkdown(editor)).toBe("1. hello world");
+  });
+
+  it("toggleBulletList removes list markers when toggled off", () => {
+    setMarkdown(editor, "- hello world");
+    // selectAll includes the list node itself so the toggle can't detect it's
+    // already active — use an explicit text selection inside the list item.
+    editor.commands.setTextSelection({ from: 3, to: 14 });
+    editor.commands.toggleBulletList();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleOrderedList removes list markers when toggled off", () => {
+    setMarkdown(editor, "1. hello world");
+    editor.commands.setTextSelection({ from: 3, to: 14 });
+    editor.commands.toggleOrderedList();
+    expect(getMarkdown(editor)).toBe("hello world");
   });
 
   it("toggleCodeBlock converts paragraph to fenced code block", () => {
