@@ -163,6 +163,13 @@ describe("editor commands", () => {
     expect(getMarkdown(editor)).toBe("*hello world*");
   });
 
+  it("toggleItalic removes * from already-italic text", () => {
+    setMarkdown(editor, "*hello world*");
+    editor.commands.selectAll();
+    editor.commands.toggleItalic();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
   it("toggleStrike wraps selected text in ~~", () => {
     setMarkdown(editor, "hello world");
     editor.commands.selectAll();
