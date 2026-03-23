@@ -73,6 +73,7 @@ export function InlineCommentReply({
           onChange={(val) => state.setContent(val)}
           autoFocus={autoFocus}
           placeholder="Add a comment..."
+          onSubmit={() => state.submit()}
           footer={
             <div className="flex flex-row justify-end p-1.5 pt-0 gap-2">
               <Button
