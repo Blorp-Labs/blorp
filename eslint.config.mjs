@@ -54,6 +54,7 @@ export default tseslint.config(
       "no-empty": "warn",
       "prefer-const": "warn",
       "no-useless-assignment": "warn",
+      curly: ["warn", "all"],
     },
   },
 );
