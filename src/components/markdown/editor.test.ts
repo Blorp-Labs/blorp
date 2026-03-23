@@ -270,33 +270,25 @@ describe("editor commands", () => {
     expect(getMarkdown(editor)).toBe("> hello world");
   });
 
-  it("toggleBulletList converts paragraph to unordered list", () => {
+  it.each([
+    ["toggleBulletList", "- hello world"] as const,
+    ["toggleOrderedList", "1. hello world"] as const,
+  ])("%s converts paragraph to list", (command, expected) => {
     setMarkdown(editor, "hello world");
     editor.commands.selectAll();
-    editor.commands.toggleBulletList();
-    expect(getMarkdown(editor)).toBe("- hello world");
+    editor.commands[command]();
+    expect(getMarkdown(editor)).toBe(expected);
   });
 
-  it("toggleOrderedList converts paragraph to ordered list", () => {
-    setMarkdown(editor, "hello world");
-    editor.commands.selectAll();
-    editor.commands.toggleOrderedList();
-    expect(getMarkdown(editor)).toBe("1. hello world");
-  });
-
-  it("toggleBulletList removes list markers when toggled off", () => {
-    setMarkdown(editor, "- hello world");
+  it.each([
+    ["toggleBulletList", "- hello world"] as const,
+    ["toggleOrderedList", "1. hello world"] as const,
+  ])("%s removes list markers when toggled off", (command, input) => {
+    setMarkdown(editor, input);
     // selectAll includes the list node itself so the toggle can't detect it's
     // already active — use an explicit text selection inside the list item.
     editor.commands.setTextSelection({ from: 3, to: 14 });
-    editor.commands.toggleBulletList();
-    expect(getMarkdown(editor)).toBe("hello world");
-  });
-
-  it("toggleOrderedList removes list markers when toggled off", () => {
-    setMarkdown(editor, "1. hello world");
-    editor.commands.setTextSelection({ from: 3, to: 14 });
-    editor.commands.toggleOrderedList();
+    editor.commands[command]();
     expect(getMarkdown(editor)).toBe("hello world");
   });
 
