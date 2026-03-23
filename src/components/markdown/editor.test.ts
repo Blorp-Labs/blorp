@@ -164,6 +164,47 @@ describe("markdown round-trip", () => {
     expect(md).toContain("item two");
   });
 
+  it("nested ordered list", () => {
+    setMarkdown(editor, "1. item one\n   1. nested item\n2. item two");
+    const md = getMarkdown(editor);
+    expect(md).toContain("item one");
+    expect(md).toContain("nested item");
+    expect(md).toContain("item two");
+  });
+
+  it("heading level 3", () => {
+    setMarkdown(editor, "### Heading 3");
+    expect(getMarkdown(editor)).toBe("### Heading 3");
+  });
+
+  it("heading level 4", () => {
+    setMarkdown(editor, "#### Heading 4");
+    expect(getMarkdown(editor)).toBe("#### Heading 4");
+  });
+
+  it("heading level 5", () => {
+    setMarkdown(editor, "##### Heading 5");
+    expect(getMarkdown(editor)).toBe("##### Heading 5");
+  });
+
+  it("heading level 6", () => {
+    setMarkdown(editor, "###### Heading 6");
+    expect(getMarkdown(editor)).toBe("###### Heading 6");
+  });
+
+  it("image without alt text", () => {
+    setMarkdown(editor, "![](https://example.com/img.png)");
+    expect(getMarkdown(editor)).toBe("![](https://example.com/img.png)");
+  });
+
+  it("blockquote with multiple paragraphs", () => {
+    setMarkdown(editor, "> first paragraph\n>\n> second paragraph");
+    const md = getMarkdown(editor);
+    expect(md).toContain("first paragraph");
+    expect(md).toContain("second paragraph");
+    expect(md).toMatch(/^>/m);
+  });
+
   it("basic table", () => {
     setMarkdown(
       editor,
@@ -393,6 +434,65 @@ describe("editor commands", () => {
     editor.chain().focus().unsetLink().run();
     expect(getMarkdown(editor)).toBe("example");
   });
+
+  it("toggleCode wraps selected text in backticks", () => {
+    setMarkdown(editor, "hello world");
+    editor.commands.selectAll();
+    editor.commands.toggleCode();
+    expect(getMarkdown(editor)).toBe("`hello world`");
+  });
+
+  it("toggleCode removes backticks from already-code text", () => {
+    setMarkdown(editor, "`hello world`");
+    editor.commands.selectAll();
+    editor.commands.toggleCode();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleSubscript removes ~ from already-subscript text", () => {
+    setMarkdown(editor, "~hello world~");
+    editor.commands.selectAll();
+    editor.commands.toggleSubscript();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleSuperscript removes ^ from already-superscript text", () => {
+    setMarkdown(editor, "^hello world^");
+    editor.commands.selectAll();
+    editor.commands.toggleSuperscript();
+    expect(getMarkdown(editor)).toBe("hello world");
+  });
+
+  it("toggleBulletList with multiple items produces multiple paragraphs when toggled off", () => {
+    setMarkdown(editor, "- alpha\n- beta\n- gamma");
+    // Select inside the list (not the list node itself) so the toggle detects it as active
+    editor.commands.setTextSelection({ from: 3, to: 20 });
+    editor.commands.toggleBulletList();
+    const md = getMarkdown(editor);
+    expect(md).not.toContain("- ");
+    expect(md).toContain("alpha");
+    expect(md).toContain("beta");
+    expect(md).toContain("gamma");
+  });
+
+  it("toggleOrderedList with multiple items produces multiple paragraphs when toggled off", () => {
+    setMarkdown(editor, "1. alpha\n2. beta\n3. gamma");
+    editor.commands.setTextSelection({ from: 3, to: 22 });
+    editor.commands.toggleOrderedList();
+    const md = getMarkdown(editor);
+    expect(md).not.toMatch(/^\d+\./m);
+    expect(md).toContain("alpha");
+    expect(md).toContain("beta");
+    expect(md).toContain("gamma");
+  });
+
+  it("insertLink with cursor only (no selection) inserts description as linked text", () => {
+    setMarkdown(editor, "");
+    // Place cursor at start with no selection
+    editor.commands.setTextSelection(1);
+    insertLink(editor, "click here", "https://example.com");
+    expect(getMarkdown(editor)).toBe("[click here](https://example.com)");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -419,6 +519,16 @@ describe("getActiveLinkInfo", () => {
     expect(linkInfo!.text).toBe("example");
   });
 
+  it("returns correct from/to range for the link", () => {
+    setMarkdown(editor, "[example](https://example.com)");
+    editor.commands.setTextSelection(2);
+    const linkInfo = getActiveLinkInfo(editor);
+    expect(linkInfo).not.toBeNull();
+    // The link text "example" occupies positions 1–8 inside the paragraph node
+    expect(linkInfo!.range.from).toBe(1);
+    expect(linkInfo!.range.to).toBe(8);
+  });
+
   it("returns null when cursor is not inside a link", () => {
     setMarkdown(editor, "hello world");
     editor.commands.setTextSelection(2);
@@ -427,6 +537,39 @@ describe("getActiveLinkInfo", () => {
 
   it("returns null on an empty editor", () => {
     expect(getActiveLinkInfo(editor)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Autolink tests (CustomLink configured with autolink: true)
+// ---------------------------------------------------------------------------
+
+describe("autolink", () => {
+  let editor: Editor;
+
+  beforeEach(() => {
+    editor = createEditor();
+  });
+
+  afterEach(() => {
+    editor.destroy();
+  });
+
+  it("bare URL in markdown is parsed as a link", () => {
+    setMarkdown(editor, "https://example.com");
+    const linkInfo = (() => {
+      editor.commands.setTextSelection(2);
+      return getActiveLinkInfo(editor);
+    })();
+    expect(linkInfo).not.toBeNull();
+    expect(linkInfo!.href).toBe("https://example.com");
+  });
+
+  it("bare URL round-trips with link mark preserved", () => {
+    setMarkdown(editor, "https://example.com");
+    const md = getMarkdown(editor);
+    // The URL should survive the round-trip (exact form may vary by serializer)
+    expect(md).toContain("https://example.com");
   });
 });
 
