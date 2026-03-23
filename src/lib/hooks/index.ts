@@ -68,6 +68,29 @@ export function useIsInAppBrowserOpen() {
   return isOpen;
 }
 
+function attachAlertEnterHandler(): () => void {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    const alert = document.querySelector("ion-alert");
+    if (!alert?.shadowRoot) return;
+    const confirmButton =
+      alert.shadowRoot.querySelector<HTMLElement>(
+        ".alert-button-role-confirm",
+      ) ??
+      Array.from(
+        alert.shadowRoot.querySelectorAll<HTMLElement>(".alert-button"),
+      )
+        .reverse()
+        .find((btn) => !btn.classList.contains("alert-button-role-cancel"));
+    if (confirmButton) {
+      e.preventDefault();
+      confirmButton.click();
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+  return () => document.removeEventListener("keydown", handleKeyDown);
+}
+
 export function useSelectAlert() {
   const [alrt] = useIonAlert();
   return async <T extends string>({
@@ -82,6 +105,7 @@ export function useSelectAlert() {
     cancelText?: string;
   }): Promise<T> => {
     const deferred = new Deferred<T>();
+    const removeEnterHandler = attachAlertEnterHandler();
     alrt({
       header,
       message,
@@ -93,6 +117,7 @@ export function useSelectAlert() {
         { text: cancelText, role: "cancel" },
       ],
       onDidDismiss: (e) => {
+        removeEnterHandler();
         if (e.detail.role === "cancel" || e.detail.role === "backdrop") {
           deferred.reject();
         }
@@ -125,6 +150,7 @@ export function useConfirmationAlert() {
     schema?: Z;
   }) => {
     const deferred = new Deferred<z.infer<Z>>();
+    const removeEnterHandler = attachAlertEnterHandler();
     alrt({
       header,
       message,
@@ -140,6 +166,7 @@ export function useConfirmationAlert() {
         },
       ],
       onDidDismiss: (e) => {
+        removeEnterHandler();
         if (e.detail.role === "cancel" || e.detail.role === "backdrop") {
           deferred.reject();
         } else {
@@ -170,6 +197,7 @@ export function useInputAlert() {
     placeholder?: string;
   }) => {
     const deferred = new Deferred<string>();
+    const removeEnterHandler = attachAlertEnterHandler();
     alrt({
       header,
       message,
@@ -179,6 +207,7 @@ export function useInputAlert() {
         { text: "OK", role: "confirm" },
       ],
       onDidDismiss: (e) => {
+        removeEnterHandler();
         if (e.detail.role === "cancel" || e.detail.role === "backdrop") {
           deferred.reject();
         } else {
