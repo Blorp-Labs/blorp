@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Editor } from "@tiptap/core";
-import { getEditorExtensions, getMarkdown, setMarkdown } from "./editor";
+import {
+  getEditorExtensions,
+  getMarkdown,
+  setMarkdown,
+  insertLink,
+} from "./editor";
 
 /**
  * Create a headless Editor that matches the production extension set.
@@ -223,6 +228,21 @@ describe("editor commands", () => {
     editor.commands.selectAll();
     editor.commands.toggleSuperscript();
     expect(getMarkdown(editor)).toBe("^hello world^");
+  });
+
+  it("insertLink via TextSelection (manual drag) links full text", () => {
+    setMarkdown(editor, "this is a test");
+    // Simulate a manual drag: TextSelection from 1 to 15
+    editor.commands.setTextSelection({ from: 1, to: 15 });
+    insertLink(editor, "this is a test", "https://example.com");
+    expect(getMarkdown(editor)).toBe("[this is a test](https://example.com)");
+  });
+
+  it("insertLink via selectAll (Ctrl+A) links full text", () => {
+    setMarkdown(editor, "this is a test");
+    editor.commands.selectAll();
+    insertLink(editor, "this is a test", "https://example.com");
+    expect(getMarkdown(editor)).toBe("[this is a test](https://example.com)");
   });
 
   it("setHorizontalRule inserts --- into the document", () => {
