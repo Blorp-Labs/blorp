@@ -58,6 +58,12 @@ export function getPostEmbed(post: Schemas.Post) {
   ) {
     embedType = "redgif";
   } else if (
+    post.embedVideoUrl?.startsWith("https://www.redgifs.com/watch/") ||
+    post.embedVideoUrl?.startsWith("https://redgifs.com/watch/")
+  ) {
+    embedType = "redgif";
+    embedUrl = post.embedVideoUrl;
+  } else if (
     (urlContentType && urlContentType.indexOf("image/") !== -1) ||
     strippedPostUrl?.endsWith(".jpeg") ||
     strippedPostUrl?.endsWith(".jpg") ||
