@@ -48,10 +48,42 @@ function DarkModeEffect() {
   return null;
 }
 
+function AlertEnterKeyHandler() {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+
+      const alert = document.querySelector("ion-alert");
+      if (!alert?.shadowRoot) return;
+
+      const confirmButton =
+        alert.shadowRoot.querySelector<HTMLElement>(
+          ".alert-button-role-confirm",
+        ) ??
+        Array.from(
+          alert.shadowRoot.querySelectorAll<HTMLElement>(".alert-button"),
+        )
+          .reverse()
+          .find((btn) => !btn.classList.contains("alert-button-role-cancel"));
+
+      if (confirmButton) {
+        e.preventDefault();
+        confirmButton.click();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   return (
     <IonApp>
       <DarkModeEffect />
+      <AlertEnterKeyHandler />
       <TanstackQueryProvider>
         <AuthProvider>
           <PostRemoveProvider>
