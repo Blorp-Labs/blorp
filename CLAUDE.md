@@ -15,3 +15,7 @@ pnpm test:ts
 pnpm test
 pnpm lint
 ```
+
+## TypeScript
+
+* Prefer satisfies over as when writing TypeScript

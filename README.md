@@ -56,9 +56,12 @@
 | [b.lemmy.nz](https://b.lemmy.nz/)                | ✅    | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.nz/package.json&query=%24.version&label=&cacheSeconds=300)         |
 | [b.lazysoci.al](https://b.lazysoci.al)           | ✅    |        | ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lazysoci.al/package.json&query=%24.version&label=&cacheSeconds=300)      |
 | [blorp.blahaj.zone](https://blorp.blahaj.zone)   | ✅    | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.blahaj.zone/package.json&query=%24.version&label=&cacheSeconds=300)  |
-| [blorp.blahaj.zone](https://blorp.blahaj.zone)   | ✅    | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.blahaj.zone/package.json&query=%24.version&label=&cacheSeconds=300)  |
 | [blorp.lemmy.ca](https://blorp.lemmy.ca)         | ✅    | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.lemmy.ca/package.json&query=%24.version&label=&cacheSeconds=300)     |
 | [blorp.piefed.ca](https://blorp.piefed.ca)       | ✅    | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefed.ca/package.json&query=%24.version&label=&cacheSeconds=300)    |
+| [b.lemmy.pt](https://b.lemmy.pt)                 | ✅    |        | ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.lemmy.pt/package.json&query=%24.version&label=&cacheSeconds=300)         |
+| [b.piefed.social](https://b.piefed.social)       |       | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://b.piefed.social/package.json&query=%24.version&label=&cacheSeconds=300)    |
+| [blorp.feddit.in](https://blorp.feddit.in)       | ✅    |        | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.feddit.in/package.json&query=%24.version&label=&cacheSeconds=300)    |
+| [blorp.piefeed.com](https://blorp.piefeed.com)   |       | ✅     | ![Version](https://img.shields.io/badge/dynamic/json?url=https://blorp.piefeed.com/package.json&query=%24.version&label=&cacheSeconds=300)  |
 
 ## 🛠 Development
 
