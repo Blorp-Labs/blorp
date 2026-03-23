@@ -27,7 +27,8 @@ export function getPostEmbed(post: Schemas.Post) {
     | "soundcloud"
     | "vimeo"
     | "generic-video"
-    | "peertube" = "text";
+    | "peertube"
+    | "redgif" = "text";
 
   const strippedPostUrl = post.url ? urlStripAfterPath(post.url) : null;
 
@@ -51,6 +52,17 @@ export function getPostEmbed(post: Schemas.Post) {
     embedUrl = post.embedVideoUrl;
   } else if (post.url?.startsWith("https://loops.video")) {
     embedType = "loops";
+  } else if (
+    post.url?.startsWith("https://www.redgifs.com/watch/") ||
+    post.url?.startsWith("https://redgifs.com/watch/")
+  ) {
+    embedType = "redgif";
+  } else if (
+    post.embedVideoUrl?.startsWith("https://www.redgifs.com/watch/") ||
+    post.embedVideoUrl?.startsWith("https://redgifs.com/watch/")
+  ) {
+    embedType = "redgif";
+    embedUrl = post.embedVideoUrl;
   } else if (
     (urlContentType && urlContentType.indexOf("image/") !== -1) ||
     strippedPostUrl?.endsWith(".jpeg") ||

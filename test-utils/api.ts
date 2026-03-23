@@ -73,7 +73,8 @@ export function getPost(config?: {
     | "vimeo"
     | "generic-video"
     | "peertube"
-    | "poll";
+    | "poll"
+    | "redgif";
   post?: Partial<Schemas.Post>;
   /* postView?: PartialDeep<Omit<PostView, "image_details">>; */
   /* personView?: PartialDeep<PersonView>; */
@@ -158,6 +159,8 @@ export function getPost(config?: {
     }
     case "video": {
       post.url = "https://www.w3schools.com/html/mov_bbb.mp4";
+      post.thumbnailUrl =
+        "https://lemmy.world/pictrs/image/53222559-aac6-4936-a1ad-4ca28fd94713.jpeg";
       break;
     }
     case "loops": {
@@ -184,6 +187,12 @@ export function getPost(config?: {
     case "bandcamp": {
       post.embedVideoUrl =
         "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
+      break;
+    }
+    case "redgif": {
+      post.url = "https://www.redgifs.com/watch/testredgifid";
+      post.thumbnailUrl =
+        "https://lemmy.world/pictrs/image/53222559-aac6-4936-a1ad-4ca28fd94713.jpeg";
       break;
     }
     case "poll": {

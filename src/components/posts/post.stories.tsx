@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { PostCard } from "./post";
-import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { usePostsStore } from "@/src/stores/posts";
 import { useEffect } from "react";
@@ -56,6 +55,31 @@ const bandcampPost = api.getPost({
 const pollPost = api.getPost({
   variant: "poll",
   post: { id: api.randomDbId() },
+});
+
+const nsfwImagePost = api.getPost({
+  variant: "image",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwArticlePost = api.getPost({
+  variant: "article",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwVideoPost = api.getPost({
+  variant: "video",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwLoopsPost = api.getPost({
+  variant: "loops",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwRedGifPost = api.getPost({
+  variant: "redgif",
+  post: { id: api.randomDbId(), nsfw: true },
+});
+const nsfwPeerTubePost = api.getPost({
+  variant: "peertube",
+  post: { id: api.randomDbId(), nsfw: true },
 });
 
 const postWithSingleReaction = api.getPost({
@@ -134,6 +158,12 @@ const POSTS = [
   postWithCrossPosts,
   postWithSingleReaction,
   postWithManyReactions,
+  nsfwImagePost,
+  nsfwArticlePost,
+  nsfwVideoPost,
+  nsfwLoopsPost,
+  nsfwRedGifPost,
+  nsfwPeerTubePost,
 ];
 
 function LoadData() {
@@ -153,6 +183,19 @@ function LoadData() {
     );
     cacheFlairs(getCachePrefixer(), postFlairs);
   }, [cachePosts, cacheProfiles, getCachePrefixer, cacheFlairs]);
+
+  return null;
+}
+
+// showNsfw: true makes the post visible; blurNsfw: true keeps the blur overlay.
+function LoadNsfwSettings() {
+  const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
+
+  useEffect(() => {
+    updateSelectedAccount({
+      site: api.getSite({ showNsfw: true, blurNsfw: true }),
+    });
+  }, [updateSelectedAccount]);
 
   return null;
 }
@@ -317,6 +360,61 @@ export const WithSingleReaction: Story = {
 export const WithManyReactionsTruncated: Story = {
   args: {
     apId: postWithManyReactions.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+const nsfwDecorator: Story["decorators"] = (Story) => (
+  <>
+    <LoadNsfwSettings />
+    <Story />
+  </>
+);
+
+export const NsfwImage: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwImagePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwArticle: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwArticlePost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwVideo: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwVideoPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwLoops: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwLoopsPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwRedGif: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwRedGifPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwPeerTube: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwPeerTubePost.post.apId,
     postCardStyle: "large",
   },
 };

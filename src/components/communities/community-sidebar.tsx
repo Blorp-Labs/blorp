@@ -19,7 +19,13 @@ import {
   useAuth,
   useIsCommunityBlocked,
   useIsInstanceBlocked,
+  useShouldBlurNsfw,
 } from "@/src/stores/auth";
+import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
+import {
+  COMMUNITY_NSFW_BANNER_BLUR_CLASS,
+  COMMUNITY_NSFW_ICON_BLUR_CLASS,
+} from "./utils";
 import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
 import { useCommunityCreatePost } from "./community-create-post";
 import {
@@ -72,6 +78,7 @@ export function SmallScreenSidebar({
   );
   const communityView = data?.communityView;
   const isBlocked = useIsCommunityBlocked(communityName);
+  const blurNsfw = useShouldBlurNsfw();
 
   const actions = useCommunityActions({
     communityName,
@@ -103,8 +110,16 @@ export function SmallScreenSidebar({
         )}
       >
         {expanded && banner && (
-          <div className="max-md:-mx-3.5">
-            <img src={banner} className="aspect-[4] object-cover w-full" />
+          <div className="max-md:-mx-3.5 overflow-hidden">
+            <img
+              src={banner}
+              className={cn(
+                "aspect-[4] object-cover w-full",
+                communityView?.nsfw &&
+                  blurNsfw &&
+                  COMMUNITY_NSFW_BANNER_BLUR_CLASS,
+              )}
+            />
           </div>
         )}
 
@@ -303,11 +318,13 @@ function CommunitySidebarInner({
   communityName,
   actorId,
   hideDescription = false,
+  postApId,
 }: {
   communityName: string;
   actorId: string | undefined;
   hideDescription?: boolean;
   asPage?: boolean;
+  postApId?: string;
 }) {
   useCommunity({
     name: communityName,
@@ -319,6 +336,10 @@ function CommunitySidebarInner({
     (s) => s.communities[getCachePrefixer()(communityName)]?.data,
   );
   const isBlocked = useIsCommunityBlocked(communityName);
+  const blurNsfw = useShouldBlurNsfw();
+  const isPostRevealed = useNsfwRevealedPostsStore(
+    (s) => !!(postApId && s.isRevealed(postApId)),
+  );
 
   const flairs = useFlairs(data?.flairs?.map((f) => f.id));
 
@@ -351,7 +372,13 @@ function CommunitySidebarInner({
             <Avatar className="h-13 w-13">
               <AvatarImage
                 src={communityView.icon ?? undefined}
-                className="object-cover"
+                className={cn(
+                  "object-cover",
+                  communityView.nsfw &&
+                    blurNsfw &&
+                    !isPostRevealed &&
+                    COMMUNITY_NSFW_ICON_BLUR_CLASS,
+                )}
               />
               <AvatarFallback className="text-xl">
                 {communityName.substring(0, 1).toUpperCase()}
