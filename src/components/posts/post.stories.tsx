@@ -77,6 +77,10 @@ const nsfwRedGifPost = api.getPost({
   variant: "redgif",
   post: { id: api.randomDbId(), nsfw: true },
 });
+const nsfwPeerTubePost = api.getPost({
+  variant: "peertube",
+  post: { id: api.randomDbId(), nsfw: true },
+});
 
 const postWithSingleReaction = api.getPost({
   variant: "text",
@@ -159,6 +163,7 @@ const POSTS = [
   nsfwVideoPost,
   nsfwLoopsPost,
   nsfwRedGifPost,
+  nsfwPeerTubePost,
 ];
 
 function LoadData() {
@@ -402,6 +407,14 @@ export const NsfwRedGif: Story = {
   decorators: nsfwDecorator,
   args: {
     apId: nsfwRedGifPost.post.apId,
+    postCardStyle: "large",
+  },
+};
+
+export const NsfwPeerTube: Story = {
+  decorators: nsfwDecorator,
+  args: {
+    apId: nsfwPeerTubePost.post.apId,
     postCardStyle: "large",
   },
 };

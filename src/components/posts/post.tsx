@@ -524,7 +524,15 @@ function LargePostCard({
       {embed?.type === "peertube" &&
         !post.deleted &&
         !post.removed &&
-        embed.embedUrl && <PeerTubeEmbed url={embed.embedUrl} />}
+        embed.embedUrl && (
+          <PeerTubeEmbed
+            url={embed.embedUrl}
+            thumbnail={embed.thumbnail}
+            nsfw={post.nsfw ?? undefined}
+            apId={apId}
+            detailView={detailView}
+          />
+        )}
       {embed?.type === "soundcloud" &&
         !post.deleted &&
         !post.removed &&
