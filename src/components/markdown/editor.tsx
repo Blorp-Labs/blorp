@@ -59,6 +59,42 @@ export function setMarkdown(editor: Editor, md: string): void {
   editor.commands.setContent(md, { contentType: "markdown" });
 }
 
+/**
+ * Insert a link at the current selection, replacing the selected text with
+ * `description` and applying `href`. Works correctly with both TextSelection
+ * (manual drag) and AllSelection (Ctrl+A).
+ *
+ * AllSelection sets from=0 (a node-boundary position), so arithmetic like
+ * `from + description.length` is off by the paragraph node offset. Instead
+ * we read the actual cursor position after insertContent and back-calculate
+ * the inserted range from there.
+ */
+export function insertLink(
+  editor: Editor,
+  description: string,
+  href: string,
+): void {
+  const { from, to } = editor.state.selection;
+  editor
+    .chain()
+    .focus()
+    .setTextSelection({ from, to })
+    .insertContent(description)
+    .command(({ state, commands }) => {
+      const end = state.selection.from;
+      const start = end - description.length;
+      return commands.setTextSelection({ from: start, to: end });
+    })
+    .setLink({ href })
+    .command(({ state, commands }) =>
+      commands.setTextSelection({
+        from: state.selection.to,
+        to: state.selection.to,
+      }),
+    )
+    .run();
+}
+
 const CustomLink = Link.extend({
   inclusive: false,
 });
@@ -227,16 +263,7 @@ const MenuBar = ({
                 ])
                 .run();
             } else {
-              const { from } = editor.state.selection;
-              const to = from + description.length;
-              editor
-                .chain()
-                .focus()
-                .insertContent(description)
-                .setTextSelection({ from, to })
-                .setLink({ href: url })
-                .setTextSelection({ from: to, to })
-                .run();
+              insertLink(editor, description, url);
             }
           } catch {}
         }}
@@ -384,6 +411,9 @@ export function getEditorExtensions({
       : []),
     StarterKit.configure({
       codeBlock: false,
+      // Disable StarterKit's built-in Link — we register CustomLink below
+      // to avoid the "Duplicate extension names found: ['link']" warning.
+      link: false,
     }),
     Image.configure({ inline: true }),
     codeBlockRenderer
