@@ -193,14 +193,14 @@ export function PostArticleEmbed({
         className="flex flex-col group/article"
       >
         {thumbnail && showImage && (
-          <div className="relative aspect-video overflow-hidden">
+          <div className="relative aspect-video overflow-hidden rounded-xl">
             {imageStatus === "loading" && (
               <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
             )}
             <img
               src={thumbnail}
               className={cn(
-                "absolute inset-0 object-cover w-full h-full aspect-video rounded-xl",
+                "absolute inset-0 object-cover w-full h-full aspect-video",
                 blurClassName,
               )}
               onLoad={() => setImageStatus("success")}
