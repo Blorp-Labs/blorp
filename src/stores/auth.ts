@@ -62,7 +62,7 @@ type AuthStore = {
   setAccountIndex: (uuid: Uuid) => Account | null;
   logout: (uuid?: Uuid) => any;
   logoutMultiple: (uuids: Uuid[]) => any;
-  getCachePrefixer: (uuid?: Uuid) => CachePrefixer;
+  getCachePrefixer: (account?: Account) => CachePrefixer;
   reset: () => void;
 } & z.infer<typeof storeSchema>;
 
@@ -266,11 +266,11 @@ export const useAuth = create<AuthStore>()(
           });
         }
       },
-      getCachePrefixer: (selectedUuid) => {
+      getCachePrefixer: (accountSelector) => {
         const state = get();
         const { accounts } = state;
         const account =
-          accounts.find((a) => a.uuid === selectedUuid) ??
+          accounts.find((a) => a.uuid === accountSelector?.uuid) ??
           getSelectedAccount(state);
         return getCachePrefixer(account);
       },

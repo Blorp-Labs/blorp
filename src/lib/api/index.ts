@@ -59,7 +59,7 @@ import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
 export function useApiClients(config?: { instance?: string; jwt?: string }) {
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const accounts = useAuth((s) => s.accounts);
 
   return useMemo(() => {
@@ -104,9 +104,11 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
 
     return {
       apis,
-      ...(getInstanceOverride() ?? apis[accountIndex] ?? getDefaultInstance()),
+      ...(getInstanceOverride() ??
+        apis.find((api) => api.account.uuid === selectedAccountUuid) ??
+        getDefaultInstance()),
     };
-  }, [accounts, accountIndex, config?.instance, config?.jwt]);
+  }, [accounts, selectedAccountUuid, config?.instance, config?.jwt]);
 }
 
 export function useSoftware(account?: Account) {
@@ -886,7 +888,7 @@ export function useRefreshAuth() {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const logoutIndicies: number[] = [];
+      const logoutIndicies: string[] = [];
 
       const sites = await Promise.allSettled(
         apis
@@ -896,14 +898,18 @@ export function useRefreshAuth() {
 
       for (let i = 0; i < sites.length; i++) {
         const api = apis[i];
-        const account = accounts[i];
+        if (!api) {
+          continue;
+        }
+
+        const account = api.account;
         const p = sites[i];
 
         if (p?.status === "fulfilled") {
           const { site, communities, profiles } = p.value;
 
-          if (api?.isLoggedIn && site && !site.me) {
-            logoutIndicies.push(i);
+          if (api?.isLoggedIn && api.account.uuid && site && !site.me) {
+            logoutIndicies.push(api.account.uuid);
             continue;
           }
 
@@ -920,8 +926,8 @@ export function useRefreshAuth() {
             );
           }
 
-          if (site) {
-            updateAccount(i, {
+          if (site && api?.account.uuid) {
+            updateAccount(api.account.uuid, {
               site,
             });
             if (site.showNsfw) {
@@ -930,9 +936,10 @@ export function useRefreshAuth() {
           }
         } else if (
           _.isString(p?.reason) &&
-          p.reason.toLowerCase().indexOf("aborterror") === -1
+          p.reason.toLowerCase().indexOf("aborterror") === -1 &&
+          api?.account.uuid
         ) {
-          logoutIndicies.push(i);
+          logoutIndicies.push(api.account.uuid);
         }
       }
 
@@ -966,7 +973,7 @@ export function useLogout() {
       await api.logout();
     },
     onSuccess: (_res, account) => {
-      logout(account);
+      logout(account.uuid);
       resetFilters();
     },
   });
@@ -1497,7 +1504,7 @@ function usePrivateMessageCountQueryKey() {
 export function usePrivateMessagesCount() {
   const { apis } = useApiClients();
   const isLoggedIn = useAuth((a) => a.isLoggedIn());
-  const accountIndex = useAuth((a) => a.accountIndex);
+  const selectedAccountUuid = useAuth((a) => a.getSelectedAccount().uuid);
 
   const queryKey = usePrivateMessageCountQueryKey();
   const queryClient = useQueryClient();
@@ -1506,7 +1513,7 @@ export function usePrivateMessagesCount() {
     queryKey,
     queryFn: async ({ signal }) => {
       const counts = await Promise.allSettled(
-        apis.map(async ({ api, isLoggedIn, queryKeyPrefix }, index) => {
+        apis.map(async ({ api, isLoggedIn, queryKeyPrefix, account }) => {
           if (!isLoggedIn) {
             return 0;
           }
@@ -1520,7 +1527,10 @@ export function usePrivateMessagesCount() {
             { signal },
           );
 
-          if (index === accountIndex && privateMessages.length > 0) {
+          if (
+            account.uuid === selectedAccountUuid &&
+            privateMessages.length > 0
+          ) {
             queryClient.invalidateQueries({
               queryKey: getPrivateMessagesKey(queryKeyPrefix),
             });
@@ -2808,7 +2818,7 @@ export function useResolveObject(
 
 export function useResolveObjectAcrossAccounts(apId: string | undefined) {
   const { apis } = useApiClients();
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const accounts = useAuth((s) => s.accounts);
 
   const queryKey = [
@@ -2825,7 +2835,7 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
       }
       const results = await Promise.allSettled(
         apis.map(async (apiEntry, index) => {
-          if (index === accountIndex) {
+          if (index === selectedAccountUuid) {
             throw new Error("Skip current account");
           }
           const resolved = await (

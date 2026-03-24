@@ -61,7 +61,7 @@ export function UserDropdown() {
   const logout = useLogout();
   const requireAuth = useRequireAuth();
 
-  const selectedAccountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const selectedAccount = useAuth((s) => s.getSelectedAccount());
   const accounts = useAuth((s) => s.accounts);
   const setAccountIndex = useAuth((s) => s.setAccountIndex);
@@ -69,8 +69,8 @@ export function UserDropdown() {
   const inboxCounts = useNotificationCount();
   const pmCounts = usePrivateMessagesCount();
   const count =
-    _.sum(inboxCounts.filter((_, i) => i !== selectedAccountIndex)) +
-    _.sum(pmCounts.filter((_, i) => i !== selectedAccountIndex));
+    _.sum(inboxCounts.filter((_, i) => i !== selectedAccountUuid)) +
+    _.sum(pmCounts.filter((_, i) => i !== selectedAccountUuid));
 
   const { person, instance } = parseAccountInfo(selectedAccount);
 
@@ -118,7 +118,7 @@ export function UserDropdown() {
         className="w-60"
         data-testid="user-dropdown-content"
       >
-        <DropdownMenuLabel className="flex items-center gap-2 mb-1">
+        <DropdownMenuLabel className="mb-1 flex items-center gap-2">
           <Avatar className="h-12 w-12" key={person?.id}>
             <AvatarImage src={person?.avatar ?? undefined} />
             <AvatarFallback className="text-xl">
@@ -126,10 +126,10 @@ export function UserDropdown() {
               {!person && <IoPerson />}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-row gap-2 items-center">
+          <div className="flex flex-row items-center gap-2">
             <div className="flex flex-col">
               <span className="text-md line-clamp-1">{name}</span>
-              <span className="text-xs text-muted-foreground line-clamp-1">
+              <span className="text-muted-foreground line-clamp-1 text-xs">
                 @{instance}
               </span>
             </div>
@@ -185,8 +185,8 @@ export function UserDropdown() {
         <DropdownMenuLabel>Other accounts</DropdownMenuLabel>
 
         <>
-          {accounts.map((a, index) => {
-            if (index === selectedAccountIndex) {
+          {accounts.map((a) => {
+            if (a.uuid === selectedAccountUuid) {
               return null;
             }
             const { person, instance } = parseAccountInfo(a);
@@ -195,9 +195,9 @@ export function UserDropdown() {
             return (
               <DropdownMenuItem
                 onClick={() => {
-                  setAccountIndex(index);
+                  setAccountIndex(a.uuid);
                 }}
-                key={instance + index}
+                key={a.uuid}
                 className="relative"
               >
                 <AccountNotificationBadge accountIndex={index}>
@@ -254,10 +254,10 @@ export function UserSidebar() {
 
   return (
     <div
-      className="flex flex-col gap-4 min-h-full pb-[var(--ion-safe-area-bottom)]"
+      className="flex min-h-full flex-col gap-4 pb-[var(--ion-safe-area-bottom)]"
       data-testid="user-sidebar-content"
     >
-      <div className="flex items-center gap-3 my-1">
+      <div className="my-1 flex items-center gap-3">
         <Avatar className="h-12 w-12" key={person?.id}>
           {person && <AvatarImage src={person.avatar ?? undefined} />}
           <AvatarFallback className="text-xl">
@@ -267,8 +267,8 @@ export function UserSidebar() {
         </Avatar>
 
         <div className="flex flex-col">
-          <span className="leading-snug line-clamp-1">{userName}</span>
-          <span className="text-sm text-muted-foreground line-clamp-1">
+          <span className="line-clamp-1 leading-snug">{userName}</span>
+          <span className="text-muted-foreground line-clamp-1 text-sm">
             @{instance}
           </span>
         </div>
@@ -308,7 +308,7 @@ export function UserSidebar() {
                   message: `Are you sure you want to logout of ${person.slug ?? "this account"}`,
                 }).then(() => logout.mutate(selectedAccount))
               }
-              className="flex flex-row items-center gap-2 w-full text-lg"
+              className="flex w-full flex-row items-center gap-2 text-lg"
             >
               <LogOut className="text-muted-foreground" /> Logout
             </button>
@@ -317,7 +317,7 @@ export function UserSidebar() {
           <IonMenuToggle menu={RIGHT_SIDEBAR_MENU_ID} autoHide={false}>
             <button
               onClick={() => requireAuth()}
-              className="flex flex-row items-center gap-2 w-full text-lg"
+              className="flex w-full flex-row items-center gap-2 text-lg"
               data-testid="user-sidebar-login"
             >
               Login / Signup
@@ -345,7 +345,7 @@ export function UserSidebar() {
               onClick={() => {
                 setAccountIndex(index);
               }}
-              className="flex flex-row gap-2 items-center text-left w-full"
+              className="flex w-full flex-row items-center gap-2 text-left"
             >
               <BadgeCount
                 showBadge={!!inboxAcounts[index] || !!pmCounts[index]}
@@ -374,7 +374,7 @@ export function UserSidebar() {
           onClick={() => {
             requireAuth({ addAccount: true });
           }}
-          className="flex flex-row items-center gap-2 w-full"
+          className="flex w-full flex-row items-center gap-2"
         >
           <IoPersonAddOutline className="text-muted-foreground" />
           Add {formatOrdinal(
@@ -406,7 +406,7 @@ export function MenuButton() {
       autoHide={false}
       className="lg:hidden"
     >
-      <LuMenu className="text-2xl scale-110 -ml-[7px]" />
+      <LuMenu className="-ml-[7px] scale-110 text-2xl" />
     </IonMenuButton>
   );
 }
