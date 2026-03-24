@@ -179,7 +179,7 @@ describe("persisted state snapshot", () => {
 
     expect({
       accounts: result.current.accounts,
-      selectUuid: result.current.selectedUuid,
+      selectedUuid: result.current.selectedUuid,
     }).toMatchSnapshot();
   });
 });

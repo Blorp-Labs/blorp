@@ -871,10 +871,8 @@ function useRefreshAuthKey() {
 export function useRefreshAuth() {
   const { apis } = useApiClients();
 
-  const updateAccount = useAuth((s) => s.updateAccount);
+  const updateAccountSite = useAuth((s) => s.updateAccountSite);
   const logoutMultiple = useAuth((s) => s.logoutMultiple);
-
-  const accounts = useAuth((s) => s.accounts);
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
@@ -926,10 +924,8 @@ export function useRefreshAuth() {
             );
           }
 
-          if (site && api?.account.uuid) {
-            updateAccount(api.account.uuid, {
-              site,
-            });
+          if (site) {
+            updateAccountSite(api.account.uuid, site);
             if (site.showNsfw) {
               setNsfwPreviouslyEnabled(true);
             }

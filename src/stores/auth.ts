@@ -4,7 +4,7 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { env } from "../env";
 import z from "zod";
-import { siteSchema } from "../lib/api/adapters/api-blueprint";
+import { Schemas, siteSchema } from "../lib/api/adapters/api-blueprint";
 import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../lib/utils";
@@ -59,7 +59,7 @@ type AuthStore = {
   getSelectedAccount: () => Account;
   isLoggedIn: () => boolean;
   updateSelectedAccount: (patch: Partial<Account>) => any;
-  updateAccount: (uuid: Uuid, patch: Partial<Account>) => any;
+  updateAccountSite: (uuid: Uuid, site: Schemas.Site) => any;
   addAccount: (patch?: Partial<Account>) => any;
   setAccountIndex: (uuid: Uuid) => Account | null;
   logout: (uuid?: Uuid) => any;
@@ -164,10 +164,11 @@ export const useAuth = create<AuthStore>()(
           selectedUuid: newAccount.uuid,
         });
       },
-      logout: (selectedUuid) => {
+      logout: (uuidAccountSelector) => {
         const state = get();
-        const { accounts } = state;
-        const logoutUuid = selectedUuid ?? getSelectedAccount(state)?.uuid;
+        const { accounts, selectedUuid } = state;
+        const logoutUuid =
+          uuidAccountSelector ?? getSelectedAccount(state)?.uuid;
         const account = logoutUuid
           ? accounts.find((a) => a.uuid === logoutUuid)
           : undefined;
@@ -182,7 +183,9 @@ export const useAuth = create<AuthStore>()(
           } else {
             set({
               accounts: newAccounts,
-              selectedUuid: _.last(newAccounts)?.uuid,
+              selectedUuid:
+                newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
+                _.first(newAccounts)?.uuid,
             });
           }
         }
@@ -203,7 +206,7 @@ export const useAuth = create<AuthStore>()(
             accounts: newAccounts,
             selectedUuid:
               newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
-              _.last(newAccounts)?.uuid,
+              _.first(newAccounts)?.uuid,
           });
         }
       },
@@ -217,23 +220,15 @@ export const useAuth = create<AuthStore>()(
         });
         return account;
       },
-      updateAccount: (selectedUuid, patch) => {
+      updateAccountSite: (selectedUuid, site) => {
         const state = get();
         let { accounts } = state;
         accounts = accounts.map((a) =>
           a.uuid === selectedUuid
             ? {
                 ...a,
-                uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
-                ...patch,
-                ...("site" in patch && patch.site
-                  ? { siteUpdatedAt: Date.now() }
-                  : null),
-                ...(patch.instance
-                  ? {
-                      instance: normalizeInstance(patch.instance),
-                    }
-                  : null),
+                site,
+                siteUpdatedAt: Date.now(),
               }
             : a,
         );
