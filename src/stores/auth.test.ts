@@ -1,6 +1,6 @@
 import { describe, test, expect, afterEach, vi } from "vitest";
 
-vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
+// vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
 import { useAuth, type Account, getSelectedAccount } from "./auth";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
@@ -68,7 +68,7 @@ describe("useAuthStore", () => {
 
   test("logout of account 3 of 3", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateAccount(account1.uuid, account1);
       result.current.addAccount(account2);
       result.current.addAccount(account3);
     });
@@ -82,14 +82,14 @@ describe("useAuthStore", () => {
 
   test("change account selection", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
       result.current.addAccount(account3);
     });
     expect(result.current.getSelectedAccount()).toEqual(account3);
     let account: any;
     act(() => {
-      account = result.current.setAccountIndex(0);
+      account = result.current.setAccountIndex(account1.uuid);
     });
     expect(account).toEqual(account1);
     expect(result.current.getSelectedAccount()).toEqual(account1);
@@ -97,25 +97,25 @@ describe("useAuthStore", () => {
 
   test("setAccountIndex protects against invalid account index", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
       result.current.addAccount(account3);
     });
-    const newAccountIndex = result.current.accounts.length * 2;
+    const fakeUuid = "random-string";
     act(() => {
-      result.current.setAccountIndex(newAccountIndex);
+      result.current.setAccountIndex(fakeUuid);
     });
-    expect(result.current.accountIndex).not.toBe(newAccountIndex);
+    expect(result.current.selectedUuid).not.toBe(fakeUuid);
   });
 
   test("logout of account 1 of 2", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
     });
     expect(result.current.accounts).toHaveLength(2);
     act(() => {
-      result.current.logout(0);
+      result.current.logout(account1.uuid);
     });
     expect(result.current.accounts).toHaveLength(1);
     expect(result.current.getSelectedAccount()).toEqual(account2);
@@ -123,12 +123,12 @@ describe("useAuthStore", () => {
 
   test("logout of account 2 of 2", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
     });
     expect(result.current.accounts).toHaveLength(2);
     act(() => {
-      result.current.logout(1);
+      result.current.logout(account2.uuid);
     });
     expect(result.current.accounts).toHaveLength(1);
     expect(result.current.getSelectedAccount()).toEqual(account1);
@@ -136,7 +136,7 @@ describe("useAuthStore", () => {
 
   test("logout of last account", () => {
     act(() => {
-      result.current.updateAccount(0, account1);
+      result.current.updateSelectedAccount(account1);
     });
     expect(result.current.accounts).toHaveLength(1);
     act(() => {
@@ -170,12 +170,11 @@ describe("persisted state snapshot", () => {
         instance: "https://lemmy.world",
         jwt: "test-jwt-token",
       });
-      result.current.setAccountIndex(0);
     });
 
     expect({
       accounts: result.current.accounts,
-      accountIndex: result.current.accountIndex,
+      selectUuid: result.current.selectedUuid,
     }).toMatchSnapshot();
   });
 });

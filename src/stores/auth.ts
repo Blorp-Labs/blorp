@@ -48,27 +48,32 @@ export type Account = z.infer<typeof accountSchema>;
 
 const storeSchema = z.object({
   accounts: z.array(accountSchema),
-  accountIndex: z.number(),
+  selectedUuid: z.string().optional(),
 });
+
+type Uuid = string;
 
 type AuthStore = {
   getSelectedAccount: () => Account;
   isLoggedIn: () => boolean;
   updateSelectedAccount: (patch: Partial<Account>) => any;
-  updateAccount: (index: number | Account, patch: Partial<Account>) => any;
+  updateAccount: (uuid: Uuid, patch: Partial<Account>) => any;
   addAccount: (patch?: Partial<Account>) => any;
-  setAccountIndex: (index: number) => Account | null;
-  logout: (index?: number | Account) => any;
-  logoutMultiple: (index: number[]) => any;
-  getCachePrefixer: (index?: number | Account) => CachePrefixer;
+  setAccountIndex: (uuid: Uuid) => Account | null;
+  logout: (uuid?: Uuid) => any;
+  logoutMultiple: (uuids: Uuid[]) => any;
+  getCachePrefixer: (uuid?: Uuid) => CachePrefixer;
   reset: () => void;
 } & z.infer<typeof storeSchema>;
 
 export function getSelectedAccount(state: {
   accounts: Account[];
-  accountIndex: number;
+  selectedUuid?: string;
 }): Account | undefined {
-  return state.accounts[state.accountIndex];
+  const fallback = state.accounts[0];
+  return state.selectedUuid
+    ? (state.accounts.find((a) => a.uuid === state.selectedUuid) ?? fallback)
+    : fallback;
 }
 
 export function getAccountSite(account: Account) {
@@ -114,97 +119,108 @@ export const useAuth = create<AuthStore>()(
         const state = get();
         const account = getSelectedAccount(state);
         // We shouldn't ever hit this case,
-        // but just to be save, this function can
+        // but just to be safe, this function can
         // recover from an account that isn't found
         if (!account) {
-          const newAccount = getNewAccount();
-          set((prev) => {
-            const newAccounts = prev.accounts;
-            newAccounts[state.accountIndex] = newAccount;
-            return {
-              ...prev,
-              accounts: newAccounts,
-            };
-          });
-          return newAccount;
+          const firstAccount = _.first(state.accounts);
+          if (firstAccount) {
+            set((prev) => {
+              return {
+                ...prev,
+                selectedUuid: firstAccount.uuid,
+              };
+            });
+            return firstAccount;
+          } else {
+            const newAccount = getNewAccount();
+            set((prev) => {
+              return {
+                ...prev,
+                accounts: [newAccount],
+              };
+            });
+            return newAccount;
+          }
         }
         return account;
       },
       isLoggedIn: () => {
         const state = get();
-        const account = state.accounts[state.accountIndex];
+        const account = getSelectedAccount(state);
         return !!account && !!account.jwt;
       },
       accountIndex: 0,
       addAccount: (patch) => {
         const instance = patch?.instance ?? env.defaultInstance;
-        const accounts = [
-          ...get().accounts,
-          {
-            uuid: uuid(),
-            ...patch,
-            instance: normalizeInstance(instance),
-          },
-        ];
+        const newAccount = {
+          uuid: uuid(),
+          ...patch,
+          instance: normalizeInstance(instance),
+        };
+        const accounts = [...get().accounts, newAccount];
         set({
           accounts,
-          accountIndex: accounts.length - 1,
+          selectedUuid: newAccount.uuid,
         });
       },
-      logout: (accountSelector) => {
-        const { accounts, accountIndex } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        const account = accounts[index ?? accountIndex];
+      logout: (selectedUuid) => {
+        const state = get();
+        const { accounts } = state;
+        const logoutUuid = selectedUuid ?? getSelectedAccount(state)?.uuid;
+        const account = logoutUuid
+          ? accounts.find((a) => a.uuid === logoutUuid)
+          : undefined;
         if (account) {
-          delete accounts[index ?? accountIndex];
-          const newAccounts = accounts.filter(Boolean);
+          const newAccounts = accounts.filter((a) => a.uuid !== logoutUuid);
           if (newAccounts.length === 0) {
+            const newAccount = getNewAccount();
             set({
-              accounts: [getNewAccount()],
-              accountIndex: 0,
+              accounts: [newAccount],
+              selectedUuid: newAccount.uuid,
             });
           } else {
             set({
               accounts: newAccounts,
-              accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
+              selectedUuid: _.last(newAccounts)?.uuid,
             });
           }
         }
       },
-      logoutMultiple: (indicies: number[]) => {
-        const { accounts, accountIndex } = get();
-        const newAccounts = accounts.filter((_a, i) => !indicies.includes(i));
+      logoutMultiple: (selectedUuids: string[]) => {
+        const { accounts } = get();
+        const newAccounts = accounts.filter(
+          (a) => !selectedUuids.includes(a.uuid),
+        );
         if (newAccounts.length === 0) {
+          const newAccount = getNewAccount();
           set({
-            accounts: [getNewAccount()],
-            accountIndex: 0,
+            accounts: [newAccount],
+            selectedUuid: newAccount.uuid,
           });
         } else {
           set({
             accounts: newAccounts,
-            accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
+            // accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
+            // TODO: clamp uuid
+            selectedUuid: undefined,
           });
         }
       },
-      setAccountIndex: (index) => {
-        const account = get().accounts[index];
+      setAccountIndex: (uuid: string) => {
+        const account = get().accounts.find((a) => a.uuid === uuid);
         if (!account) {
           return null;
         }
         set({
-          accountIndex: index,
+          selectedUuid: uuid,
         });
         return account;
       },
-      updateAccount: (accountSelector, patch) => {
-        let { accounts } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        accounts = accounts.map((a, i) =>
-          i === index
+      updateAccount: (selectedUuid, patch) => {
+        const state = get();
+        let { accounts } = state;
+        accounts = accounts.map((a) =>
+          a.uuid === selectedUuid
             ? {
                 ...a,
                 uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
@@ -225,12 +241,13 @@ export const useAuth = create<AuthStore>()(
         });
       },
       updateSelectedAccount: (patch) => {
-        let { accounts, accountIndex } = get();
-        accounts = accounts.map((a, i) =>
-          i === accountIndex
+        const state = get();
+        let { accounts } = state;
+        const selectedAccount = getSelectedAccount(state);
+        accounts = accounts.map((a) =>
+          a.uuid === selectedAccount?.uuid
             ? {
                 ...a,
-                uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
                 ...patch,
                 ...("site" in patch && patch.site
                   ? { siteUpdatedAt: Date.now() }
@@ -238,16 +255,23 @@ export const useAuth = create<AuthStore>()(
               }
             : a,
         );
-        set({
-          accounts,
-        });
+        if (patch.uuid) {
+          set({
+            accounts,
+            selectedUuid: patch.uuid,
+          });
+        } else {
+          set({
+            accounts,
+          });
+        }
       },
-      getCachePrefixer: (accountSelector) => {
-        const { accounts, accountIndex } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        const account = accounts[index ?? accountIndex];
+      getCachePrefixer: (selectedUuid) => {
+        const state = get();
+        const { accounts } = state;
+        const account =
+          accounts.find((a) => a.uuid === selectedUuid) ??
+          getSelectedAccount(state);
         return getCachePrefixer(account);
       },
       reset: () => {
@@ -319,10 +343,16 @@ export const useAuth = create<AuthStore>()(
         const newAccounts = currentLoggedIn.filter(
           (a) => a.uuid && !persistedByUuid[a.uuid],
         );
+        const allAccounts = [...mergedAccounts, ...newAccounts];
+        // The current tab's selected account always wins. Find it in the merged
+        // list by UUID so that account order differences and new accounts
+        // appended at the end don't cause the selection to silently shift.
+        const selectedUuid = getSelectedAccount(current)?.uuid;
         return {
           ...current,
           ...persistedData,
-          accounts: [...mergedAccounts, ...newAccounts],
+          accounts: allAccounts,
+          selectedUuid,
         };
       },
     },
