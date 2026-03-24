@@ -9,6 +9,8 @@ import parse, {
 } from "html-react-parser";
 import { Link, LinkProps } from "@/src/routing/index";
 import { CodeBlock } from "./code-block";
+import { Badge } from "@/src/components/ui/badge";
+import { ResponsiveTooltip } from "@/src/components/adaptable/responsive-tooltip";
 import {
   AnchorHTMLAttributes,
   DetailedHTMLProps,
@@ -99,14 +101,27 @@ function Image(
   const linkCtx = useLinkContext();
   if (props.src) {
     return (
-      <SafeRouterLink
-        to={`${linkCtx.root}lightbox/:imgUrl`}
-        params={{
-          imgUrl: encodeURIComponent(props.src),
-        }}
-      >
-        <img {...props} />
-      </SafeRouterLink>
+      <span className="relative inline-block">
+        <SafeRouterLink
+          to={`${linkCtx.root}lightbox/:imgUrl`}
+          params={{
+            imgUrl: encodeURIComponent(props.src),
+          }}
+        >
+          <img {...props} />
+        </SafeRouterLink>
+        {props.alt && (
+          <ResponsiveTooltip
+            className="absolute right-1.5 bottom-1.5 z-10"
+            trigger={
+              <Badge variant="outline" aria-label="Show alt text for image">
+                Alt
+              </Badge>
+            }
+            content={props.alt}
+          />
+        )}
+      </span>
     );
   }
   return <img {...props} />;

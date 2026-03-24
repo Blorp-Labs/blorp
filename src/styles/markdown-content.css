@@ -89,7 +89,7 @@
 }
 
 .markdown-content img {
-  @apply max-w-full h-auto max-h-[40vh];
+  @apply max-w-full h-auto max-h-[40vh] inline-block;
 }
 
 .markdown-content img[title^="emoji"] {

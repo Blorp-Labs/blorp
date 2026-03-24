@@ -91,7 +91,9 @@ function getActiveLinkInfo(editor: Editor) {
   }
 
   const range = getMarkRange($from, linkType);
-  if (!range) return null;
+  if (!range) {
+    return null;
+  }
 
   const text = state.doc.textBetween(range.from, range.to, undefined, "\uFFFC");
   const attrs = editor.getAttributes("link"); // href, target, etc.
@@ -101,7 +103,9 @@ function getActiveLinkInfo(editor: Editor) {
 function useRenderOnTipTapChange(editor: Editor | null) {
   const [, setSignal] = useState(0);
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
     const rerender = () => setSignal((x) => x + 1);
     editor.on("selectionUpdate", rerender);
     return () => {
@@ -391,7 +395,7 @@ function TipTapEditor({
       StarterKit.configure({
         codeBlock: false,
       }),
-      Image,
+      Image.configure({ inline: true }),
       Markdown,
       CodeBlockLowlight.extend({
         addNodeView() {
@@ -457,9 +461,16 @@ function TipTapEditor({
               const { schema, tr, selection } = view.state;
               const { from } = selection;
 
-              if (schema.nodes["image"]) {
-                const node = schema.nodes["image"].create({ src: url }); // create image node
-                const transaction = tr.insert(from, node); // insert at current selection
+              if (schema.nodes["image"] && schema.nodes["hardBreak"]) {
+                const imageNode = schema.nodes["image"].create({ src: url });
+                const hardBreak = schema.nodes["hardBreak"].create();
+                const transaction = tr
+                  .insert(from, hardBreak)
+                  .insert(from + hardBreak.nodeSize, imageNode)
+                  .insert(
+                    from + hardBreak.nodeSize + imageNode.nodeSize,
+                    hardBreak.copy(),
+                  );
                 view.dispatch(transaction);
               } else {
                 console.error("Image node is not defined in the schema");
@@ -485,12 +496,17 @@ function TipTapEditor({
                 left: event.clientX,
                 top: event.clientY,
               });
-              if (schema.nodes["image"]) {
-                const node = schema.nodes["image"].create({ src: url }); // creates the image element
-                const transaction = view.state.tr.insert(
-                  coordinates?.pos ?? 0,
-                  node,
-                ); // places it in the correct position
+              if (schema.nodes["image"] && schema.nodes["hardBreak"]) {
+                const insertPos = coordinates?.pos ?? 0;
+                const imageNode = schema.nodes["image"].create({ src: url });
+                const hardBreak = schema.nodes["hardBreak"].create();
+                const transaction = view.state.tr
+                  .insert(insertPos, hardBreak)
+                  .insert(insertPos + hardBreak.nodeSize, imageNode)
+                  .insert(
+                    insertPos + hardBreak.nodeSize + imageNode.nodeSize,
+                    hardBreak.copy(),
+                  );
                 return view.dispatch(transaction);
               } else {
                 console.error("Failed to handle dropped image");
@@ -530,7 +546,9 @@ function TipTapEditor({
                     ?.chain()
                     .focus()
                     .setTextSelection(to)
+                    .setHardBreak()
                     .setImage({ src: url })
+                    .setHardBreak()
                     .run();
                 }
               });
@@ -580,7 +598,9 @@ function TipTapEditor({
                     ?.chain()
                     .focus()
                     .setTextSelection(to)
+                    .setHardBreak()
                     .setImage({ src: url })
+                    .setHardBreak()
                     .run();
                 }
               });

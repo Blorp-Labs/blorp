@@ -56,6 +56,27 @@ And here’s an image:
   },
 };
 
+export const ImageSmall: Story = {
+  args: {
+    content: `![small image](https://picsum.photos/id/10/100/100)`,
+    onChange: () => {},
+  },
+};
+
+export const ImageLarge: Story = {
+  args: {
+    content: `![large image](https://picsum.photos/id/10/800/400)`,
+    onChange: () => {},
+  },
+};
+
+export const ImageInlineWithText: Story = {
+  args: {
+    content: `Some text before the image ![small inline image](https://picsum.photos/id/10/100/100) and some text after the image.`,
+    onChange: () => {},
+  },
+};
+
 export const Lists: Story = {
   args: {
     content: `
