@@ -91,7 +91,9 @@ function getActiveLinkInfo(editor: Editor) {
   }
 
   const range = getMarkRange($from, linkType);
-  if (!range) return null;
+  if (!range) {
+    return null;
+  }
 
   const text = state.doc.textBetween(range.from, range.to, undefined, "\uFFFC");
   const attrs = editor.getAttributes("link"); // href, target, etc.
@@ -101,7 +103,9 @@ function getActiveLinkInfo(editor: Editor) {
 function useRenderOnTipTapChange(editor: Editor | null) {
   const [, setSignal] = useState(0);
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
     const rerender = () => setSignal((x) => x + 1);
     editor.on("selectionUpdate", rerender);
     return () => {
@@ -391,7 +395,7 @@ function TipTapEditor({
       StarterKit.configure({
         codeBlock: false,
       }),
-      Image,
+      Image.configure({ inline: true }),
       Markdown,
       CodeBlockLowlight.extend({
         addNodeView() {
@@ -515,7 +519,7 @@ function TipTapEditor({
     <>
       <div
         className={cn(
-          "flex flex-row justify-between py-1.5 px-2 pb-0 max-md:hidden",
+          "flex flex-row justify-between px-2 py-1.5 pb-0 max-md:hidden",
           hideMenu && "hidden",
         )}
       >
@@ -559,12 +563,12 @@ function TipTapEditor({
       </div>
       <EditorContent
         id={id}
-        className="markdown-content flex-1 max-w-full leading-normal py-2 px-3 md:px-3.5"
+        className="markdown-content max-w-full flex-1 px-3 py-2 leading-normal md:px-3.5"
         editor={editor}
       />
       <div
         className={cn(
-          "flex flex-row justify-between px-2 py-1 md:hidden sticky bottom-0 bg-background/50 backdrop-blur",
+          "bg-background/50 sticky bottom-0 flex flex-row justify-between px-2 py-1 backdrop-blur md:hidden",
           hideMenu && "hidden",
         )}
       >
@@ -638,7 +642,7 @@ function TextAreaEditor({
     <>
       <div
         className={cn(
-          "flex flex-row justify-end py-1.5 px-2 pb-0 max-md:hidden",
+          "flex flex-row justify-end px-2 py-1.5 pb-0 max-md:hidden",
           hideMenu && "hidden",
         )}
       >
@@ -667,7 +671,7 @@ function TextAreaEditor({
         autoFocus={autoFocus}
         defaultValue={content}
         onChange={(e) => onChange(e.target.value)}
-        className="markdown-content resize-none w-full max-w-full font-mono outline-none py-2 px-3 md:px-3.5 grow shrink-0 basis-auto"
+        className="markdown-content w-full max-w-full shrink-0 grow basis-auto resize-none px-3 py-2 font-mono outline-none md:px-3.5"
         placeholder={placeholder}
         onFocus={onFocus}
         onBlur={onBlur}
@@ -680,7 +684,7 @@ function TextAreaEditor({
       />
       <div
         className={cn(
-          "flex flex-row justify-end px-2 py-1 sticky bottom-0 md:hidden",
+          "sticky bottom-0 flex flex-row justify-end px-2 py-1 md:hidden",
           hideMenu && "hidden",
         )}
       >
