@@ -52,6 +52,24 @@ And here’s an image:
   },
 };
 
+export const ImageSmall: Story = {
+  args: {
+    markdown: `![small image](https://picsum.photos/id/10/100/100)`,
+  },
+};
+
+export const ImageLarge: Story = {
+  args: {
+    markdown: `![large image](https://picsum.photos/id/10/800/400)`,
+  },
+};
+
+export const ImageInlineWithText: Story = {
+  args: {
+    markdown: `Some text before the image ![small inline image](https://picsum.photos/id/10/100/100) and some text after the image.`,
+  },
+};
+
 export const Lists: Story = {
   args: {
     markdown: `
