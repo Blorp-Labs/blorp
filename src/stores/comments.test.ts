@@ -13,7 +13,7 @@ import { useCommentsStore } from "./comments";
 import { getCachePrefixer } from "./auth";
 import _ from "lodash";
 
-const prefix = getCachePrefixer({ instance: "123" });
+const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
 
 afterEach(() => {
   useCommentsStore.getState().reset();

@@ -1,7 +1,7 @@
 import { describe, test, expect, afterEach, vi } from "vitest";
 
 vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
-import { useAuth, type Account } from "./auth";
+import { useAuth, type Account, getSelectedAccount } from "./auth";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
@@ -143,7 +143,7 @@ describe("useAuthStore", () => {
       result.current.logout();
     });
     expect(result.current.accounts).toHaveLength(1);
-    expect(result.current.getSelectedAccount()).toEqual({
+    expect(result.current.getSelectedAccount()).toMatchObject({
       instance: env.defaultInstance,
     });
   });
@@ -303,6 +303,72 @@ describe("useAuthStore merge", () => {
     expect(result.accounts.map((a) => a.uuid)).toContain(account2.uuid);
   });
 
+  describe("selected account after merge", () => {
+    test("preserves selected account when accounts are reordered", () => {
+      const account1 = makeAccount();
+      const account2 = makeAccount();
+
+      // current tab has account2 selected
+      const current = {
+        ...useAuth.getState(),
+        accounts: [account1, account2],
+        accountIndex: 1,
+      };
+      // persisted has accounts in reverse order with a different selection
+      const persisted = { accounts: [account2, account1], accountIndex: 1 };
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(
+        getSelectedAccount(current)?.uuid,
+      );
+    });
+
+    test("preserves selected account when the selected account is not yet in storage (login race)", () => {
+      const existingAccount = makeAccount();
+      const newAccount = makeAccount();
+
+      // current tab just logged in as newAccount, not yet written to storage
+      const current = {
+        ...useAuth.getState(),
+        accounts: [existingAccount, newAccount],
+        accountIndex: 1,
+      };
+      // persisted only knows about the existing account
+      const persisted = { accounts: [existingAccount], accountIndex: 0 };
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(
+        getSelectedAccount(current)?.uuid,
+      );
+    });
+
+    test("preserves selected account when another tab prepends a new account", () => {
+      const account1 = makeAccount();
+      const account2 = makeAccount();
+      const newAccount = makeAccount();
+
+      // current tab has account2 selected (index 1)
+      const current = {
+        ...useAuth.getState(),
+        accounts: [account1, account2],
+        accountIndex: 1,
+      };
+      // another tab added newAccount at the front and has it selected
+      const persisted = {
+        accounts: [newAccount, account1, account2],
+        accountIndex: 0,
+      };
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(
+        getSelectedAccount(current)?.uuid,
+      );
+    });
+  });
+
   // Guest accounts have a uuid but no jwt.
   describe("guest accounts (no jwt)", () => {
     function makeGuest(): Account {
@@ -329,6 +395,22 @@ describe("useAuthStore merge", () => {
 
       expect(result.accounts).toHaveLength(1);
       expect(result.accounts[0]!.uuid).toBe(guest.uuid);
+    });
+
+    test("persisted mix of logged-in and guest accounts is preserved intact", () => {
+      // Users can have both logged-in and guest accounts persisted together.
+      // The guest accounts must survive the merge undisturbed.
+      const loggedIn = makeAccount();
+      const guest = makeGuest();
+      const persisted = { accounts: [loggedIn, guest], accountIndex: 0 };
+      const current = makeCurrent([loggedIn]);
+      const result = merge(persisted, current);
+
+      expect(result.accounts).toHaveLength(2);
+      const resultGuest = result.accounts.find((a) => a.uuid === guest.uuid)!;
+      expect(resultGuest).toBeDefined();
+      expect(resultGuest.uuid).toBe(guest.uuid);
+      expect(resultGuest.instance).toBe(guest.instance);
     });
 
     test("guest in both uses persisted version", () => {
@@ -359,5 +441,20 @@ describe("useAuthStore merge", () => {
       expect(result.accounts).toHaveLength(1);
       expect(result.accounts[0]!.uuid).toBe(loggedIn.uuid);
     });
+  });
+});
+
+describe("useAuthStore migrate", () => {
+  const migrate = useAuth.persist.getOptions().migrate!;
+
+  test("stamps uuid onto an account that is missing one", () => {
+    const accountWithoutUuid = {
+      instance: "https://lemmy.world",
+      jwt: "some-jwt-token",
+    };
+    const state = { accounts: [accountWithoutUuid], accountIndex: 0 };
+    const result = migrate(state, 4) as ReturnType<typeof useAuth.getState>;
+    expect(typeof result.accounts[0]!.uuid).toBe("string");
+    expect(result.accounts[0]!.uuid.length).toBeGreaterThan(0);
   });
 });

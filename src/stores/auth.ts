@@ -33,13 +33,13 @@ const accountSchema = z.union([
     instance: z.string(),
     jwt: z.string().optional(),
     site: siteSchema,
-    uuid: z.string().optional(),
+    uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
   }),
   z.object({
     instance: z.string(),
     jwt: z.string().optional(),
-    uuid: z.string().optional(),
+    uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
   }),
 ]);
@@ -63,6 +63,13 @@ type AuthStore = {
   getCachePrefixer: (index?: number | Account) => CachePrefixer;
   reset: () => void;
 } & z.infer<typeof storeSchema>;
+
+export function getSelectedAccount(state: {
+  accounts: Account[];
+  accountIndex: number;
+}): Account | undefined {
+  return state.accounts[state.accountIndex];
+}
 
 export function getAccountSite(account: Account) {
   return "site" in account ? account.site : undefined;
@@ -105,7 +112,7 @@ export const useAuth = create<AuthStore>()(
       ...INIT_STATE,
       getSelectedAccount: () => {
         const state = get();
-        const account = state.accounts[state.accountIndex];
+        const account = getSelectedAccount(state);
         // We shouldn't ever hit this case,
         // but just to be save, this function can
         // recover from an account that isn't found
@@ -155,11 +162,7 @@ export const useAuth = create<AuthStore>()(
           const newAccounts = accounts.filter(Boolean);
           if (newAccounts.length === 0) {
             set({
-              accounts: [
-                {
-                  instance: env.defaultInstance,
-                },
-              ],
+              accounts: [getNewAccount()],
               accountIndex: 0,
             });
           } else {
@@ -175,11 +178,7 @@ export const useAuth = create<AuthStore>()(
         const newAccounts = accounts.filter((_a, i) => !indicies.includes(i));
         if (newAccounts.length === 0) {
           set({
-            accounts: [
-              {
-                instance: env.defaultInstance,
-              },
-            ],
+            accounts: [getNewAccount()],
             accountIndex: 0,
           });
         } else {
@@ -259,26 +258,38 @@ export const useAuth = create<AuthStore>()(
     }),
     {
       name: "auth",
-      storage: createStorage<AuthStore>(),
-      version: 4,
+      storage: createStorage<z.infer<typeof storeSchema>>(),
+      version: 5,
       migrate: (state) => {
-        const parsed = storeSchema.parse(state) as AuthStore;
-        return {
-          ...parsed,
-          accounts: parsed.accounts.map(
-            (a) =>
-              ({
-                uuid: uuid(),
-                ...a,
-              }) satisfies Account,
-          ),
-        };
+        // Parse raw stored data permissively — accounts from old versions may
+        // not have uuid. Stamp one onto any account missing it before
+        // validating against the current schema.
+        const rawSchema = z.object({
+          accounts: z.array(z.record(z.unknown())),
+          accountIndex: z.number(),
+        });
+        const raw = rawSchema.parse(state);
+        return storeSchema.parse({
+          ...raw,
+          accounts: raw.accounts.map((a) => ({
+            ...a,
+            uuid: typeof a["uuid"] === "string" ? a["uuid"] : uuid(),
+          })),
+        });
       },
       merge: (persisted, current) => {
         const persistedData = storeSchema.safeParse(persisted).data;
+        // No persisted accounts means first launch — keep current as-is so the
+        // default guest account (always present on init) is not discarded.
         if (!persistedData?.accounts) {
           return { ...current };
         }
+        // Only logged-in accounts from the current tab participate in the
+        // uuid-based merge below. Guest accounts (no jwt) in the current tab
+        // are intentionally excluded: a new tab always initialises with a
+        // default guest, but that auto-created guest should not override the
+        // guest already in storage. Guest accounts in persisted are NOT
+        // excluded — they pass through mergedAccounts unchanged.
         const currentLoggedIn = current.accounts.filter((a) => !!a.jwt);
         const currentByUuid = _.keyBy(currentLoggedIn, "uuid");
         const persistedByUuid = _.keyBy(persistedData.accounts, "uuid");
@@ -289,9 +300,13 @@ export const useAuth = create<AuthStore>()(
         // cases resolve correctly.
         const mergedAccounts = persistedData.accounts.map(
           (persistedAccount) => {
-            if (!persistedAccount.uuid) return persistedAccount;
+            if (!persistedAccount.uuid) {
+              return persistedAccount;
+            }
             const currentAccount = currentByUuid[persistedAccount.uuid];
-            if (!currentAccount) return persistedAccount;
+            if (!currentAccount) {
+              return persistedAccount;
+            }
             const persistedTime = persistedAccount.siteUpdatedAt ?? 0;
             const currentTime = currentAccount.siteUpdatedAt ?? 0;
             return currentTime >= persistedTime
@@ -344,7 +359,9 @@ export function useIsInstanceBlocked(instanceId?: number | null) {
   return useAuth((s) => {
     const account = s.getSelectedAccount();
     const site = getAccountSite(account);
-    if (!instanceId || !site?.instanceBlocks?.length) return false;
+    if (!instanceId || !site?.instanceBlocks?.length) {
+      return false;
+    }
     return !!site.instanceBlocks.find((b) => b.id === instanceId);
   });
 }
