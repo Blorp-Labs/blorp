@@ -51,6 +51,8 @@ const storeSchema = z.object({
   selectedUuid: z.string().optional(),
 });
 
+export type AuthStoreData = z.infer<typeof storeSchema>;
+
 type Uuid = string;
 
 type AuthStore = {
@@ -149,7 +151,6 @@ export const useAuth = create<AuthStore>()(
         const account = getSelectedAccount(state);
         return !!account && !!account.jwt;
       },
-      accountIndex: 0,
       addAccount: (patch) => {
         const instance = patch?.instance ?? env.defaultInstance;
         const newAccount = {
@@ -187,7 +188,7 @@ export const useAuth = create<AuthStore>()(
         }
       },
       logoutMultiple: (selectedUuids: string[]) => {
-        const { accounts } = get();
+        const { accounts, selectedUuid } = get();
         const newAccounts = accounts.filter(
           (a) => !selectedUuids.includes(a.uuid),
         );
@@ -200,9 +201,9 @@ export const useAuth = create<AuthStore>()(
         } else {
           set({
             accounts: newAccounts,
-            // accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
-            // TODO: clamp uuid
-            selectedUuid: undefined,
+            selectedUuid:
+              newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
+              _.last(newAccounts)?.uuid,
           });
         }
       },
@@ -293,12 +294,14 @@ export const useAuth = create<AuthStore>()(
           accountIndex: z.number(),
         });
         const raw = rawSchema.parse(state);
+        const mappedAccounts = raw.accounts.map((a) => ({
+          ...a,
+          uuid: typeof a["uuid"] === "string" ? a["uuid"] : uuid(),
+        }));
         return storeSchema.parse({
           ...raw,
-          accounts: raw.accounts.map((a) => ({
-            ...a,
-            uuid: typeof a["uuid"] === "string" ? a["uuid"] : uuid(),
-          })),
+          accounts: mappedAccounts,
+          selectedUuid: mappedAccounts[raw.accountIndex]?.uuid,
         });
       },
       merge: (persisted, current) => {

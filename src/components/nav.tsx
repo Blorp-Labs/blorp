@@ -340,14 +340,14 @@ export function UserSidebar() {
 
       <span>Other accounts</span>
 
-      {accounts.map((a, index) => {
+      {accounts.map((a) => {
         if (a.uuid === selectedAccount.uuid) {
           return null;
         }
         const { person, instance } = parseAccountInfo(a);
         const [name] = person?.slug.split("@") ?? [];
         return (
-          <IonMenuToggle key={instance + index}>
+          <IonMenuToggle key={a.uuid}>
             <button
               onClick={() => {
                 setAccountIndex(a.uuid);
@@ -355,7 +355,7 @@ export function UserSidebar() {
               className="flex w-full flex-row items-center gap-2 text-left"
             >
               <BadgeCount
-                showBadge={!!inboxAcounts[index] || !!pmCounts[index]}
+                showBadge={!!inboxAcounts[a.uuid] || !!pmCounts[a.uuid]}
               >
                 <Avatar key={person?.id}>
                   {person && <AvatarImage src={person.avatar ?? undefined} />}

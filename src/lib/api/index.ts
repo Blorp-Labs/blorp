@@ -2845,7 +2845,7 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
         throw new Error("This shouldn't happen");
       }
       const results = await Promise.allSettled(
-        apis.map(async (apiEntry, index) => {
+        apis.map(async (apiEntry) => {
           if (apiEntry.account.uuid === selectedAccountUuid) {
             throw new Error("Skip current account");
           }
@@ -2853,7 +2853,7 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
             await apiEntry.api
           ).resolveObject({ q: apId });
           return {
-            account: accounts[index],
+            account: apiEntry.account,
             result: resolved,
           };
         }),
@@ -2863,7 +2863,6 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
           (
             r,
           ): r is PromiseFulfilledResult<{
-            accountIndex: number;
             account: Account;
             result: Schemas.ResolveObject;
           }> => r.status === "fulfilled",

@@ -189,7 +189,7 @@ function CrossInstanceResolver({
             const [name] = person?.slug.split("@") ?? [];
             return (
               <div
-                key={match.accountIndex}
+                key={match.account.uuid}
                 className="flex items-center gap-3 rounded-lg border p-3"
               >
                 <Avatar className="h-8 w-8">

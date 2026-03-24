@@ -1,7 +1,12 @@
-import { describe, test, expect, afterEach, vi } from "vitest";
+import { describe, test, expect, afterEach } from "vitest";
 
 // vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
-import { useAuth, type Account, getSelectedAccount } from "./auth";
+import {
+  useAuth,
+  type Account,
+  AuthStoreData,
+  getSelectedAccount,
+} from "./auth";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
@@ -68,7 +73,7 @@ describe("useAuthStore", () => {
 
   test("logout of account 3 of 3", () => {
     act(() => {
-      result.current.updateAccount(account1.uuid, account1);
+      result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
       result.current.addAccount(account3);
     });
@@ -192,15 +197,19 @@ describe("useAuthStore merge", () => {
   }
 
   function makeCurrent(accounts: Account[]) {
-    return { ...useAuth.getState(), accounts, accountIndex: 0 };
+    return {
+      ...useAuth.getState(),
+      accounts,
+      selectedUuid: accounts[0]?.uuid,
+    } satisfies AuthStoreData;
   }
 
   test("in-memory account wins when siteUpdatedAt is newer (single-tab revert bug)", () => {
     const account = makeAccount();
     const persisted = {
       accounts: [{ ...account, siteUpdatedAt: 50 }],
-      accountIndex: 0,
-    };
+      selectedUuid: account.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([{ ...account, siteUpdatedAt: 100 }]);
     const result = merge(persisted, current);
     expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
@@ -210,8 +219,8 @@ describe("useAuthStore merge", () => {
     const account = makeAccount();
     const persisted = {
       accounts: [{ ...account, siteUpdatedAt: 100 }],
-      accountIndex: 0,
-    };
+      selectedUuid: account.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([{ ...account, siteUpdatedAt: 50 }]);
     const result = merge(persisted, current);
     expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
@@ -222,8 +231,8 @@ describe("useAuthStore merge", () => {
     const account2 = makeAccount();
     const persisted = {
       accounts: [account1, account2],
-      accountIndex: 0,
-    };
+      selectedUuid: account1.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([account1]);
     const result = merge(persisted, current);
     expect(result.accounts).toHaveLength(2);
@@ -235,8 +244,8 @@ describe("useAuthStore merge", () => {
     const account2 = makeAccount();
     const persisted = {
       accounts: [account2, account1],
-      accountIndex: 0,
-    };
+      selectedUuid: account2.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([account1, account2]);
     const result = merge(persisted, current);
     expect(result.accounts[0]!.uuid).toBe(account2.uuid);
@@ -255,8 +264,8 @@ describe("useAuthStore merge", () => {
 
     const persisted = {
       accounts: [account1Persisted, account2Persisted],
-      accountIndex: 0,
-    };
+      selectedUuid: account1Persisted.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([account1Current, account2Current]);
     const result = merge(persisted, current);
 
@@ -279,8 +288,8 @@ describe("useAuthStore merge", () => {
     const newAccount = makeAccount();
     const persisted = {
       accounts: [existingAccount],
-      accountIndex: 0,
-    };
+      selectedUuid: existingAccount.uuid,
+    } satisfies AuthStoreData;
     const current = makeCurrent([existingAccount, newAccount]);
     const result = merge(persisted, current);
 
@@ -311,10 +320,13 @@ describe("useAuthStore merge", () => {
       const current = {
         ...useAuth.getState(),
         accounts: [account1, account2],
-        accountIndex: 1,
-      };
+        selectedUuid: account2.uuid,
+      } satisfies AuthStoreData;
       // persisted has accounts in reverse order with a different selection
-      const persisted = { accounts: [account2, account1], accountIndex: 1 };
+      const persisted = {
+        accounts: [account2, account1],
+        selectedUuid: account1.uuid,
+      } satisfies AuthStoreData;
 
       const result = merge(persisted, current);
 
@@ -331,10 +343,13 @@ describe("useAuthStore merge", () => {
       const current = {
         ...useAuth.getState(),
         accounts: [existingAccount, newAccount],
-        accountIndex: 1,
-      };
+        selectedUuid: newAccount.uuid,
+      } satisfies AuthStoreData;
       // persisted only knows about the existing account
-      const persisted = { accounts: [existingAccount], accountIndex: 0 };
+      const persisted = {
+        accounts: [existingAccount],
+        selectedUuid: existingAccount.uuid,
+      } satisfies AuthStoreData;
 
       const result = merge(persisted, current);
 
@@ -352,13 +367,13 @@ describe("useAuthStore merge", () => {
       const current = {
         ...useAuth.getState(),
         accounts: [account1, account2],
-        accountIndex: 1,
-      };
+        selectedUuid: account2.uuid,
+      } satisfies AuthStoreData;
       // another tab added newAccount at the front and has it selected
       const persisted = {
         accounts: [newAccount, account1, account2],
-        accountIndex: 0,
-      };
+        selectedUuid: newAccount.uuid,
+      } satisfies AuthStoreData;
 
       const result = merge(persisted, current);
 
@@ -388,7 +403,10 @@ describe("useAuthStore merge", () => {
 
     test("guest in persisted is kept", () => {
       const guest = makeGuest();
-      const persisted = { accounts: [guest], accountIndex: 0 };
+      const persisted = {
+        accounts: [guest],
+        selectedUuid: guest.uuid,
+      } satisfies AuthStoreData;
       const current = makeCurrent([]);
       const result = merge(persisted, current);
 
@@ -401,7 +419,10 @@ describe("useAuthStore merge", () => {
       // The guest accounts must survive the merge undisturbed.
       const loggedIn = makeAccount();
       const guest = makeGuest();
-      const persisted = { accounts: [loggedIn, guest], accountIndex: 0 };
+      const persisted = {
+        accounts: [loggedIn, guest],
+        selectedUuid: loggedIn.uuid,
+      } satisfies AuthStoreData;
       const current = makeCurrent([loggedIn]);
       const result = merge(persisted, current);
 
@@ -420,7 +441,10 @@ describe("useAuthStore merge", () => {
         ...guest,
         instance: faker.internet.url().replace(/\/$/, ""),
       };
-      const persisted = { accounts: [guest], accountIndex: 0 };
+      const persisted = {
+        accounts: [guest],
+        selectedUuid: guest.uuid,
+      } satisfies AuthStoreData;
       const current = makeCurrent([guestWithUpdatedInstance]);
       const result = merge(persisted, current);
 
@@ -433,7 +457,10 @@ describe("useAuthStore merge", () => {
       // that hasn't reached storage yet is not appended to newAccounts.
       const loggedIn = makeAccount();
       const guest = makeGuest();
-      const persisted = { accounts: [loggedIn], accountIndex: 0 };
+      const persisted = {
+        accounts: [loggedIn],
+        selectedUuid: loggedIn.uuid,
+      } satisfies AuthStoreData;
       const current = makeCurrent([loggedIn, guest]);
       const result = merge(persisted, current);
 
