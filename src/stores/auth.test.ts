@@ -302,4 +302,62 @@ describe("useAuthStore merge", () => {
     expect(result.accounts.map((a) => a.uuid)).toContain(account1.uuid);
     expect(result.accounts.map((a) => a.uuid)).toContain(account2.uuid);
   });
+
+  // Guest accounts have a uuid but no jwt.
+  describe("guest accounts (no jwt)", () => {
+    function makeGuest(): Account {
+      return makeAccount({ jwt: undefined });
+    }
+
+    test("default guest is preserved when persisted is empty (first launch)", () => {
+      // On first launch there is nothing in storage, so persisted is null.
+      // The store always initialises with at least one guest account, and we
+      // must not lose it — otherwise the app would have zero accounts.
+      const guest = makeGuest();
+      const current = makeCurrent([guest]);
+      const result = merge(null, current);
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0]!.uuid).toBe(guest.uuid);
+    });
+
+    test("guest in persisted is kept", () => {
+      const guest = makeGuest();
+      const persisted = { accounts: [guest], accountIndex: 0 };
+      const current = makeCurrent([]);
+      const result = merge(persisted, current);
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0]!.uuid).toBe(guest.uuid);
+    });
+
+    test("guest in both uses persisted version", () => {
+      // Guest accounts are excluded from currentByUuid (no jwt filter),
+      // so the current version is never consulted — persisted always wins.
+      const guest = makeGuest();
+      const guestWithUpdatedInstance = {
+        ...guest,
+        instance: faker.internet.url().replace(/\/$/, ""),
+      };
+      const persisted = { accounts: [guest], accountIndex: 0 };
+      const current = makeCurrent([guestWithUpdatedInstance]);
+      const result = merge(persisted, current);
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0]!.instance).toBe(guest.instance);
+    });
+
+    test("guest only in current is dropped", () => {
+      // currentLoggedIn filters to jwt-bearing accounts only, so a guest
+      // that hasn't reached storage yet is not appended to newAccounts.
+      const loggedIn = makeAccount();
+      const guest = makeGuest();
+      const persisted = { accounts: [loggedIn], accountIndex: 0 };
+      const current = makeCurrent([loggedIn, guest]);
+      const result = merge(persisted, current);
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0]!.uuid).toBe(loggedIn.uuid);
+    });
+  });
 });
