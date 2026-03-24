@@ -243,4 +243,63 @@ describe("useAuthStore merge", () => {
     expect(result.accounts[0]!.uuid).toBe(account2.uuid);
     expect(result.accounts[1]!.uuid).toBe(account1.uuid);
   });
+
+  test("mixed: each account uses the version with the newer siteUpdatedAt", () => {
+    // account1: storage updated the site more recently
+    const account1 = makeAccount();
+    const account1Persisted = { ...account1, siteUpdatedAt: 100 };
+    const account1Current = { ...account1, siteUpdatedAt: 50 };
+    // account2: current tab updated the site more recently
+    const account2 = makeAccount();
+    const account2Persisted = { ...account2, siteUpdatedAt: 50 };
+    const account2Current = { ...account2, siteUpdatedAt: 100 };
+
+    const persisted = {
+      accounts: [account1Persisted, account2Persisted],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([account1Current, account2Current]);
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(2);
+
+    const r1 = result.accounts.find((a) => a.uuid === account1.uuid)!;
+    const r2 = result.accounts.find((a) => a.uuid === account2.uuid)!;
+
+    expect(r1.siteUpdatedAt).toBe(100);
+    expect(r1.jwt).toBe(account1.jwt);
+    expect(r1.uuid).toBe(account1.uuid);
+
+    expect(r2.siteUpdatedAt).toBe(100);
+    expect(r2.jwt).toBe(account2.jwt);
+    expect(r2.uuid).toBe(account2.uuid);
+  });
+
+  test("new account in current tab is appended with jwt and uuid intact", () => {
+    const existingAccount = makeAccount();
+    const newAccount = makeAccount();
+    const persisted = {
+      accounts: [existingAccount],
+      accountIndex: 0,
+    };
+    const current = makeCurrent([existingAccount, newAccount]);
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(2);
+    const appended = result.accounts.find((a) => a.uuid === newAccount.uuid)!;
+    expect(appended).toBeDefined();
+    expect(appended.uuid).toBe(newAccount.uuid);
+    expect(appended.jwt).toBe(newAccount.jwt);
+  });
+
+  test("null persisted falls back to current without dropping accounts", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+    const current = makeCurrent([account1, account2]);
+    const result = merge(null, current);
+
+    expect(result.accounts).toHaveLength(2);
+    expect(result.accounts.map((a) => a.uuid)).toContain(account1.uuid);
+    expect(result.accounts.map((a) => a.uuid)).toContain(account2.uuid);
+  });
 });
