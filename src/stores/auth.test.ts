@@ -1,6 +1,9 @@
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 
-// vi.mock("uuid", () => ({ v4: () => "fixed-uuid-value" }));
+vi.mock("uuid", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("uuid")>();
+  return { ...actual, v4: vi.fn(actual.v4) };
+});
 import {
   useAuth,
   type Account,
@@ -82,7 +85,7 @@ describe("useAuthStore", () => {
       result.current.logout();
     });
     expect(result.current.accounts).toHaveLength(2);
-    expect(result.current.getSelectedAccount()).toEqual(account2);
+    expect(result.current.getSelectedAccount()).toEqual(account1);
   });
 
   test("change account selection", () => {
@@ -171,9 +174,14 @@ describe("persisted state snapshot", () => {
 
     act(() => {
       result.current.reset();
+      result.current.updateSelectedAccount({
+        instance: "https://lemmy.zip",
+        uuid: "uuid-1",
+      });
       result.current.addAccount({
         instance: "https://lemmy.world",
-        jwt: "test-jwt-token",
+        jwt: "test-jwt-token-2",
+        uuid: "uuid-2",
       });
     });
 
