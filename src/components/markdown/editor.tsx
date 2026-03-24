@@ -91,7 +91,9 @@ function getActiveLinkInfo(editor: Editor) {
   }
 
   const range = getMarkRange($from, linkType);
-  if (!range) return null;
+  if (!range) {
+    return null;
+  }
 
   const text = state.doc.textBetween(range.from, range.to, undefined, "\uFFFC");
   const attrs = editor.getAttributes("link"); // href, target, etc.
@@ -101,7 +103,9 @@ function getActiveLinkInfo(editor: Editor) {
 function useRenderOnTipTapChange(editor: Editor | null) {
   const [, setSignal] = useState(0);
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
     const rerender = () => setSignal((x) => x + 1);
     editor.on("selectionUpdate", rerender);
     return () => {
@@ -391,7 +395,7 @@ function TipTapEditor({
       StarterKit.configure({
         codeBlock: false,
       }),
-      Image,
+      Image.configure({ inline: true }),
       Markdown,
       CodeBlockLowlight.extend({
         addNodeView() {
