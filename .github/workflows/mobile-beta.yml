@@ -49,7 +49,7 @@ jobs:
           bundler-cache: true
 
       - name: Install CocoaPods
-        run: pod install --repo-update
+        run: pod install
         working-directory: ios/App
 
       - name: Compute build number
