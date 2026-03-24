@@ -25,7 +25,7 @@ import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
 import { useUpdateRecentCommunity } from "../stores/recent-communities";
 import { UserDropdown } from "../components/nav";
-import { PostSortButton } from "../components/lemmy-sort";
+import { MobileFilterButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "../routing/link-context";
 import { Link } from "@/src/routing/index";
@@ -186,7 +186,10 @@ export default function CommunityPosts() {
               <Search className="scale-110 text-muted-foreground" />
             </Link>
             <div className="md:hidden contents">
-              <PostSortButton align="end" className="text-muted-foreground" />
+              <MobileFilterButton
+                align="end"
+                className="text-muted-foreground"
+              />
             </div>
             <UserDropdown />
           </ToolbarButtons>
