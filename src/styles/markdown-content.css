@@ -3,7 +3,7 @@
 */
 
 .markdown-content {
-  @apply space-y-4 text-sm overflow-x-hidden select-text;
+  @apply space-y-4 overflow-x-hidden text-sm select-text;
 }
 
 .markdown-content h1 {
@@ -31,19 +31,19 @@
 }
 
 .markdown-content code {
-  @apply bg-gray-800 text-white font-mono not-italic slashed-zero text-xs py-0.5 px-1 rounded-sm;
+  @apply rounded-sm bg-gray-800 px-1 py-0.5 font-mono text-xs text-white not-italic slashed-zero;
 }
 
 .markdown-content pre {
-  @apply bg-gray-800 text-white font-mono not-italic slashed-zero rounded-md text-xs p-2.5 max-w-full overflow-auto;
+  @apply max-w-full overflow-auto rounded-md bg-gray-800 p-2.5 font-mono text-xs text-white not-italic slashed-zero;
 }
 
 .markdown-content pre > code {
-  @apply py-0 px-0;
+  @apply px-0 py-0;
 }
 
 .markdown-content blockquote {
-  @apply ps-1.5 py-2 border-s-4 font-light text-sm italic relative rounded-se-md rounded-ee-md;
+  @apply relative rounded-se-md rounded-ee-md border-s-4 py-2 ps-1.5 text-sm font-light italic;
 }
 
 .markdown-content blockquote > p:not(:last-child) {
@@ -73,11 +73,11 @@
 }
 
 .markdown-content ul {
-  @apply list-disc list-outside ps-6.5 md:ps-8 space-y-1;
+  @apply list-outside list-disc space-y-1 ps-6.5 md:ps-8;
 }
 
 .markdown-content ol {
-  @apply list-decimal list-outside ps-6.5 md:ps-8 space-y-1;
+  @apply list-outside list-decimal space-y-1 ps-6.5 md:ps-8;
 }
 
 .markdown-content a {
@@ -89,7 +89,7 @@
 }
 
 .markdown-content img {
-  @apply max-w-full h-auto max-h-[40vh];
+  @apply inline-block h-auto max-h-[40vh] max-w-full;
 }
 
 .markdown-content img[title^="emoji"] {
@@ -97,7 +97,7 @@
 }
 
 .markdown-content hr {
-  @apply border-border border-t my-3;
+  @apply border-border my-3 border-t;
 }
 
 .markdown-content table {
@@ -117,7 +117,7 @@
 /* if you only want horizontal lines between rows */
 .markdown-content tbody tr {
   /* default is 1px */
-  @apply border-t border-accent;
+  @apply border-accent border-t;
 }
 
 /* Hide details marker unless inside prose */
