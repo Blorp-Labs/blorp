@@ -64,7 +64,7 @@ export function UserDropdown() {
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const selectedAccount = useAuth((s) => s.getSelectedAccount());
   const accounts = useAuth((s) => s.accounts);
-  const setAccountIndex = useAuth((s) => s.setAccountIndex);
+  const selectAccount = useAuth((s) => s.selectAccount);
 
   const inboxCounts = useNotificationCount();
   const pmCounts = usePrivateMessagesCount();
@@ -203,7 +203,7 @@ export function UserDropdown() {
             return (
               <DropdownMenuItem
                 onClick={() => {
-                  setAccountIndex(a.uuid);
+                  selectAccount(a.uuid);
                 }}
                 key={a.uuid}
                 className="relative"
@@ -252,7 +252,7 @@ export function UserSidebar() {
 
   const selectedAccount = useAuth((s) => s.getSelectedAccount());
   const accounts = useAuth((s) => s.accounts);
-  const setAccountIndex = useAuth((s) => s.setAccountIndex);
+  const selectAccount = useAuth((s) => s.selectAccount);
   const inboxAcounts = useNotificationCount();
   const pmCounts = usePrivateMessagesCount();
 
@@ -350,7 +350,7 @@ export function UserSidebar() {
           <IonMenuToggle key={a.uuid}>
             <button
               onClick={() => {
-                setAccountIndex(a.uuid);
+                selectAccount(a.uuid);
               }}
               className="flex w-full flex-row items-center gap-2 text-left"
             >

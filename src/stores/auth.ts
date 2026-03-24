@@ -61,7 +61,7 @@ type AuthStore = {
   updateSelectedAccount: (patch: Partial<Account>) => any;
   updateAccountSite: (uuid: Uuid, site: Schemas.Site) => any;
   addAccount: (patch?: Partial<Account>) => any;
-  setAccountIndex: (uuid: Uuid) => Account | null;
+  selectAccount: (uuid: Uuid) => Account | null;
   logout: (uuid?: Uuid) => any;
   logoutMultiple: (uuids: Uuid[]) => any;
   getCachePrefixer: (account?: Account) => CachePrefixer;
@@ -210,7 +210,7 @@ export const useAuth = create<AuthStore>()(
           });
         }
       },
-      setAccountIndex: (uuid: string) => {
+      selectAccount: (uuid: string) => {
         const account = get().accounts.find((a) => a.uuid === uuid);
         if (!account) {
           return null;
@@ -303,7 +303,7 @@ export const useAuth = create<AuthStore>()(
         const persistedData = storeSchema.safeParse(persisted).data;
         // No persisted accounts means first launch — keep current as-is so the
         // default guest account (always present on init) is not discarded.
-        if (!persistedData?.accounts) {
+        if (!persistedData?.accounts || persistedData.accounts.length === 0) {
           return { ...current };
         }
         // Only logged-in accounts from the current tab participate in the

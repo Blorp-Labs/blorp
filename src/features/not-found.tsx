@@ -67,7 +67,7 @@ function CrossInstanceResolver({
   communitySlug?: string;
 }) {
   const router = useIonRouter();
-  const setAccountIndex = useAuth((s) => s.setAccountIndex);
+  const selectAccount = useAuth((s) => s.selectAccount);
   const addAccount = useAuth((s) => s.addAccount);
   const accounts = useAuth((s) => s.accounts);
   const requireAuth = useRequireAuth();
@@ -135,7 +135,7 @@ function CrossInstanceResolver({
     if (!url) {
       return;
     }
-    setAccountIndex(accountUuid);
+    selectAccount(accountUuid);
     router.push(url, "forward", "replace");
   };
 

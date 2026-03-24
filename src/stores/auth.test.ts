@@ -97,13 +97,13 @@ describe("useAuthStore", () => {
     expect(result.current.getSelectedAccount()).toEqual(account3);
     let account: any;
     act(() => {
-      account = result.current.setAccountIndex(account1.uuid);
+      account = result.current.selectAccount(account1.uuid);
     });
     expect(account).toEqual(account1);
     expect(result.current.getSelectedAccount()).toEqual(account1);
   });
 
-  test("setAccountIndex protects against invalid account index", () => {
+  test("selectAccount protects against invalid account uuid", () => {
     act(() => {
       result.current.updateSelectedAccount(account1);
       result.current.addAccount(account2);
@@ -111,7 +111,7 @@ describe("useAuthStore", () => {
     });
     const fakeUuid = "random-string";
     act(() => {
-      result.current.setAccountIndex(fakeUuid);
+      result.current.selectAccount(fakeUuid);
     });
     expect(result.current.selectedUuid).not.toBe(fakeUuid);
   });
