@@ -86,7 +86,7 @@ const SKIP_NAV_ID = "#main";
 function SkipNav() {
   return (
     <a
-      className="transition left-0 bg-brand text-brand-foreground absolute p-3 z-50 opacity-0 pointer-events-none focus:opacity-100 focus:pointer-events-auto"
+      className="bg-brand text-brand-foreground pointer-events-none absolute left-0 z-50 p-3 opacity-0 transition focus:pointer-events-auto focus:opacity-100"
       href={SKIP_NAV_ID}
     >
       Skip Navigation
@@ -410,9 +410,9 @@ function Tabs() {
   const sidebarWidth = useMainSidebarWidth() + "px";
   const fromLeftSwipeEnabled = useMenuSwipeEnabled("from-left");
   const fromRightSwipeEnabled = useMenuSwipeEnabled("from-right");
-  const selectedAccountIndex = useAuth((s) => s.accountIndex);
-  const inboxCount = useNotificationCount()[selectedAccountIndex];
-  const messageCount = usePrivateMessagesCount()[selectedAccountIndex];
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
+  const inboxCount = useNotificationCount()[selectedAccountUuid];
+  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
   const media = useMedia();
   const pathname = useIonRouter().routeInfo.pathname;
 
@@ -433,7 +433,7 @@ function Tabs() {
         <div className="h-[var(--ion-safe-area-top)]" />
 
         <IonContent scrollY={false}>
-          <div className="overflow-y-auto h-full p-4">
+          <div className="h-full overflow-y-auto p-4">
             <UserSidebar />
             <div className="h-[var(--ion-safe-area-buttom)]" />
           </div>
@@ -537,7 +537,7 @@ function Tabs() {
                     <IonLabel>{t.label}</IonLabel>
                     {((t.id === "inbox" && !!inboxCount) ||
                       (t.id === "messages" && !!messageCount)) && (
-                      <IonBadge className="size-3 bg-brand p-0"> </IonBadge>
+                      <IonBadge className="bg-brand size-3 p-0"> </IonBadge>
                     )}
                   </IonTabButton>
                 );

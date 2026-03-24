@@ -39,14 +39,14 @@ import { formatOrdinal } from "../lib/utils";
 import { env } from "../env";
 
 function AccountNotificationBadge({
-  accountIndex,
+  accountUuid,
   children,
 }: {
-  accountIndex: number;
+  accountUuid: string;
   children: React.ReactNode;
 }) {
-  const inboxCount = useNotificationCount()[accountIndex];
-  const pmCount = usePrivateMessagesCount()[accountIndex];
+  const inboxCount = useNotificationCount()[accountUuid];
+  const pmCount = usePrivateMessagesCount()[accountUuid];
   return (
     <BadgeCount showBadge={!!inboxCount || !!pmCount}>{children}</BadgeCount>
   );
@@ -69,8 +69,16 @@ export function UserDropdown() {
   const inboxCounts = useNotificationCount();
   const pmCounts = usePrivateMessagesCount();
   const count =
-    _.sum(inboxCounts.filter((_, i) => i !== selectedAccountUuid)) +
-    _.sum(pmCounts.filter((_, i) => i !== selectedAccountUuid));
+    _.sum(
+      Object.entries(inboxCounts)
+        .filter(([k]) => k !== selectedAccountUuid)
+        .map(([, v]) => v),
+    ) +
+    _.sum(
+      Object.entries(pmCounts)
+        .filter(([k]) => k !== selectedAccountUuid)
+        .map(([, v]) => v),
+    );
 
   const { person, instance } = parseAccountInfo(selectedAccount);
 
@@ -200,7 +208,7 @@ export function UserDropdown() {
                 key={a.uuid}
                 className="relative"
               >
-                <AccountNotificationBadge accountIndex={index}>
+                <AccountNotificationBadge accountUuid={a.uuid}>
                   <Avatar key={person?.id} className="h-7 w-7">
                     <AvatarImage src={person?.avatar ?? undefined} />
                     <AvatarFallback>
@@ -242,7 +250,6 @@ export function UserSidebar() {
   const logout = useLogout();
   const requireAuth = useRequireAuth();
 
-  const selectedAccountIndex = useAuth((s) => s.accountIndex);
   const selectedAccount = useAuth((s) => s.getSelectedAccount());
   const accounts = useAuth((s) => s.accounts);
   const setAccountIndex = useAuth((s) => s.setAccountIndex);
@@ -334,7 +341,7 @@ export function UserSidebar() {
       <span>Other accounts</span>
 
       {accounts.map((a, index) => {
-        if (index === selectedAccountIndex) {
+        if (a.uuid === selectedAccount.uuid) {
           return null;
         }
         const { person, instance } = parseAccountInfo(a);
@@ -343,7 +350,7 @@ export function UserSidebar() {
           <IonMenuToggle key={instance + index}>
             <button
               onClick={() => {
-                setAccountIndex(index);
+                setAccountIndex(a.uuid);
               }}
               className="flex w-full flex-row items-center gap-2 text-left"
             >

@@ -60,10 +60,10 @@ export function useScrollToTopEvents({
       return () => window.removeEventListener("statusTap", listener);
     }
   }, [focused, isBrowserOpen, scrollToTop]);
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   useEffect(() => {
     scrollToTop();
-  }, [accountIndex, listKey, scrollToTop]);
+  }, [selectedAccountUuid, listKey, scrollToTop]);
 }
 
 /**
@@ -383,12 +383,12 @@ export function VirtualList<T>({
   // the virtualizer. Otherwise scroll events are
   // handled by VirtualListInternal by smoothly
   // scrolling to the top.
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   useEffect(() => {
     if (!focused.current) {
       setKey((k) => k + 1);
     }
-  }, [accountIndex, props.listKey]);
+  }, [selectedAccountUuid, props.listKey]);
 
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
@@ -417,8 +417,8 @@ export function VirtualList<T>({
       <div
         ref={scrollRef}
         className={cn(
-          "overflow-y-scroll overscroll-auto flex-1",
-          scrollHost && "h-full ion-content-scroll-host",
+          "flex-1 overflow-y-scroll overscroll-auto",
+          scrollHost && "ion-content-scroll-host h-full",
           fullscreen &&
             "max-md:absolute max-md:inset-0 max-md:pt-[var(--offset-top)] max-md:pb-[var(--offset-bottom)]",
           className,

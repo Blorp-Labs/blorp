@@ -64,7 +64,7 @@ export default function Instance() {
       for (let i = 0; i < accounts.length; i++) {
         const account = accounts[i];
         if (account && compareHosts(siteInstance, account.instance)) {
-          setAccountIndex(i);
+          setAccountIndex(account.uuid);
           replace(resolveRoute("/home"));
           return;
         }

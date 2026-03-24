@@ -1515,7 +1515,7 @@ export function usePrivateMessagesCount() {
       const counts = await Promise.allSettled(
         apis.map(async ({ api, isLoggedIn, queryKeyPrefix, account }) => {
           if (!isLoggedIn) {
-            return 0;
+            return [account.uuid, 0] as const;
           }
 
           const { privateMessages } = await (
@@ -1536,13 +1536,15 @@ export function usePrivateMessagesCount() {
             });
           }
 
-          return privateMessages.length;
+          return [account.uuid, privateMessages.length] as const;
         }),
       );
 
-      return counts.map((count) =>
-        count.status === "fulfilled" ? count.value : 0,
-      );
+      const pairs = counts
+        .filter((count) => count.status === "fulfilled")
+        .map((count) => [...count.value]);
+
+      return _.fromPairs(pairs);
     },
     enabled: isLoggedIn,
     refetchInterval: 1000 * 60,
@@ -1551,13 +1553,13 @@ export function usePrivateMessagesCount() {
     refetchOnWindowFocus: "always",
   });
 
-  return data ?? EMPTY_ARR;
+  return data ?? {};
 }
 
 export function useMarkPriavteMessageRead() {
   const { api } = useApiClients();
   const queryClient = useQueryClient();
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
 
   const privateMessagesKey = usePrivateMessagesKey();
   const privateMessageCountQueryKey = usePrivateMessageCountQueryKey();
@@ -1566,14 +1568,17 @@ export function useMarkPriavteMessageRead() {
     mutationFn: async (form: Forms.MarkPrivateMessageRead) =>
       await (await api).markPrivateMessageRead(form),
     onMutate: (form) => {
-      queryClient.setQueryData<number[]>(
+      queryClient.setQueryData<Record<string, number>>(
         privateMessageCountQueryKey,
         (data) => {
-          if (_.isNumber(data?.[accountIndex])) {
-            const clone = [...data];
-            const prev = clone[accountIndex];
+          if (_.isNumber(data?.[selectedAccountUuid])) {
+            const clone = { ...data };
+            const prev = clone[selectedAccountUuid];
             if (_.isNumber(prev)) {
-              clone[accountIndex] = Math.max(prev + (form.read ? -1 : 1), 0);
+              clone[selectedAccountUuid] = Math.max(
+                prev + (form.read ? -1 : 1),
+                0,
+              );
             }
             return clone;
           }
@@ -1935,9 +1940,9 @@ export function useNotificationCount() {
     queryKey,
     queryFn: async ({ signal }) => {
       const counts = await Promise.allSettled(
-        apis.map(async ({ api, isLoggedIn }) => {
+        apis.map(async ({ api, isLoggedIn, account }) => {
           if (!isLoggedIn) {
-            return 0;
+            return [account.uuid, 0] as const;
           }
 
           const a = await api;
@@ -1983,15 +1988,22 @@ export function useNotificationCount() {
             commentReports.status === "fulfilled"
               ? commentReports.value.commentReports.length
               : 0;
-          return (
-            mentionCount + repliesCount + postReportsCount + commentReportsCount
-          );
+
+          return [
+            account.uuid,
+            mentionCount +
+              repliesCount +
+              postReportsCount +
+              commentReportsCount,
+          ] as const;
         }),
       );
 
-      return counts.map((count) =>
-        count.status === "fulfilled" ? count.value : 0,
-      );
+      const pairs = counts
+        .filter((count) => count.status === "fulfilled")
+        .map((count) => [...count.value]);
+
+      return _.fromPairs(pairs);
     },
     enabled: isLoggedIn,
     refetchInterval: 1000 * 60,
@@ -2000,9 +2012,8 @@ export function useNotificationCount() {
     refetchOnWindowFocus: "always",
   });
 
-  return data ?? EMPTY_ARR;
+  return data ?? {};
 }
-const EMPTY_ARR: never[] = [];
 
 export function useSearch(form: Forms.Search) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -2835,14 +2846,13 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
       }
       const results = await Promise.allSettled(
         apis.map(async (apiEntry, index) => {
-          if (index === selectedAccountUuid) {
+          if (apiEntry.account.uuid === selectedAccountUuid) {
             throw new Error("Skip current account");
           }
           const resolved = await (
             await apiEntry.api
           ).resolveObject({ q: apId });
           return {
-            accountIndex: index,
             account: accounts[index],
             result: resolved,
           };
