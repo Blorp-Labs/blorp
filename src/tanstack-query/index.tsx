@@ -3,7 +3,6 @@ import {
   Persister,
   PersistQueryClientProvider,
 } from "@tanstack/react-query-persist-client";
-import _ from "lodash";
 import { createDb } from "@/src/lib/create-storage";
 import pRetry from "p-retry";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
@@ -11,8 +10,8 @@ import { MAX_CACHE_MS } from "@/src/stores/config";
 import { queryClient } from "./query-client";
 
 // List the last reason for bumping the key:
-// Caching creator profiles when fetching comments
-const REACT_QUERY_CACHE_VERSON = 11;
+// Notification and PM counts changed from number[] to Record<string, number>
+const REACT_QUERY_CACHE_VERSON = 12;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;

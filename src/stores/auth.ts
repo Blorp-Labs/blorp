@@ -286,7 +286,7 @@ export const useAuth = create<AuthStore>()(
         // validating against the current schema.
         const rawSchema = z.object({
           accounts: z.array(z.record(z.unknown())),
-          accountIndex: z.number(),
+          accountIndex: z.number().optional().default(0),
         });
         const raw = rawSchema.parse(state);
         const mappedAccounts = raw.accounts.map((a) => ({

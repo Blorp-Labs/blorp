@@ -491,4 +491,14 @@ describe("useAuthStore migrate", () => {
     expect(typeof result.accounts[0]!.uuid).toBe("string");
     expect(result.accounts[0]!.uuid.length).toBeGreaterThan(0);
   });
+
+  test("does not throw on pre-v4 state missing accountIndex", () => {
+    const state = {
+      accounts: [{ instance: "https://lemmy.world", jwt: "some-jwt-token" }],
+    };
+    expect(() => migrate(state, 3)).not.toThrow();
+    const result = migrate(state, 3) as ReturnType<typeof useAuth.getState>;
+    expect(result.accounts).toHaveLength(1);
+    expect(typeof result.accounts[0]!.uuid).toBe("string");
+  });
 });
