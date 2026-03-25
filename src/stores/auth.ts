@@ -318,11 +318,10 @@ export const useAuth = create<AuthStore>()(
         const currentLoggedIn = current.accounts.filter((a) => !!a.jwt);
         const currentByUuid = _.keyBy(currentLoggedIn, "uuid");
         const persistedByUuid = _.keyBy(persistedData.accounts, "uuid");
-        // Preserve the account order from persisted (canonical source of order
-        // for accountIndex). For each account, pick the version with the newer
-        // siteUpdatedAt so that both single-tab (in-memory wins when IndexedDB
-        // lags) and multi-tab (storage wins when another tab updated the site)
-        // cases resolve correctly.
+        // Preserve the account order from persisted. For each account, pick
+        // the version with the newer siteUpdatedAt so that both single-tab
+        // (in-memory wins when IndexedDB lags) and multi-tab (storage wins
+        // when another tab updated the site) cases resolve correctly.
         const mergedAccounts = persistedData.accounts.map(
           (persistedAccount) => {
             if (!persistedAccount.uuid) {

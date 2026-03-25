@@ -51,9 +51,9 @@ function useMainSidebarCollapsed() {
 
 function SidebarTabs() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
-  const selectedAccountuuid = useAuth((s) => s.getSelectedAccount().uuid);
-  const messageCount = usePrivateMessagesCount()[selectedAccountuuid];
-  const inboxCount = useNotificationCount()[selectedAccountuuid];
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
+  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
+  const inboxCount = useNotificationCount()[selectedAccountUuid];
   const pathname = useIonRouter().routeInfo.pathname;
 
   return (

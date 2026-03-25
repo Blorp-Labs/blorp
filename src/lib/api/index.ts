@@ -886,7 +886,7 @@ export function useRefreshAuth() {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const logoutIndicies: string[] = [];
+      const logoutUuids: string[] = [];
 
       const sites = await Promise.allSettled(
         apis
@@ -907,7 +907,7 @@ export function useRefreshAuth() {
           const { site, communities, profiles } = p.value;
 
           if (api?.isLoggedIn && api.account.uuid && site && !site.me) {
-            logoutIndicies.push(api.account.uuid);
+            logoutUuids.push(api.account.uuid);
             continue;
           }
 
@@ -935,12 +935,12 @@ export function useRefreshAuth() {
           p.reason.toLowerCase().indexOf("aborterror") === -1 &&
           api?.account.uuid
         ) {
-          logoutIndicies.push(api.account.uuid);
+          logoutUuids.push(api.account.uuid);
         }
       }
 
-      if (logoutIndicies.length > 0) {
-        logoutMultiple(logoutIndicies);
+      if (logoutUuids.length > 0) {
+        logoutMultiple(logoutUuids);
       }
 
       return {};
