@@ -10,6 +10,7 @@ import {
   AuthStoreData,
   getSelectedAccount,
 } from "./auth";
+import { getSite } from "@/test-utils/api";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
@@ -215,23 +216,51 @@ describe("useAuthStore merge", () => {
   test("in-memory account wins when siteUpdatedAt is newer (single-tab revert bug)", () => {
     const account = makeAccount();
     const persisted = {
-      accounts: [{ ...account, siteUpdatedAt: 50 }],
+      accounts: [
+        {
+          ...account,
+          site: getSite({ description: "stale-persisted" }),
+          siteUpdatedAt: 50,
+        },
+      ],
       selectedUuid: account.uuid,
     } satisfies AuthStoreData;
-    const current = makeCurrent([{ ...account, siteUpdatedAt: 100 }]);
+    const current = makeCurrent([
+      {
+        ...account,
+        site: getSite({ description: "fresh-current" }),
+        siteUpdatedAt: 100,
+      } as Account,
+    ]);
     const result = merge(persisted, current);
     expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
+    expect((result.accounts[0] as any).site?.description).toBe("fresh-current");
   });
 
   test("persisted account wins when siteUpdatedAt is newer (multi-tab sync)", () => {
     const account = makeAccount();
     const persisted = {
-      accounts: [{ ...account, siteUpdatedAt: 100 }],
+      accounts: [
+        {
+          ...account,
+          site: getSite({ description: "fresh-persisted" }),
+          siteUpdatedAt: 100,
+        },
+      ],
       selectedUuid: account.uuid,
     } satisfies AuthStoreData;
-    const current = makeCurrent([{ ...account, siteUpdatedAt: 50 }]);
+    const current = makeCurrent([
+      {
+        ...account,
+        site: getSite({ description: "stale-current" }),
+        siteUpdatedAt: 50,
+      } as Account,
+    ]);
     const result = merge(persisted, current);
     expect(result.accounts[0]!.siteUpdatedAt).toBe(100);
+    expect((result.accounts[0] as any).site?.description).toBe(
+      "fresh-persisted",
+    );
   });
 
   test("new account from another tab is appended", () => {
@@ -263,12 +292,28 @@ describe("useAuthStore merge", () => {
   test("mixed: each account uses the version with the newer siteUpdatedAt", () => {
     // account1: storage updated the site more recently
     const account1 = makeAccount();
-    const account1Persisted = { ...account1, siteUpdatedAt: 100 };
-    const account1Current = { ...account1, siteUpdatedAt: 50 };
+    const account1Persisted = {
+      ...account1,
+      site: getSite({ description: "a1-fresh-persisted" }),
+      siteUpdatedAt: 100,
+    };
+    const account1Current = {
+      ...account1,
+      site: getSite({ description: "a1-stale-current" }),
+      siteUpdatedAt: 50,
+    } as Account;
     // account2: current tab updated the site more recently
     const account2 = makeAccount();
-    const account2Persisted = { ...account2, siteUpdatedAt: 50 };
-    const account2Current = { ...account2, siteUpdatedAt: 100 };
+    const account2Persisted = {
+      ...account2,
+      site: getSite({ description: "a2-stale-persisted" }),
+      siteUpdatedAt: 50,
+    };
+    const account2Current = {
+      ...account2,
+      site: getSite({ description: "a2-fresh-current" }),
+      siteUpdatedAt: 100,
+    } as Account;
 
     const persisted = {
       accounts: [account1Persisted, account2Persisted],
@@ -283,12 +328,28 @@ describe("useAuthStore merge", () => {
     const r2 = result.accounts.find((a) => a.uuid === account2.uuid)!;
 
     expect(r1.siteUpdatedAt).toBe(100);
-    expect(r1.jwt).toBe(account1.jwt);
-    expect(r1.uuid).toBe(account1.uuid);
+    expect((r1 as any).site?.description).toBe("a1-fresh-persisted");
 
     expect(r2.siteUpdatedAt).toBe(100);
-    expect(r2.jwt).toBe(account2.jwt);
-    expect(r2.uuid).toBe(account2.uuid);
+    expect((r2 as any).site?.description).toBe("a2-fresh-current");
+  });
+
+  test("account logged out in another tab is not re-added by current tab", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+
+    // another tab logged out of account2, so storage only has account1
+    const persisted = {
+      accounts: [account1],
+      selectedUuid: account1.uuid,
+    } satisfies AuthStoreData;
+    // current tab still has both accounts
+    const current = makeCurrent([account1, account2]);
+
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accounts[0]!.uuid).toBe(account1.uuid);
   });
 
   test("new account in current tab is appended with jwt and uuid intact", () => {
@@ -306,6 +367,40 @@ describe("useAuthStore merge", () => {
     expect(appended).toBeDefined();
     expect(appended.uuid).toBe(newAccount.uuid);
     expect(appended.jwt).toBe(newAccount.jwt);
+  });
+
+  test("no duplicates when both sides have identical accounts", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+
+    const persisted = {
+      accounts: [account1, account2],
+      selectedUuid: account1.uuid,
+    } satisfies AuthStoreData;
+    const current = makeCurrent([account1, account2]);
+
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(2);
+  });
+
+  // Should never happen in practice, but we want to be extra safe
+  test("empty persisted accounts falls back to current", () => {
+    const account = makeAccount();
+    const current = makeCurrent([account]);
+    const result = merge({ accounts: [], selectedUuid: undefined }, current);
+
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accounts[0]!.uuid).toBe(account.uuid);
+  });
+
+  test("malformed persisted data falls back to current", () => {
+    const account = makeAccount();
+    const current = makeCurrent([account]);
+    const result = merge({ accounts: "not-an-array" }, current);
+
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accounts[0]!.uuid).toBe(account.uuid);
   });
 
   test("null persisted falls back to current without dropping accounts", () => {
@@ -390,6 +485,9 @@ describe("useAuthStore merge", () => {
       );
     });
 
+    // Guest selection is not preserved across merges. This is a known
+    // tradeoff: the merge excludes in-memory guests to prevent a new
+    // guest account from being appended every time a tab opens.
     test("persisted selectedUuid wins over in-memory guest selection", () => {
       const account1 = makeAccount();
       const account2 = makeAccount();
