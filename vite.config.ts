@@ -209,6 +209,8 @@ export default defineConfig(({ mode }) => {
         workbox: {
           navigateFallback: "/index.html",
           globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
+          globIgnores: ["**/index-legacy-*.js", "screenshots/**"],
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/.*\/api\/.*/,
