@@ -201,6 +201,13 @@
       "prettier --write"
     ]
   },
+  "homepage": "https://blorpblorp.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blorp-Labs/blorp.git"
+  },
+  "bugs": "https://github.com/Blorp-Labs/blorp/issues",
+  "license": "AGPL-3.0-only",
   "packageManager": "pnpm@10.30.3",
   "pnpm": {
     "patchedDependencies": {
