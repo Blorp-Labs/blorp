@@ -359,9 +359,12 @@ export const useAuth = create<AuthStore>()(
         // list by UUID so that account order differences and new accounts
         // appended at the end don't cause the selection to silently shift.
         const filteredCurrent = { ...current, accounts: currentLoggedIn };
-        const selectedUuid =
+        const candidateUuid =
           getSelectedAccount(filteredCurrent)?.uuid ??
           persistedData.selectedUuid;
+        const selectedUuid = allAccounts.some((a) => a.uuid === candidateUuid)
+          ? candidateUuid
+          : allAccounts[0]?.uuid;
         return {
           ...current,
           ...persistedData,

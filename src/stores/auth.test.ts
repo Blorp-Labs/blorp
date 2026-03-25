@@ -353,6 +353,52 @@ describe("useAuthStore merge", () => {
     expect(result.accounts[0]!.uuid).toBe(account1.uuid);
   });
 
+  test("current tab's loggedOutUuids prevents re-adding account from current", () => {
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+
+    // persisted doesn't have account2
+    const persisted = {
+      accounts: [account1],
+      selectedUuid: account1.uuid,
+    } satisfies AuthStoreData;
+    // current tab still has account2 in memory but has marked it logged out
+    const current = {
+      ...useAuth.getState(),
+      accounts: [account1, account2],
+      selectedUuid: account1.uuid,
+      loggedOutUuids: [account2.uuid],
+    } satisfies AuthStoreData;
+
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accounts[0]!.uuid).toBe(account1.uuid);
+  });
+
+  test("merged result contains loggedOutUuids from both persisted and current", () => {
+    const account1 = makeAccount();
+    const oldLoggedOutUuid = faker.string.uuid();
+    const newLoggedOutUuid = faker.string.uuid();
+
+    const persisted = {
+      accounts: [account1],
+      selectedUuid: account1.uuid,
+      loggedOutUuids: [oldLoggedOutUuid],
+    } satisfies AuthStoreData;
+    const current = {
+      ...useAuth.getState(),
+      accounts: [account1],
+      selectedUuid: account1.uuid,
+      loggedOutUuids: [newLoggedOutUuid],
+    } satisfies AuthStoreData;
+
+    const result = merge(persisted, current);
+
+    expect(result.loggedOutUuids).toContain(oldLoggedOutUuid);
+    expect(result.loggedOutUuids).toContain(newLoggedOutUuid);
+  });
+
   test("new account in current tab is appended with jwt and uuid intact", () => {
     const existingAccount = makeAccount();
     const newAccount = makeAccount();
@@ -393,6 +439,21 @@ describe("useAuthStore merge", () => {
 
     expect(result.accounts).toHaveLength(1);
     expect(result.accounts[0]!.uuid).toBe(account.uuid);
+  });
+
+  test("invalid site data in persisted is stripped without losing the account", () => {
+    const account = makeAccount();
+    const persisted = {
+      accounts: [{ ...account, site: { totally: "wrong", shape: true } }],
+      selectedUuid: account.uuid,
+    };
+    const current = makeCurrent([account]);
+    const result = merge(persisted, current);
+
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accounts[0]!.uuid).toBe(account.uuid);
+    expect(result.accounts[0]!.jwt).toBe(account.jwt);
+    expect("site" in result.accounts[0]!).toBe(false);
   });
 
   test("malformed persisted data falls back to current", () => {
@@ -484,6 +545,31 @@ describe("useAuthStore merge", () => {
       expect(getSelectedAccount(result)?.uuid).toBe(
         getSelectedAccount(current)?.uuid,
       );
+    });
+
+    test("selectedUuid does not point to account logged out in another tab", () => {
+      const account1 = makeAccount();
+      const account2 = makeAccount();
+
+      // another tab logged out account2
+      const persisted = {
+        accounts: [account1],
+        selectedUuid: account1.uuid,
+        loggedOutUuids: [account2.uuid],
+      } satisfies AuthStoreData;
+      // current tab still has account2 selected
+      const current = {
+        ...useAuth.getState(),
+        accounts: [account1, account2],
+        selectedUuid: account2.uuid,
+      } satisfies AuthStoreData;
+
+      const result = merge(persisted, current);
+
+      // account2 was logged out — selectedUuid must not point to it
+      expect(
+        result.accounts.find((a) => a.uuid === result.selectedUuid),
+      ).toBeDefined();
     });
 
     // Guest selection is not preserved across merges. This is a known
@@ -614,6 +700,39 @@ describe("useAuthStore migrate", () => {
     expect(result.accounts[0]!.uuid.length).toBeGreaterThan(0);
   });
 
+  test("preserves existing uuid on account that already has one", () => {
+    const existingUuid = "existing-uuid-should-survive";
+    const state = {
+      accounts: [
+        {
+          instance: "https://lemmy.world",
+          jwt: "some-jwt",
+          uuid: existingUuid,
+        },
+      ],
+      accountIndex: 0,
+    };
+    const result = migrate(state, 4) as ReturnType<typeof useAuth.getState>;
+    expect(result.accounts[0]!.uuid).toBe(existingUuid);
+  });
+
+  test("drops site data that no longer matches siteSchema", () => {
+    const state = {
+      accounts: [
+        {
+          instance: "https://lemmy.world",
+          jwt: "some-jwt",
+          uuid: "existing-uuid",
+          site: { totally: "wrong", shape: true },
+        },
+      ],
+      accountIndex: 0,
+    };
+    const result = migrate(state, 4) as ReturnType<typeof useAuth.getState>;
+    expect(result.accounts[0]!.uuid).toBe("existing-uuid");
+    expect("site" in result.accounts[0]!).toBe(false);
+  });
+
   test("does not throw on pre-v4 state missing accountIndex", () => {
     const state = {
       accounts: [{ instance: "https://lemmy.world", jwt: "some-jwt-token" }],
@@ -622,5 +741,176 @@ describe("useAuthStore migrate", () => {
     const result = migrate(state, 3) as ReturnType<typeof useAuth.getState>;
     expect(result.accounts).toHaveLength(1);
     expect(typeof result.accounts[0]!.uuid).toBe("string");
+  });
+});
+
+describe("logoutMultiple", () => {
+  afterEach(() => {
+    const { result } = renderHook(() => useAuth());
+    act(() => {
+      result.current.reset();
+    });
+  });
+
+  test("removes multiple accounts and keeps the rest", () => {
+    const { result } = renderHook(() => useAuth());
+
+    const account1 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account2 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account3 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+
+    act(() => {
+      result.current.updateSelectedAccount(account1);
+      result.current.addAccount(account2);
+      result.current.addAccount(account3);
+    });
+    expect(result.current.accounts).toHaveLength(3);
+
+    act(() => {
+      result.current.logoutMultiple([account2.uuid, account3.uuid]);
+    });
+
+    expect(result.current.accounts).toHaveLength(1);
+    expect(result.current.accounts[0]!.uuid).toBe(account1.uuid);
+  });
+
+  test("falls back to guest when all accounts are logged out", () => {
+    const { result } = renderHook(() => useAuth());
+
+    const account1 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account2 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+
+    act(() => {
+      result.current.updateSelectedAccount(account1);
+      result.current.addAccount(account2);
+    });
+
+    act(() => {
+      result.current.logoutMultiple([account1.uuid, account2.uuid]);
+    });
+
+    expect(result.current.accounts).toHaveLength(1);
+    expect(result.current.getSelectedAccount()).toMatchObject({
+      instance: env.defaultInstance,
+    });
+    expect(result.current.isLoggedIn()).toBe(false);
+  });
+
+  test("tracks loggedOutUuids", () => {
+    const { result } = renderHook(() => useAuth());
+
+    const account1 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account2 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account3 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+
+    act(() => {
+      result.current.updateSelectedAccount(account1);
+      result.current.addAccount(account2);
+      result.current.addAccount(account3);
+    });
+
+    act(() => {
+      result.current.logoutMultiple([account2.uuid, account3.uuid]);
+    });
+
+    expect(result.current.loggedOutUuids).toContain(account2.uuid);
+    expect(result.current.loggedOutUuids).toContain(account3.uuid);
+  });
+
+  test("selected account falls back when current selection is logged out", () => {
+    const { result } = renderHook(() => useAuth());
+
+    const account1 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+    const account2 = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+
+    act(() => {
+      result.current.updateSelectedAccount(account1);
+      result.current.addAccount(account2);
+      result.current.selectAccount(account2.uuid);
+    });
+    expect(result.current.getSelectedAccount().uuid).toBe(account2.uuid);
+
+    act(() => {
+      result.current.logoutMultiple([account2.uuid]);
+    });
+
+    expect(result.current.getSelectedAccount().uuid).toBe(account1.uuid);
+  });
+});
+
+describe("updateAccountSite", () => {
+  afterEach(() => {
+    const { result } = renderHook(() => useAuth());
+    act(() => {
+      result.current.reset();
+    });
+  });
+
+  test("sets site and siteUpdatedAt on the matching account", () => {
+    const { result } = renderHook(() => useAuth());
+
+    const account = {
+      instance: faker.internet.url().replace(/\/$/, ""),
+      jwt: faker.string.uuid(),
+      uuid: faker.string.uuid(),
+    };
+
+    act(() => {
+      result.current.updateSelectedAccount(account);
+    });
+
+    const site = getSite({ description: "test-site" });
+    const before = Date.now();
+    act(() => {
+      result.current.updateAccountSite(account.uuid, site);
+    });
+    const after = Date.now();
+
+    const updated = result.current.accounts.find(
+      (a) => a.uuid === account.uuid,
+    )!;
+    expect("site" in updated && updated.site?.description).toBe("test-site");
+    expect(updated.siteUpdatedAt).toBeGreaterThanOrEqual(before);
+    expect(updated.siteUpdatedAt).toBeLessThanOrEqual(after);
   });
 });
