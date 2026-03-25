@@ -175,7 +175,9 @@ function SiteTitle() {
                 key={index}
                 className="flex h-9 flex-row items-center gap-1.5"
               >
-                <span className="font-jersey text-3xl">{site?.title}</span>
+                <span className="font-jersey text-3xl text-nowrap">
+                  {site?.title}
+                </span>
               </div>
             ))}
           </div>

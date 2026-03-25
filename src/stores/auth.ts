@@ -347,8 +347,10 @@ export const useAuth = create<AuthStore>()(
         // The current tab's selected account always wins. Find it in the merged
         // list by UUID so that account order differences and new accounts
         // appended at the end don't cause the selection to silently shift.
+        const filteredCurrent = { ...current, accounts: currentLoggedIn };
         const selectedUuid =
-          getSelectedAccount(current)?.uuid ?? persistedData.selectedUuid;
+          getSelectedAccount(filteredCurrent)?.uuid ??
+          persistedData.selectedUuid;
         return {
           ...current,
           ...persistedData,
