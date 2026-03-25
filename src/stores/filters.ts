@@ -1,7 +1,7 @@
 import { ListingType } from "lemmy-v3";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createStorage, sync } from "./storage";
+import { createStorage } from "./storage";
 import { isTest } from "../lib/device";
 
 type CommunityListingType = "All" | "Local" | "Subscribed" | "ModeratorView";
@@ -56,5 +56,3 @@ export const useFiltersStore = create<SortsStore>()(
     },
   ),
 );
-
-sync(useFiltersStore);
