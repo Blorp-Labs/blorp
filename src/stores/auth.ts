@@ -14,6 +14,9 @@ export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
 export function getCachePrefixer(account?: Account): CachePrefixer {
   let prefix = "";
+  if (account?.uuid) {
+    prefix += `${account.uuid}_`;
+  }
   if (account?.instance) {
     prefix += `${account.instance}_`;
   }
@@ -345,7 +348,8 @@ export const useAuth = create<AuthStore>()(
         // The current tab's selected account always wins. Find it in the merged
         // list by UUID so that account order differences and new accounts
         // appended at the end don't cause the selection to silently shift.
-        const selectedUuid = getSelectedAccount(current)?.uuid;
+        const selectedUuid =
+          getSelectedAccount(current)?.uuid ?? persistedData.selectedUuid;
         return {
           ...current,
           ...persistedData,

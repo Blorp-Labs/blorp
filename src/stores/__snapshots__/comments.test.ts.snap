@@ -2,7 +2,7 @@
 
 exports[`persisted state snapshot > comments store shape 1`] = `
 {
-  "123_0.456": {
+  "test_123_0.456": {
     "data": {
       "answer": false,
       "apId": "https://blorpblorp.xyz/comment/456",
@@ -37,7 +37,7 @@ exports[`persisted state snapshot > comments store shape 1`] = `
 exports[`persisted state snapshot > comments store shape 2`] = `
 {
   "comments": {
-    "123_0.456": {
+    "test_123_0.456": {
       "data": {
         "answer": false,
         "apId": "https://blorpblorp.xyz/comment/456",
