@@ -52,6 +52,7 @@ export type Account = z.infer<typeof accountSchema>;
 const storeSchema = z.object({
   accounts: z.array(accountSchema),
   selectedUuid: z.string().optional(),
+  loggedOutUuids: z.array(z.string()).optional(),
 });
 
 export type AuthStoreData = z.infer<typeof storeSchema>;
@@ -169,19 +170,20 @@ export const useAuth = create<AuthStore>()(
       },
       logout: (uuidAccountSelector) => {
         const state = get();
-        const { accounts, selectedUuid } = state;
+        const { accounts, selectedUuid, loggedOutUuids = [] } = state;
         const logoutUuid =
           uuidAccountSelector ?? getSelectedAccount(state)?.uuid;
         const account = logoutUuid
           ? accounts.find((a) => a.uuid === logoutUuid)
           : undefined;
-        if (account) {
+        if (account && logoutUuid) {
           const newAccounts = accounts.filter((a) => a.uuid !== logoutUuid);
           if (newAccounts.length === 0) {
             const newAccount = getNewAccount();
             set({
               accounts: [newAccount],
               selectedUuid: newAccount.uuid,
+              loggedOutUuids: [...loggedOutUuids, logoutUuid],
             });
           } else {
             set({
@@ -189,12 +191,13 @@ export const useAuth = create<AuthStore>()(
               selectedUuid:
                 newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
                 _.first(newAccounts)?.uuid,
+              loggedOutUuids: [...loggedOutUuids, logoutUuid],
             });
           }
         }
       },
       logoutMultiple: (selectedUuids: string[]) => {
-        const { accounts, selectedUuid } = get();
+        const { accounts, selectedUuid, loggedOutUuids = [] } = get();
         const newAccounts = accounts.filter(
           (a) => !selectedUuids.includes(a.uuid),
         );
@@ -203,6 +206,7 @@ export const useAuth = create<AuthStore>()(
           set({
             accounts: [newAccount],
             selectedUuid: newAccount.uuid,
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids],
           });
         } else {
           set({
@@ -210,6 +214,7 @@ export const useAuth = create<AuthStore>()(
             selectedUuid:
               newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
               _.first(newAccounts)?.uuid,
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids],
           });
         }
       },
@@ -339,9 +344,15 @@ export const useAuth = create<AuthStore>()(
           },
         );
         // Append logged-in accounts not present in persisted (e.g. a login
-        // that raced with a rehydrate before the write reached IndexedDB).
+        // that raced with a rehydrate before the write reached IndexedDB),
+        // but skip accounts that were explicitly logged out in another tab.
+        const loggedOutUuids = new Set([
+          ...(persistedData.loggedOutUuids ?? []),
+          ...(current.loggedOutUuids ?? []),
+        ]);
         const newAccounts = currentLoggedIn.filter(
-          (a) => a.uuid && !persistedByUuid[a.uuid],
+          (a) =>
+            a.uuid && !persistedByUuid[a.uuid] && !loggedOutUuids.has(a.uuid),
         );
         const allAccounts = [...mergedAccounts, ...newAccounts];
         // The current tab's selected account always wins. Find it in the merged
@@ -356,6 +367,7 @@ export const useAuth = create<AuthStore>()(
           ...persistedData,
           accounts: allAccounts,
           selectedUuid,
+          loggedOutUuids: [...loggedOutUuids],
         };
       },
     },

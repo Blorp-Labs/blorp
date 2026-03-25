@@ -342,6 +342,7 @@ describe("useAuthStore merge", () => {
     const persisted = {
       accounts: [account1],
       selectedUuid: account1.uuid,
+      loggedOutUuids: [account2.uuid],
     } satisfies AuthStoreData;
     // current tab still has both accounts
     const current = makeCurrent([account1, account2]);
