@@ -389,6 +389,29 @@ describe("useAuthStore merge", () => {
         getSelectedAccount(current)?.uuid,
       );
     });
+
+    test("persisted selectedUuid wins over in-memory guest selection", () => {
+      const account1 = makeAccount();
+      const account2 = makeAccount();
+      const account3 = makeAccount();
+      const guest = makeAccount({ jwt: undefined });
+
+      // storage has 3 real accounts with account2 (middle) selected
+      const persisted = {
+        accounts: [account1, account2, account3],
+        selectedUuid: account2.uuid,
+      } satisfies AuthStoreData;
+      // in-memory has only a guest account, and it is selected
+      const current = {
+        ...useAuth.getState(),
+        accounts: [guest],
+        selectedUuid: guest.uuid,
+      } satisfies AuthStoreData;
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(account2.uuid);
+    });
   });
 
   // Guest accounts have a uuid but no jwt.
