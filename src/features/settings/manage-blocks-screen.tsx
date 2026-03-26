@@ -154,21 +154,29 @@ export default function SettingsPage() {
 
   const listData: ListItem[] = [];
   if (blockedPersonApIds.length > 0) {
-    listData.push({ kind: "header", label: "BLOCKED USERS" });
-    blockedPersonApIds.forEach((apId) =>
-      listData.push({ kind: "person", apId }),
+    listData.push(
+      { kind: "header", label: "BLOCKED USERS" },
+      ...blockedPersonApIds.map((apId): ListItem => ({ kind: "person", apId })),
     );
   }
   if (blockedCommunitySlugIds.length > 0) {
-    listData.push({ kind: "header", label: "BLOCKED COMMUNITIES" });
-    blockedCommunitySlugIds.forEach((slug) =>
-      listData.push({ kind: "community", slug }),
+    listData.push(
+      { kind: "header", label: "BLOCKED COMMUNITIES" },
+      ...blockedCommunitySlugIds.map(
+        (slug): ListItem => ({ kind: "community", slug }),
+      ),
     );
   }
   if (instanceBlocks.length > 0) {
-    listData.push({ kind: "header", label: "BLOCKED INSTANCES" });
-    instanceBlocks.forEach((item) =>
-      listData.push({ kind: "instance", domain: item.domain, id: item.id }),
+    listData.push(
+      { kind: "header", label: "BLOCKED INSTANCES" },
+      ...instanceBlocks.map(
+        (item): ListItem => ({
+          kind: "instance",
+          domain: item.domain,
+          id: item.id,
+        }),
+      ),
     );
   }
 
