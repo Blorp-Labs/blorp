@@ -1,6 +1,6 @@
 import { ContentGutters } from "../components/gutters";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
@@ -51,13 +51,12 @@ import { useMedia, useUrlSearchState } from "../lib/hooks";
 import { RelativeTime } from "../components/relative-time";
 import { Deferred } from "../lib/deferred";
 import z from "zod";
-import { usePostsStore } from "../stores/posts";
+import { usePostFromStore } from "../stores/posts";
 import { getAccountActorId, useAuth } from "../stores/auth";
 import { usePathname } from "../routing/hooks";
 import { Sidebar, SidebarContent } from "../components/sidebar";
 import {
   useCommunitiesFromStore,
-  useCommunitiesStore,
   useCommunityFromStore,
 } from "../stores/communities";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
@@ -287,14 +286,10 @@ export function CreatePost() {
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const flairLookup = useFlairLookup(flairs);
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) =>
-    draft.apId ? s.posts[getCachePrefixer()(draft.apId)] : undefined,
-  );
+  const post = usePostFromStore(draft.apId ?? undefined);
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
-  const canEdit =
-    isEdit && post?.data.creatorApId && myUserId === post.data.creatorApId;
-  const postOwner = post?.data.creatorSlug;
+  const canEdit = isEdit && post?.creatorApId && myUserId === post.creatorApId;
+  const postOwner = post?.creatorSlug;
 
   const uploadImage = useUploadImage();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -628,13 +623,10 @@ function ChooseCommunity({
     sort: "TopAll",
   });
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const selectedCommunity = useCommunitiesStore((s) =>
-    draft.communitySlug
-      ? s.communities[getCachePrefixer()(draft.communitySlug)]?.data
-          .communityView
-      : null,
+  const selectedCommunityData = useCommunityFromStore(
+    draft.communitySlug ?? undefined,
   );
+  const selectedCommunity = selectedCommunityData?.communityView ?? null;
 
   const searchResultsCommunities =
     searchResultsRes.data?.pages.flatMap((p) =>

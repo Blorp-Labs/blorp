@@ -15,7 +15,7 @@ import {
 } from "../../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostsStore } from "../../stores/posts";
+import { usePostFromStore, usePostsStore } from "../../stores/posts";
 import { useSettingsStore } from "../../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../../stores/comments";
@@ -262,11 +262,7 @@ export function usePost({
 
   const queryKey = [...queryKeyPrefix, "getPost", apId];
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  const initialData = usePostsStore((s) =>
-    apId ? s.posts[getCachePrefixer()(apId)]?.data : undefined,
-  );
+  const initialData = usePostFromStore(apId);
 
   const cachePosts = usePostsStore((s) => s.cachePosts);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);

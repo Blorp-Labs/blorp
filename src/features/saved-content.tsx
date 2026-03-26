@@ -12,7 +12,7 @@ import { useAvailableSorts, useComments, usePosts } from "../lib/api";
 import { PostReportProvider } from "../components/posts/post-report";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
-import { useCommentsStore } from "../stores/comments";
+import { useCommentsByPaths } from "../stores/comments";
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { useLinkContext } from "../routing/link-context";
 import { encodeApId } from "../lib/api/utils";
@@ -20,7 +20,6 @@ import { Link } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useAuth } from "../stores/auth";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import z from "zod";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
@@ -48,10 +47,7 @@ const Post = memo((props: PostProps) => (
 ));
 
 function Comment({ path }: { path: string }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const commentView = useCommentsStore(
-    (s) => s.comments[getCachePrefixer()(path)]?.data,
-  );
+  const [commentView] = useCommentsByPaths([path]);
   const linkCtx = useLinkContext();
 
   if (!commentView) {

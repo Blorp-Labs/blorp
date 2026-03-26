@@ -9,10 +9,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { CommunityJoinButton } from "./community-join-button";
 import { useLinkContext } from "../../routing/link-context";
-import {
-  useCommunitiesStore,
-  useCommunityFromStore,
-} from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
@@ -72,11 +69,7 @@ export function SmallScreenSidebar({
   });
   const community = useCommunityFromStore(communityName);
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const data = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(communityName)]?.data,
-  );
-  const communityView = data?.communityView;
+  const communityView = community?.communityView;
   const isBlocked = useIsCommunityBlocked(communityName);
   const blurNsfw = useShouldBlurNsfw();
 
@@ -89,9 +82,9 @@ export function SmallScreenSidebar({
   const createdAt = (
     <div className="flex items-center gap-1.5 text-sm h-5 text-muted-foreground">
       <LuCakeSlice />
-      {data ? (
+      {community ? (
         <span>
-          Created <DateTime date={dayjs(data.communityView.createdAt)} />
+          Created <DateTime date={dayjs(community.communityView.createdAt)} />
         </span>
       ) : (
         <Skeleton className="h-5 flex-1 max-w-32" />
@@ -99,7 +92,7 @@ export function SmallScreenSidebar({
     </div>
   );
 
-  const banner = data?.communityView.banner;
+  const banner = community?.communityView.banner;
 
   return (
     <div>
@@ -208,7 +201,7 @@ export function SmallScreenSidebar({
 
           <section className="p-3 flex flex-col gap-2">
             <h2>MODS</h2>
-            {data?.mods?.map((m) => (
+            {community?.mods?.map((m) => (
               <PersonCard key={m.apId} actorId={m.apId} size="sm" />
             ))}
             <Link
@@ -331,10 +324,7 @@ function CommunitySidebarInner({
   });
 
   const linkCtx = useLinkContext();
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const data = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(communityName)]?.data,
-  );
+  const data = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
   const blurNsfw = useShouldBlurNsfw();
   const isPostRevealed = useNsfwRevealedPostsStore(

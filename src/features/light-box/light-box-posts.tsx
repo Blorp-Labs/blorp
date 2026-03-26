@@ -18,7 +18,6 @@ import {
   useUrlSearchState,
 } from "@/src/lib/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
-import { useAuth } from "@/src/stores/auth";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";
 import {
@@ -27,7 +26,7 @@ import {
   PostVoting,
   usePostVoting,
 } from "@/src/components/posts/post-buttons";
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
 import { decodeApId, encodeApId } from "@/src/lib/api/utils";
 import { useLinkContext } from "@/src/routing/link-context";
@@ -119,10 +118,7 @@ const Post = memo(
   }) => {
     const ref = useRef<HTMLDivElement>(null);
 
-    const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-    const postView = usePostsStore(
-      (s) => s.posts[getCachePrefixer()(apId)]?.data,
-    );
+    const postView = usePostFromStore(apId);
 
     const {
       nsfwHidden: blurImg,
@@ -261,8 +257,6 @@ export default function LightBoxPosts() {
 
   const listingType = useFiltersStore((s) => s.listingType);
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
   const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostsData({
     communityName,
     listingType,
@@ -284,9 +278,7 @@ export default function LightBoxPosts() {
   );
 
   const postApId = data[activeIndex];
-  const post = usePostsStore((s) =>
-    postApId ? s.posts[getCachePrefixer()(postApId)]?.data : null,
-  );
+  const post = usePostFromStore(postApId);
 
   useCommunity({
     name: communityName,
@@ -364,7 +356,9 @@ export default function LightBoxPosts() {
   useKeyboardShortcut(
     useCallback(
       (e) => {
-        if (!isActive || e.metaKey) return;
+        if (!isActive || e.metaKey) {
+          return;
+        }
         switch (e.key) {
           case "ArrowLeft":
           case "a":

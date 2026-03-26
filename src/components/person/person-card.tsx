@@ -6,8 +6,8 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { Account, useAuth } from "@/src/stores/auth";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { Account } from "@/src/stores/auth";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { encodeApId } from "@/src/lib/api/utils";
 import { useLinkContext } from "../../routing/link-context";
 import { PersonHoverCard } from "./person-hover-card";
@@ -32,10 +32,7 @@ export function PersonCard({
   account?: Account;
 }) {
   const linkCtx = useLinkContext();
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const p = useProfilesStore((s) =>
-    actorId ? s.profiles[getCachePrefixer(account)(actorId)]?.data : undefined,
-  );
+  const p = useProfileFromStore(actorId, account);
 
   if (!p) {
     return <PersonSkeletonCard size={size} className={className} />;

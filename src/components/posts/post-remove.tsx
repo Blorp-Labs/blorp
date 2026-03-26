@@ -1,8 +1,8 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore } from "@/src/stores/posts";
 import { useRemoveComment } from "@/src/lib/api";
-import { useCommentsStore } from "@/src/stores/comments";
+import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,
   IonContent,
@@ -14,7 +14,6 @@ import {
 import { Button } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
-import { useAuth } from "@/src/stores/auth";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { useRemovePost } from "@/src/lib/api/post-mutations";
 
@@ -40,13 +39,8 @@ export function PostRemoveProvider({
   const removePost = useRemovePost();
   const removeComment = useRemoveComment();
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) =>
-    apId ? s.posts[getCachePrefixer()(apId)]?.data : null,
-  );
-  const comment = useCommentsStore((s) =>
-    commentPath ? s.comments[getCachePrefixer()(commentPath)] : null,
-  );
+  const post = usePostFromStore(apId ?? undefined);
+  const [comment] = useCommentsByPaths(commentPath ? [commentPath] : []);
 
   const value = useMemo(
     () => ({
@@ -74,10 +68,10 @@ export function PostRemoveProvider({
     } else if (comment) {
       removeComment
         .mutateAsync({
-          path: comment.data.path,
-          commentId: comment.data.id,
+          path: comment.path,
+          commentId: comment.id,
           reason,
-          removed: !comment.data.removed,
+          removed: !comment.removed,
         })
         .then(() => {
           setReason("");
@@ -126,7 +120,7 @@ export function PostRemoveProvider({
               <div className="p-3 bg-secondary rounded-lg max-h-[250px] overflow-auto">
                 {post && <span className="font-bold">{post?.title}</span>}
 
-                {comment && <MarkdownRenderer markdown={comment.data.body} />}
+                {comment && <MarkdownRenderer markdown={comment.body} />}
               </div>
 
               <Textarea

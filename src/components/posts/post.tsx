@@ -1,4 +1,4 @@
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useLinkContext } from "../../routing/link-context";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
@@ -217,10 +217,7 @@ export function StickyPostHeader({
   commentsCount: number;
   onReply: () => void;
 }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const postView = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(apId)]?.data,
-  );
+  const postView = usePostFromStore(apId);
   const linkCtx = useLinkContext();
 
   if (!postView) {
@@ -1022,10 +1019,7 @@ function PostCardInner(props: PostProps) {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
   const postCardStyle = props.postCardStyle ?? globalPostCardStyle;
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(props.apId)]?.data,
-  );
+  const post = usePostFromStore(props.apId);
 
   const featuredCommunity =
     post?.optimisticFeaturedCommunity ?? post?.featuredCommunity ?? false;

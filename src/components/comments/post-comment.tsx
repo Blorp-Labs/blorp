@@ -11,7 +11,7 @@ import {
   useCommentEditingState,
   useLoadCommentIntoEditor,
 } from "./comment-reply-modal";
-import { useCommentsStore } from "@/src/stores/comments";
+import { useCommentsByPaths } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
   useAddCommentReactionEmoji,
@@ -41,7 +41,7 @@ import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
 import { useShareActions } from "@/src/lib/share";
-import { useProfileFromStore, useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -336,10 +336,7 @@ function Byline({
   postCreatorId?: number;
 }) {
   const linkCtx = useLinkContext();
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const profileView = useProfilesStore(
-    (s) => s.profiles[getCachePrefixer()(actorId)]?.data,
-  );
+  const profileView = useProfileFromStore(actorId);
 
   const locked = comment.optimisticLocked ?? comment.locked;
 
@@ -424,11 +421,8 @@ function PostCommentErrorFallback({
   const instance = useAuth(
     (s) => parseAccountInfo(s.getSelectedAccount()).instance,
   );
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const commentView = useCommentsStore((s) =>
-    commentTree.comment
-      ? s.comments[getCachePrefixer()(commentTree.comment.path)]?.data
-      : undefined,
+  const [commentView] = useCommentsByPaths(
+    commentTree.comment ? [commentTree.comment.path] : [],
   );
   const apId = commentView?.apId;
 
@@ -521,10 +515,7 @@ function PostCommentInner({
 
   const { comment, ...rest } = commentTree;
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const commentView = useCommentsStore((s) =>
-    comment ? s.comments[getCachePrefixer()(comment.path)]?.data : undefined,
-  );
+  const [commentView] = useCommentsByPaths(comment ? [comment.path] : []);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(

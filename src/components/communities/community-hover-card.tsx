@@ -1,7 +1,7 @@
 import { useCommunity } from "@/src/lib/api/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 
 import {
@@ -10,7 +10,6 @@ import {
   HoverCardTrigger,
 } from "@/src/components/ui/hover-card";
 import { useState } from "react";
-import { useAuth } from "@/src/stores/auth";
 import { AggregateBadges } from "../aggregates";
 import { CommunityJoinButton } from "./community-join-button";
 import { DateTime } from "../datetime";
@@ -29,10 +28,7 @@ export function CommunityHoverCard({
     name: communityName,
     enabled,
   });
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const data = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(communityName)]?.data,
-  );
+  const data = useCommunityFromStore(communityName);
 
   const community = data?.communityView;
   const createdAt = community ? dayjs(community.createdAt) : null;
