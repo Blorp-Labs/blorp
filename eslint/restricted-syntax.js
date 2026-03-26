@@ -22,7 +22,7 @@ const noDirectSelectedUuid = {
  * All selection logic uses selectedUuid / getSelectedAccount() instead.
  */
 const noAccountIndex = {
-  selector: 'MemberExpression[property.name="accountIndex"]',
+  selector: 'MemberExpression[computed=false][property.name="accountIndex"]',
   message: "accountIndex is deprecated. Use getSelectedAccount() instead.",
 };
 
