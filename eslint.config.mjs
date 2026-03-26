@@ -60,7 +60,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/stores/auth.ts", "**/*.test.ts", "**/*.test.tsx"],
+    files: ["src/stores/**", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "no-restricted-syntax": "off",
     },
