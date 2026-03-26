@@ -4,7 +4,7 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { env } from "../env";
 import z from "zod";
-import { siteSchema } from "../lib/api/adapters/api-blueprint";
+import { Schemas, siteSchema } from "../lib/api/adapters/api-blueprint";
 import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../lib/utils";
@@ -12,8 +12,13 @@ import { normalizeInstance } from "../lib/utils";
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
+const MAX_LOGGED_OUT_UUIDS = 20;
+
 export function getCachePrefixer(account?: Account): CachePrefixer {
   let prefix = "";
+  if (account?.uuid) {
+    prefix += `${account.uuid}_`;
+  }
   if (account?.instance) {
     prefix += `${account.instance}_`;
   }
@@ -33,12 +38,14 @@ const accountSchema = z.union([
     instance: z.string(),
     jwt: z.string().optional(),
     site: siteSchema,
-    uuid: z.string().optional(),
+    uuid: z.string(),
+    siteUpdatedAt: z.number().optional(),
   }),
   z.object({
     instance: z.string(),
     jwt: z.string().optional(),
-    uuid: z.string().optional(),
+    uuid: z.string(),
+    siteUpdatedAt: z.number().optional(),
   }),
 ]);
 
@@ -46,21 +53,38 @@ export type Account = z.infer<typeof accountSchema>;
 
 const storeSchema = z.object({
   accounts: z.array(accountSchema),
-  accountIndex: z.number(),
+  selectedUuid: z.string().optional(),
+  loggedOutUuids: z.array(z.string()).optional(),
+  /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
+  accountIndex: z.number().optional(),
 });
+
+export type AuthStoreData = z.infer<typeof storeSchema>;
+
+type Uuid = string;
 
 type AuthStore = {
   getSelectedAccount: () => Account;
   isLoggedIn: () => boolean;
   updateSelectedAccount: (patch: Partial<Account>) => any;
-  updateAccount: (index: number | Account, patch: Partial<Account>) => any;
+  updateAccountSite: (uuid: Uuid, site: Schemas.Site) => any;
   addAccount: (patch?: Partial<Account>) => any;
-  setAccountIndex: (index: number) => Account | null;
-  logout: (index?: number | Account) => any;
-  logoutMultiple: (index: number[]) => any;
-  getCachePrefixer: (index?: number | Account) => CachePrefixer;
+  selectAccount: (uuid: Uuid) => Account | null;
+  logout: (uuid?: Uuid) => any;
+  logoutMultiple: (uuids: Uuid[]) => any;
+  getCachePrefixer: (account?: Account) => CachePrefixer;
   reset: () => void;
 } & z.infer<typeof storeSchema>;
+
+export function getSelectedAccount(state: {
+  accounts: Account[];
+  selectedUuid?: string;
+}): Account | undefined {
+  const fallback = state.accounts[0];
+  return state.selectedUuid
+    ? (state.accounts.find((a) => a.uuid === state.selectedUuid) ?? fallback)
+    : fallback;
+}
 
 export function getAccountSite(account: Account) {
   return "site" in account ? account.site : undefined;
@@ -95,6 +119,8 @@ function getNewAccount(): Account {
 
 const INIT_STATE = {
   accounts: [getNewAccount()],
+  /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
+  accountIndex: 0,
 };
 
 export const useAuth = create<AuthStore>()(
@@ -103,116 +129,128 @@ export const useAuth = create<AuthStore>()(
       ...INIT_STATE,
       getSelectedAccount: () => {
         const state = get();
-        const account = state.accounts[state.accountIndex];
+        const account = getSelectedAccount(state);
         // We shouldn't ever hit this case,
-        // but just to be save, this function can
+        // but just to be safe, this function can
         // recover from an account that isn't found
         if (!account) {
-          const newAccount = getNewAccount();
-          set((prev) => {
-            const newAccounts = prev.accounts;
-            newAccounts[state.accountIndex] = newAccount;
-            return {
-              ...prev,
-              accounts: newAccounts,
-            };
-          });
-          return newAccount;
+          const firstAccount = _.first(state.accounts);
+          if (firstAccount) {
+            set((prev) => {
+              return {
+                ...prev,
+                selectedUuid: firstAccount.uuid,
+              };
+            });
+            return firstAccount;
+          } else {
+            const newAccount = getNewAccount();
+            set((prev) => {
+              return {
+                ...prev,
+                accounts: [newAccount],
+              };
+            });
+            return newAccount;
+          }
         }
         return account;
       },
       isLoggedIn: () => {
         const state = get();
-        const account = state.accounts[state.accountIndex];
+        const account = getSelectedAccount(state);
         return !!account && !!account.jwt;
       },
-      accountIndex: 0,
       addAccount: (patch) => {
         const instance = patch?.instance ?? env.defaultInstance;
-        const accounts = [
-          ...get().accounts,
-          {
-            uuid: uuid(),
-            ...patch,
-            instance: normalizeInstance(instance),
-          },
-        ];
+        const newAccount = {
+          uuid: uuid(),
+          ...patch,
+          instance: normalizeInstance(instance),
+        };
+        const accounts = [...get().accounts, newAccount];
         set({
           accounts,
-          accountIndex: accounts.length - 1,
+          selectedUuid: newAccount.uuid,
         });
       },
-      logout: (accountSelector) => {
-        const { accounts, accountIndex } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        const account = accounts[index ?? accountIndex];
-        if (account) {
-          delete accounts[index ?? accountIndex];
-          const newAccounts = accounts.filter(Boolean);
+      logout: (uuidAccountSelector) => {
+        const state = get();
+        const { accounts, selectedUuid, loggedOutUuids = [] } = state;
+        const logoutUuid =
+          uuidAccountSelector ?? getSelectedAccount(state)?.uuid;
+        const account = logoutUuid
+          ? accounts.find((a) => a.uuid === logoutUuid)
+          : undefined;
+        if (account && logoutUuid) {
+          const newAccounts = accounts.filter((a) => a.uuid !== logoutUuid);
           if (newAccounts.length === 0) {
+            const newAccount = getNewAccount();
             set({
-              accounts: [
-                {
-                  instance: env.defaultInstance,
-                },
-              ],
-              accountIndex: 0,
+              accounts: [newAccount],
+              selectedUuid: newAccount.uuid,
+              loggedOutUuids: [...loggedOutUuids, logoutUuid].slice(
+                -MAX_LOGGED_OUT_UUIDS,
+              ),
             });
           } else {
             set({
               accounts: newAccounts,
-              accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
+              selectedUuid:
+                newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
+                _.first(newAccounts)?.uuid,
+              loggedOutUuids: [...loggedOutUuids, logoutUuid].slice(
+                -MAX_LOGGED_OUT_UUIDS,
+              ),
             });
           }
         }
       },
-      logoutMultiple: (indicies: number[]) => {
-        const { accounts, accountIndex } = get();
-        const newAccounts = accounts.filter((_a, i) => !indicies.includes(i));
+      logoutMultiple: (selectedUuids: string[]) => {
+        const { accounts, selectedUuid, loggedOutUuids = [] } = get();
+        const newAccounts = accounts.filter(
+          (a) => !selectedUuids.includes(a.uuid),
+        );
         if (newAccounts.length === 0) {
+          const newAccount = getNewAccount();
           set({
-            accounts: [
-              {
-                instance: env.defaultInstance,
-              },
-            ],
-            accountIndex: 0,
+            accounts: [newAccount],
+            selectedUuid: newAccount.uuid,
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids].slice(
+              -MAX_LOGGED_OUT_UUIDS,
+            ),
           });
         } else {
           set({
             accounts: newAccounts,
-            accountIndex: _.clamp(accountIndex, 0, newAccounts.length - 1),
+            selectedUuid:
+              newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
+              _.first(newAccounts)?.uuid,
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids].slice(
+              -MAX_LOGGED_OUT_UUIDS,
+            ),
           });
         }
       },
-      setAccountIndex: (index) => {
-        const account = get().accounts[index];
+      selectAccount: (uuid: string) => {
+        const account = get().accounts.find((a) => a.uuid === uuid);
         if (!account) {
           return null;
         }
         set({
-          accountIndex: index,
+          selectedUuid: uuid,
         });
         return account;
       },
-      updateAccount: (accountSelector, patch) => {
-        let { accounts } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        accounts = accounts.map((a, i) =>
-          i === index
+      updateAccountSite: (selectedUuid, site) => {
+        const state = get();
+        let { accounts } = state;
+        accounts = accounts.map((a) =>
+          a.uuid === selectedUuid
             ? {
                 ...a,
-                uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
-                ...patch,
-                ...(patch.instance
-                  ? {
-                      instance: normalizeInstance(patch.instance),
-                    }
-                  : null),
+                site,
+                siteUpdatedAt: Date.now(),
               }
             : a,
         );
@@ -221,26 +259,37 @@ export const useAuth = create<AuthStore>()(
         });
       },
       updateSelectedAccount: (patch) => {
-        let { accounts, accountIndex } = get();
-        accounts = accounts.map((a, i) =>
-          i === accountIndex
+        const state = get();
+        let { accounts } = state;
+        const selectedAccount = getSelectedAccount(state);
+        accounts = accounts.map((a) =>
+          a.uuid === selectedAccount?.uuid
             ? {
                 ...a,
-                uuid: patch.jwt ? uuid() : (a.uuid ?? uuid()),
                 ...patch,
+                ...("site" in patch && patch.site
+                  ? { siteUpdatedAt: Date.now() }
+                  : null),
               }
             : a,
         );
-        set({
-          accounts,
-        });
+        if (patch.uuid) {
+          set({
+            accounts,
+            selectedUuid: patch.uuid,
+          });
+        } else {
+          set({
+            accounts,
+          });
+        }
       },
       getCachePrefixer: (accountSelector) => {
-        const { accounts, accountIndex } = get();
-        const index = _.isObject(accountSelector)
-          ? accounts.findIndex(({ jwt }) => jwt && jwt === accountSelector.jwt)
-          : accountSelector;
-        const account = accounts[index ?? accountIndex];
+        const state = get();
+        const { accounts } = state;
+        const account =
+          accounts.find((a) => a.uuid === accountSelector?.uuid) ??
+          getSelectedAccount(state);
         return getCachePrefixer(account);
       },
       reset: () => {
@@ -251,33 +300,94 @@ export const useAuth = create<AuthStore>()(
     }),
     {
       name: "auth",
-      storage: createStorage<AuthStore>(),
-      version: 4,
+      storage: createStorage<z.infer<typeof storeSchema>>(),
+      version: 5,
       migrate: (state) => {
-        const parsed = storeSchema.parse(state) as AuthStore;
-        return {
-          ...parsed,
-          accounts: parsed.accounts.map(
-            (a) =>
-              ({
-                uuid: uuid(),
-                ...a,
-              }) satisfies Account,
-          ),
-        };
+        // Parse raw stored data permissively — accounts from old versions may
+        // not have uuid. Stamp one onto any account missing it before
+        // validating against the current schema.
+        const rawSchema = z.object({
+          accounts: z.array(z.record(z.unknown())),
+          accountIndex: z.number().optional().default(0),
+        });
+        const raw = rawSchema.parse(state);
+        const mappedAccounts = raw.accounts.map((a) => ({
+          ...a,
+          uuid: typeof a["uuid"] === "string" ? a["uuid"] : uuid(),
+        }));
+        return storeSchema.parse({
+          ...raw,
+          accounts: mappedAccounts,
+          selectedUuid: mappedAccounts[raw.accountIndex]?.uuid,
+        });
       },
       merge: (persisted, current) => {
         const persistedData = storeSchema.safeParse(persisted).data;
+        // No persisted accounts means first launch — keep current as-is so the
+        // default guest account (always present on init) is not discarded.
+        if (!persistedData?.accounts || persistedData.accounts.length === 0) {
+          return { ...current };
+        }
+        // Only logged-in accounts from the current tab participate in the
+        // uuid-based merge below. Guest accounts (no jwt) in the current tab
+        // are intentionally excluded: a new tab always initialises with a
+        // default guest, but that auto-created guest should not override the
+        // guest already in storage. Guest accounts in persisted are NOT
+        // excluded — they pass through mergedAccounts unchanged.
         const currentLoggedIn = current.accounts.filter((a) => !!a.jwt);
+        const currentByUuid = _.keyBy(currentLoggedIn, "uuid");
+        const persistedByUuid = _.keyBy(persistedData.accounts, "uuid");
+        // Preserve the account order from persisted. For each account, pick
+        // the version with the newer siteUpdatedAt so that both single-tab
+        // (in-memory wins when IndexedDB lags) and multi-tab (storage wins
+        // when another tab updated the site) cases resolve correctly.
+        const mergedAccounts = persistedData.accounts.map(
+          (persistedAccount) => {
+            if (!persistedAccount.uuid) {
+              return persistedAccount;
+            }
+            const currentAccount = currentByUuid[persistedAccount.uuid];
+            if (!currentAccount) {
+              return persistedAccount;
+            }
+            const persistedTime = persistedAccount.siteUpdatedAt ?? 0;
+            const currentTime = currentAccount.siteUpdatedAt ?? 0;
+            return currentTime >= persistedTime
+              ? currentAccount
+              : persistedAccount;
+          },
+        );
+        // Append logged-in accounts not present in persisted (e.g. a login
+        // that raced with a rehydrate before the write reached IndexedDB),
+        // but skip accounts that were explicitly logged out in another tab.
+        const loggedOutUuids = new Set([
+          ...(persistedData.loggedOutUuids ?? []),
+          ...(current.loggedOutUuids ?? []),
+        ]);
+        const newAccounts = currentLoggedIn.filter(
+          (a) =>
+            a.uuid && !persistedByUuid[a.uuid] && !loggedOutUuids.has(a.uuid),
+        );
+        const allAccounts = [...mergedAccounts, ...newAccounts];
+        // The current tab's selected account always wins — but only if it
+        // survived into allAccounts. A persisted guest passes this check
+        // because it comes through mergedAccounts. An in-memory-only guest
+        // was never appended (currentLoggedIn excludes guests), so it won't
+        // be found and we fall back to the persisted selection instead.
+        const candidateUuid = allAccounts.some(
+          (a) => a.uuid === current.selectedUuid,
+        )
+          ? current.selectedUuid
+          : persistedData.selectedUuid;
+        const selectedUuid = allAccounts.some((a) => a.uuid === candidateUuid)
+          ? candidateUuid
+          : allAccounts[0]?.uuid;
         return {
           ...current,
           ...persistedData,
-          accounts: persistedData?.accounts
-            ? _.uniqBy(
-                [...persistedData.accounts, ...currentLoggedIn],
-                (a) => a.uuid,
-              )
-            : current.accounts,
+          accounts: allAccounts,
+          selectedUuid,
+          loggedOutUuids: [...loggedOutUuids].slice(-MAX_LOGGED_OUT_UUIDS),
         };
       },
     },
@@ -314,7 +424,9 @@ export function useIsInstanceBlocked(instanceId?: number | null) {
   return useAuth((s) => {
     const account = s.getSelectedAccount();
     const site = getAccountSite(account);
-    if (!instanceId || !site?.instanceBlocks?.length) return false;
+    if (!instanceId || !site?.instanceBlocks?.length) {
+      return false;
+    }
     return !!site.instanceBlocks.find((b) => b.id === instanceId);
   });
 }

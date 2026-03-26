@@ -14,7 +14,7 @@ import _ from "lodash";
 import { getCachePrefixer } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 
-const prefix = getCachePrefixer({ instance: "123" });
+const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
 
 afterEach(() => {
   const { result } = renderHook(() => usePostsStore());

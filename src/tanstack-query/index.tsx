@@ -3,16 +3,16 @@ import {
   Persister,
   PersistQueryClientProvider,
 } from "@tanstack/react-query-persist-client";
-import _ from "lodash";
 import { createDb } from "@/src/lib/create-storage";
 import pRetry from "p-retry";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { MAX_CACHE_MS } from "@/src/stores/config";
 import { queryClient } from "./query-client";
+import { env } from "@/src/env";
 
 // List the last reason for bumping the key:
-// Caching creator profiles when fetching comments
-const REACT_QUERY_CACHE_VERSON = 11;
+// Notification and PM counts changed from number[] to Record<string, number>
+const REACT_QUERY_CACHE_VERSON = 12;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;
@@ -64,10 +64,13 @@ const persister: Persister = {
   },
 };
 
-// Enable multi-tab synchronization
+// Enable multi-tab synchronization. Channel is keyed by build SHA and cache
+// version to prevent cross-tab contamination between deployments or
+// incompatible cache formats. SHA may be "unknown" in some environments,
+// so the cache version provides a second layer of isolation.
 broadcastQueryClient({
   queryClient,
-  broadcastChannel: "react-query-sync",
+  broadcastChannel: `react-query-sync-${env.REACT_APP_COMMIT_SHA}-v${REACT_QUERY_CACHE_VERSON}`,
 });
 
 export function TanstackQueryProvider({

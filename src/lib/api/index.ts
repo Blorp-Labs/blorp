@@ -59,7 +59,7 @@ import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
 export function useApiClients(config?: { instance?: string; jwt?: string }) {
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const accounts = useAuth((s) => s.accounts);
 
   return useMemo(() => {
@@ -104,9 +104,11 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
 
     return {
       apis,
-      ...(getInstanceOverride() ?? apis[accountIndex] ?? getDefaultInstance()),
+      ...(getInstanceOverride() ??
+        apis.find((api) => api.account.uuid === selectedAccountUuid) ??
+        getDefaultInstance()),
     };
-  }, [accounts, accountIndex, config?.instance, config?.jwt]);
+  }, [accounts, selectedAccountUuid, config?.instance, config?.jwt]);
 }
 
 export function useSoftware(account?: Account) {
@@ -869,10 +871,8 @@ function useRefreshAuthKey() {
 export function useRefreshAuth() {
   const { apis } = useApiClients();
 
-  const updateAccount = useAuth((s) => s.updateAccount);
+  const updateAccountSite = useAuth((s) => s.updateAccountSite);
   const logoutMultiple = useAuth((s) => s.logoutMultiple);
-
-  const accounts = useAuth((s) => s.accounts);
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
@@ -886,7 +886,7 @@ export function useRefreshAuth() {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const logoutIndicies: number[] = [];
+      const logoutUuids: string[] = [];
 
       const sites = await Promise.allSettled(
         apis
@@ -896,14 +896,18 @@ export function useRefreshAuth() {
 
       for (let i = 0; i < sites.length; i++) {
         const api = apis[i];
-        const account = accounts[i];
+        if (!api) {
+          continue;
+        }
+
+        const account = api.account;
         const p = sites[i];
 
         if (p?.status === "fulfilled") {
           const { site, communities, profiles } = p.value;
 
-          if (api?.isLoggedIn && site && !site.me) {
-            logoutIndicies.push(i);
+          if (api?.isLoggedIn && api.account.uuid && site && !site.me) {
+            logoutUuids.push(api.account.uuid);
             continue;
           }
 
@@ -921,23 +925,22 @@ export function useRefreshAuth() {
           }
 
           if (site) {
-            updateAccount(i, {
-              site,
-            });
+            updateAccountSite(api.account.uuid, site);
             if (site.showNsfw) {
               setNsfwPreviouslyEnabled(true);
             }
           }
         } else if (
           _.isString(p?.reason) &&
-          p.reason.toLowerCase().indexOf("aborterror") === -1
+          p.reason.toLowerCase().indexOf("aborterror") === -1 &&
+          api?.account.uuid
         ) {
-          logoutIndicies.push(i);
+          logoutUuids.push(api.account.uuid);
         }
       }
 
-      if (logoutIndicies.length > 0) {
-        logoutMultiple(logoutIndicies);
+      if (logoutUuids.length > 0) {
+        logoutMultiple(logoutUuids);
       }
 
       return {};
@@ -966,7 +969,7 @@ export function useLogout() {
       await api.logout();
     },
     onSuccess: (_res, account) => {
-      logout(account);
+      logout(account.uuid);
       resetFilters();
     },
   });
@@ -1497,7 +1500,7 @@ function usePrivateMessageCountQueryKey() {
 export function usePrivateMessagesCount() {
   const { apis } = useApiClients();
   const isLoggedIn = useAuth((a) => a.isLoggedIn());
-  const accountIndex = useAuth((a) => a.accountIndex);
+  const selectedAccountUuid = useAuth((a) => a.getSelectedAccount().uuid);
 
   const queryKey = usePrivateMessageCountQueryKey();
   const queryClient = useQueryClient();
@@ -1506,9 +1509,9 @@ export function usePrivateMessagesCount() {
     queryKey,
     queryFn: async ({ signal }) => {
       const counts = await Promise.allSettled(
-        apis.map(async ({ api, isLoggedIn, queryKeyPrefix }, index) => {
+        apis.map(async ({ api, isLoggedIn, queryKeyPrefix, account }) => {
           if (!isLoggedIn) {
-            return 0;
+            return [account.uuid, 0] as const;
           }
 
           const { privateMessages } = await (
@@ -1520,19 +1523,24 @@ export function usePrivateMessagesCount() {
             { signal },
           );
 
-          if (index === accountIndex && privateMessages.length > 0) {
+          if (
+            account.uuid === selectedAccountUuid &&
+            privateMessages.length > 0
+          ) {
             queryClient.invalidateQueries({
               queryKey: getPrivateMessagesKey(queryKeyPrefix),
             });
           }
 
-          return privateMessages.length;
+          return [account.uuid, privateMessages.length] as const;
         }),
       );
 
-      return counts.map((count) =>
-        count.status === "fulfilled" ? count.value : 0,
-      );
+      const pairs = counts
+        .filter((count) => count.status === "fulfilled")
+        .map((count) => [...count.value]);
+
+      return _.fromPairs(pairs);
     },
     enabled: isLoggedIn,
     refetchInterval: 1000 * 60,
@@ -1541,13 +1549,13 @@ export function usePrivateMessagesCount() {
     refetchOnWindowFocus: "always",
   });
 
-  return data ?? EMPTY_ARR;
+  return data ?? {};
 }
 
 export function useMarkPriavteMessageRead() {
   const { api } = useApiClients();
   const queryClient = useQueryClient();
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
 
   const privateMessagesKey = usePrivateMessagesKey();
   const privateMessageCountQueryKey = usePrivateMessageCountQueryKey();
@@ -1556,14 +1564,17 @@ export function useMarkPriavteMessageRead() {
     mutationFn: async (form: Forms.MarkPrivateMessageRead) =>
       await (await api).markPrivateMessageRead(form),
     onMutate: (form) => {
-      queryClient.setQueryData<number[]>(
+      queryClient.setQueryData<Record<string, number>>(
         privateMessageCountQueryKey,
         (data) => {
-          if (_.isNumber(data?.[accountIndex])) {
-            const clone = [...data];
-            const prev = clone[accountIndex];
+          if (_.isNumber(data?.[selectedAccountUuid])) {
+            const clone = { ...data };
+            const prev = clone[selectedAccountUuid];
             if (_.isNumber(prev)) {
-              clone[accountIndex] = Math.max(prev + (form.read ? -1 : 1), 0);
+              clone[selectedAccountUuid] = Math.max(
+                prev + (form.read ? -1 : 1),
+                0,
+              );
             }
             return clone;
           }
@@ -1925,9 +1936,9 @@ export function useNotificationCount() {
     queryKey,
     queryFn: async ({ signal }) => {
       const counts = await Promise.allSettled(
-        apis.map(async ({ api, isLoggedIn }) => {
+        apis.map(async ({ api, isLoggedIn, account }) => {
           if (!isLoggedIn) {
-            return 0;
+            return [account.uuid, 0] as const;
           }
 
           const a = await api;
@@ -1973,15 +1984,22 @@ export function useNotificationCount() {
             commentReports.status === "fulfilled"
               ? commentReports.value.commentReports.length
               : 0;
-          return (
-            mentionCount + repliesCount + postReportsCount + commentReportsCount
-          );
+
+          return [
+            account.uuid,
+            mentionCount +
+              repliesCount +
+              postReportsCount +
+              commentReportsCount,
+          ] as const;
         }),
       );
 
-      return counts.map((count) =>
-        count.status === "fulfilled" ? count.value : 0,
-      );
+      const pairs = counts
+        .filter((count) => count.status === "fulfilled")
+        .map((count) => [...count.value]);
+
+      return _.fromPairs(pairs);
     },
     enabled: isLoggedIn,
     refetchInterval: 1000 * 60,
@@ -1990,9 +2008,8 @@ export function useNotificationCount() {
     refetchOnWindowFocus: "always",
   });
 
-  return data ?? EMPTY_ARR;
+  return data ?? {};
 }
-const EMPTY_ARR: never[] = [];
 
 export function useSearch(form: Forms.Search) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -2808,7 +2825,7 @@ export function useResolveObject(
 
 export function useResolveObjectAcrossAccounts(apId: string | undefined) {
   const { apis } = useApiClients();
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const accounts = useAuth((s) => s.accounts);
 
   const queryKey = [
@@ -2824,16 +2841,15 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
         throw new Error("This shouldn't happen");
       }
       const results = await Promise.allSettled(
-        apis.map(async (apiEntry, index) => {
-          if (index === accountIndex) {
+        apis.map(async (apiEntry) => {
+          if (apiEntry.account.uuid === selectedAccountUuid) {
             throw new Error("Skip current account");
           }
           const resolved = await (
             await apiEntry.api
           ).resolveObject({ q: apId });
           return {
-            accountIndex: index,
-            account: accounts[index],
+            account: apiEntry.account,
             result: resolved,
           };
         }),
@@ -2843,7 +2859,6 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
           (
             r,
           ): r is PromiseFulfilledResult<{
-            accountIndex: number;
             account: Account;
             result: Schemas.ResolveObject;
           }> => r.status === "fulfilled",

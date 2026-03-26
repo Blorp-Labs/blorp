@@ -5,7 +5,7 @@ import { useFlairsStore } from "./flairs";
 import { getCachePrefixer } from "./auth";
 import _ from "lodash";
 
-const prefix = getCachePrefixer({ instance: "123" });
+const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
 
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 

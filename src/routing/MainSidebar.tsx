@@ -51,9 +51,9 @@ function useMainSidebarCollapsed() {
 
 function SidebarTabs() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
-  const selectedAccountIndex = useAuth((s) => s.accountIndex);
-  const messageCount = usePrivateMessagesCount()[selectedAccountIndex];
-  const inboxCount = useNotificationCount()[selectedAccountIndex];
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
+  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
+  const inboxCount = useNotificationCount()[selectedAccountUuid];
   const pathname = useIonRouter().routeInfo.pathname;
 
   return (
@@ -73,7 +73,7 @@ function SidebarTabs() {
                   }
                 }}
                 className={twMerge(
-                  "relative max-md:hidden text-md flex flex-row items-center py-2 px-3 rounded-xl hover:bg-secondary",
+                  "text-md hover:bg-secondary relative flex flex-row items-center rounded-xl px-3 py-2 max-md:hidden",
                   isActive ? "bg-secondary" : "text-muted-foreground",
                   mainSidebarCollapsed && "mx-auto",
                 )}
@@ -95,7 +95,7 @@ function SidebarTabs() {
                 </BadgeCount>
                 <span
                   className={cn(
-                    "text-sm ml-2",
+                    "ml-2 text-sm",
                     mainSidebarCollapsed && "sr-only",
                   )}
                 >
@@ -115,7 +115,9 @@ function SidebarTabs() {
 
 function SiteTitle() {
   const accounts = useAuth((s) => s.accounts);
-  const accountIndex = useAuth((s) => s.accountIndex);
+  const accountIndex = useAuth((s) =>
+    s.accounts.findIndex((a) => a.uuid === s.getSelectedAccount().uuid),
+  );
   const sites = accounts.map((a) => getAccountSite(a));
   const iconTranslationPct = 1 - (accountIndex + 1) / accounts.length;
   const titleTranslationPct = accountIndex / accounts.length;
@@ -125,9 +127,9 @@ function SiteTitle() {
 
   if (!siteTitle) {
     return (
-      <div className="flex flex-row items-center gap-1.5 w-full">
+      <div className="flex w-full flex-row items-center gap-1.5">
         <Skeleton className="h-7.5 w-7.5" />
-        <Skeleton className="flex-1 max-w-3/5 h-7" />
+        <Skeleton className="h-7 max-w-3/5 flex-1" />
       </div>
     );
   }
@@ -135,7 +137,7 @@ function SiteTitle() {
   return (
     <div
       className={cn(
-        "flex flex-row gap-1.5 w-full",
+        "flex w-full flex-row gap-1.5",
         mainSidebarCollapsed && "justify-center",
       )}
       key={accounts.length}
@@ -149,11 +151,11 @@ function SiteTitle() {
           }}
         >
           {sites.toReversed().map((site, index) => (
-            <div key={index} className="h-9 flex items-center">
+            <div key={index} className="flex h-9 items-center">
               {site?.icon && (
                 <img
                   src={site.icon}
-                  className="h-7.5 aspect-square object-cover rounded-sm"
+                  className="aspect-square h-7.5 rounded-sm object-cover"
                 />
               )}
             </div>
@@ -171,9 +173,11 @@ function SiteTitle() {
             {sites.map((site, index) => (
               <div
                 key={index}
-                className="h-9 flex flex-row items-center gap-1.5"
+                className="flex h-9 flex-row items-center gap-1.5"
               >
-                <span className="font-jersey text-3xl">{site?.title}</span>
+                <span className="font-jersey text-3xl text-nowrap">
+                  {site?.title}
+                </span>
               </div>
             ))}
           </div>
@@ -213,16 +217,16 @@ export function MainSidebar() {
     .slice(0, 5);
 
   return (
-    <div className="overflow-y-auto h-full">
+    <div className="h-full overflow-y-auto">
       {isTauri() && (
         <div
-          className="h-12 -mb-6 w-full top-0 sticky bg-gradient-to-b from-background to-transparent from-30% z-10"
+          className="from-background sticky top-0 z-10 -mb-6 h-12 w-full bg-gradient-to-b from-30% to-transparent"
           data-tauri-drag-region
         />
       )}
       <button
         className={cn(
-          "h-[60px] w-full mt-3 md:mt-1 px-3.5 flex items-center gap-1.5",
+          "mt-3 flex h-[60px] w-full items-center gap-1.5 px-3.5 md:mt-1",
           mainSidebarCollapsed && "mx-auto",
         )}
         onClick={() => {
@@ -235,7 +239,7 @@ export function MainSidebar() {
         <SiteTitle />
       </button>
 
-      <div className="md:px-3 pt-2 pb-4 gap-0.5 flex flex-col">
+      <div className="flex flex-col gap-0.5 pt-2 pb-4 md:px-3">
         <SidebarTabs />
 
         {fiveRecentCommunities.length > 0 && (
@@ -249,8 +253,8 @@ export function MainSidebar() {
             >
               <CollapsibleTrigger
                 className={cn(
-                  "uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-3",
-                  mainSidebarCollapsed && "px-0 justify-center",
+                  "text-muted-foreground flex w-full items-center justify-between px-3 text-xs font-medium uppercase",
+                  mainSidebarCollapsed && "justify-center px-0",
                 )}
               >
                 <span>{mainSidebarCollapsed ? "R" : "RECENT"}</span>
@@ -259,7 +263,7 @@ export function MainSidebar() {
 
               <CollapsibleContent
                 className={cn(
-                  "pt-2 flex flex-col gap-1",
+                  "flex flex-col gap-1 pt-2",
                   mainSidebarCollapsed && "items-center",
                 )}
               >
@@ -275,7 +279,7 @@ export function MainSidebar() {
                             communitySlug={c.slug}
                             size="sm"
                             className={cn(
-                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              "hover:bg-secondary h-10 px-3 md:rounded-xl",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}
@@ -304,8 +308,8 @@ export function MainSidebar() {
             >
               <CollapsibleTrigger
                 className={cn(
-                  "uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-3",
-                  mainSidebarCollapsed && "px-0 justify-center",
+                  "text-muted-foreground flex w-full items-center justify-between px-3 text-xs font-medium uppercase",
+                  mainSidebarCollapsed && "justify-center px-0",
                 )}
               >
                 <span>{mainSidebarCollapsed ? "M" : "MODERATING"}</span>
@@ -314,7 +318,7 @@ export function MainSidebar() {
 
               <CollapsibleContent
                 className={cn(
-                  "pt-2 flex flex-col gap-1",
+                  "flex flex-col gap-1 pt-2",
                   mainSidebarCollapsed && "items-center",
                 )}
               >
@@ -330,7 +334,7 @@ export function MainSidebar() {
                             communitySlug={c}
                             size="sm"
                             className={cn(
-                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              "hover:bg-secondary h-10 px-3 md:rounded-xl",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}
@@ -359,8 +363,8 @@ export function MainSidebar() {
             >
               <CollapsibleTrigger
                 className={cn(
-                  "uppercase text-xs font-medium text-muted-foreground flex items-center justify-between w-full px-3",
-                  mainSidebarCollapsed && "px-0 justify-center",
+                  "text-muted-foreground flex w-full items-center justify-between px-3 text-xs font-medium uppercase",
+                  mainSidebarCollapsed && "justify-center px-0",
                 )}
               >
                 <span>{mainSidebarCollapsed ? "S" : "SUBSCRIBED"}</span>
@@ -369,7 +373,7 @@ export function MainSidebar() {
 
               <CollapsibleContent
                 className={cn(
-                  "pt-2 flex flex-col gap-1",
+                  "flex flex-col gap-1 pt-2",
                   mainSidebarCollapsed && "items-center",
                 )}
               >
@@ -385,7 +389,7 @@ export function MainSidebar() {
                             communitySlug={c}
                             size="sm"
                             className={cn(
-                              "hover:bg-secondary px-3 h-10 md:rounded-xl",
+                              "hover:bg-secondary h-10 px-3 md:rounded-xl",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}
@@ -408,7 +412,7 @@ export function MainSidebar() {
             <Separator className="my-2" />
 
             <section className="md:hidden">
-              <h2 className="px-4 pt-1 pb-3 text-sm text-muted-foreground uppercase">
+              <h2 className="text-muted-foreground px-4 pt-1 pb-3 text-sm uppercase">
                 {instanceHost}
               </h2>
 
@@ -470,7 +474,7 @@ function SidebarLink<T extends RoutePath>({
       <Link
         to={to}
         params={params as any}
-        className="px-4 text-muted-foreground flex flex-row items-center gap-2"
+        className="text-muted-foreground flex flex-row items-center gap-2 px-4"
       >
         <>
           {icon} {children}
@@ -494,7 +498,7 @@ export function MainSidebarCollapseButton() {
   return (
     <Button
       className={cn(
-        "fixed left-0 bottom-25 rounded-l-none z-10 pl-0! pr-1.5! max-lg:hidden text-border opacity-75 hover:opacity-100 hover:text-foreground border-l-0 bg-transparent duration-75",
+        "text-border hover:text-foreground fixed bottom-25 left-0 z-10 rounded-l-none border-l-0 bg-transparent pr-1.5! pl-0! opacity-75 duration-75 hover:opacity-100 max-lg:hidden",
         isLightbox && "dark",
       )}
       variant="outline"

@@ -2,7 +2,7 @@
 
 exports[`persisted state snapshot > profiles store shape 1`] = `
 {
-  "123_https://blorpblorp.xyz/u/789": {
+  "test_123_https://blorpblorp.xyz/u/789": {
     "data": {
       "apId": "https://blorpblorp.xyz/u/789",
       "avatar": null,
@@ -25,7 +25,7 @@ exports[`persisted state snapshot > profiles store shape 1`] = `
 exports[`persisted state snapshot > profiles store shape 2`] = `
 {
   "profiles": {
-    "123_https://blorpblorp.xyz/u/789": {
+    "test_123_https://blorpblorp.xyz/u/789": {
       "data": {
         "apId": "https://blorpblorp.xyz/u/789",
         "avatar": null,

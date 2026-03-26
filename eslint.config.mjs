@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import unusedImports from "eslint-plugin-unused-imports";
+import { restrictions } from "./eslint/restricted-syntax.js";
 
 export default tseslint.config(
   {
@@ -55,6 +56,13 @@ export default tseslint.config(
       "prefer-const": "warn",
       "no-useless-assignment": "warn",
       curly: ["warn", "all"],
+      "no-restricted-syntax": ["error", ...restrictions],
+    },
+  },
+  {
+    files: ["src/stores/auth.ts", "**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
 );

@@ -31,7 +31,7 @@ export default function Instance() {
 
   const alrt = useConfirmationAlert();
   const accounts = useAuth((s) => s.accounts);
-  const setAccountIndex = useAuth((s) => s.setAccountIndex);
+  const selectAccount = useAuth((s) => s.selectAccount);
   const addAccount = useAuth((s) => s.addAccount);
   const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
 
@@ -64,7 +64,7 @@ export default function Instance() {
       for (let i = 0; i < accounts.length; i++) {
         const account = accounts[i];
         if (account && compareHosts(siteInstance, account.instance)) {
-          setAccountIndex(i);
+          selectAccount(account.uuid);
           replace(resolveRoute("/home"));
           return;
         }
@@ -88,7 +88,7 @@ export default function Instance() {
   }, [
     alrt,
     replace,
-    setAccountIndex,
+    selectAccount,
     accounts,
     site.data,
     site.error,

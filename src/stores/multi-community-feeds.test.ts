@@ -14,7 +14,7 @@ import { getCachePrefixer } from "./auth";
 import { getFeedSubscribed } from "../lib/api/adapters/utils";
 import _ from "lodash";
 
-const prefix = getCachePrefixer({ instance: "123" });
+const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
 
 afterEach(() => {
   const { result } = renderHook(() => useMultiCommunityFeedStore());

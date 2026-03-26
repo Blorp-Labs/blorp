@@ -67,7 +67,7 @@ function CrossInstanceResolver({
   communitySlug?: string;
 }) {
   const router = useIonRouter();
-  const setAccountIndex = useAuth((s) => s.setAccountIndex);
+  const selectAccount = useAuth((s) => s.selectAccount);
   const addAccount = useAuth((s) => s.addAccount);
   const accounts = useAuth((s) => s.accounts);
   const requireAuth = useRequireAuth();
@@ -84,7 +84,9 @@ function CrossInstanceResolver({
   );
 
   const originHost = useMemo(() => {
-    if (!resolvedApId) return undefined;
+    if (!resolvedApId) {
+      return undefined;
+    }
     try {
       return new URL(resolvedApId).host;
     } catch {
@@ -111,7 +113,9 @@ function CrossInstanceResolver({
   const hasMultipleAccounts = accounts.length > 1;
 
   const originUrl = useMemo(() => {
-    if (!resolvedApId) return undefined;
+    if (!resolvedApId) {
+      return undefined;
+    }
     try {
       return new URL(resolvedApId).origin;
     } catch {
@@ -120,28 +124,33 @@ function CrossInstanceResolver({
   }, [resolvedApId]);
 
   const originRedirectUrl = useMemo(() => {
-    if (!originQuery.data) return undefined;
+    if (!originQuery.data) {
+      return undefined;
+    }
     return buildRedirectUrl(originQuery.data);
   }, [originQuery.data]);
 
-  const handleSwitch = (
-    accountIndex: number,
-    result: Schemas.ResolveObject,
-  ) => {
+  const handleSwitch = (accountUuid: string, result: Schemas.ResolveObject) => {
     const url = buildRedirectUrl(result);
-    if (!url) return;
-    setAccountIndex(accountIndex);
+    if (!url) {
+      return;
+    }
+    selectAccount(accountUuid);
     router.push(url, "forward", "replace");
   };
 
   const handleAddGuest = () => {
-    if (!originUrl || !originRedirectUrl) return;
+    if (!originUrl || !originRedirectUrl) {
+      return;
+    }
     addAccount({ instance: originUrl });
     router.push(originRedirectUrl, "forward", "replace");
   };
 
   const handleLogin = async () => {
-    if (!originUrl) return;
+    if (!originUrl) {
+      return;
+    }
     addAccount({ instance: originUrl });
     try {
       await requireAuth({ addAccount: true });
@@ -157,8 +166,8 @@ function CrossInstanceResolver({
   if (isSearching && hasMultipleAccounts) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-bold text-4xl">Not found</h1>
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <h1 className="text-4xl font-bold">Not found</h1>
+        <div className="text-muted-foreground flex items-center gap-2">
           <LuLoaderCircle className="animate-spin" />
           <span>Searching your accounts...</span>
         </div>
@@ -170,7 +179,7 @@ function CrossInstanceResolver({
   if (matches.length > 0) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-bold text-4xl">Not found</h1>
+        <h1 className="text-4xl font-bold">Not found</h1>
         <p className="text-muted-foreground">
           Not available on your current account, but found on:
         </p>
@@ -180,8 +189,8 @@ function CrossInstanceResolver({
             const [name] = person?.slug.split("@") ?? [];
             return (
               <div
-                key={match.accountIndex}
-                className="flex items-center gap-3 p-3 rounded-lg border"
+                key={match.account.uuid}
+                className="flex items-center gap-3 rounded-lg border p-3"
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={person?.avatar ?? undefined} />
@@ -193,13 +202,13 @@ function CrossInstanceResolver({
                     )}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col text-sm flex-1">
+                <div className="flex flex-1 flex-col text-sm">
                   <span>{name ?? "Guest"}</span>
                   <span className="text-muted-foreground">@{instance}</span>
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => handleSwitch(match.accountIndex, match.result)}
+                  onClick={() => handleSwitch(match.account.uuid, match.result)}
                   variant="secondary"
                 >
                   Switch
@@ -219,7 +228,7 @@ function CrossInstanceResolver({
   ) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-bold text-4xl">Not found</h1>
+        <h1 className="text-4xl font-bold">Not found</h1>
         <p className="text-muted-foreground">
           Not available on your {hasMultipleAccounts ? "accounts" : "account"}.
         </p>
@@ -233,8 +242,8 @@ function CrossInstanceResolver({
   if (expandSearch && originQuery.isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-bold text-4xl">Not found</h1>
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <h1 className="text-4xl font-bold">Not found</h1>
+        <div className="text-muted-foreground flex items-center gap-2">
           <LuLoaderCircle className="animate-spin" />
           <span>Searching {originHost}...</span>
         </div>
@@ -245,7 +254,7 @@ function CrossInstanceResolver({
   if (expandSearch && originRedirectUrl && originUrl) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="font-bold text-4xl">Found</h1>
+        <h1 className="text-4xl font-bold">Found</h1>
         <p className="text-muted-foreground">
           This content is available on {originHost}.
         </p>
@@ -262,7 +271,7 @@ function CrossInstanceResolver({
   // Nothing found anywhere
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-bold text-4xl">Not found</h1>
+      <h1 className="text-4xl font-bold">Not found</h1>
     </div>
   );
 }
@@ -293,7 +302,7 @@ export function NotFoundPageContent({
           {apId || communitySlug ? (
             <CrossInstanceResolver apId={apId} communitySlug={communitySlug} />
           ) : (
-            <h1 className="font-bold text-4xl">Not found</h1>
+            <h1 className="text-4xl font-bold">Not found</h1>
           )}
         </ContentGutters>
       </IonContent>

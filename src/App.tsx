@@ -32,8 +32,8 @@ setupIonicReact({
 });
 
 function RefreshNotificationCount() {
-  const counts = useNotificationCount() ?? [];
-  const count = _.sum(counts);
+  const counts = useNotificationCount() ?? {};
+  const count = _.sum(_.values(counts));
   if (isTauri()) {
     getCurrentWindow().setBadgeCount(count === 0 ? undefined : count);
   }

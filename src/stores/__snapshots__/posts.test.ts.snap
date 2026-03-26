@@ -2,7 +2,7 @@
 
 exports[`persisted state snapshot > posts store shape 1`] = `
 {
-  "123_https://blorpblorp.xyz/post/123": {
+  "test_123_https://blorpblorp.xyz/post/123": {
     "data": {
       "altText": null,
       "apId": "https://blorpblorp.xyz/post/123",
@@ -50,7 +50,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 exports[`persisted state snapshot > posts store shape 2`] = `
 {
   "posts": {
-    "123_https://blorpblorp.xyz/post/123": {
+    "test_123_https://blorpblorp.xyz/post/123": {
       "data": {
         "altText": null,
         "apId": "https://blorpblorp.xyz/post/123",

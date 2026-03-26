@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createStorage, sync } from "./storage";
+import { createStorage } from "./storage";
 import { isTest } from "../lib/device";
 
 type SidebarStore = {
@@ -101,5 +101,3 @@ export const useSidebarStore = create<SidebarStore>()(
     },
   ),
 );
-
-sync(useSidebarStore);

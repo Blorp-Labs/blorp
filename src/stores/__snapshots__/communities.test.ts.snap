@@ -2,7 +2,7 @@
 
 exports[`persisted state snapshot > communities store shape 1`] = `
 {
-  "123_1@blorpblorp.xyz": {
+  "test_123_1@blorpblorp.xyz": {
     "data": {
       "communityView": {
         "apId": "https://blorpblorp.xyz/c/1",
@@ -37,7 +37,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 exports[`persisted state snapshot > communities store shape 2`] = `
 {
   "communities": {
-    "123_1@blorpblorp.xyz": {
+    "test_123_1@blorpblorp.xyz": {
       "data": {
         "communityView": {
           "apId": "https://blorpblorp.xyz/c/1",

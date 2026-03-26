@@ -80,7 +80,7 @@ function AccountCard({
     <Section title={`ACCOUNT ${accountIndex + 1}`}>
       {person && (
         <SectionItem unstyled>
-          <div className="flex items-center justify-between w-full">
+          <div className="flex w-full items-center justify-between">
             <PersonCard actorId={person.apId} account={account} size="sm" />
             {getAccountSite(account)?.showNsfw && (
               <Badge variant="brand-secondary">
@@ -143,7 +143,7 @@ function AccountCard({
               message: `Are you sure you want to logout of ${person.slug ?? "this account"}`,
             }).then(() => logout.mutate(account));
           } else if (hasOtherAccounts) {
-            logoutZustand(accountIndex);
+            logoutZustand(account.uuid);
           } else {
             requireAuth();
           }
@@ -202,18 +202,18 @@ function CacheSection() {
     <>
       <Section title="STORAGE">
         <SectionItem>
-          <div className="flex-1 flex flex-col gap-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex flex-1 flex-col gap-2">
+            <span className="text-muted-foreground text-sm">
               Cache {formatSize(totalSize)}
             </span>
 
             {totalSize > 0 && (
               <div className="flex flex-col gap-2">
-                <div className="flex flex-row flex-1 gap-px rounded-md overflow-hidden">
+                <div className="flex flex-1 flex-row gap-px overflow-hidden rounded-md">
                   {cacheSizes.map(([key, size], index) => (
                     <Tooltip key={key}>
                       <TooltipTrigger
-                        className="h-6 bg-foreground/50"
+                        className="bg-foreground/50 h-6"
                         style={{
                           width: `${(size / totalSize) * 100}%`,
                           opacity:
@@ -229,15 +229,15 @@ function CacheSection() {
 
                 <div className="flex flex-row flex-wrap items-center gap-2">
                   {cacheSizes.map(([key], index) => (
-                    <div key={key} className="flex flex-row gap-1 items-center">
+                    <div key={key} className="flex flex-row items-center gap-1">
                       <div
-                        className="h-3 w-3 bg-foreground/50 rounded-full"
+                        className="bg-foreground/50 h-3 w-3 rounded-full"
                         style={{
                           opacity:
                             (cacheSizes.length - index) / cacheSizes.length,
                         }}
                       />
-                      <span className="capitalize text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm capitalize">
                         {key}
                       </span>
                     </div>
@@ -345,7 +345,7 @@ export default function SettingsPage() {
       </IonHeader>
       <IonContent fullscreen={true}>
         <ContentGutters className="pt-4 pb-12 max-md:px-3.5">
-          <div className="flex-1 gap-9 flex flex-col">
+          <div className="flex flex-1 flex-col gap-9">
             <AccountSection />
 
             <Section title="SHARING">
