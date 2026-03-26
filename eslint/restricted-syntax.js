@@ -16,4 +16,14 @@ const noDirectSelectedUuid = {
     "it handles fallback when selectedUuid points to a removed account.",
 };
 
-export const restrictions = [noDirectSelectedUuid];
+/**
+ * accountIndex is deprecated — it is kept in the v5 store schema only so that
+ * a v4 app can still parse the persisted data without throwing on downgrade.
+ * All selection logic uses selectedUuid / getSelectedAccount() instead.
+ */
+const noAccountIndex = {
+  selector: 'MemberExpression[property.name="accountIndex"]',
+  message: "accountIndex is deprecated. Use getSelectedAccount() instead.",
+};
+
+export const restrictions = [noDirectSelectedUuid, noAccountIndex];

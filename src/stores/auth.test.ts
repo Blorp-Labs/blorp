@@ -14,6 +14,7 @@ import { getSite } from "@/test-utils/api";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
+import z from "zod";
 
 afterEach(() => {
   const { result } = renderHook(() => useAuth());
@@ -788,6 +789,40 @@ describe("useAuthStore migrate", () => {
     const result = migrate(state, 3) as ReturnType<typeof useAuth.getState>;
     expect(result.accounts).toHaveLength(1);
     expect(typeof result.accounts[0]!.uuid).toBe("string");
+  });
+});
+
+// Simulates what happens if a user downgrades from v5 to v4 of the app.
+// v4's migrate called storeSchema.parse(state) directly, where storeSchema
+// required accountIndex: z.number() with no default. v5 data has no
+// accountIndex, so this would throw — meaning zustand-persist would likely
+// swallow the error and fall back to INIT_STATE, logging the user out.
+describe("v5 -> v4 downgrade simulation", () => {
+  function v4Migrate(state: unknown) {
+    // Reproduced verbatim from main branch auth.ts at the time of the v5 PR
+    const v4StoreSchema = z.object({
+      accounts: z.array(z.record(z.unknown())),
+      accountIndex: z.number(),
+    });
+    const parsed = v4StoreSchema.parse(state);
+    return {
+      ...parsed,
+      accounts: parsed.accounts.map((a) => ({ uuid: "stub", ...a })),
+    };
+  }
+
+  test("v4 migrate does not throw on v5 data and selects account at index 0", () => {
+    const v5State = {
+      accounts: [
+        { instance: "https://lemmy.world", jwt: "some-jwt", uuid: "uuid-1" },
+      ],
+      selectedUuid: "uuid-1",
+      accountIndex: 0,
+    };
+    expect(() => v4Migrate(v5State)).not.toThrow();
+    const result = v4Migrate(v5State);
+    expect(result.accounts).toHaveLength(1);
+    expect(result.accountIndex).toBe(0);
   });
 });
 

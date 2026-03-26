@@ -55,6 +55,8 @@ const storeSchema = z.object({
   accounts: z.array(accountSchema),
   selectedUuid: z.string().optional(),
   loggedOutUuids: z.array(z.string()).optional(),
+  /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
+  accountIndex: z.number().optional(),
 });
 
 export type AuthStoreData = z.infer<typeof storeSchema>;
@@ -117,6 +119,8 @@ function getNewAccount(): Account {
 
 const INIT_STATE = {
   accounts: [getNewAccount()],
+  /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
+  accountIndex: 0,
 };
 
 export const useAuth = create<AuthStore>()(
