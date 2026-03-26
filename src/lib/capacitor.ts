@@ -3,7 +3,7 @@ import { StatusBar } from "@capacitor/status-bar";
 import { SafeArea, SafeAreaInsets } from "capacitor-plugin-safe-area";
 import { Capacitor } from "@capacitor/core";
 import { TextZoom } from "@capacitor/text-zoom";
-import { isAndroid, isCapacitor } from "./device";
+import { isAndroid, isCapacitor, isIos } from "./device";
 import _ from "lodash";
 
 function registerSafeArea() {
@@ -20,7 +20,51 @@ function registerSafeArea() {
   };
 
   if (!Capacitor.isNativePlatform()) {
-    updateInsets({ insets: { top: 0, right: 0, bottom: 0, left: 0 } });
+    const readAndApplyInsets = () => {
+      const el = document.createElement("div");
+      el.style.cssText =
+        "position:fixed;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);pointer-events:none;visibility:hidden";
+      document.body.appendChild(el);
+      const style = getComputedStyle(el);
+      updateInsets({
+        insets: {
+          top: parseFloat(style.paddingTop) || 0,
+          right: parseFloat(style.paddingRight) || 0,
+          bottom: parseFloat(style.paddingBottom) || 0,
+          left: parseFloat(style.paddingLeft) || 0,
+        },
+      });
+      document.body.removeChild(el);
+    };
+
+    readAndApplyInsets();
+    window.addEventListener("resize", readAndApplyInsets);
+
+    if (window.visualViewport && isIos()) {
+      const onViewportResize = () => {
+        const keyboardHeight = Math.max(
+          0,
+          window.innerHeight - window.visualViewport!.height,
+        );
+        const wasShowing = keyboardShowing;
+        keyboardShowing = keyboardHeight > 50;
+        document.body.style.setProperty(
+          "--keyboard-height",
+          `${keyboardShowing ? keyboardHeight : 0}px`,
+        );
+        if (wasShowing !== keyboardShowing) {
+          readAndApplyInsets();
+        }
+      };
+
+      window.visualViewport.addEventListener("resize", onViewportResize);
+      // Counteract iOS scrolling the page up when keyboard opens
+      window.visualViewport.addEventListener("scroll", () => {
+        window.scrollTo(0, 0);
+        onViewportResize();
+      });
+    }
+
     return;
   }
 
