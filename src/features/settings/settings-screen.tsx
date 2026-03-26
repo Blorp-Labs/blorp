@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import {
+  APP_THEME_OPTIONS,
   DarkMode,
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
@@ -305,6 +306,9 @@ export default function SettingsPage() {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
 
+  const appTheme = useSettingsStore((s) => s.appTheme);
+  const setAppTheme = useSettingsStore((s) => s.setAppTheme);
+
   const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const setVoteDisplaySetting = useSettingsStore(
     (s) => s.setVoteDisplaySetting,
@@ -433,6 +437,17 @@ export default function SettingsPage() {
             </Section>
 
             <Section title="APPEARANCE">
+              <SectionItem>
+                <label>Theme</label>
+                <SimpleSelect
+                  options={APP_THEME_OPTIONS}
+                  value={appTheme}
+                  onChange={(opt) => setAppTheme(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
+              </SectionItem>
               <SectionItem>
                 <label>Dark / Light mode</label>
                 <SimpleSelect

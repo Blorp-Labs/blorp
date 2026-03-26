@@ -2,6 +2,7 @@
 
 exports[`persisted state snapshot > settings store initial shape 1`] = `
 {
+  "appTheme": "default",
   "collapseRemovedComments": true,
   "collapseThresholdSetting": -10,
   "darkMode": "system",

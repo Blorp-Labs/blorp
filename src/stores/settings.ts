@@ -9,6 +9,13 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
+export type AppTheme = "default" | "dracula";
+
+export const APP_THEME_OPTIONS: { label: string; value: AppTheme }[] = [
+  { value: "default", label: "Default" },
+  { value: "dracula", label: "Dracula" },
+];
+
 // How vote counts are displayed in the UI.
 // "score"    → combined score in the middle between buttons
 // "upvotes"  → upvote count on the left, separator before downvote button
@@ -96,6 +103,8 @@ type SettingsStore = {
   setHideThresholdSetting: (newVal: ThresholdSetting) => void;
   collapseRemovedComments: boolean;
   setCollapseRemovedComments: (newVal: boolean) => void;
+  appTheme: AppTheme;
+  setAppTheme: (newVal: AppTheme) => void;
   reset: () => void;
 };
 
@@ -116,6 +125,7 @@ const INIT_STATE = {
   collapseThresholdSetting: -10,
   hideThresholdSetting: "account",
   collapseRemovedComments: true,
+  appTheme: "default",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -156,6 +166,7 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ hideThresholdSetting }),
       setCollapseRemovedComments: (collapseRemovedComments) =>
         set({ collapseRemovedComments }),
+      setAppTheme: (appTheme) => set({ appTheme }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
