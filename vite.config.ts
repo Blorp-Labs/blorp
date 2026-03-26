@@ -185,6 +185,14 @@ export default defineConfig(({ mode }) => {
       ? `${explicitBase || cfPagesUrl}/`
       : "/";
 
+  // Only generate a service worker for web deployments. The same dist output
+  // is synced into Capacitor iOS/Android via `cap sync`, and a service worker
+  // there would intercept Capacitor bridge requests and trigger unexpected
+  // auto-reloads. Enable with CF_PAGES_URL (Cloudflare), VITE_BASE, or an
+  // explicit VITE_PWA=true opt-in.
+  const pwaEnabled =
+    !!cfPagesUrl || !!explicitBase || process.env["VITE_PWA"] === "true";
+
   return {
     envPrefix: "REACT_APP_",
     base,
@@ -202,27 +210,31 @@ export default defineConfig(({ mode }) => {
             }),
           ]
         : []),
-      VitePWA({
-        registerType: "autoUpdate",
-        manifestFilename: "manifest.json",
-        manifest: pwaManifest,
-        workbox: {
-          navigateFallback: "/index.html",
-          globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
-          globIgnores: ["**/index-legacy-*.js", "screenshots/**"],
-          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/.*\/api\/.*/,
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "api-cache",
-                networkTimeoutSeconds: 10,
+      ...(pwaEnabled
+        ? [
+            VitePWA({
+              registerType: "autoUpdate",
+              manifestFilename: "manifest.json",
+              manifest: pwaManifest,
+              workbox: {
+                navigateFallback: "/index.html",
+                globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
+                globIgnores: ["**/index-legacy-*.js", "screenshots/**"],
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+                runtimeCaching: [
+                  {
+                    urlPattern: /^https:\/\/.*\/api\/.*/,
+                    handler: "NetworkFirst",
+                    options: {
+                      cacheName: "api-cache",
+                      networkTimeoutSeconds: 10,
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
-      }),
+            }),
+          ]
+        : []),
       ...(hostname
         ? [
             Sitemap({
