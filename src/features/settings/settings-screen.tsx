@@ -1,7 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import {
-  APP_THEME_OPTIONS,
+  DARK_THEME_OPTIONS,
   DarkMode,
+  LIGHT_THEME_OPTIONS,
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
@@ -306,8 +307,10 @@ export default function SettingsPage() {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
 
-  const appTheme = useSettingsStore((s) => s.appTheme);
-  const setAppTheme = useSettingsStore((s) => s.setAppTheme);
+  const lightTheme = useSettingsStore((s) => s.lightTheme);
+  const setLightTheme = useSettingsStore((s) => s.setLightTheme);
+  const darkTheme = useSettingsStore((s) => s.darkTheme);
+  const setDarkTheme = useSettingsStore((s) => s.setDarkTheme);
 
   const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const setVoteDisplaySetting = useSettingsStore(
@@ -438,11 +441,22 @@ export default function SettingsPage() {
 
             <Section title="APPEARANCE">
               <SectionItem>
-                <label>Theme</label>
+                <label>Light theme</label>
                 <SimpleSelect
-                  options={APP_THEME_OPTIONS}
-                  value={appTheme}
-                  onChange={(opt) => setAppTheme(opt.value)}
+                  options={LIGHT_THEME_OPTIONS}
+                  value={lightTheme}
+                  onChange={(opt) => setLightTheme(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Dark theme</label>
+                <SimpleSelect
+                  options={DARK_THEME_OPTIONS}
+                  value={darkTheme}
+                  onChange={(opt) => setDarkTheme(opt.value)}
                   valueGetter={(opt) => opt.value}
                   labelGetter={(opt) => opt.label}
                   className="w-[160px]"

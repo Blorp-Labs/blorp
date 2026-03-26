@@ -50,14 +50,21 @@ function DarkModeEffect() {
 }
 
 function ThemeEffect() {
-  const appTheme = useSettingsStore((s) => s.appTheme);
+  const lightTheme = useSettingsStore((s) => s.lightTheme);
+  const darkTheme = useSettingsStore((s) => s.darkTheme);
   useEffect(() => {
-    if (appTheme === "default") {
-      document.documentElement.removeAttribute("data-theme");
+    const el = document.documentElement;
+    if (lightTheme === "default-light") {
+      el.removeAttribute("data-light-theme");
     } else {
-      document.documentElement.setAttribute("data-theme", appTheme);
+      el.setAttribute("data-light-theme", lightTheme);
     }
-  }, [appTheme]);
+    if (darkTheme === "default-dark") {
+      el.removeAttribute("data-dark-theme");
+    } else {
+      el.setAttribute("data-dark-theme", darkTheme);
+    }
+  }, [lightTheme, darkTheme]);
   return null;
 }
 

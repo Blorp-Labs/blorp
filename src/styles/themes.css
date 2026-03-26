@@ -1,15 +1,16 @@
 /*
  * Theme overrides
  *
- * Each theme sets --light-* and --dark-* palette variables.
- * The mode selectors in index.css decide which set to apply.
- * To add a new theme, create a new `html[data-theme="<name>"]` block
- * and override all --light-* and --dark-* variables below.
+ * Light themes override --light-* variables via `html[data-light-theme="<name>"]`.
+ * Dark themes override --dark-* variables via `html[data-dark-theme="<name>"]`.
+ * The mode selectors in index.css decide which set (light or dark) is active.
+ *
+ * "default-light" and "default-dark" are defined in index.css's :root block,
+ * so they don't need overrides here.
  */
 
-/* ── Dracula ── */
-html[data-theme="dracula"] {
-  /* Light palette (Dracula-inspired light variant) */
+/* ── Dracula Light ── */
+html[data-light-theme="dracula-light"] {
   --light-brand: #d9369e;
   --light-brand-secondary: #9669e0;
   --light-background: #f8f8f2;
@@ -43,8 +44,47 @@ html[data-theme="dracula"] {
   --light-sidebar-accent-foreground: #282a36;
   --light-sidebar-border: #d4d4cc;
   --light-sidebar-ring: #bd93f9;
+}
 
-  /* Dark palette (classic Dracula) */
+/* ── GitHub Light ── */
+html[data-light-theme="github-light"] {
+  --light-brand: #0969da;
+  --light-brand-secondary: #8250df;
+  --light-background: #ffffff;
+  --light-foreground: #1f2328;
+  --light-card: #ffffff;
+  --light-card-foreground: #1f2328;
+  --light-popover: #ffffff;
+  --light-popover-foreground: #1f2328;
+  --light-primary: #1f2328;
+  --light-primary-foreground: #ffffff;
+  --light-secondary: #f6f8fa;
+  --light-secondary-foreground: #1f2328;
+  --light-muted: #f6f8fa;
+  --light-muted-foreground: #656d76;
+  --light-accent: #f6f8fa;
+  --light-accent-foreground: #1f2328;
+  --light-destructive: #d1242f;
+  --light-border: #d1d9e0;
+  --light-input: #d1d9e0;
+  --light-ring: #0969da;
+  --light-chart-1: #0969da;
+  --light-chart-2: #1a7f37;
+  --light-chart-3: #8250df;
+  --light-chart-4: #bf8700;
+  --light-chart-5: #cf222e;
+  --light-sidebar: #f6f8fa;
+  --light-sidebar-foreground: #1f2328;
+  --light-sidebar-primary: #1f2328;
+  --light-sidebar-primary-foreground: #ffffff;
+  --light-sidebar-accent: #eaeef2;
+  --light-sidebar-accent-foreground: #1f2328;
+  --light-sidebar-border: #d1d9e0;
+  --light-sidebar-ring: #0969da;
+}
+
+/* ── Dracula Dark ── */
+html[data-dark-theme="dracula-dark"] {
   --dark-brand: #ff79c6;
   --dark-brand-secondary: #bd93f9;
   --dark-background: #282a36;
@@ -78,4 +118,41 @@ html[data-theme="dracula"] {
   --dark-sidebar-accent-foreground: #f8f8f2;
   --dark-sidebar-border: rgba(255, 255, 255, 0.08);
   --dark-sidebar-ring: #bd93f9;
+}
+
+/* ── One Dark Pro ── */
+html[data-dark-theme="one-dark-pro"] {
+  --dark-brand: #c678dd;
+  --dark-brand-secondary: #61afef;
+  --dark-background: #282c34;
+  --dark-foreground: #abb2bf;
+  --dark-card: #21252b;
+  --dark-card-foreground: #abb2bf;
+  --dark-popover: #21252b;
+  --dark-popover-foreground: #abb2bf;
+  --dark-primary: #abb2bf;
+  --dark-primary-foreground: #282c34;
+  --dark-secondary: #3e4452;
+  --dark-secondary-foreground: #abb2bf;
+  --dark-muted: #3e4452;
+  --dark-muted-foreground: #5c6370;
+  --dark-accent: #3e4452;
+  --dark-accent-foreground: #abb2bf;
+  --dark-destructive: #e06c75;
+  --dark-border: rgba(255, 255, 255, 0.1);
+  --dark-input: rgba(255, 255, 255, 0.08);
+  --dark-ring: #528bff;
+  --dark-chart-1: #c678dd;
+  --dark-chart-2: #98c379;
+  --dark-chart-3: #61afef;
+  --dark-chart-4: #e5c07b;
+  --dark-chart-5: #e06c75;
+  --dark-sidebar: #21252b;
+  --dark-sidebar-foreground: #abb2bf;
+  --dark-sidebar-primary: #61afef;
+  --dark-sidebar-primary-foreground: #abb2bf;
+  --dark-sidebar-accent: #3e4452;
+  --dark-sidebar-accent-foreground: #abb2bf;
+  --dark-sidebar-border: rgba(255, 255, 255, 0.06);
+  --dark-sidebar-ring: #528bff;
 }
