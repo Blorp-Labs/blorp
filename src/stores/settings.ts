@@ -9,19 +9,29 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
-export type LightTheme = "default-light" | "dracula-light" | "github-light";
-export type DarkTheme = "default-dark" | "dracula-dark" | "one-dark-pro";
+export type LightTheme =
+  | "default-light"
+  | "dracula-light"
+  | "github-light"
+  | "solarized-light";
+export type DarkTheme =
+  | "default-dark"
+  | "dracula-dark"
+  | "one-dark-pro"
+  | "nord";
 
 export const LIGHT_THEME_OPTIONS: { label: string; value: LightTheme }[] = [
   { value: "default-light", label: "Default" },
   { value: "dracula-light", label: "Dracula" },
   { value: "github-light", label: "GitHub" },
+  { value: "solarized-light", label: "Solarized" },
 ];
 
 export const DARK_THEME_OPTIONS: { label: string; value: DarkTheme }[] = [
   { value: "default-dark", label: "Default" },
   { value: "dracula-dark", label: "Dracula" },
   { value: "one-dark-pro", label: "One Dark Pro" },
+  { value: "nord", label: "Nord" },
 ];
 
 // How vote counts are displayed in the UI.

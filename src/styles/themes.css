@@ -156,3 +156,77 @@ html[data-dark-theme="one-dark-pro"] {
   --dark-sidebar-border: rgba(255, 255, 255, 0.06);
   --dark-sidebar-ring: #528bff;
 }
+
+/* ── Solarized Light ── */
+html[data-light-theme="solarized-light"] {
+  --light-brand: #268bd2;
+  --light-brand-secondary: #6c71c4;
+  --light-background: #fdf6e3;
+  --light-foreground: #073642;
+  --light-card: #eee8d5;
+  --light-card-foreground: #073642;
+  --light-popover: #eee8d5;
+  --light-popover-foreground: #073642;
+  --light-primary: #073642;
+  --light-primary-foreground: #fdf6e3;
+  --light-secondary: #eee8d5;
+  --light-secondary-foreground: #073642;
+  --light-muted: #eee8d5;
+  --light-muted-foreground: #586e75;
+  --light-accent: #eee8d5;
+  --light-accent-foreground: #073642;
+  --light-destructive: #dc322f;
+  --light-border: #d3cbb7;
+  --light-input: #d3cbb7;
+  --light-ring: #268bd2;
+  --light-chart-1: #268bd2;
+  --light-chart-2: #859900;
+  --light-chart-3: #6c71c4;
+  --light-chart-4: #cb4b16;
+  --light-chart-5: #2aa198;
+  --light-sidebar: #eee8d5;
+  --light-sidebar-foreground: #073642;
+  --light-sidebar-primary: #073642;
+  --light-sidebar-primary-foreground: #fdf6e3;
+  --light-sidebar-accent: #e6e0cc;
+  --light-sidebar-accent-foreground: #073642;
+  --light-sidebar-border: #d3cbb7;
+  --light-sidebar-ring: #268bd2;
+}
+
+/* ── Nord ── */
+html[data-dark-theme="nord"] {
+  --dark-brand: #88c0d0;
+  --dark-brand-secondary: #81a1c1;
+  --dark-background: #2e3440;
+  --dark-foreground: #d8dee9;
+  --dark-card: #3b4252;
+  --dark-card-foreground: #d8dee9;
+  --dark-popover: #3b4252;
+  --dark-popover-foreground: #d8dee9;
+  --dark-primary: #d8dee9;
+  --dark-primary-foreground: #2e3440;
+  --dark-secondary: #3b4252;
+  --dark-secondary-foreground: #d8dee9;
+  --dark-muted: #3b4252;
+  --dark-muted-foreground: #7b88a1;
+  --dark-accent: #3b4252;
+  --dark-accent-foreground: #d8dee9;
+  --dark-destructive: #bf616a;
+  --dark-border: rgba(255, 255, 255, 0.1);
+  --dark-input: rgba(255, 255, 255, 0.08);
+  --dark-ring: #88c0d0;
+  --dark-chart-1: #88c0d0;
+  --dark-chart-2: #a3be8c;
+  --dark-chart-3: #81a1c1;
+  --dark-chart-4: #ebcb8b;
+  --dark-chart-5: #b48ead;
+  --dark-sidebar: #292e39;
+  --dark-sidebar-foreground: #d8dee9;
+  --dark-sidebar-primary: #88c0d0;
+  --dark-sidebar-primary-foreground: #d8dee9;
+  --dark-sidebar-accent: #3b4252;
+  --dark-sidebar-accent-foreground: #d8dee9;
+  --dark-sidebar-border: rgba(255, 255, 255, 0.06);
+  --dark-sidebar-ring: #88c0d0;
+}
