@@ -547,6 +547,53 @@ describe("useAuthStore merge", () => {
       );
     });
 
+    test("preserves guest selection when both authed and guest accounts are persisted and guest is selected", () => {
+      const authedAccount = makeAccount();
+      const guest = makeAccount({ jwt: undefined });
+
+      // Both accounts are persisted, guest is the selected one
+      const persisted = {
+        accounts: [authedAccount, guest],
+        selectedUuid: guest.uuid,
+      } satisfies AuthStoreData;
+
+      // Current matches persisted exactly — this is the page-refocus / storage
+      // sync scenario where the user had guest selected and tabs back in
+      const current = {
+        ...useAuth.getState(),
+        accounts: [authedAccount, guest],
+        selectedUuid: guest.uuid,
+      } satisfies AuthStoreData;
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(guest.uuid);
+    });
+
+    test("persisted guest selection is preserved when another tab switches to an authed account", () => {
+      // Both accounts are already in storage (guest is persisted, not just
+      // in-memory). Another tab changed persisted.selectedUuid to the authed
+      // account, but this tab still has the guest selected. Because the guest
+      // exists in storage, the current tab's selection should be respected.
+      const authedAccount = makeAccount();
+      const guest = makeAccount({ jwt: undefined });
+
+      const persisted = {
+        accounts: [authedAccount, guest],
+        selectedUuid: authedAccount.uuid, // another tab changed this
+      } satisfies AuthStoreData;
+
+      const current = {
+        ...useAuth.getState(),
+        accounts: [authedAccount, guest],
+        selectedUuid: guest.uuid, // this tab still has the persisted guest selected
+      } satisfies AuthStoreData;
+
+      const result = merge(persisted, current);
+
+      expect(getSelectedAccount(result)?.uuid).toBe(guest.uuid);
+    });
+
     test("selectedUuid does not point to account logged out in another tab", () => {
       const account1 = makeAccount();
       const account2 = makeAccount();

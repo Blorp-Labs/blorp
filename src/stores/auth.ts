@@ -355,13 +355,16 @@ export const useAuth = create<AuthStore>()(
             a.uuid && !persistedByUuid[a.uuid] && !loggedOutUuids.has(a.uuid),
         );
         const allAccounts = [...mergedAccounts, ...newAccounts];
-        // The current tab's selected account always wins. Find it in the merged
-        // list by UUID so that account order differences and new accounts
-        // appended at the end don't cause the selection to silently shift.
-        const filteredCurrent = { ...current, accounts: currentLoggedIn };
-        const candidateUuid =
-          getSelectedAccount(filteredCurrent)?.uuid ??
-          persistedData.selectedUuid;
+        // The current tab's selected account always wins — but only if it
+        // survived into allAccounts. A persisted guest passes this check
+        // because it comes through mergedAccounts. An in-memory-only guest
+        // was never appended (currentLoggedIn excludes guests), so it won't
+        // be found and we fall back to the persisted selection instead.
+        const candidateUuid = allAccounts.some(
+          (a) => a.uuid === current.selectedUuid,
+        )
+          ? current.selectedUuid
+          : persistedData.selectedUuid;
         const selectedUuid = allAccounts.some((a) => a.uuid === candidateUuid)
           ? candidateUuid
           : allAccounts[0]?.uuid;
