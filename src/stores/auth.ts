@@ -12,6 +12,8 @@ import { normalizeInstance } from "../lib/utils";
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
+const MAX_LOGGED_OUT_UUIDS = 20;
+
 export function getCachePrefixer(account?: Account): CachePrefixer {
   let prefix = "";
   if (account?.uuid) {
@@ -183,7 +185,9 @@ export const useAuth = create<AuthStore>()(
             set({
               accounts: [newAccount],
               selectedUuid: newAccount.uuid,
-              loggedOutUuids: [...loggedOutUuids, logoutUuid],
+              loggedOutUuids: [...loggedOutUuids, logoutUuid].slice(
+                -MAX_LOGGED_OUT_UUIDS,
+              ),
             });
           } else {
             set({
@@ -191,7 +195,9 @@ export const useAuth = create<AuthStore>()(
               selectedUuid:
                 newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
                 _.first(newAccounts)?.uuid,
-              loggedOutUuids: [...loggedOutUuids, logoutUuid],
+              loggedOutUuids: [...loggedOutUuids, logoutUuid].slice(
+                -MAX_LOGGED_OUT_UUIDS,
+              ),
             });
           }
         }
@@ -206,7 +212,9 @@ export const useAuth = create<AuthStore>()(
           set({
             accounts: [newAccount],
             selectedUuid: newAccount.uuid,
-            loggedOutUuids: [...loggedOutUuids, ...selectedUuids],
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids].slice(
+              -MAX_LOGGED_OUT_UUIDS,
+            ),
           });
         } else {
           set({
@@ -214,7 +222,9 @@ export const useAuth = create<AuthStore>()(
             selectedUuid:
               newAccounts.find((a) => a.uuid === selectedUuid)?.uuid ??
               _.first(newAccounts)?.uuid,
-            loggedOutUuids: [...loggedOutUuids, ...selectedUuids],
+            loggedOutUuids: [...loggedOutUuids, ...selectedUuids].slice(
+              -MAX_LOGGED_OUT_UUIDS,
+            ),
           });
         }
       },
@@ -373,7 +383,7 @@ export const useAuth = create<AuthStore>()(
           ...persistedData,
           accounts: allAccounts,
           selectedUuid,
-          loggedOutUuids: [...loggedOutUuids],
+          loggedOutUuids: [...loggedOutUuids].slice(-MAX_LOGGED_OUT_UUIDS),
         };
       },
     },
