@@ -1,6 +1,7 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { parseInt } from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonAlert } from "@ionic/react";
+import { useMemo } from "react";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "@/src/routing";
@@ -22,6 +23,12 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
 import { X } from "@/src/components/icons";
+
+type ListItem =
+  | { kind: "header"; label: string }
+  | { kind: "person"; apId: string }
+  | { kind: "community"; slug: string }
+  | { kind: "instance"; domain: string; id: number };
 
 function BlockedPersonItem({
   apId,
@@ -146,39 +153,38 @@ export default function SettingsPage() {
   const blockedCommunitySlugIds = site?.communityBlocks ?? [];
   const instanceBlocks = site?.instanceBlocks ?? [];
 
-  type ListItem =
-    | { kind: "header"; label: string }
-    | { kind: "person"; apId: string }
-    | { kind: "community"; slug: string }
-    | { kind: "instance"; domain: string; id: number };
-
-  const listData: ListItem[] = [];
-  if (blockedPersonApIds.length > 0) {
-    listData.push(
-      { kind: "header", label: "BLOCKED USERS" },
-      ...blockedPersonApIds.map((apId): ListItem => ({ kind: "person", apId })),
-    );
-  }
-  if (blockedCommunitySlugIds.length > 0) {
-    listData.push(
-      { kind: "header", label: "BLOCKED COMMUNITIES" },
-      ...blockedCommunitySlugIds.map(
-        (slug): ListItem => ({ kind: "community", slug }),
-      ),
-    );
-  }
-  if (instanceBlocks.length > 0) {
-    listData.push(
-      { kind: "header", label: "BLOCKED INSTANCES" },
-      ...instanceBlocks.map(
-        (item): ListItem => ({
-          kind: "instance",
-          domain: item.domain,
-          id: item.id,
-        }),
-      ),
-    );
-  }
+  const listData = useMemo(() => {
+    const items: ListItem[] = [];
+    if (blockedPersonApIds.length > 0) {
+      items.push(
+        { kind: "header", label: "BLOCKED USERS" },
+        ...blockedPersonApIds.map(
+          (apId): ListItem => ({ kind: "person", apId }),
+        ),
+      );
+    }
+    if (blockedCommunitySlugIds.length > 0) {
+      items.push(
+        { kind: "header", label: "BLOCKED COMMUNITIES" },
+        ...blockedCommunitySlugIds.map(
+          (slug): ListItem => ({ kind: "community", slug }),
+        ),
+      );
+    }
+    if (instanceBlocks.length > 0) {
+      items.push(
+        { kind: "header", label: "BLOCKED INSTANCES" },
+        ...instanceBlocks.map(
+          (item): ListItem => ({
+            kind: "instance",
+            domain: item.domain,
+            id: item.id,
+          }),
+        ),
+      );
+    }
+    return items;
+  }, [blockedPersonApIds, blockedCommunitySlugIds, instanceBlocks]);
 
   const { person } = account
     ? parseAccountInfo(account)
