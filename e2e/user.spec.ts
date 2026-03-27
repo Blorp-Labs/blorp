@@ -3,7 +3,7 @@ import {
   RESOLVE_PERSON_RES,
   GET_PERSON_DETAILS_RES,
 } from "./lemmy-api-fixtures";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -12,6 +12,7 @@ const tabs = [
 ] as const;
 
 async function mockUserApis(page: Page) {
+  await mockNodeinfo(page, "lemmy");
   await page.route("**/api/v3/resolve_object*", (route) =>
     jsonRoute(route, RESOLVE_PERSON_RES),
   );

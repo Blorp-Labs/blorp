@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedAuth, jsonRoute } from "./test-utils";
+import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
 import { SITE_WITH_USER } from "./lemmy-api-fixtures";
 
 const TEST_JWT = "test-inbox-jwt";
@@ -8,6 +8,7 @@ const TEST_UUID = "test-inbox-uuid";
 // Mock all APIs the inbox fires when logged in — replies, mentions,
 // reports (two endpoints), and the site refresh that checks auth validity.
 async function mockInboxApis(page: Page) {
+  await mockNodeinfo(page, "lemmy");
   // Site: must return my_user so useRefreshAuth doesn't log us out
   await page.route("**/api/v3/site*", (route) =>
     jsonRoute(route, SITE_WITH_USER),

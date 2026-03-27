@@ -19,7 +19,7 @@ const tabs = [
 ] as const;
 
 async function mockPiefedFeedApis(page: Page) {
-  await mockNodeinfo(page);
+  await mockNodeinfo(page, "piefed");
   await page.route("**/api/alpha/resolve_object*", (route) =>
     jsonRoute(route, RESOLVE_FEED_RES),
   );

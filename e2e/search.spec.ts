@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -41,6 +41,7 @@ async function typeInSearchBar(
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab search`, () => {
     test("loads search results", async ({ page }) => {
+      await mockNodeinfo(page, "lemmy");
       await page.route("**/api/v3/search*", (route) =>
         jsonRoute(route, SEARCH_RES),
       );
@@ -54,6 +55,7 @@ for (const { name, base } of tabs) {
     });
 
     test("loads community search results", async ({ page }) => {
+      await mockNodeinfo(page, "lemmy");
       await page.route("**/api/v3/search*", (route) =>
         jsonRoute(route, SEARCH_RES),
       );

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import z from "zod";
 import { SITE_WITH_USER } from "./lemmy-api-fixtures";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const USERNAME = SITE_WITH_USER.my_user.local_user_view.person.name;
 const JWT = "sdfkhsdkfjhsdfkjshdfksjdhfskjdhfskjhsfsdfsdkjfhs";
@@ -21,34 +21,7 @@ test("login", async ({ page }, testInfo) => {
     return jsonRoute(route, mockPayload);
   });
 
-  await page.route("**/nodeinfo/2.1", (route) => {
-    const mockPayload = {
-      version: "2.1",
-      software: {
-        name: "lemmy",
-        version: "0.19.12-4-gd8445881a",
-        repository: "https://github.com/LemmyNet/lemmy",
-        homepage: "https://join-lemmy.org/",
-      },
-      protocols: ["activitypub"],
-      usage: {
-        users: {
-          total: 177887,
-          activeHalfyear: 29711,
-          activeMonth: 15751,
-        },
-        localPosts: 538889,
-        localComments: 5102780,
-      },
-      openRegistrations: true,
-      services: {
-        inbound: [],
-        outbound: [],
-      },
-      metadata: {},
-    };
-    return jsonRoute(route, mockPayload);
-  });
+  await mockNodeinfo(page, "lemmy");
 
   await page.route("**/api/**/user/login", async (route, request) => {
     const body = request.postDataJSON();

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { PIEFED_SITE_WITH_USER } from "./piefed-api-fixtures";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const USERNAME = "feed_owner";
 const JWT = "test-piefed-login-jwt";
@@ -20,11 +20,7 @@ test("login", async ({ page }, testInfo) => {
     ]),
   );
 
-  await page.route("**/nodeinfo/2.1*", (route) =>
-    jsonRoute(route, {
-      software: { name: "piefed", version: "1.6.0" },
-    }),
-  );
+  await mockNodeinfo(page, "piefed");
 
   await page.route("**/api/alpha/user/login", (route) =>
     jsonRoute(route, { jwt: JWT }),

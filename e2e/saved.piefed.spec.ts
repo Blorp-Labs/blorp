@@ -5,7 +5,7 @@ import { GET_FEED_POSTS_RES } from "./piefed-api-fixtures";
 // SavedContent is only rendered at /home/saved — the communities and inbox
 // tabs define the route for link generation but don't render SavedContent.
 test("saved posts load", async ({ page }) => {
-  await mockNodeinfo(page);
+  await mockNodeinfo(page, "piefed");
   await page.route("**/api/alpha/post/list*", (route) =>
     jsonRoute(route, GET_FEED_POSTS_RES),
   );

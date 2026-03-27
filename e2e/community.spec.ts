@@ -4,7 +4,7 @@ import {
   GET_COMMUNITY_RES,
   GET_COMMUNITIES_RES,
 } from "./lemmy-api-fixtures";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -15,6 +15,7 @@ const tabs = [
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab community page`, () => {
     test("posts load", async ({ page }) => {
+      await mockNodeinfo(page, "lemmy");
       await page.route("**/api/v3/post/list*", (route) =>
         jsonRoute(route, GET_POSTS_RES),
       );
@@ -28,6 +29,7 @@ for (const { name, base } of tabs) {
 
     test("community info renders", async ({ page }, testInfo) => {
       const isMobile = testInfo.project.name.includes("Mobile");
+      await mockNodeinfo(page, "lemmy");
       await page.route("**/api/v3/community*", (route) =>
         jsonRoute(route, GET_COMMUNITY_RES),
       );
@@ -50,6 +52,7 @@ for (const { name, base } of tabs) {
 // ---------------------------------------------------------------------------
 
 test("explore page loads communities", async ({ page }) => {
+  await mockNodeinfo(page, "lemmy");
   await page.route("**/api/v3/community/list*", (route) =>
     jsonRoute(route, GET_COMMUNITIES_RES),
   );

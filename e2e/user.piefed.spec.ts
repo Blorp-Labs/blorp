@@ -16,7 +16,7 @@ const USER_ACTOR_ID = "https://piefed.social/u/feed_owner";
 const ENCODED_USER_ACTOR_ID = encodeURIComponent(USER_ACTOR_ID);
 
 async function mockUserApis(page: Page) {
-  await mockNodeinfo(page);
+  await mockNodeinfo(page, "piefed");
   // resolve_object is needed when the logged-out default instance differs
   // from piefed.social — piefed's resolveObjectId calls it for remote actors.
   await page.route("**/api/alpha/resolve_object*", (route) =>

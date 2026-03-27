@@ -5,7 +5,7 @@ const TEST_JWT = "test-piefed-inbox-jwt";
 const TEST_UUID = "test-piefed-inbox-uuid";
 
 async function mockInboxApis(page: Page) {
-  await mockNodeinfo(page);
+  await mockNodeinfo(page, "piefed");
   await page.route("**/api/alpha/user/replies*", (route) =>
     jsonRoute(route, { replies: [] }),
   );

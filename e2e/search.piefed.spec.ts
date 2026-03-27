@@ -11,7 +11,7 @@ const tabs = [
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab search`, () => {
     test("loads search results", async ({ page }) => {
-      await mockNodeinfo(page);
+      await mockNodeinfo(page, "piefed");
       await page.route("**/api/alpha/search*", (route) =>
         jsonRoute(route, SEARCH_RES),
       );
@@ -26,7 +26,7 @@ for (const { name, base } of tabs) {
     });
 
     test("loads community search results", async ({ page }) => {
-      await mockNodeinfo(page);
+      await mockNodeinfo(page, "piefed");
       await page.route("**/api/alpha/search*", (route) =>
         jsonRoute(route, SEARCH_RES),
       );

@@ -5,7 +5,7 @@ import {
   POST_LIKE_RES,
   SITE_WITH_USER,
 } from "./lemmy-api-fixtures";
-import { seedAuth, jsonRoute } from "./test-utils";
+import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -23,6 +23,7 @@ function postUrl(base: string) {
 }
 
 async function mockPostApis(page: Page) {
+  await mockNodeinfo(page, "lemmy");
   await page.route("**/api/v3/post*", (route) =>
     jsonRoute(route, GET_POST_RES),
   );

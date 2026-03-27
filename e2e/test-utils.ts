@@ -24,10 +24,17 @@ export async function jsonRoute(
   });
 }
 
-/** Mocks the nodeinfo endpoint so the app detects the instance as piefed. */
-export async function mockNodeinfo(page: Page) {
+const NODEINFO_VERSIONS: Record<"lemmy" | "piefed", string> = {
+  lemmy: "0.19.12",
+  piefed: "1.6.0",
+};
+
+/** Mocks the nodeinfo endpoint so the app detects the correct instance software. */
+export async function mockNodeinfo(page: Page, software: "lemmy" | "piefed") {
   await page.route("**/nodeinfo/2.1*", (route) =>
-    jsonRoute(route, { software: { name: "piefed", version: "1.6.0" } }),
+    jsonRoute(route, {
+      software: { name: software, version: NODEINFO_VERSIONS[software] },
+    }),
   );
 }
 

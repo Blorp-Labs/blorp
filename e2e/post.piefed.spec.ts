@@ -47,7 +47,7 @@ async function mockPostApis(page: Page) {
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab post page`, () => {
     test("post and comments load", async ({ page }) => {
-      await mockNodeinfo(page);
+      await mockNodeinfo(page, "piefed");
       await mockPostApis(page);
       await page.goto(postUrl(base));
 
@@ -78,7 +78,7 @@ test("upvoting a post hits the vote endpoint", async ({ page }) => {
     jwt: "test-piefed-post-jwt",
     uuid: "test-piefed-post-uuid",
   });
-  await mockNodeinfo(page);
+  await mockNodeinfo(page, "piefed");
   await mockPostApis(page);
 
   await page.goto(postUrl("/home/"));

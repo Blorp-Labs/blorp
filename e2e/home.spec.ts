@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { GET_POSTS_RES } from "./lemmy-api-fixtures";
-import { jsonRoute } from "./test-utils";
+import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 test("home feed loads posts", async ({ page }) => {
+  await mockNodeinfo(page, "lemmy");
   await page.route("**/api/v3/post/list*", (route) =>
     jsonRoute(route, GET_POSTS_RES),
   );
