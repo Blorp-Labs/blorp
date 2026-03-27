@@ -6,7 +6,7 @@ import {
   GET_FEED_POSTS_RES,
   FEED_OWNER_VIEW,
   GET_FEED_LIST_RES,
-} from "./piefed-api-fixtures";
+} from "../test-utils/piefed-api-fixtures";
 
 // The feed actor_id used in fixtures and URL construction.
 const FEED_ACTOR_ID = "https://piefed.social/f/42";

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { PIEFED_SITE_WITH_USER } from "./piefed-api-fixtures";
+import { PIEFED_SITE_WITH_USER } from "../test-utils/piefed-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const USERNAME = "feed_owner";

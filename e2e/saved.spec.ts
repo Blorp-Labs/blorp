@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { GET_POSTS_RES, GET_COMMENTS_RES } from "./lemmy-api-fixtures";
+import {
+  GET_POSTS_RES,
+  GET_COMMENTS_RES,
+} from "../test-utils/lemmy-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 // SavedContent is only rendered at /home/saved — the communities and inbox

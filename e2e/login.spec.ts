@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import z from "zod";
-import { SITE_WITH_USER } from "./lemmy-api-fixtures";
+import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const USERNAME = SITE_WITH_USER.my_user.local_user_view.person.name;

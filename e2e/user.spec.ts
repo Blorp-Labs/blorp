@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import {
   RESOLVE_PERSON_RES,
   GET_PERSON_DETAILS_RES,
-} from "./lemmy-api-fixtures";
+} from "../test-utils/lemmy-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [

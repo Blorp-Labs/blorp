@@ -4,7 +4,7 @@ import {
   RESOLVE_PERSON_RES,
   GET_USER_RES,
   GET_FEED_POSTS_RES,
-} from "./piefed-api-fixtures";
+} from "../test-utils/piefed-api-fixtures";
 
 const tabs = [
   { name: "home", base: "/home/" },

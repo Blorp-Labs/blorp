@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { mockNodeinfo, jsonRoute } from "./test-utils";
-import { GET_FEED_POSTS_RES } from "./piefed-api-fixtures";
+import { GET_FEED_POSTS_RES } from "../test-utils/piefed-api-fixtures";
 
 // SavedContent is only rendered at /home/saved — the communities and inbox
 // tabs define the route for link generation but don't render SavedContent.

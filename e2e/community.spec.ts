@@ -3,7 +3,7 @@ import {
   GET_POSTS_RES,
   GET_COMMUNITY_RES,
   GET_COMMUNITIES_RES,
-} from "./lemmy-api-fixtures";
+} from "../test-utils/lemmy-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [

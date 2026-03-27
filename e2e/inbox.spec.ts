@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
-import { SITE_WITH_USER } from "./lemmy-api-fixtures";
+import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 
 const TEST_JWT = "test-inbox-jwt";
 const TEST_UUID = "test-inbox-uuid";

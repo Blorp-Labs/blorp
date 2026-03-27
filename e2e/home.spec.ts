@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { GET_POSTS_RES } from "./lemmy-api-fixtures";
+import { GET_POSTS_RES } from "../test-utils/lemmy-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 test("home feed loads posts", async ({ page }) => {

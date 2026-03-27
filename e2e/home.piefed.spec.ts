@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { mockNodeinfo, jsonRoute } from "./test-utils";
-import { GET_FEED_POSTS_RES } from "./piefed-api-fixtures";
+import { GET_FEED_POSTS_RES } from "../test-utils/piefed-api-fixtures";
 
 test("home feed loads posts", async ({ page }) => {
   await mockNodeinfo(page, "piefed");

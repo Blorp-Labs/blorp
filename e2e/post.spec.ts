@@ -4,7 +4,7 @@ import {
   GET_COMMENTS_RES,
   POST_LIKE_RES,
   SITE_WITH_USER,
-} from "./lemmy-api-fixtures";
+} from "../test-utils/lemmy-api-fixtures";
 import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
 
 const tabs = [

@@ -4,7 +4,7 @@ import {
   GET_POST_REPLIES_RES,
   POST_LIKE_RES,
   RESOLVE_POST_RES,
-} from "./piefed-api-fixtures";
+} from "../test-utils/piefed-api-fixtures";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 
 const tabs = [

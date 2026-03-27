@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { mockNodeinfo, jsonRoute } from "./test-utils";
-import { SEARCH_RES } from "./piefed-api-fixtures";
+import { SEARCH_RES } from "../test-utils/piefed-api-fixtures";
 
 const tabs = [
   { name: "home", base: "/home/" },
