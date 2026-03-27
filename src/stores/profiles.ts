@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CacheKey, CachePrefixer, useAuth } from "./auth";
+import { Account, CacheKey, CachePrefixer, useAuth } from "./auth";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 
@@ -138,9 +138,9 @@ export const useProfilesStore = create<ProfilesStore>()(
 
 sync(useProfilesStore);
 
-export function useProfileFromStore(apId?: string) {
+export function useProfileFromStore(apId?: string, account?: Account) {
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   return useProfilesStore((s) =>
-    apId ? s.profiles[getCachePrefixer()(apId)]?.data : undefined,
+    apId ? s.profiles[getCachePrefixer(account)(apId)]?.data : undefined,
   );
 }

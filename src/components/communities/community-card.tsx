@@ -8,9 +8,9 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { Account, useAuth, useShouldBlurNsfw } from "@/src/stores/auth";
+import { Account, useShouldBlurNsfw } from "@/src/stores/auth";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 
@@ -29,13 +29,10 @@ export function CommunityCard({
   size?: "sm" | "md";
   account?: Account;
 }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const fromRecent = useRecentCommunitiesStore((s) => {
     return s.recentlyVisited.find((r) => r.slug === communitySlug);
   });
-  const fromCommunityCache = useCommunitiesStore((s) => {
-    return s.communities[getCachePrefixer(account)(communitySlug)]?.data;
-  });
+  const fromCommunityCache = useCommunityFromStore(communitySlug, account);
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 
   const blurNsfw = useShouldBlurNsfw();

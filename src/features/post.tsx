@@ -27,7 +27,7 @@ import {
 import { getAccountSite, useAmIAdmin, useAuth } from "../stores/auth";
 import { VirtualList } from "../components/virtual-list";
 import { PostReportProvider } from "../components/posts/post-report";
-import { usePostsStore } from "../stores/posts";
+import { usePostFromStore } from "../stores/posts";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { UserDropdown } from "../components/nav";
@@ -258,10 +258,7 @@ export default function Post() {
     ap_id: decodedApId,
   });
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) =>
-    decodedApId ? s.posts[getCachePrefixer()(decodedApId)]?.data : null,
-  );
+  const post = usePostFromStore(decodedApId ?? undefined);
 
   const locked = post?.optimisticLocked ?? post?.locked ?? false;
 

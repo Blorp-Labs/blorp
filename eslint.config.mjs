@@ -4,6 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import unusedImports from "eslint-plugin-unused-imports";
 import { restrictions } from "./eslint/restricted-syntax.js";
+import { importRestrictions } from "./eslint/restricted-imports.js";
 
 export default tseslint.config(
   {
@@ -57,10 +58,11 @@ export default tseslint.config(
       "no-useless-assignment": "warn",
       curly: ["warn", "all"],
       "no-restricted-syntax": ["error", ...restrictions],
+      "no-restricted-imports": ["error", importRestrictions],
     },
   },
   {
-    files: ["src/stores/auth.ts", "**/*.test.ts", "**/*.test.tsx"],
+    files: ["src/stores/**", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "no-restricted-syntax": "off",
     },

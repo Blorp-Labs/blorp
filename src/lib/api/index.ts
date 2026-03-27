@@ -9,13 +9,14 @@ import { useFiltersStore } from "@/src/stores/filters";
 import {
   Account,
   getAccountSite,
-  getCachePrefixer,
   parseAccountInfo,
   useAuth,
 } from "../../stores/auth";
+// eslint-disable-next-line no-restricted-imports -- intentional: useRefreshAuth iterates multiple accounts and must scope each cache write to a specific account explicitly
+import { getCachePrefixer } from "../../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostsStore } from "../../stores/posts";
+import { usePostFromStore, usePostsStore } from "../../stores/posts";
 import { useSettingsStore } from "../../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../../stores/comments";
@@ -262,12 +263,9 @@ export function usePost({
 
   const queryKey = [...queryKeyPrefix, "getPost", apId];
 
+  const initialData = usePostFromStore(apId);
+
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-
-  const initialData = usePostsStore((s) =>
-    apId ? s.posts[getCachePrefixer()(apId)]?.data : undefined,
-  );
-
   const cachePosts = usePostsStore((s) => s.cachePosts);
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);

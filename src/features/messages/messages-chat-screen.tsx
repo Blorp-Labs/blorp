@@ -6,12 +6,11 @@ import {
   useMarkPriavteMessageRead,
   usePrivateMessages,
 } from "@/src/lib/api";
-import { decodeApId, encodeApId } from "@/src/lib/api/utils";
+import { decodeApId } from "@/src/lib/api/utils";
 import { cn } from "@/src/lib/utils";
 import { Link, useParams } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
-import _ from "lodash";
 import {
   useCallback,
   useEffect,
@@ -23,7 +22,7 @@ import {
 import { VirtualizerHandle, Virtualizer } from "virtua";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import TextareaAutosize from "react-textarea-autosize";
 import { Send } from "@/src/components/icons";
@@ -49,10 +48,7 @@ export default function Messages() {
   const encodedOtherActorId = useParams("/messages/chat/:userId").userId;
   const otherActorId = decodeApId(encodedOtherActorId);
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const person = useProfilesStore(
-    (s) => s.profiles[getCachePrefixer()(otherActorId)]?.data,
-  );
+  const person = useProfileFromStore(otherActorId);
   const [signal, setSignal] = useState(0);
   const chat = usePrivateMessages({});
 

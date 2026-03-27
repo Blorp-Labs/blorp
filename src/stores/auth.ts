@@ -14,7 +14,7 @@ export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
 const MAX_LOGGED_OUT_UUIDS = 20;
 
-export function getCachePrefixer(account?: Account): CachePrefixer {
+export function getCachePrefixer(account: Account | undefined): CachePrefixer {
   let prefix = "";
   if (account?.uuid) {
     prefix += `${account.uuid}_`;

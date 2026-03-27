@@ -9,8 +9,7 @@ import {
   HoverCardTrigger,
 } from "@/src/components/ui/hover-card";
 import { useState } from "react";
-import { useProfilesStore } from "@/src/stores/profiles";
-import { useAuth } from "@/src/stores/auth";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { AggregateBadges } from "../aggregates";
 import { DateTime } from "../datetime";
 import { PersonBadge } from "./person-badge";
@@ -32,10 +31,7 @@ export function PersonHoverCard({
   const [enabled, setEnabled] = useState(false);
 
   usePersonDetails({ actorId, enabled });
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const personView = useProfilesStore((s) =>
-    actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
-  );
+  const personView = useProfileFromStore(actorId);
   const createdAt = personView ? dayjs(personView.createdAt) : null;
 
   return (

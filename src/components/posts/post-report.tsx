@@ -1,8 +1,8 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore } from "@/src/stores/posts";
 import { useCreatePostReport, useCreateCommentReport } from "@/src/lib/api";
-import { useCommentsStore } from "@/src/stores/comments";
+import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,
   IonContent,
@@ -14,7 +14,6 @@ import {
 import { Button, LoadingButton } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
-import { useAuth } from "@/src/stores/auth";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 
 const Context = createContext<{
@@ -39,13 +38,8 @@ export function PostReportProvider({
   const createPostReport = useCreatePostReport();
   const createCommentReport = useCreateCommentReport();
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) =>
-    apId ? s.posts[getCachePrefixer()(apId)]?.data : null,
-  );
-  const comment = useCommentsStore((s) =>
-    commentPath ? s.comments[getCachePrefixer()(commentPath)] : null,
-  );
+  const post = usePostFromStore(apId ?? undefined);
+  const [comment] = useCommentsByPaths(commentPath ? [commentPath] : []);
 
   const value = useMemo(
     () => ({
@@ -71,7 +65,7 @@ export function PostReportProvider({
     } else if (comment) {
       createCommentReport
         .mutateAsync({
-          commentId: comment.data.id,
+          commentId: comment.id,
           reason,
         })
         .then(() => {
@@ -135,7 +129,7 @@ export function PostReportProvider({
               <div className="p-3 bg-secondary rounded-lg max-h-[250px] overflow-auto">
                 {post && <span className="font-bold">{post?.title}</span>}
 
-                {comment && <MarkdownRenderer markdown={comment.data.body} />}
+                {comment && <MarkdownRenderer markdown={comment.body} />}
               </div>
 
               <Textarea

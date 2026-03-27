@@ -13,17 +13,17 @@ import { useSettingsStore } from "../stores/settings";
 import { decodeApId, encodeApId } from "../lib/api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
-import { useCommentsStore } from "../stores/comments";
+import { useCommentsByPaths } from "../stores/comments";
 import { useLinkContext } from "../routing/link-context";
-import { useProfilesStore } from "../stores/profiles";
-import { usePostsStore } from "../stores/posts";
+import { useProfileFromStore } from "../stores/profiles";
+import { usePostFromStore } from "../stores/posts";
 import { Link, resolveRoute, useParams } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { useMedia, useUrlSearchState } from "../lib/hooks";
 import { PostReportProvider } from "../components/posts/post-report";
-import { useAuth, useIsPersonBlocked } from "../stores/auth";
+import { useIsPersonBlocked } from "../stores/auth";
 import z from "zod";
 import {
   PersonSidebar,
@@ -56,14 +56,8 @@ const Post = memo((props: PostProps) => (
 ));
 
 const Comment = memo(function Comment({ path }: { path: string }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const commentView = useCommentsStore(
-    (s) => s.comments[getCachePrefixer()(path)]?.data,
-  );
-  const postView = usePostsStore((s) => {
-    const postApId = commentView?.postApId;
-    return postApId ? s.posts[getCachePrefixer()(postApId)]?.data : null;
-  });
+  const [commentView] = useCommentsByPaths([path]);
+  const postView = usePostFromStore(commentView?.postApId);
   const linkCtx = useLinkContext();
 
   const actions = useCommentActions({ commentView });
@@ -153,10 +147,7 @@ export default function User() {
 
   const { refetch, data: queryData, isFetching } = query;
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const person = useProfilesStore((s) =>
-    actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
-  );
+  const person = useProfileFromStore(actorId);
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 

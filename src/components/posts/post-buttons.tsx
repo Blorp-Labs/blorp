@@ -13,10 +13,9 @@ import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { useLinkContext } from "../../routing/link-context";
-import { useAuth } from "@/src/stores/auth";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore } from "@/src/stores/posts";
 import {
   shareImage,
   useShareActions,
@@ -49,10 +48,7 @@ import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 
 export function usePostVoting(apId?: string) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const postView = usePostsStore((s) =>
-    apId ? s.posts[getCachePrefixer()(apId)]?.data : null,
-  );
+  const postView = usePostFromStore(apId);
 
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
   const scoreDisplay = useScoreDisplay();
@@ -72,7 +68,9 @@ export function usePostVoting(apId?: string) {
     [requireAuth, mutateVote, voteHaptics],
   );
 
-  if (!postView) return null;
+  if (!postView) {
+    return null;
+  }
 
   const {
     displayUpvotes,
@@ -116,14 +114,15 @@ export function PostEmojiReactions({
   apId: string;
   className?: string;
 }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) => s.posts[getCachePrefixer()(apId)]?.data);
+  const post = usePostFromStore(apId);
   const addReactionEmoji = useAddPostReactionEmoji();
   const requireAuth = useRequireAuth();
 
   const allReactions = post ? getPostEmojiReactions(post) : [];
   const reactions = allReactions.slice(0, MAX_REACTIONS);
-  if (reactions.length === 0) return null;
+  if (reactions.length === 0) {
+    return null;
+  }
 
   if (reactions.length > 3) {
     return (
@@ -401,10 +400,7 @@ export function PostCommentsButton({
   className?: string;
   variant?: "outline" | "ghost";
 }): React.ReactNode {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const postView = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(postApId)]?.data,
-  );
+  const postView = usePostFromStore(postApId);
 
   const linkCtx = useLinkContext();
   if (!onClick && postView?.communitySlug && postApId) {
@@ -501,10 +497,7 @@ export function PostShareButton({
   postApId: string;
   className?: string;
 }): React.ReactNode {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore(
-    (s) => s.posts[getCachePrefixer()(postApId)]?.data,
-  );
+  const post = usePostFromStore(postApId);
 
   const actions = usePostShareActions({ post });
 

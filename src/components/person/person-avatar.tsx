@@ -4,8 +4,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
-import { useAuth } from "@/src/stores/auth";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 
 export function PersonAvatar({
@@ -19,10 +18,7 @@ export function PersonAvatar({
   size?: "xs" | "sm" | "md";
   className?: string;
 }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const personView = useProfilesStore((s) =>
-    actorId ? s.profiles[getCachePrefixer()(actorId)]?.data : undefined,
-  );
+  const personView = useProfileFromStore(actorId);
   return (
     <Avatar
       className={cn(

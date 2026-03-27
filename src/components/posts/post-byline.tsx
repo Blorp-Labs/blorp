@@ -26,10 +26,7 @@ import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import {
-  useCommunitiesStore,
-  useCommunityFromStore,
-} from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useCommunityActions } from "@/src/components/communities/community-sidebar";
 import { useTagUserStore } from "@/src/stores/user-tags";
@@ -301,11 +298,8 @@ export function PostByline({
 
   const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const creator = useProfileFromStore(post.creatorApId);
-  const community = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(post.communitySlug)]?.data,
-  );
+  const community = useCommunityFromStore(post.communitySlug);
   const blurNsfw = useShouldBlurNsfw();
   const isRevealed = useNsfwRevealedPostsStore(
     (s) => !!(detailView && s.isRevealed(post.apId)),

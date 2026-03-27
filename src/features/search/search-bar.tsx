@@ -8,16 +8,15 @@ import {
 } from "@/src/components/ui/command";
 import { useSearch } from "@/src/lib/api";
 import { cn } from "@/src/lib/utils";
-import { useAuth } from "@/src/stores/auth";
-import { usePostsStore } from "@/src/stores/posts";
+import { usePostFromStore } from "@/src/stores/posts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
-import { useProfilesStore } from "@/src/stores/profiles";
+import { useProfileFromStore } from "@/src/stores/profiles";
 import { useLinkContext } from "@/src/routing/link-context";
 import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
 import { encodeApId } from "@/src/lib/api/utils";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import type { Forms } from "@/src/lib/api/adapters/api-blueprint";
 import {
   useDebouncedState,
@@ -28,10 +27,7 @@ import { isIos, isMacOs } from "@/src/lib/device";
 import { useSearchStore } from "@/src/stores/search";
 
 function CommunitySearchResult({ apId }: { apId: string }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const community = useCommunitiesStore(
-    (s) => s.communities[getCachePrefixer()(apId)]?.data,
-  );
+  const community = useCommunityFromStore(apId);
 
   const router = useIonRouter();
   const linkCtx = useLinkContext();
@@ -62,8 +58,7 @@ function CommunitySearchResult({ apId }: { apId: string }) {
 }
 
 function PostSearchResult({ apId }: { apId: string }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = usePostsStore((s) => s.posts[getCachePrefixer()(apId)]?.data);
+  const post = usePostFromStore(apId);
 
   const router = useIonRouter();
   const linkCtx = useLinkContext();
@@ -95,15 +90,12 @@ function PostSearchResult({ apId }: { apId: string }) {
 }
 
 function UserSearchResult({ apId }: { apId: string }) {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const post = useProfilesStore(
-    (s) => s.profiles[getCachePrefixer()(apId)]?.data,
-  );
+  const person = useProfileFromStore(apId);
 
   const router = useIonRouter();
   const linkCtx = useLinkContext();
 
-  if (!post) {
+  if (!person) {
     return null;
   }
 
@@ -117,12 +109,12 @@ function UserSearchResult({ apId }: { apId: string }) {
   return (
     <CommandItem
       value={apId}
-      keywords={[post.slug]}
+      keywords={[person.slug]}
       onSelect={onSelect}
       onClick={onSelect}
     >
       <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-        {post.slug}
+        {person.slug}
       </span>
     </CommandItem>
   );

@@ -1,9 +1,9 @@
 import { Deferred } from "@/src/lib/deferred";
 import { LoadingButton } from "../ui/button";
 import { useFollowCommunity } from "@/src/lib/api/index";
-import { useAuth } from "@/src/stores/auth";
-import { useCommunitiesStore } from "@/src/stores/communities";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { useIonAlert } from "@ionic/react";
+import { useAuth } from "@/src/stores/auth";
 
 interface Props {
   communityName: string | undefined;
@@ -16,12 +16,7 @@ export function CommunityJoinButton({ communityName, ...props }: Props) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const follow = useFollowCommunity();
 
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cache = useCommunitiesStore((s) =>
-    communityName ? s.communities[getCachePrefixer()(communityName)] : null,
-  );
-
-  const data = cache?.data;
+  const data = useCommunityFromStore(communityName);
   const subscribed =
     data?.communityView.optimisticSubscribed ?? data?.communityView.subscribed;
 
@@ -35,7 +30,7 @@ export function CommunityJoinButton({ communityName, ...props }: Props) {
     copy = "Joined";
   }
 
-  const communityView = cache?.data.communityView;
+  const communityView = data?.communityView;
 
   if (!isLoggedIn) {
     return null;
