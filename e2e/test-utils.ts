@@ -6,10 +6,6 @@ import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
 // createStorage() uses rowName "zustand" and the auth store uses name "auth".
 const AUTH_IDB_KEY = "zustand_auth";
 
-/**
- * Seeds the Zustand auth store's IndexedDB entry before the app initialises,
- * so that isLoggedIn() returns true on first render.
- */
 /** Fulfills a route with a JSON response and permissive CORS headers. */
 export async function jsonRoute(
   route: Route,

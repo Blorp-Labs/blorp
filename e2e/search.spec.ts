@@ -66,6 +66,8 @@ for (const { name, base } of tabs) {
   });
 }
 
+// No API mocks needed — this test only checks that the search input values are
+// independent across tabs. It doesn't assert on any loaded results.
 test("editing search on one tab does not affect another tab's search", async ({
   page,
 }, testInfo) => {

@@ -20,6 +20,10 @@ const relativeTime = () =>
 
 const API_ROOT = "https://blorpblorp.xyz";
 
+const BODY_TEXT_PARAGRAPH =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+const BODY_TEXT = _.repeat(BODY_TEXT_PARAGRAPH + "\n\n", 3);
+
 const POST_ID = uuid();
 const PERSON_ID = uuid();
 const COMMUNITY_ID = uuid();
@@ -118,7 +122,7 @@ export function getPost(config?: {
 
   switch (config?.variant) {
     case "text": {
-      view.post.body = config?.postView?.post?.body ?? view.post.body;
+      view.post.body = config?.postView?.post?.body ?? BODY_TEXT;
       break;
     }
     case "image": {

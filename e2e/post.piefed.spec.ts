@@ -22,6 +22,7 @@ function postUrl(base: string) {
 }
 
 async function mockPostApis(page: Page) {
+  await mockNodeinfo(page, "piefed");
   // resolve_object needed when the post AP ID is on a different instance than
   // the selected account (e.g. logged-out breadth tests using the default
   // lemmy.zip instance to view a piefed.social post).
@@ -47,7 +48,6 @@ async function mockPostApis(page: Page) {
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab post page`, () => {
     test("post and comments load", async ({ page }) => {
-      await mockNodeinfo(page, "piefed");
       await mockPostApis(page);
       await page.goto(postUrl(base));
 
@@ -78,7 +78,6 @@ test("upvoting a post hits the vote endpoint", async ({ page }) => {
     jwt: "test-piefed-post-jwt",
     uuid: "test-piefed-post-uuid",
   });
-  await mockNodeinfo(page, "piefed");
   await mockPostApis(page);
 
   await page.goto(postUrl("/home/"));
