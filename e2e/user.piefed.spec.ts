@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { mockNodeinfo } from "./test-utils";
+import { mockNodeinfo, jsonRoute } from "./test-utils";
 import {
   RESOLVE_PERSON_RES,
   GET_USER_RES,
@@ -19,31 +19,16 @@ async function mockUserApis(page: Page) {
   await mockNodeinfo(page);
   // resolve_object is needed when the logged-out default instance differs
   // from piefed.social — piefed's resolveObjectId calls it for remote actors.
-  await page.route("**/api/alpha/resolve_object*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(RESOLVE_PERSON_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/user*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_USER_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/resolve_object*", (route) =>
+    jsonRoute(route, RESOLVE_PERSON_RES),
+  );
+  await page.route("**/api/alpha/user*", (route) =>
+    jsonRoute(route, GET_USER_RES),
+  );
   // The posts tab fetches user posts via post/list (not from the user response)
-  await page.route("**/api/alpha/post/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_FEED_POSTS_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/post/list*", (route) =>
+    jsonRoute(route, GET_FEED_POSTS_RES),
+  );
 }
 
 for (const { name, base } of tabs) {

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { jsonRoute } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -40,17 +41,9 @@ async function typeInSearchBar(
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab search`, () => {
     test("loads search results", async ({ page }) => {
-      await page.route("**/api/v3/search*", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(SEARCH_RES),
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-        });
-      });
+      await page.route("**/api/v3/search*", (route) =>
+        jsonRoute(route, SEARCH_RES),
+      );
       await page.goto(`${base}s?q=linux+phone`);
       const postCard = page
         .getByTestId(base === "/communities/" ? "community-card" : "post-card")
@@ -61,17 +54,9 @@ for (const { name, base } of tabs) {
     });
 
     test("loads community search results", async ({ page }) => {
-      await page.route("**/api/v3/search*", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(SEARCH_RES),
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-        });
-      });
+      await page.route("**/api/v3/search*", (route) =>
+        jsonRoute(route, SEARCH_RES),
+      );
       await page.goto(`${base}c/programmer_humor@programming.dev/s?q=linux`);
       const postCard = page.getByTestId("post-card").first();
       await expect(postCard).toContainText("programmer_humor@programming.dev");

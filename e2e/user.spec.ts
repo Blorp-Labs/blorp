@@ -3,6 +3,7 @@ import {
   RESOLVE_PERSON_RES,
   GET_PERSON_DETAILS_RES,
 } from "./lemmy-api-fixtures";
+import { jsonRoute } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -11,28 +12,12 @@ const tabs = [
 ] as const;
 
 async function mockUserApis(page: Page) {
-  await page.route("**/api/v3/resolve_object*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(RESOLVE_PERSON_RES),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
-  });
-  await page.route("**/api/v3/user*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_PERSON_DETAILS_RES),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
-  });
+  await page.route("**/api/v3/resolve_object*", (route) =>
+    jsonRoute(route, RESOLVE_PERSON_RES),
+  );
+  await page.route("**/api/v3/user*", (route) =>
+    jsonRoute(route, GET_PERSON_DETAILS_RES),
+  );
 }
 
 for (const { name, base } of tabs) {

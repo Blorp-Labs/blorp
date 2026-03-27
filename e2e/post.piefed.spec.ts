@@ -5,7 +5,7 @@ import {
   POST_LIKE_RES,
   RESOLVE_POST_RES,
 } from "./piefed-api-fixtures";
-import { seedAuth, mockNodeinfo } from "./test-utils";
+import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -25,39 +25,19 @@ async function mockPostApis(page: Page) {
   // resolve_object needed when the post AP ID is on a different instance than
   // the selected account (e.g. logged-out breadth tests using the default
   // lemmy.zip instance to view a piefed.social post).
-  await page.route("**/api/alpha/resolve_object*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(RESOLVE_POST_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/resolve_object*", (route) =>
+    jsonRoute(route, RESOLVE_POST_RES),
+  );
   // post/like must be registered before the broader /post* pattern
-  await page.route("**/api/alpha/post/like*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(POST_LIKE_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/post*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_POST_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/post/replies*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_POST_REPLIES_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/post/like*", (route) =>
+    jsonRoute(route, POST_LIKE_RES),
+  );
+  await page.route("**/api/alpha/post*", (route) =>
+    jsonRoute(route, GET_POST_RES),
+  );
+  await page.route("**/api/alpha/post/replies*", (route) =>
+    jsonRoute(route, GET_POST_REPLIES_RES),
+  );
 }
 
 // ---------------------------------------------------------------------------

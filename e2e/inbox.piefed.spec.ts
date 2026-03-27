@@ -1,27 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedAuth, mockNodeinfo } from "./test-utils";
+import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 
 const TEST_JWT = "test-piefed-inbox-jwt";
 const TEST_UUID = "test-piefed-inbox-uuid";
 
 async function mockInboxApis(page: Page) {
   await mockNodeinfo(page);
-  await page.route("**/api/alpha/user/replies*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ replies: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/user/mention*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ mentions: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/user/replies*", (route) =>
+    jsonRoute(route, { replies: [] }),
+  );
+  await page.route("**/api/alpha/user/mention*", (route) =>
+    jsonRoute(route, { mentions: [] }),
+  );
   // piefed reports are NOT_IMPLEMENTED — no report mocks needed
 }
 

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { PIEFED_SITE_WITH_USER } from "./piefed-api-fixtures";
+import { jsonRoute } from "./test-utils";
 
 const USERNAME = "feed_owner";
 const JWT = "test-piefed-login-jwt";
@@ -7,54 +8,34 @@ const JWT = "test-piefed-login-jwt";
 test("login", async ({ page }, testInfo) => {
   const isMobile = testInfo.project.name.includes("Mobile");
 
-  await page.route("**/v1/instances.json", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        {
-          url: "https://piefed.social",
-          host: "piefed.social",
-          description: "A general-purpose PieFed server.",
-          software: "piefed",
-          registrationMode: "Open",
-        },
-      ]),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/v1/instances.json", (route) =>
+    jsonRoute(route, [
+      {
+        url: "https://piefed.social",
+        host: "piefed.social",
+        description: "A general-purpose PieFed server.",
+        software: "piefed",
+        registrationMode: "Open",
+      },
+    ]),
+  );
 
-  await page.route("**/nodeinfo/2.1*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        software: { name: "piefed", version: "1.6.0" },
-      }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/nodeinfo/2.1*", (route) =>
+    jsonRoute(route, {
+      software: { name: "piefed", version: "1.6.0" },
+    }),
+  );
 
-  await page.route("**/api/alpha/user/login", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ jwt: JWT }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/user/login", (route) =>
+    jsonRoute(route, { jwt: JWT }),
+  );
 
   await page.route("**/api/alpha/site*", async (route, request) => {
     const loggedIn = request.headers()["authorization"]?.includes(JWT);
     const payload = loggedIn
       ? PIEFED_SITE_WITH_USER
       : { ...PIEFED_SITE_WITH_USER, my_user: undefined };
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(payload),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
+    return jsonRoute(route, payload);
   });
 
   await page.goto("/home");

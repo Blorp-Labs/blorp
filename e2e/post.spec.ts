@@ -5,7 +5,7 @@ import {
   POST_LIKE_RES,
   SITE_WITH_USER,
 } from "./lemmy-api-fixtures";
-import { seedAuth } from "./test-utils";
+import { seedAuth, jsonRoute } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -23,22 +23,12 @@ function postUrl(base: string) {
 }
 
 async function mockPostApis(page: Page) {
-  await page.route("**/api/v3/post*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_POST_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/v3/comment/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_COMMENTS_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/v3/post*", (route) =>
+    jsonRoute(route, GET_POST_RES),
+  );
+  await page.route("**/api/v3/comment/list*", (route) =>
+    jsonRoute(route, GET_COMMENTS_RES),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -78,23 +68,13 @@ test("upvoting a post hits the vote endpoint", async ({ page }) => {
     uuid: "test-post-uuid",
   });
 
-  await page.route("**/api/v3/site*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(SITE_WITH_USER),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/v3/site*", (route) =>
+    jsonRoute(route, SITE_WITH_USER),
+  );
   await mockPostApis(page);
-  await page.route("**/api/v3/post/like*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(POST_LIKE_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/v3/post/like*", (route) =>
+    jsonRoute(route, POST_LIKE_RES),
+  );
 
   await page.goto(postUrl("/home/"));
 

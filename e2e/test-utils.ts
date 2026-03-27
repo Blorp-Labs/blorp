@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page, Route } from "@playwright/test";
 import type { AuthStoreData } from "@/src/stores/auth";
 import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
 
@@ -10,16 +10,25 @@ const AUTH_IDB_KEY = "zustand_auth";
  * Seeds the Zustand auth store's IndexedDB entry before the app initialises,
  * so that isLoggedIn() returns true on first render.
  */
+/** Fulfills a route with a JSON response and permissive CORS headers. */
+export async function jsonRoute(
+  route: Route,
+  body: unknown,
+  status = 200,
+): Promise<void> {
+  await route.fulfill({
+    status,
+    contentType: "application/json",
+    body: JSON.stringify(body),
+    headers: { "Access-Control-Allow-Origin": "*" },
+  });
+}
+
 /** Mocks the nodeinfo endpoint so the app detects the instance as piefed. */
 export async function mockNodeinfo(page: Page) {
-  await page.route("**/nodeinfo/2.1*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ software: { name: "piefed", version: "1.6.0" } }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/nodeinfo/2.1*", (route) =>
+    jsonRoute(route, { software: { name: "piefed", version: "1.6.0" } }),
+  );
 }
 
 export async function seedAuth(

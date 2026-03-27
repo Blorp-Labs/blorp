@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
 import z from "zod";
 import { SITE_WITH_USER } from "./lemmy-api-fixtures";
+import { jsonRoute } from "./test-utils";
 
 const USERNAME = SITE_WITH_USER.my_user.local_user_view.person.name;
 const JWT = "sdfkhsdkfjhsdfkjshdfksjdhfskjdhfskjhsfsdfsdkjfhs";
 
 test("login", async ({ page }, testInfo) => {
-  await page.route("**/v1/instances.json", async (route) => {
+  await page.route("**/v1/instances.json", (route) => {
     const mockPayload = [
       {
         url: "https://lemmy.world",
@@ -17,18 +18,10 @@ test("login", async ({ page }, testInfo) => {
         registrationMode: "RequireApplication",
       },
     ];
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockPayload),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
+    return jsonRoute(route, mockPayload);
   });
 
-  await page.route("**/nodeinfo/2.1", async (route) => {
+  await page.route("**/nodeinfo/2.1", (route) => {
     const mockPayload = {
       version: "2.1",
       software: {
@@ -54,15 +47,7 @@ test("login", async ({ page }, testInfo) => {
       },
       metadata: {},
     };
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockPayload),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
+    return jsonRoute(route, mockPayload);
   });
 
   await page.route("**/api/**/user/login", async (route, request) => {
@@ -74,15 +59,7 @@ test("login", async ({ page }, testInfo) => {
       .parse(body);
 
     if (!totp_2fa_token) {
-      return await route.fulfill({
-        status: 400,
-        contentType: "application/json",
-        body: JSON.stringify({ error: "missing_totp_token" }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      });
+      return jsonRoute(route, { error: "missing_totp_token" }, 400);
     }
 
     const mockPayload = {
@@ -90,15 +67,7 @@ test("login", async ({ page }, testInfo) => {
       registration_created: false,
       verify_email_sent: false,
     };
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(mockPayload),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
+    return jsonRoute(route, mockPayload);
   });
 
   await page.route("**/api/**/site?", async (route, request) => {
@@ -106,15 +75,7 @@ test("login", async ({ page }, testInfo) => {
     const payload = loggedIn
       ? SITE_WITH_USER
       : { ...SITE_WITH_USER, my_user: undefined };
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(payload),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        contentType: "application/json",
-      },
-    });
+    return jsonRoute(route, payload);
   });
 
   const isMobile = testInfo.project.name.includes("Mobile");

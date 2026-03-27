@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { seedAuth } from "./test-utils";
+import { seedAuth, jsonRoute } from "./test-utils";
 import { SITE_WITH_USER } from "./lemmy-api-fixtures";
 
 const TEST_JWT = "test-inbox-jwt";
@@ -9,49 +9,21 @@ const TEST_UUID = "test-inbox-uuid";
 // reports (two endpoints), and the site refresh that checks auth validity.
 async function mockInboxApis(page: Page) {
   // Site: must return my_user so useRefreshAuth doesn't log us out
-  await page.route("**/api/v3/site*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(SITE_WITH_USER),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
-  });
-  await page.route("**/api/v3/user/replies*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ replies: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/v3/user/mention*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ mentions: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/v3/post/report/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ post_reports: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/v3/comment/report/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ comment_reports: [] }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/v3/site*", (route) =>
+    jsonRoute(route, SITE_WITH_USER),
+  );
+  await page.route("**/api/v3/user/replies*", (route) =>
+    jsonRoute(route, { replies: [] }),
+  );
+  await page.route("**/api/v3/user/mention*", (route) =>
+    jsonRoute(route, { mentions: [] }),
+  );
+  await page.route("**/api/v3/post/report/list*", (route) =>
+    jsonRoute(route, { post_reports: [] }),
+  );
+  await page.route("**/api/v3/comment/report/list*", (route) =>
+    jsonRoute(route, { comment_reports: [] }),
+  );
 }
 
 test("inbox loads when logged in", async ({ page }) => {

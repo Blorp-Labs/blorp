@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { mockNodeinfo } from "./test-utils";
+import { mockNodeinfo, jsonRoute } from "./test-utils";
 import {
   RESOLVE_FEED_RES,
   GET_FEED_RES,
@@ -20,48 +20,23 @@ const tabs = [
 
 async function mockPiefedFeedApis(page: Page) {
   await mockNodeinfo(page);
-  await page.route("**/api/alpha/resolve_object*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(RESOLVE_FEED_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/resolve_object*", (route) =>
+    jsonRoute(route, RESOLVE_FEED_RES),
+  );
   // Feed list must be matched before the single-feed route so that
   // /api/alpha/feed/list* doesn't get caught by /api/alpha/feed*.
-  await page.route("**/api/alpha/feed/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_FEED_LIST_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/feed*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_FEED_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/post/list*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(GET_FEED_POSTS_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
-  await page.route("**/api/alpha/user*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ person_view: FEED_OWNER_VIEW }),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await page.route("**/api/alpha/feed/list*", (route) =>
+    jsonRoute(route, GET_FEED_LIST_RES),
+  );
+  await page.route("**/api/alpha/feed*", (route) =>
+    jsonRoute(route, GET_FEED_RES),
+  );
+  await page.route("**/api/alpha/post/list*", (route) =>
+    jsonRoute(route, GET_FEED_POSTS_RES),
+  );
+  await page.route("**/api/alpha/user*", (route) =>
+    jsonRoute(route, { person_view: FEED_OWNER_VIEW }),
+  );
 }
 
 for (const { name, base } of tabs) {
