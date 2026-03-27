@@ -29,7 +29,6 @@ async function mockPostApis(page: Page) {
   await page.route("**/api/alpha/resolve_object*", (route) =>
     jsonRoute(route, RESOLVE_POST_RES),
   );
-  // post/like must be registered before the broader /post* pattern
   await page.route("**/api/alpha/post/like*", (route) =>
     jsonRoute(route, POST_LIKE_RES),
   );
