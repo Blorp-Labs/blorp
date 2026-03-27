@@ -36,9 +36,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: "26"
+      # Disabled: setup-xcode with "26" resolves to Xcode_26.4_Release_Candidate.app
+      # which doesn't have the iOS 26.4 platform bundle installed. The macos-26
+      # runner's default Xcode already has the iOS SDK set up correctly.
+      # - uses: maxim-lobanov/setup-xcode@v1
+      #   with:
+      #     xcode-version: "26"
+      # - name: Install iOS platform SDK
+      #   run: sudo xcodebuild -runFirstLaunch
 
       - uses: pnpm/action-setup@v4
 
