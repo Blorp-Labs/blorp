@@ -1,11 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import {
   GET_POST_RES,
-  GET_COMMENTS_RES,
+  GET_POST_REPLIES_RES,
   POST_LIKE_RES,
-  SITE_WITH_USER,
-} from "./lemmy-api-fixtures";
-import { seedAuth } from "./test-utils";
+  RESOLVE_POST_RES,
+} from "./piefed-api-fixtures";
+import { seedAuth, mockNodeinfo } from "./test-utils";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -13,9 +13,8 @@ const tabs = [
   { name: "inbox", base: "/inbox/" },
 ] as const;
 
-// Canonical community + post identifiers used throughout this file.
-const COMMUNITY_SLUG = "asklemmy@lemmy.ml";
-const POST_AP_ID = "https://lemmy.world/post/23863920";
+const COMMUNITY_SLUG = "technology@piefed.social";
+const POST_AP_ID = "https://piefed.social/post/99001";
 const ENCODED_POST_AP_ID = encodeURIComponent(POST_AP_ID);
 
 function postUrl(base: string) {
@@ -23,7 +22,27 @@ function postUrl(base: string) {
 }
 
 async function mockPostApis(page: Page) {
-  await page.route("**/api/v3/post*", async (route) => {
+  // resolve_object needed when the post AP ID is on a different instance than
+  // the selected account (e.g. logged-out breadth tests using the default
+  // lemmy.zip instance to view a piefed.social post).
+  await page.route("**/api/alpha/resolve_object*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(RESOLVE_POST_RES),
+      headers: { "Access-Control-Allow-Origin": "*" },
+    });
+  });
+  // post/like must be registered before the broader /post* pattern
+  await page.route("**/api/alpha/post/like*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(POST_LIKE_RES),
+      headers: { "Access-Control-Allow-Origin": "*" },
+    });
+  });
+  await page.route("**/api/alpha/post*", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -31,11 +50,11 @@ async function mockPostApis(page: Page) {
       headers: { "Access-Control-Allow-Origin": "*" },
     });
   });
-  await page.route("**/api/v3/comment/list*", async (route) => {
+  await page.route("**/api/alpha/post/replies*", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(GET_COMMENTS_RES),
+      body: JSON.stringify(GET_POST_REPLIES_RES),
       headers: { "Access-Control-Allow-Origin": "*" },
     });
   });
@@ -48,18 +67,19 @@ async function mockPostApis(page: Page) {
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab post page`, () => {
     test("post and comments load", async ({ page }) => {
+      await mockNodeinfo(page);
       await mockPostApis(page);
       await page.goto(postUrl(base));
 
       const postCard = page.getByTestId("post-card");
       await expect(postCard).toBeInViewport();
       await expect(postCard).toContainText(
-        "What TV shows are you watching and would recommend?",
+        "Exciting new developments in open source software",
       );
       await expect(
         page
           .getByText(
-            "Breaking Bad and Better Call Saul are both excellent choices.",
+            "I've been really enjoying the new Linux kernel updates lately.",
           )
           .first(),
       ).toBeVisible();
@@ -68,33 +88,18 @@ for (const { name, base } of tabs) {
 }
 
 // ---------------------------------------------------------------------------
-// Depth: upvote triggers POST /post/like with the correct body (home tab only)
+// Depth: upvote triggers POST /api/alpha/post/like with the correct body
+//        (home tab only)
 // ---------------------------------------------------------------------------
 
 test("upvoting a post hits the vote endpoint", async ({ page }) => {
   await seedAuth(page, {
-    instance: "lemmy.world",
-    jwt: "test-post-jwt",
-    uuid: "test-post-uuid",
+    instance: "piefed.social",
+    jwt: "test-piefed-post-jwt",
+    uuid: "test-piefed-post-uuid",
   });
-
-  await page.route("**/api/v3/site*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(SITE_WITH_USER),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
+  await mockNodeinfo(page);
   await mockPostApis(page);
-  await page.route("**/api/v3/post/like*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(POST_LIKE_RES),
-      headers: { "Access-Control-Allow-Origin": "*" },
-    });
-  });
 
   await page.goto(postUrl("/home/"));
 
@@ -102,11 +107,12 @@ test("upvoting a post hits the vote endpoint", async ({ page }) => {
 
   const [voteRequest] = await Promise.all([
     page.waitForRequest(
-      (req) => req.url().includes("/post/like") && req.method() === "POST",
+      (req) =>
+        req.url().includes("/api/alpha/post/like") && req.method() === "POST",
     ),
     page.getByLabel("upvote").first().click(),
   ]);
 
   const body = JSON.parse(voteRequest.postData() ?? "{}");
-  expect(body).toMatchObject({ post_id: 23863920, score: 1 });
+  expect(body).toMatchObject({ post_id: 99001, score: 1 });
 });

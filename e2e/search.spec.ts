@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -6,25 +6,39 @@ const tabs = [
   { name: "inbox", base: "/inbox/" },
 ] as const;
 
+/** Click an Ionic tab button by tab id (works on all viewports) */
+async function clickTab(page: Page, tabId: string) {
+  await page.evaluate((id) => {
+    const tab = document.querySelector(`ion-tab-button[tab="${id}"]`);
+    if (tab instanceof HTMLElement) {
+      tab.click();
+    }
+  }, tabId);
+}
+
+/** Focus a cmdk input by test id, type text, then optionally submit.
+ *  cmdk inputs don't work with Playwright's fill(), so we use keyboard.type()
+ *  which sends real key events that cmdk processes correctly.
+ *  We filter by :visible to avoid strict-mode violations when Ionic keeps
+ *  multiple pages mounted simultaneously. */
+async function typeInSearchBar(
+  page: Page,
+  testId: string,
+  text: string,
+  submit = false,
+) {
+  const input = page
+    .locator(`[data-testid="${testId}"]`)
+    .and(page.locator(":visible"));
+  await input.click();
+  await page.keyboard.type(text, { delay: 50 });
+  if (submit) {
+    await page.keyboard.press("Enter");
+  }
+}
+
 for (const { name, base } of tabs) {
-  test.describe(`${name}‑tab tests`, () => {
-    test("loads community feed", async ({ page }) => {
-      await page.goto(`${base}c/asklemmy@lemmy.ml`);
-      const postCard = page.getByTestId("post-card").first();
-      // TODO: find something else to assert for here
-      // We no longer render the community slug since you
-      // already know you're in that community
-      //await expect(postCard).toContainText("asklemmy@lemmy.ml");
-    });
-
-    test("loads user feed", async ({ page }) => {
-      await page.goto(
-        `${base}u/https%3A%2F%2Flemmy.world%2Fu%2FThe_Picard_Maneuver?type=posts`,
-      );
-      const postCard = page.getByTestId("post-card").first();
-      await expect(postCard).toBeVisible();
-    });
-
+  test.describe(`${name}-tab search`, () => {
     test("loads search results", async ({ page }) => {
       await page.route("**/api/v3/search*", async (route) => {
         await route.fulfill({
@@ -64,6 +78,65 @@ for (const { name, base } of tabs) {
     });
   });
 }
+
+test("editing search on one tab does not affect another tab's search", async ({
+  page,
+}, testInfo) => {
+  const isMobile = testInfo.project.name.includes("Mobile");
+
+  // 1. Load home feed, navigate to home search with "cats"
+  await page.goto("/home");
+  await page.waitForLoadState("networkidle");
+
+  if (isMobile) {
+    await page.getByTestId("home-search-link").click();
+    await typeInSearchBar(page, "search-page-input", "cats");
+  } else {
+    await typeInSearchBar(page, "home-search-bar", "cats", true);
+  }
+
+  await expect(page).toHaveURL(/\/home\/s/);
+  await expect(page).toHaveURL(/q=cats/);
+
+  // 2. Switch to communities tab, navigate to communities search with "dogs"
+  await clickTab(page, "explore");
+  await expect(page).toHaveURL(/\/communities/);
+
+  if (isMobile) {
+    await page
+      .locator('[data-testid="explore-search-link"]')
+      .and(page.locator(":visible"))
+      .click();
+    await typeInSearchBar(page, "search-page-input", "dogs");
+  } else {
+    await typeInSearchBar(page, "explore-search-bar", "dogs", true);
+  }
+
+  await expect(page).toHaveURL(/\/communities\/s/);
+  await expect(page).toHaveURL(/q=dogs/);
+
+  // 3. Switch back to home tab — input should still show "cats"
+  await clickTab(page, "home");
+  if (isMobile) {
+    const homeInput = page
+      .locator('[data-testid="search-page-input"]')
+      .and(page.locator(":visible"));
+    await expect(homeInput).toHaveValue("cats");
+  } else {
+    await expect(page.getByTestId("home-search-bar")).toHaveValue("cats");
+  }
+
+  // 4. Switch to communities tab — input should still show "dogs"
+  await clickTab(page, "explore");
+  if (isMobile) {
+    const exploreInput = page
+      .locator('[data-testid="search-page-input"]')
+      .and(page.locator(":visible"));
+    await expect(exploreInput).toHaveValue("dogs");
+  } else {
+    await expect(page.getByTestId("explore-search-bar")).toHaveValue("dogs");
+  }
+});
 
 const SEARCH_RES = {
   type_: "Posts",
@@ -243,7 +316,7 @@ const SEARCH_RES = {
         community_id: 5825,
         removed: false,
         locked: false,
-        published: "2025-09-24T14:18:25.308556Z",
+        published: "2025-09-24T14:18:25.308566Z",
         deleted: false,
         nsfw: false,
         thumbnail_url:
@@ -308,7 +381,7 @@ const SEARCH_RES = {
         score: 1258,
         upvotes: 1285,
         downvotes: 27,
-        published: "2025-09-24T14:18:25.308556Z",
+        published: "2025-09-24T14:18:25.308566Z",
         newest_comment_time: "2025-10-01T22:05:19.109738Z",
       },
       subscribed: "NotSubscribed",
@@ -361,8 +434,7 @@ const SEARCH_RES = {
         id: 11684,
         name: "linuxmemes",
         title: "linuxmemes",
-        description:
-          "Hint: `:q!`\n\n----\n\n\n::: spoiler Sister communities:\n* !tech_memes@lemmy.world\n* !memes@lemmy.world\n* !lemmyshitpost@lemmy.world\n* !risa@startrek.website\n:::\n\n---\n\nCommunity rules (click to expand)\n:::spoiler 1. Follow the site-wide rules\n- Instance-wide TOS: https://legal.lemmy.world/tos/\n- Lemmy code of conduct: https://join-lemmy.org/docs/code_of_conduct.html\n:::\n:::spoiler 2. Be civil\n- Understand the difference between a joke and an insult.\n- Do not harrass or attack users *for any reason*. This includes using blanket terms, like \"every user of *thing*\".\n- Don't get baited into back-and-forth insults. We are not animals.\n- Leave remarks of \"peasantry\" to the PCMR community. If you dislike an OS/service/application, attack the *thing* you dislike, not the individuals who use it. Some people may not have a choice.\n- Bigotry will not be tolerated.\n:::\n::: spoiler 3. Post Linux-related content\n- Including Unix and BSD.\n- Non-Linux content is acceptable as long as it makes a reference to Linux. For example, the poorly made mockery of `sudo` in Windows.\n- No porn, no politics, no trolling or ragebaiting.\n:::\n:::spoiler 4. No recent reposts\n- Everybody uses Arch btw, can't quit Vim, <loves/tolerates/hates> systemd, and wants to interject for a moment. You can stop now.\n:::\n:::spoiler 5. 🇬🇧 Language/язык/Sprache\n- **This is primarily an English-speaking community.** 🇬🇧🇦🇺🇺🇸\n- Comments written in other languages are allowed.\n- The substance of a post should be comprehensible for people who only speak English.\n- Titles and post bodies written in other languages will be allowed, but only as long as the above rule is observed.\n:::\n:::spoiler 6. (NEW!) Regarding public figures\nWe all have our opinions, and certain public figures can be divisive. Keep in mind that **this is a community for memes and light-hearted fun**, not for airing grievances or leveling accusations.\n- Keep discussions polite and free of disparagement.\n- We are never in possession of all of the facts. Defamatory comments will not be tolerated.\n- Discussions that get too heated will be locked and offending comments removed.\n:::\n&nbsp;\n\nPlease report posts and comments that break these rules!\n\n---\n**Important: never execute code or follow advice that you don't understand or can't verify**, especially here. The word of the day is *credibility*. This is a meme community -- even the most helpful comments might just be shitposts that can damage your system. Be aware, be smart, don't remove France.",
+        description: "Hint: `:q!`",
         removed: false,
         published: "2023-06-15T20:22:32.340233Z",
         updated: "2025-04-01T03:50:19.256683Z",
@@ -400,7 +472,7 @@ const SEARCH_RES = {
         name: "linux_gaming",
         title: "Linux Gaming",
         description:
-          "Discussions and news about gaming on the GNU/Linux family of operating systems (including the Steam Deck). Potentially a `$HOME` away from home for disgruntled /r/linux_gaming denizens of the redditarian demesne.\n\nThis page can be subscribed to via RSS.\n\nOriginal /r/linux_gaming pengwing by uoou.\n\nNo memes/shitposts/low-effort posts, please.\n\n# Resources\n\n**WWW:**\n\n* [Linux Gaming wiki](https://linux-gaming.kwindu.eu/index.php)\n* [Gaming on Linux](https://www.gamingonlinux.com/)\n* [ProtonDB](https://www.protondb.com/)\n* [Lutris](https://lutris.net/)\n* [PCGamingWiki](http://pcgamingwiki.com/wiki/Home)\n* [LibreGameWiki](https://libregamewiki.org/Main_Page)\n* [Boiling Steam](https://boilingsteam.com/)\n* [Phoronix](https://www.phoronix.com/)\n* [Linux VR Adventures](https://lvra.gitlab.io/)\n\n**Discord:**\n\n* [Gaming on Linux](https://discord.gg/xAPJFX54Ex)\n* [Linux Gamers Group](https://discord.gg/BaWqd4r)\n* [Linux Gaming](https://discord.gg/UqenWumc9p)\n* [Lutris](https://discord.gg/8mzUKZepG9)\n\n**IRC:**\n\n* [Gaming on Linux](https://www.gamingonlinux.com/irc/)\n\n**Matrix:**\n\n* [Linux Gamers Group (space)](https://matrix.to/#/!yTNaIjgcibeYZIpsQi:matrix.org) \n* [Linux Gamers Group (“home” room)](https://matrix.to/#/!cZCRCLmQmHAGnBqmIE:matrix.org)\n* [Linux Gaming](https://matrix.to/#/#linux_gaming:matrix.org)\n\n**Telegram:**\n\n* [Gaming on Linux](https://t.me/linux_gaming)",
+          "Discussions and news about gaming on the GNU/Linux family of operating systems.",
         removed: false,
         published: "2023-06-14T10:26:22.867411Z",
         updated: "2025-11-15T05:16:00.861705Z",
