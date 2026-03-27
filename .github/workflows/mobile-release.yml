@@ -41,7 +41,7 @@ jobs:
           xcode-version: "26"
 
       - name: Install iOS platform SDK
-        run: sudo xcodebuild -downloadPlatform iOS
+        run: sudo xcodebuild -runFirstLaunch
 
       - uses: pnpm/action-setup@v4
 
