@@ -4,6 +4,7 @@ import _ from "lodash";
 import { useEffect } from "react";
 import Router from "./routing/Router";
 import { useTheme } from "./lib/hooks/use-theme";
+import { useSettingsStore } from "./stores/settings";
 import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
@@ -48,10 +49,30 @@ function DarkModeEffect() {
   return null;
 }
 
+function ThemeEffect() {
+  const lightTheme = useSettingsStore((s) => s.lightTheme);
+  const darkTheme = useSettingsStore((s) => s.darkTheme);
+  useEffect(() => {
+    const el = document.documentElement;
+    if (lightTheme === "default-light") {
+      el.removeAttribute("data-light-theme");
+    } else {
+      el.setAttribute("data-light-theme", lightTheme);
+    }
+    if (darkTheme === "default-dark") {
+      el.removeAttribute("data-dark-theme");
+    } else {
+      el.setAttribute("data-dark-theme", darkTheme);
+    }
+  }, [lightTheme, darkTheme]);
+  return null;
+}
+
 export default function App() {
   return (
     <IonApp>
       <DarkModeEffect />
+      <ThemeEffect />
       <TanstackQueryProvider>
         <AuthProvider>
           <PostRemoveProvider>
