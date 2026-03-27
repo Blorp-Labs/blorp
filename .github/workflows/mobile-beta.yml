@@ -24,13 +24,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: "26"
-
-      - name: Install iOS platform SDK
-        run: sudo xcodebuild -runFirstLaunch
-
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
