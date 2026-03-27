@@ -61,7 +61,7 @@ const ASKLEMMY_COMMUNITY_COUNTS = {
   subscribers_local: 5000,
 } satisfies CommunityAggregates;
 
-const POST_CREATOR = {
+const EXAMPLE_PERSON = {
   id: 1001,
   name: "example_user",
   actor_id: "https://lemmy.world/u/example_user",
@@ -100,9 +100,9 @@ const TV_POST_COUNTS = {
   newest_comment_time: "2024-01-15T18:00:00.000000Z",
 } satisfies PostAggregates;
 
-const TV_POST_VIEW = {
+export const TV_POST_VIEW = {
   post: TV_POST,
-  creator: POST_CREATOR,
+  creator: EXAMPLE_PERSON,
   community: ASKLEMMY_COMMUNITY,
   creator_banned_from_community: false,
   banned_from_community: false,
@@ -117,13 +117,21 @@ const TV_POST_VIEW = {
   unread_comments: 42,
 } satisfies PostView;
 
-const ASKLEMMY_COMMUNITY_VIEW = {
+export const ASKLEMMY_COMMUNITY_VIEW = {
   community: ASKLEMMY_COMMUNITY,
   subscribed: "NotSubscribed" as const,
   blocked: false,
   banned_from_community: false,
   counts: ASKLEMMY_COMMUNITY_COUNTS,
 } satisfies CommunityView;
+
+// ---------------------------------------------------------------------------
+// GET /resolve_object — resolves a post AP ID to a local post view
+// ---------------------------------------------------------------------------
+
+export const RESOLVE_POST_RES = {
+  post: TV_POST_VIEW,
+} satisfies ResolveObjectResponse;
 
 // ---------------------------------------------------------------------------
 // GET /post
@@ -157,19 +165,7 @@ export const GET_POSTS_RES = {
 // GET /comment/list
 // ---------------------------------------------------------------------------
 
-const COMMENT_CREATOR = {
-  id: 2001,
-  name: "commenter",
-  actor_id: "https://lemmy.world/u/commenter",
-  published: "2022-06-01T00:00:00.000000Z",
-  instance_id: 1,
-  banned: false,
-  deleted: false,
-  bot_account: false,
-  local: true,
-} satisfies Person;
-
-const TV_COMMENT = {
+export const TV_COMMENT_VIEW = {
   comment: {
     id: 9001,
     creator_id: 2001,
@@ -184,7 +180,7 @@ const TV_COMMENT = {
     distinguished: false,
     language_id: 37,
   },
-  creator: COMMENT_CREATOR,
+  creator: EXAMPLE_PERSON,
   post: TV_POST,
   community: ASKLEMMY_COMMUNITY,
   counts: {
@@ -205,7 +201,7 @@ const TV_COMMENT = {
 } satisfies CommentView;
 
 export const GET_COMMENTS_RES = {
-  comments: [TV_COMMENT],
+  comments: [TV_COMMENT_VIEW],
 } satisfies GetCommentsResponse;
 
 // ---------------------------------------------------------------------------
@@ -222,7 +218,7 @@ export const GET_COMMUNITY_RES = {
 // GET /resolve_object (person)
 // ---------------------------------------------------------------------------
 
-const PICARD = {
+const PICARD_PERSON = {
   id: 123,
   name: "The_Picard_Maneuver",
   actor_id: "https://lemmy.world/u/The_Picard_Maneuver",
@@ -234,8 +230,8 @@ const PICARD = {
   local: true,
 } satisfies Person;
 
-const PICARD_VIEW = {
-  person: PICARD,
+export const PICARD_PERSON_VIEW = {
+  person: PICARD_PERSON,
   counts: {
     person_id: 123,
     post_count: 100,
@@ -245,7 +241,7 @@ const PICARD_VIEW = {
 } satisfies PersonView;
 
 export const RESOLVE_PERSON_RES = {
-  person: PICARD_VIEW,
+  person: PICARD_PERSON_VIEW,
 } satisfies ResolveObjectResponse;
 
 // ---------------------------------------------------------------------------
@@ -261,7 +257,7 @@ export const GET_COMMUNITIES_RES = {
 // ---------------------------------------------------------------------------
 
 export const GET_PERSON_DETAILS_RES = {
-  person_view: PICARD_VIEW,
+  person_view: PICARD_PERSON_VIEW,
   posts: [TV_POST_VIEW],
   comments: [],
   moderates: [],
