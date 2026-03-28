@@ -65,7 +65,8 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const totalVotes = _.sum(numVotesArr);
   const mosteVotedOption = Math.max(...numVotesArr);
 
-  const ended = dayjs(post.poll.endDate).isBefore(dayjs());
+  const endDate = post.poll.endDate;
+  const ended = Boolean(endDate) && dayjs(endDate).isBefore(dayjs());
 
   const myVotes = post.poll.myVotes;
   const showResults = ended || Boolean(myVotes && myVotes.length);
@@ -174,8 +175,11 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
       )}
 
       <span className="text-sm text-muted-foreground">
-        {totalVotes} votes / {ended ? "Ended " : "Ends "}
-        {dayjs(post.poll.endDate).format("lll")}
+        {_.compact([
+          `${totalVotes} votes`,
+          endDate &&
+            `${ended ? "Ended" : "Ends"} ${dayjs(endDate).format("lll")}`,
+        ]).join(" / ")}
       </span>
     </form>
   );
