@@ -47,7 +47,9 @@ export const DetailsWithMarkdown = Details.extend({
     ): MarkdownToken | undefined {
       // Match opening line: `::: spoiler <title>\n`
       const openingMatch = src.match(/^::: spoiler ([^\n]+)\n/);
-      if (!openingMatch) return undefined;
+      if (!openingMatch) {
+        return undefined;
+      }
 
       const [openingTag, summaryText] = openingMatch;
 
@@ -61,13 +63,17 @@ export const DetailsWithMarkdown = Details.extend({
 
       for (;;) {
         const match = blockPattern.exec(remaining);
-        if (match === null) break;
+        if (match === null) {
+          break;
+        }
 
         const matchPos = match.index;
         const blockType = match[1]; // empty for closing :::
 
         // Skip atom nodes (e.g. :::something attrs:::)
-        if (match[2]?.endsWith(":::")) continue;
+        if (match[2]?.endsWith(":::")) {
+          continue;
+        }
 
         if (blockType) {
           level += 1;
@@ -121,7 +127,42 @@ export const DetailsWithMarkdown = Details.extend({
         }
       }
 
-      return undefined;
+      // No closing ::: found — Lemmy allows omitting it, so treat the rest
+      // of the source as the body.
+      const rawContent = remaining;
+      const fullMatch = src;
+
+      let contentTokens: MarkdownToken[] = [];
+      const trimmedContent = rawContent.trim();
+      if (trimmedContent) {
+        contentTokens = lexer.blockTokens(rawContent);
+        contentTokens.forEach((token) => {
+          if (token.text && (!token.tokens || token.tokens.length === 0)) {
+            token.tokens = lexer.inlineTokens(token.text);
+          }
+        });
+        while (contentTokens.length > 0) {
+          const lastToken = contentTokens[contentTokens.length - 1]!;
+          if (
+            lastToken.type === "paragraph" &&
+            (!lastToken.text || lastToken.text.trim() === "")
+          ) {
+            contentTokens.pop();
+          } else {
+            break;
+          }
+        }
+      }
+
+      const summaryTokens = lexer.inlineTokens(summaryText!);
+
+      return {
+        type: "details",
+        raw: fullMatch,
+        summaryText,
+        summaryTokens,
+        tokens: contentTokens,
+      };
     },
   } satisfies MarkdownTokenizer,
 
