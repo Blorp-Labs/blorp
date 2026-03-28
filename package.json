@@ -217,6 +217,15 @@
       "core-js",
       "esbuild",
       "sharp"
-    ]
+    ],
+    "supportedArchitectures": {
+      "os": [
+        "darwin",
+        "linux"
+      ],
+      "cpu": [
+        "arm64"
+      ]
+    }
   }
 }
