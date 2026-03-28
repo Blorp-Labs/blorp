@@ -29,11 +29,11 @@ async function mockPostApis(page: Page) {
   await page.route("**/api/alpha/resolve_object*", (route) =>
     jsonRoute(route, RESOLVE_POST_RES),
   );
-  await page.route("**/api/alpha/post/like*", (route) =>
-    jsonRoute(route, POST_LIKE_RES),
-  );
   await page.route("**/api/alpha/post*", (route) =>
     jsonRoute(route, GET_POST_RES),
+  );
+  await page.route("**/api/alpha/post/like*", (route) =>
+    jsonRoute(route, POST_LIKE_RES),
   );
   await page.route("**/api/alpha/post/replies*", (route) =>
     jsonRoute(route, GET_POST_REPLIES_RES),

@@ -3,6 +3,7 @@ import { PIEFED_SITE_WITH_USER } from "../test-utils/piefed-api-fixtures";
 import { jsonRoute, mockNodeinfo } from "./test-utils";
 
 const USERNAME = "feed_owner";
+const PASSWORD = "password";
 const JWT = "test-piefed-login-jwt";
 
 test("login", async ({ page }, testInfo) => {
@@ -49,8 +50,8 @@ test("login", async ({ page }, testInfo) => {
   const authModal = page.getByTestId("auth-modal");
   await page.getByTestId("auth-filter-piefed").click();
   await authModal.getByText("piefed.social").click();
-  await authModal.getByPlaceholder("Username").fill("feed_owner");
-  await authModal.getByPlaceholder("Password").fill("password");
+  await authModal.getByPlaceholder("Username").fill(USERNAME);
+  await authModal.getByPlaceholder("Password").fill(PASSWORD);
 
   await page.getByText("Sign In").click();
 

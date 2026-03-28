@@ -188,9 +188,18 @@ export function getComment(config?: {
   return {
     ...TV_COMMENT_VIEW,
     ...config?.commentView,
-    post: post.post,
-    creator: creator.person,
-    community: community.community,
+    post: {
+      ...post.post,
+      ...config?.commentView?.post,
+    },
+    creator: {
+      ...creator.person,
+      ...config?.commentView?.creator,
+    },
+    community: {
+      ...community.community,
+      ...config?.commentView?.community,
+    },
     comment: {
       ...TV_COMMENT_VIEW.comment,
       ...config?.commentView?.comment,
