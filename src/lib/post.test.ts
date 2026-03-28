@@ -474,14 +474,57 @@ describe("vimeo", () => {
 
 // ─── soundcloud ──────────────────────────────────────────────────────────────
 
-describe("getPostEmbed — soundcloud", () => {
-  test("soundcloud url yields soundcloud type", () => {
-    const { post } = api.getPost({
-      post: {
-        url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow",
-      },
+describe("soundcloud", () => {
+  describe("via url", () => {
+    test("track url", () => {
+      const { post } = api.getPost({
+        post: { url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow" },
+      });
+      expect(getPostEmbed(post).type).toBe("soundcloud");
     });
-    expect(getPostEmbed(post).type).toBe("soundcloud");
+
+    test("sets/playlist url", () => {
+      const { post } = api.getPost({
+        post: { url: "https://soundcloud.com/tomvalbyrotary/sets/my-playlist" },
+      });
+      expect(getPostEmbed(post).type).toBe("soundcloud");
+    });
+
+    // on.soundcloud.com is the short link format SoundCloud generates when
+    // sharing. Currently fails because detection only checks soundcloud.com/.
+    test("on.soundcloud.com short url", () => {
+      const { post } = api.getPost({
+        post: { url: "https://on.soundcloud.com/abc123" },
+      });
+      expect(getPostEmbed(post).type).toBe("soundcloud");
+    });
+  });
+
+  describe("via embedVideoUrl", () => {
+    // Detection should be field-agnostic. Currently soundcloud only checks url,
+    // so a soundcloud URL in embedVideoUrl falls through to generic-video.
+    test("soundcloud embedVideoUrl → soundcloud, embedUrl set to embedVideoUrl", () => {
+      const embedVideoUrl = "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow";
+      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("soundcloud");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
+    });
+  });
+
+  describe("embedVideoUrl takes priority over url", () => {
+    test("soundcloud in both fields → embedVideoUrl wins", () => {
+      const embedVideoUrl = "https://soundcloud.com/tomvalbyrotary/other-track";
+      const { post } = api.getPost({
+        post: {
+          url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow",
+          embedVideoUrl,
+        },
+      });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("soundcloud");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
+    });
   });
 });
 
@@ -598,39 +641,59 @@ describe("getPostEmbed — loops", () => {
 
 // ─── redgifs ─────────────────────────────────────────────────────────────────
 
-describe("getPostEmbed — redgifs", () => {
-  test("www.redgifs.com/watch url yields redgif type", () => {
-    const { post } = api.getPost({
-      post: { url: "https://www.redgifs.com/watch/testredgifid" },
+describe("redgifs", () => {
+  describe("via url", () => {
+    test("www.redgifs.com/watch url → redgif, embedUrl set to url", () => {
+      const url = "https://www.redgifs.com/watch/testredgifid";
+      const { post } = api.getPost({ post: { url } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("redgif");
+      expect(embed.embedUrl).toBe(url);
     });
-    expect(getPostEmbed(post).type).toBe("redgif");
+
+    test("redgifs.com/watch url (no www) → redgif", () => {
+      const url = "https://redgifs.com/watch/testredgifid";
+      const { post } = api.getPost({ post: { url } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("redgif");
+      expect(embed.embedUrl).toBe(url);
+    });
   });
 
-  test("redgifs.com/watch url (no www) yields redgif type", () => {
-    const { post } = api.getPost({
-      post: { url: "https://redgifs.com/watch/testredgifid" },
+  describe("via embedVideoUrl", () => {
+    test("www.redgifs.com/watch embedVideoUrl → redgif, embedUrl set to embedVideoUrl", () => {
+      const embedVideoUrl = "https://www.redgifs.com/watch/someothergif";
+      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("redgif");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
     });
-    expect(getPostEmbed(post).type).toBe("redgif");
+
+    test("redgifs.com/watch embedVideoUrl (no www) → redgif, embedUrl set to embedVideoUrl", () => {
+      const embedVideoUrl = "https://redgifs.com/watch/someothergif";
+      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("redgif");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
+    });
   });
 
-  test("redgif via embedVideoUrl sets embedUrl", () => {
-    const embedVideoUrl = "https://www.redgifs.com/watch/someothergif";
-    const { post } = api.getPost({
-      post: { embedVideoUrl },
+  describe("embedVideoUrl takes priority over url", () => {
+    // Unlike most other types, redgifs checks url before embedVideoUrl in the
+    // if-else chain, so url currently wins when both are set. This is
+    // inconsistent with the field priority principle — embedVideoUrl should win.
+    test("redgifs in both fields → embedVideoUrl should win", () => {
+      const embedVideoUrl = "https://www.redgifs.com/watch/embedgif";
+      const { post } = api.getPost({
+        post: {
+          url: "https://www.redgifs.com/watch/urlgif",
+          embedVideoUrl,
+        },
+      });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("redgif");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
     });
-    const embed = getPostEmbed(post);
-    expect(embed.type).toBe("redgif");
-    expect(embed.embedUrl).toBe(embedVideoUrl);
-  });
-
-  test("redgif via embedVideoUrl (no www) sets embedUrl", () => {
-    const embedVideoUrl = "https://redgifs.com/watch/someothergif";
-    const { post } = api.getPost({
-      post: { embedVideoUrl },
-    });
-    const embed = getPostEmbed(post);
-    expect(embed.type).toBe("redgif");
-    expect(embed.embedUrl).toBe(embedVideoUrl);
   });
 });
 
