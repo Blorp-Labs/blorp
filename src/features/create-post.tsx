@@ -323,10 +323,13 @@ export function CreatePost() {
   const softwareInfo = useSoftware();
   const { software } = softwareInfo;
   const showPollOption =
-    supportsPollCreation(softwareInfo) || draft.type === "poll";
+    (!isEdit ? supportsPollCreation(softwareInfo) : false) ||
+    draft.type === "poll";
 
   const patchPollChoice = (index: number, text: string) => {
-    if (!draft.poll) return;
+    if (!draft.poll) {
+      return;
+    }
     const choices = draft.poll.choices.map((c, i) =>
       i === index ? { ...c, text } : c,
     );
@@ -334,7 +337,9 @@ export function CreatePost() {
   };
 
   const addPollChoice = () => {
-    if (!draft.poll) return;
+    if (!draft.poll) {
+      return;
+    }
     const choices = [
       ...draft.poll.choices,
       { id: 0, text: "", sortOrder: draft.poll.choices.length },
@@ -343,7 +348,9 @@ export function CreatePost() {
   };
 
   const removePollChoice = (index: number) => {
-    if (!draft.poll) return;
+    if (!draft.poll) {
+      return;
+    }
     const choices = draft.poll.choices
       .filter((_, i) => i !== index)
       .map((c, i) => ({ ...c, sortOrder: i }));

@@ -483,12 +483,16 @@ function convertModlogResponsePieFed(
   }
 
   function postFields(post: Post | null | undefined) {
-    if (!post) return {};
+    if (!post) {
+      return {};
+    }
     return { postId: post.id, postApId: post.ap_id, postTitle: post.title };
   }
 
   function commentFields(comment: Comment | null | undefined) {
-    if (!comment) return {};
+    if (!comment) {
+      return {};
+    }
     return {
       commentId: comment.id,
       commentApId: comment.ap_id,
@@ -1464,7 +1468,7 @@ export class PieFedApi
       const data = await this.client.putApiAlphaPost({
         post_id,
         title: form.title,
-        url: form.url,
+        url: form.poll ? undefined : form.url,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,
         ...(form.poll
