@@ -128,6 +128,7 @@ export function SmallScreenSidebar({
                 markdown={feed.description}
                 dim
                 className="pt-3"
+                hideAltTooltip
               />
             )}
           </section>
@@ -252,6 +253,7 @@ export function FeedSidebar({
                     markdown={feed.description}
                     dim
                     className="py-3"
+                    hideAltTooltip
                   />
                 )}
 

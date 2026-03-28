@@ -182,6 +182,7 @@ export function SmallScreenSidebar({
                 markdown={communityView.description}
                 dim
                 className="pt-3"
+                hideAltTooltip
               />
             )}
           </section>
@@ -410,6 +411,7 @@ function CommunitySidebarInner({
                     markdown={communityView.description}
                     dim
                     className="py-3"
+                    hideAltTooltip
                   />
                 )}
 

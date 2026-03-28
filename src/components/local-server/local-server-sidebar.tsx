@@ -41,7 +41,12 @@ function InstanceSidebar({ asPage }: { asPage?: boolean }) {
             ABOUT {instanceHost}
           </h2>
 
-          <MarkdownRenderer dim className="text-sm" markdown={sidebar} />
+          <MarkdownRenderer
+            dim
+            className="text-sm"
+            markdown={sidebar}
+            hideAltTooltip
+          />
 
           <AggregateBadges
             aggregates={{
@@ -73,7 +78,7 @@ function InstanceSidebar({ asPage }: { asPage?: boolean }) {
             {site.description}
           </p>
 
-          <MarkdownRenderer dim markdown={sidebar} />
+          <MarkdownRenderer dim markdown={sidebar} hideAltTooltip />
 
           <AggregateBadges
             className="mt-4"
