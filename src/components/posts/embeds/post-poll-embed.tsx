@@ -42,7 +42,11 @@ function PollItem({
       <span className={cn("relative", mostVotedOption && "text-white")}>
         {text}
       </span>
-      {showResults && <span className="relative">{formatPercent(pct)}%</span>}
+      {showResults && (
+        <span className={cn("relative", mostVotedOption && "text-white")}>
+          {formatPercent(pct)}%
+        </span>
+      )}
     </>
   );
 }

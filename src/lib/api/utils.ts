@@ -25,6 +25,14 @@ export function createSlug({
   } satisfies Slug;
 }
 
+export function parseSlug(slug?: string) {
+  const parsed = slug?.split("@");
+  return {
+    name: parsed?.[0],
+    host: parsed?.[1],
+  };
+}
+
 export function encodeApId(id: string) {
   return encodeURIComponent(id);
 }

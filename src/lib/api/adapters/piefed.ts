@@ -483,12 +483,16 @@ function convertModlogResponsePieFed(
   }
 
   function postFields(post: Post | null | undefined) {
-    if (!post) return {};
+    if (!post) {
+      return {};
+    }
     return { postId: post.id, postApId: post.ap_id, postTitle: post.title };
   }
 
   function commentFields(comment: Comment | null | undefined) {
-    if (!comment) return {};
+    if (!comment) {
+      return {};
+    }
     return {
       commentId: comment.id,
       commentApId: comment.ap_id,
@@ -626,6 +630,25 @@ function convertModlogResponsePieFed(
   return items.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+}
+
+const POLL_UNIT_MS: Record<string, number> = {
+  minutes: 60 * 1000,
+  hours: 60 * 60 * 1000,
+  days: 24 * 60 * 60 * 1000,
+  weeks: 7 * 24 * 60 * 60 * 1000,
+  months: 30 * 24 * 60 * 60 * 1000,
+};
+
+function pollEndDate(poll: Forms.PollInput): string {
+  if (poll.endUnit === "permanent") {
+    return new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  }
+  return new Date(
+    Date.now() +
+      poll.endAmount *
+        (POLL_UNIT_MS[poll.endUnit] ?? POLL_UNIT_MS["days"] ?? 0),
+  ).toISOString();
 }
 
 export class PieFedApi
@@ -1445,9 +1468,23 @@ export class PieFedApi
       const data = await this.client.putApiAlphaPost({
         post_id,
         title: form.title,
-        url: form.url,
+        url: form.poll ? undefined : form.url,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,
+        ...(form.poll
+          ? {
+              poll: {
+                end_poll: pollEndDate(form.poll),
+                mode: form.poll.mode,
+                local_only: form.poll.localOnly,
+                choices: form.poll.choices.map((c) => ({
+                  id: c.id,
+                  choice_text: c.text,
+                  sort_order: c.sortOrder,
+                })),
+              },
+            }
+          : {}),
       });
       if (form.flairs) {
         const { flairs } = await this.getCommunity({
@@ -1484,6 +1521,20 @@ export class PieFedApi
         url: form.url ?? undefined,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,
+        ...(form.poll
+          ? {
+              poll: {
+                end_poll: pollEndDate(form.poll),
+                mode: form.poll.mode,
+                local_only: form.poll.localOnly,
+                choices: form.poll.choices.map((c) => ({
+                  id: c.id,
+                  choice_text: c.text,
+                  sort_order: c.sortOrder,
+                })),
+              },
+            }
+          : {}),
       });
       const flairLookup = getFlairLookup(flairs);
       const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);

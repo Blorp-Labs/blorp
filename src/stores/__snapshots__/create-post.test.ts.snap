@@ -15,6 +15,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
     "communitySlug": "0@blorpblorp.xyz",
     "createdAt": 1704063600000,
     "flairs": [],
+    "poll": undefined,
     "thumbnailUrl": null,
     "title": "This is a test post",
     "type": "text",
