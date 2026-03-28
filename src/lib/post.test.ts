@@ -698,43 +698,101 @@ describe("redgifs", () => {
 });
 
 // ─── peertube ────────────────────────────────────────────────────────────────
+//
+// PeerTube is a federated video platform — instances run on arbitrary domains.
+// Detection relies on URL path patterns rather than a known domain list.
+// Two formats are supported: /videos/watch/{uuid} and /w/{shortid}.
 
-describe("getPostEmbed — peertube", () => {
-  test("peertube /videos/watch/ UUID url yields peertube type", () => {
-    const { post } = api.getPost({
-      post: {
-        url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd",
-      },
+describe("peertube", () => {
+  describe("via url", () => {
+    test("/videos/watch/ UUID url", () => {
+      const { post } = api.getPost({
+        post: { url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd" },
+      });
+      expect(getPostEmbed(post).type).toBe("peertube");
     });
-    expect(getPostEmbed(post).type).toBe("peertube");
+
+    test("/w/ short url", () => {
+      const { post } = api.getPost({
+        post: { url: "https://video.blahaj.zone/w/abc123xyz" },
+      });
+      expect(getPostEmbed(post).type).toBe("peertube");
+    });
+
+    // PEERTUBE_REGEX allows query params via (?:[?#].*)? but PEERTUBE_REGEX2
+    // is anchored with a plain $ so query params break /w/ URL matching.
+    test("/videos/watch/ UUID url with query params (e.g. start time)", () => {
+      const { post } = api.getPost({
+        post: { url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd?start=1m30s" },
+      });
+      expect(getPostEmbed(post).type).toBe("peertube");
+    });
+
+    test("/w/ short url with query params (e.g. start time)", () => {
+      const { post } = api.getPost({
+        post: { url: "https://video.blahaj.zone/w/abc123xyz?start=1m30s" },
+      });
+      expect(getPostEmbed(post).type).toBe("peertube");
+    });
   });
 
-  test("peertube /w/ short url yields peertube type", () => {
-    const { post } = api.getPost({
-      post: { url: "https://video.blahaj.zone/w/abc123xyz" },
+  describe("via embedVideoUrl", () => {
+    // Detection should be field-agnostic. Currently only url is checked, so a
+    // peertube URL in embedVideoUrl falls through to generic-video.
+    test("/videos/watch/ UUID in embedVideoUrl → peertube", () => {
+      const embedVideoUrl = "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd";
+      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("peertube");
+      expect(embed.embedUrl).toBe(embedVideoUrl);
     });
-    expect(getPostEmbed(post).type).toBe("peertube");
   });
 
-  test("url with /videos/watch/ but invalid UUID does not yield peertube type", () => {
-    const { post } = api.getPost({
-      post: { url: "https://example.com/videos/watch/not-a-uuid" },
+  describe("non-matching urls", () => {
+    test("/videos/watch/ with invalid UUID does not yield peertube type", () => {
+      const { post } = api.getPost({
+        post: { url: "https://example.com/videos/watch/not-a-uuid" },
+      });
+      expect(getPostEmbed(post).type).not.toBe("peertube");
     });
-    expect(getPostEmbed(post).type).not.toBe("peertube");
   });
 });
 
 // ─── generic-video ───────────────────────────────────────────────────────────
+//
+// generic-video is the embedVideoUrl catch-all — it fires when embedVideoUrl
+// is set but no specific type matched. It sits above article in the chain, so
+// an unrecognized embedVideoUrl always beats a url-only article post.
 
-describe("getPostEmbed — generic-video", () => {
-  test("unrecognized embedVideoUrl yields generic-video type and sets embedUrl", () => {
+describe("generic-video", () => {
+  test("unrecognized embedVideoUrl with no url → generic-video, embedUrl set", () => {
+    const embedVideoUrl = "https://example.com/some-video-embed";
+    const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+    const embed = getPostEmbed(post);
+    expect(embed.type).toBe("generic-video");
+    expect(embed.embedUrl).toBe(embedVideoUrl);
+  });
+
+  test("unrecognized embedVideoUrl + article url → generic-video wins over article", () => {
     const embedVideoUrl = "https://example.com/some-video-embed";
     const { post } = api.getPost({
-      post: { url: null, embedVideoUrl },
+      post: { url: "https://example.com/some-article", embedVideoUrl },
     });
     const embed = getPostEmbed(post);
     expect(embed.type).toBe("generic-video");
     expect(embed.embedUrl).toBe(embedVideoUrl);
+  });
+
+  // A recognized url type (e.g. youtube) is checked before generic-video in
+  // the chain, so it takes priority over an unrecognized embedVideoUrl.
+  test("recognized url type + unrecognized embedVideoUrl → url type wins", () => {
+    const { post } = api.getPost({
+      post: {
+        url: "https://www.youtube.com/watch?v=LDU_Txk06tM",
+        embedVideoUrl: "https://example.com/some-video-embed",
+      },
+    });
+    expect(getPostEmbed(post).type).toBe("youtube");
   });
 });
 
