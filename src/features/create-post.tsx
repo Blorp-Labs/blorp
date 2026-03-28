@@ -14,6 +14,7 @@ import {
   useCommunity,
   useCreatePost,
   useEditPost,
+  useInstanceSoftware,
   useLinkMetadata,
   useListCommunities,
   useSearch,
@@ -71,6 +72,7 @@ import { Page } from "../components/page";
 import { SimpleSelect } from "../components/ui/simple-select";
 import { Trash } from "../components/icons";
 import { Separator } from "../components/ui/separator";
+import { parseSlug } from "../lib/api/utils";
 
 dayjs.extend(localizedFormat);
 
@@ -320,11 +322,19 @@ export function CreatePost() {
   const canEdit = isEdit && post?.creatorApId && myUserId === post.creatorApId;
   const postOwner = post?.creatorSlug;
 
+  const communitySoftware = useInstanceSoftware({
+    instance: parseSlug(draft.communitySlug).host,
+  }).data;
+
   const softwareInfo = useSoftware();
   const { software } = softwareInfo;
   const showPollOption =
-    (!isEdit ? supportsPollCreation(softwareInfo) : false) ||
-    draft.type === "poll";
+    (!isEdit
+      ? supportsPollCreation({
+          ...softwareInfo,
+          communitySoftware,
+        })
+      : false) || draft.type === "poll";
 
   const patchPollChoice = (index: number, text: string) => {
     if (!draft.poll) {
@@ -434,7 +444,8 @@ export function CreatePost() {
       disabled={
         !draft.communitySlug ||
         (isEdit && !canEdit) ||
-        (draft.type === "poll" && software === "lemmy")
+        (draft.type === "poll" &&
+          (software === "lemmy" || communitySoftware === "lemmy"))
       }
       loading={
         isEdit
@@ -542,6 +553,12 @@ export function CreatePost() {
                 <p className="text-sm text-destructive">
                   Lemmy doesn't support polls. Switch to a different post type
                   or use a PieFed account.
+                </p>
+              )}
+              {draft.type === "poll" && communitySoftware === "lemmy" && (
+                <p className="text-sm text-destructive">
+                  Lemmy communities don't support polls. Switch to a different
+                  post type or use a PieFed community.
                 </p>
               )}
 
