@@ -547,50 +547,40 @@ describe("spotify", () => {
 
 // ─── bandcamp ────────────────────────────────────────────────────────────────
 
-// ─── bandcamp ────────────────────────────────────────────────────────────────
-//
-// Bandcamp detection is entirely embedVideoUrl-based. The server is expected to
-// extract a bandcamp.com/EmbeddedPlayer URL from the page and populate
-// embedVideoUrl. If it doesn't, the post falls through to article regardless
-// of whether the url field points to a Bandcamp page.
-
 describe("bandcamp", () => {
-  describe("via embedVideoUrl", () => {
-    test("EmbeddedPlayer embedVideoUrl yields bandcamp type", () => {
-      const embedVideoUrl =
-        "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
-      const { post } = api.getPost({ post: { embedVideoUrl } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("bandcamp");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
+  const EMBED_URL_1 =
+    "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
+  const EMBED_URL_2 =
+    "https://bandcamp.com/EmbeddedPlayer/v=2/track=1111111111/size=large/tracklist=false/artwork=small/";
 
-    // When both fields are set, embedVideoUrl wins because the bandcamp check
-    // fires on embedVideoUrl before any url-based checks run.
-    test("bandcamp url + EmbeddedPlayer embedVideoUrl → embedVideoUrl wins", () => {
-      const embedVideoUrl =
-        "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
-      const { post } = api.getPost({
-        post: {
-          url: "https://someartist.bandcamp.com/track/some-track",
-          embedVideoUrl,
-        },
-      });
+  describe("via embedVideoUrl", () => {
+    test("EmbeddedPlayer embedVideoUrl → bandcamp, embedUrl set to embedVideoUrl", () => {
+      const { post } = api.getPost({ post: { embedVideoUrl: EMBED_URL_1 } });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("bandcamp");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
+      expect(embed.embedUrl).toBe(EMBED_URL_1);
     });
   });
 
-  describe("url only (no embedVideoUrl)", () => {
-    // Without an EmbeddedPlayer embedVideoUrl the post can't be embedded, so
-    // falling through to article may be intentional. Documenting current
-    // behavior here — update this test if url-based bandcamp detection is added.
-    test("*.bandcamp.com track url without embedVideoUrl falls through to article", () => {
+  describe("via url", () => {
+    // Detection should work regardless of which field carries the EmbeddedPlayer
+    // URL. Currently only embedVideoUrl is checked, so this fails.
+    test("EmbeddedPlayer url → bandcamp, embedUrl set to url", () => {
+      const { post } = api.getPost({ post: { url: EMBED_URL_1 } });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("bandcamp");
+      expect(embed.embedUrl).toBe(EMBED_URL_1);
+    });
+  });
+
+  describe("embedVideoUrl takes priority over url", () => {
+    test("EmbeddedPlayer in both fields → embedVideoUrl wins", () => {
       const { post } = api.getPost({
-        post: { url: "https://someartist.bandcamp.com/track/some-track" },
+        post: { url: EMBED_URL_1, embedVideoUrl: EMBED_URL_2 },
       });
-      expect(getPostEmbed(post).type).toBe("article");
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("bandcamp");
+      expect(embed.embedUrl).toBe(EMBED_URL_2);
     });
   });
 });
