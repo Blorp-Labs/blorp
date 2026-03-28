@@ -16,6 +16,7 @@ import {
   DetailedHTMLProps,
   ImgHTMLAttributes,
   useContext,
+  useMemo,
 } from "react";
 import { cn } from "@/src/lib/utils";
 import DOMPurify from "dompurify";
@@ -33,13 +34,19 @@ const COMMUNITY_BANG =
 
 const Context = createContext({
   insideLink: false,
+  hideAltTooltip: false,
 });
 
-const INSIDE_LINK_CTX = { insideLink: true };
 function DisableLinks({ children }: { children: React.ReactNode }) {
-  return (
-    <Context.Provider value={INSIDE_LINK_CTX}>{children}</Context.Provider>
-  );
+  const ctx = useContext(Context);
+  const value = useMemo(() => ({ ...ctx, insideLink: true }), [ctx]);
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+}
+
+function DisableAltTooltip({ children }: { children: React.ReactNode }) {
+  const ctx = useContext(Context);
+  const value = useMemo(() => ({ ...ctx, hideAltTooltip: true }), [ctx]);
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
 export function registerSpoilerPlugin(md: MarkdownIt) {
@@ -99,6 +106,7 @@ function Image(
   >,
 ) {
   const linkCtx = useLinkContext();
+  const { hideAltTooltip } = useContext(Context);
   if (props.src) {
     return (
       <span className="relative inline-block">
@@ -110,7 +118,7 @@ function Image(
         >
           <img {...props} />
         </SafeRouterLink>
-        {props.alt && (
+        {props.alt && !hideAltTooltip && (
           <ResponsiveTooltip
             className="absolute right-1.5 bottom-1.5 z-10"
             trigger={
@@ -281,16 +289,18 @@ export function MarkdownRenderer({
   className,
   dim,
   disableLinks,
+  hideAltTooltip,
   id,
 }: {
   markdown: string;
   className?: string;
   dim?: boolean;
   disableLinks?: boolean;
+  hideAltTooltip?: boolean;
   id?: string;
 }) {
   const root = useLinkContext().root;
-  const content = (
+  let content = (
     <div
       className={cn("markdown-content", dim && "text-foreground/70", className)}
       id={id}
@@ -301,5 +311,11 @@ export function MarkdownRenderer({
       )}
     </div>
   );
-  return disableLinks ? <DisableLinks>{content}</DisableLinks> : content;
+  if (hideAltTooltip) {
+    content = <DisableAltTooltip>{content}</DisableAltTooltip>;
+  }
+  if (disableLinks) {
+    content = <DisableLinks>{content}</DisableLinks>;
+  }
+  return content;
 }

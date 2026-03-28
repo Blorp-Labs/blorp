@@ -76,7 +76,12 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
       {expanded && person?.bio && !isBlocked && (
         <div className="my-2">
           <span>BIO</span>
-          <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
+          <MarkdownRenderer
+            markdown={person.bio}
+            dim
+            className="mt-3"
+            hideAltTooltip
+          />
         </div>
       )}
 
@@ -160,7 +165,12 @@ function PersonSidebarInner({ person }: { person?: Schemas.Person }) {
               <ChevronsUpDown className="h-4 w-4" />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <MarkdownRenderer markdown={person.bio} dim className="mt-3" />
+              <MarkdownRenderer
+                markdown={person.bio}
+                dim
+                className="mt-3"
+                hideAltTooltip
+              />
             </CollapsibleContent>
           </Collapsible>
         </>
