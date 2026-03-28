@@ -38,23 +38,27 @@ describe("markdown round-trip", () => {
   });
 
   it("bold text", () => {
-    setMarkdown(editor, "**bold text**");
-    expect(getMarkdown(editor)).toBe("**bold text**");
+    const input = "**bold text**";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("italic text", () => {
-    setMarkdown(editor, "*italic text*");
-    expect(getMarkdown(editor)).toBe("*italic text*");
+    const input = "*italic text*";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("strikethrough", () => {
-    setMarkdown(editor, "~~strikethrough~~");
-    expect(getMarkdown(editor)).toBe("~~strikethrough~~");
+    const input = "~~strikethrough~~";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("blockquote", () => {
-    setMarkdown(editor, "> a quote");
-    expect(getMarkdown(editor)).toBe("> a quote");
+    const input = "> a quote";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it.each([
@@ -70,133 +74,142 @@ describe("markdown round-trip", () => {
   });
 
   it("unordered list", () => {
-    setMarkdown(editor, "- item one\n- item two");
-    expect(getMarkdown(editor)).toBe("- item one\n- item two");
+    const input = "- item one\n- item two";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("ordered list", () => {
-    setMarkdown(editor, "1. first\n2. second");
-    expect(getMarkdown(editor)).toBe("1. first\n2. second");
+    const input = "1. first\n2. second";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("link", () => {
-    setMarkdown(editor, "[example](https://example.com)");
-    expect(getMarkdown(editor)).toBe("[example](https://example.com)");
+    const input = "[example](https://example.com)";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("image", () => {
-    setMarkdown(editor, "![alt text](https://example.com/img.png)");
-    expect(getMarkdown(editor)).toBe(
-      "![alt text](https://example.com/img.png)",
-    );
+    const input = "![alt text](https://example.com/img.png)";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("inline code", () => {
-    setMarkdown(editor, "Here is `inline code` in text");
-    expect(getMarkdown(editor)).toBe("Here is `inline code` in text");
+    const input = "Here is `inline code` in text";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("fenced code block with language", () => {
-    setMarkdown(editor, "```javascript\nconsole.log('hi');\n```");
-    expect(getMarkdown(editor)).toBe("```javascript\nconsole.log('hi');\n```");
+    const input = "```javascript\nconsole.log('hi');\n```";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("horizontal rule", () => {
-    setMarkdown(editor, "above\n\n---\n\nbelow");
-    expect(getMarkdown(editor)).toBe("above\n\n---\n\nbelow");
+    const input = "above\n\n---\n\nbelow";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("subscript", () => {
-    setMarkdown(editor, "H~2~O");
-    expect(getMarkdown(editor)).toBe("H~2~O");
+    const input = "H~2~O";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("superscript", () => {
-    setMarkdown(editor, "x^2^");
-    expect(getMarkdown(editor)).toBe("x^2^");
+    const input = "x^2^";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("spoiler block", () => {
-    setMarkdown(editor, "::: spoiler Spoiler Title\nSecret content\n:::");
-    expect(getMarkdown(editor)).toBe(
-      "::: spoiler Spoiler Title\nSecret content\n:::",
-    );
+    const input = "::: spoiler Spoiler Title\nSecret content\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("unordered list with bold item", () => {
-    setMarkdown(editor, "- **bold item**\n- normal item");
-    expect(getMarkdown(editor)).toBe("- **bold item**\n- normal item");
+    const input = "- **bold item**\n- normal item";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("ordered list with italic item", () => {
-    setMarkdown(editor, "1. *italic item*\n2. normal item");
-    expect(getMarkdown(editor)).toBe("1. *italic item*\n2. normal item");
+    const input = "1. *italic item*\n2. normal item";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("mixed inline marks: bold, italic, strikethrough", () => {
-    setMarkdown(editor, "**bold** *italic* ~~strike~~");
-    expect(getMarkdown(editor)).toBe("**bold** *italic* ~~strike~~");
+    const input = "**bold** *italic* ~~strike~~";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("bold and italic combined", () => {
-    setMarkdown(editor, "***bold italic***");
-    expect(getMarkdown(editor)).toBe("***bold italic***");
+    const input = "***bold italic***";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("fenced code block without language", () => {
-    setMarkdown(editor, "```\nhello world\n```");
-    expect(getMarkdown(editor)).toBe("```\nhello world\n```");
+    const input = "```\nhello world\n```";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("blockquote with inline formatting", () => {
-    setMarkdown(editor, "> **quoted bold**");
-    expect(getMarkdown(editor)).toBe("> **quoted bold**");
+    const input = "> **quoted bold**";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("multiple paragraphs", () => {
-    setMarkdown(editor, "First paragraph\n\nSecond paragraph");
-    expect(getMarkdown(editor)).toBe("First paragraph\n\nSecond paragraph");
+    const input = "First paragraph\n\nSecond paragraph";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("nested unordered list", () => {
-    setMarkdown(editor, "- item one\n  - nested item\n- item two");
-    const md = getMarkdown(editor);
-    expect(md).toContain("item one");
-    expect(md).toContain("nested item");
-    expect(md).toContain("item two");
+    const input = "- item one\n  - nested item\n- item two";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("nested ordered list", () => {
+    // tiptap normalizes list indentation to 2 spaces on serialization
     setMarkdown(editor, "1. item one\n   1. nested item\n2. item two");
-    const md = getMarkdown(editor);
-    expect(md).toContain("item one");
-    expect(md).toContain("nested item");
-    expect(md).toContain("item two");
+    expect(getMarkdown(editor)).toBe(
+      "1. item one\n  1. nested item\n2. item two",
+    );
   });
 
   it("image without alt text", () => {
-    setMarkdown(editor, "![](https://example.com/img.png)");
-    expect(getMarkdown(editor)).toBe("![](https://example.com/img.png)");
+    const input = "![](https://example.com/img.png)";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("blockquote with multiple paragraphs", () => {
-    setMarkdown(editor, "> first paragraph\n>\n> second paragraph");
-    const md = getMarkdown(editor);
-    expect(md).toContain("first paragraph");
-    expect(md).toContain("second paragraph");
-    expect(md).toMatch(/^>/m);
+    const input = "> first paragraph\n>\n> second paragraph";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("basic table", () => {
+    // tiptap normalizes column widths and separator style on serialization
     setMarkdown(
       editor,
       "| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |",
     );
-    const md = getMarkdown(editor);
-    expect(md).toContain("Header 1");
-    expect(md).toContain("Header 2");
-    expect(md).toContain("Cell 1");
-    expect(md).toContain("Cell 2");
+    expect(getMarkdown(editor)).toBe(
+      "\n| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |\n",
+    );
   });
 });
 
@@ -350,7 +363,8 @@ describe("editor commands", () => {
     // Move cursor to end and insert hr
     editor.commands.setTextSelection(editor.state.doc.content.size);
     editor.commands.setHorizontalRule();
-    expect(getMarkdown(editor)).toContain("---");
+    // tiptap appends an empty paragraph after the rule, producing trailing \n\n
+    expect(getMarkdown(editor)).toBe("above\n\n---\n\n");
   });
 
   it("unsetAllMarks removes bold from selected text", () => {
@@ -386,22 +400,14 @@ describe("editor commands", () => {
     // Select inside the list (not the list node itself) so the toggle detects it as active
     editor.commands.setTextSelection({ from: 3, to: 20 });
     editor.commands.toggleBulletList();
-    const md = getMarkdown(editor);
-    expect(md).not.toContain("- ");
-    expect(md).toContain("alpha");
-    expect(md).toContain("beta");
-    expect(md).toContain("gamma");
+    expect(getMarkdown(editor)).toBe("alpha\n\nbeta\n\ngamma");
   });
 
   it("toggleOrderedList with multiple items produces multiple paragraphs when toggled off", () => {
     setMarkdown(editor, "1. alpha\n2. beta\n3. gamma");
     editor.commands.setTextSelection({ from: 3, to: 22 });
     editor.commands.toggleOrderedList();
-    const md = getMarkdown(editor);
-    expect(md).not.toMatch(/^\d+\./m);
-    expect(md).toContain("alpha");
-    expect(md).toContain("beta");
-    expect(md).toContain("gamma");
+    expect(getMarkdown(editor)).toBe("alpha\n\nbeta\n\ngamma");
   });
 
   it("insertLink with cursor only (no selection) inserts description as linked text", () => {
@@ -507,63 +513,45 @@ describe("spoiler extension", () => {
   });
 
   it("round-trips a basic spoiler", () => {
-    setMarkdown(editor, "::: spoiler Title\nSecret content\n:::");
-    expect(getMarkdown(editor)).toBe("::: spoiler Title\nSecret content\n:::");
+    const input = "::: spoiler Title\nSecret content\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("preserves a multi-word title", () => {
-    setMarkdown(editor, "::: spoiler My Long Spoiler Title\nBody text\n:::");
-    expect(getMarkdown(editor)).toBe(
-      "::: spoiler My Long Spoiler Title\nBody text\n:::",
-    );
+    const input = "::: spoiler My Long Spoiler Title\nBody text\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
-  it("round-trips a spoiler with an empty body", () => {
+  it("serializes a spoiler with an empty body with a blank body line", () => {
     setMarkdown(editor, "::: spoiler Empty\n:::");
-    const md = getMarkdown(editor);
-    // Must still open and close as a spoiler block
-    expect(md).toMatch(/^::: spoiler Empty\n/);
-    expect(md).toMatch(/\n:::$/);
+    expect(getMarkdown(editor)).toBe("::: spoiler Empty\n\n:::");
   });
 
   it("round-trips a spoiler with a multi-paragraph body", () => {
-    setMarkdown(
-      editor,
-      "::: spoiler Title\nFirst paragraph\n\nSecond paragraph\n:::",
-    );
-    const md = getMarkdown(editor);
-    expect(md).toContain("First paragraph");
-    expect(md).toContain("Second paragraph");
-    expect(md).toMatch(/^::: spoiler Title\n/);
-    expect(md).toMatch(/\n:::$/);
+    const input = "::: spoiler Title\nFirst paragraph\n\nSecond paragraph\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("round-trips a spoiler with bold text in the body", () => {
-    setMarkdown(editor, "::: spoiler Title\n**bold** text\n:::");
-    const md = getMarkdown(editor);
-    expect(md).toContain("**bold**");
-    expect(md).toMatch(/^::: spoiler Title\n/);
+    const input = "::: spoiler Title\n**bold** text\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("round-trips a spoiler with a bullet list in the body", () => {
-    setMarkdown(editor, "::: spoiler Title\n- item one\n- item two\n:::");
-    const md = getMarkdown(editor);
-    expect(md).toContain("item one");
-    expect(md).toContain("item two");
-    expect(md).toMatch(/^::: spoiler Title\n/);
-    expect(md).toMatch(/\n:::$/);
+    const input = "::: spoiler Title\n- item one\n- item two\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   it("round-trips two consecutive spoilers without one consuming the other", () => {
-    setMarkdown(
-      editor,
-      "::: spoiler First\nContent A\n:::\n\n::: spoiler Second\nContent B\n:::",
-    );
-    const md = getMarkdown(editor);
-    expect(md).toContain("::: spoiler First");
-    expect(md).toContain("Content A");
-    expect(md).toContain("::: spoiler Second");
-    expect(md).toContain("Content B");
+    const input =
+      "::: spoiler First\nContent A\n:::\n\n::: spoiler Second\nContent B\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
   });
 
   // Lemmy supports omitting the closing :::. The spoiler should still parse
