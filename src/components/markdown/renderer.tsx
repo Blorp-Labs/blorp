@@ -311,10 +311,11 @@ export function MarkdownRenderer({
       )}
     </div>
   );
-  content = hideAltTooltip ? (
-    <DisableAltTooltip>{content}</DisableAltTooltip>
-  ) : (
-    content
-  );
-  return disableLinks ? <DisableLinks>{content}</DisableLinks> : content;
+  if (hideAltTooltip) {
+    content = <DisableAltTooltip>{content}</DisableAltTooltip>;
+  }
+  if (disableLinks) {
+    content = <DisableLinks>{content}</DisableLinks>;
+  }
+  return content;
 }
