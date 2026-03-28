@@ -2,6 +2,26 @@ minimumReleaseAge: 10080 # 7 Days (in minues)
 
 minimumReleaseAgeExclude:
   - "@blorp-labs/*"
+  - '@tiptap/core'
+  - '@tiptap/extensions'
+  - '@tiptap/extension-code-block-lowlight'
+  - '@tiptap/extension-details'
+  - '@tiptap/extension-image'
+  - '@tiptap/extension-link'
+  - '@tiptap/extension-mention'
+  - '@tiptap/extension-placeholder'
+  - '@tiptap/extension-subscript'
+  - '@tiptap/extension-superscript'
+  - '@tiptap/extension-table'
+  - '@tiptap/extension-table-cell'
+  - '@tiptap/extension-table-header'
+  - '@tiptap/extension-table-row'
+  - '@tiptap/extension-code-block'
+  - '@tiptap/pm'
+  - '@tiptap/markdown'
+  - '@tiptap/react'
+  - '@tiptap/starter-kit'
+  - '@tiptap/suggestion'
 
 savePrefix: ""
 
