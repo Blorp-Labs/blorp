@@ -53,11 +53,16 @@ export const DetailsWithMarkdown = Details.extend({
 
       const [openingTag, summaryText] = openingMatch;
 
-      // Find matching closing `:::` by tracking nesting level
+      // Find matching closing `:::` by tracking nesting level.
+      // Opening tags look like `::: spoiler Title` (space after :::).
+      // Closing tags are just `:::` (nothing or only whitespace after).
+      // The old pattern /^:::([\w-]*)/ was buggy: it captured "" for
+      // `::: spoiler` because the space is not a word char, making it
+      // indistinguishable from a closing `:::`.
       let level = 1;
       const position = openingTag.length;
       const remaining = src.slice(position);
-      const blockPattern = /^:::([\w-]*)(\s.*)?/gm;
+      const blockPattern = /^:::([ \t].*)?$/gm;
 
       blockPattern.lastIndex = 0;
 
@@ -68,14 +73,14 @@ export const DetailsWithMarkdown = Details.extend({
         }
 
         const matchPos = match.index;
-        const blockType = match[1]; // empty for closing :::
+        const hasContent = match[1] !== undefined; // true = opening, false = closing
 
-        // Skip atom nodes (e.g. :::something attrs:::)
-        if (match[2]?.endsWith(":::")) {
+        // Skip atom nodes (e.g. `::: spoiler :::` on a single line)
+        if (match[1]?.trimEnd().endsWith(":::")) {
           continue;
         }
 
-        if (blockType) {
+        if (hasContent) {
           level += 1;
         } else {
           level -= 1;
