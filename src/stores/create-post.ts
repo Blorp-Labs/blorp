@@ -87,6 +87,8 @@ export function postToDraft(
     flairs: flairs ?? undefined,
     poll: post.poll
       ? {
+          // TODO: is there a better way to quantize this to a unit?
+          // Maybe the unit should be dynamic based on the value
           endAmount: Math.max(
             1,
             Math.ceil(dayjs(post.poll.endDate).diff(dayjs(), "day", true)),

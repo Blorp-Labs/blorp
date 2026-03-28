@@ -520,7 +520,10 @@ export function CreatePost() {
                     const patch: Partial<Draft> = {
                       type: val as Draft["type"],
                     };
-                    if (val === "poll" && !draft.poll) {
+                    if (
+                      (val === "poll" && !draft.poll) ||
+                      !draft.poll?.choices.length
+                    ) {
                       patch.poll = DEFAULT_POLL;
                     }
                     patchDraft(draftId, patch);
