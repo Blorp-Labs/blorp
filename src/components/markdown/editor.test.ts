@@ -570,30 +570,45 @@ describe("spoiler extension", () => {
   // correctly and serialize with an explicit closing ::: on output.
   it("parses a spoiler with no closing :::", () => {
     setMarkdown(editor, "::: spoiler Title\nSecret content");
-    const md = getMarkdown(editor);
-    expect(md).toMatch(/^::: spoiler Title\n/);
-    expect(md).toContain("Secret content");
-    expect(md).toMatch(/\n:::$/);
+    expect(getMarkdown(editor)).toBe("::: spoiler Title\nSecret content\n:::");
   });
 
-  // Lemmy appears to use a single trailing ::: to close all nesting levels, not
-  // one per level. TODO: confirm whether this is intentional Lemmy behavior or
-  // an accidental side-effect of their parser before implementing.
-  // If intentional: change the tokenizer to stop at the first ::: it finds
-  // (instead of tracking nesting depth) so one ::: closes everything.
-  it.todo(
-    "round-trips nested spoilers (Lemmy format: one ::: closes all levels)",
-    () => {
-      setMarkdown(
-        editor,
-        "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::",
-      );
-      const md = getMarkdown(editor);
-      expect(md).toContain("::: spoiler Outer");
-      expect(md).toContain("::: spoiler Inner");
-      expect(md).toContain("Deep secret");
-    },
-  );
+  it("round-trips nested spoilers", () => {
+    const input = "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
+  });
+
+  it("round-trips nested spoilers with surrounding content", () => {
+    const input =
+      "::: spoiler Outer\nBefore\n\n::: spoiler Inner\nDeep secret\n:::\n\nAfter\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
+  });
+
+  it("round-trips triple-nested spoilers", () => {
+    const input =
+      "::: spoiler Outer\n::: spoiler Middle\n::: spoiler Inner\nDeep secret\n:::\n:::\n:::";
+    setMarkdown(editor, input);
+    expect(getMarkdown(editor)).toBe(input);
+  });
+
+  it("adds closing ::: when a single-nested spoiler omits both closings", () => {
+    setMarkdown(editor, "::: spoiler Outer\n::: spoiler Inner\nDeep secret");
+    expect(getMarkdown(editor)).toBe(
+      "::: spoiler Outer\n::: spoiler Inner\nDeep secret\n:::\n:::",
+    );
+  });
+
+  it("adds closing ::: when a double-nested spoiler omits all closings", () => {
+    setMarkdown(
+      editor,
+      "::: spoiler Outer\n::: spoiler Middle\n::: spoiler Inner\nDeep secret",
+    );
+    expect(getMarkdown(editor)).toBe(
+      "::: spoiler Outer\n::: spoiler Middle\n::: spoiler Inner\nDeep secret\n:::\n:::\n:::",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
