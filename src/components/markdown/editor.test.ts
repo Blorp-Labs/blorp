@@ -566,6 +566,16 @@ describe("spoiler extension", () => {
     expect(md).toContain("Content B");
   });
 
+  // Lemmy supports omitting the closing :::. The spoiler should still parse
+  // correctly and serialize with an explicit closing ::: on output.
+  it("parses a spoiler with no closing :::", () => {
+    setMarkdown(editor, "::: spoiler Title\nSecret content");
+    const md = getMarkdown(editor);
+    expect(md).toMatch(/^::: spoiler Title\n/);
+    expect(md).toContain("Secret content");
+    expect(md).toMatch(/\n:::$/);
+  });
+
   // Lemmy appears to use a single trailing ::: to close all nesting levels, not
   // one per level. TODO: confirm whether this is intentional Lemmy behavior or
   // an accidental side-effect of their parser before implementing.
