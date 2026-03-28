@@ -120,6 +120,10 @@
   @apply border-t border-accent;
 }
 
+.markdown-content details p + p {
+  @apply mt-4;
+}
+
 /* Hide details marker unless inside prose */
 details > summary::-webkit-details-marker {
   display: none;
