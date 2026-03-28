@@ -5,9 +5,8 @@ import _ from "lodash";
 import pRetry from "p-retry";
 import { AsyncThrottler } from "@tanstack/pacer";
 
-const DB_VERSION = 1;
-const DB_NAME = "lemmy-db";
-const TABLE_NAME = "lemmy-store";
+export { DB_VERSION, DB_NAME, TABLE_NAME } from "./db-constants";
+import { DB_VERSION, DB_NAME, TABLE_NAME } from "./db-constants";
 
 export const runTauriSecurityFix = () => {
   if (isTauri()) {

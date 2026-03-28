@@ -1,5 +1,6 @@
 import { beforeEach, test, expect, describe, vi } from "vitest";
 import * as lemmy from "@/test-utils/lemmy";
+import { RESOLVE_POST_RES } from "@/test-utils/lemmy-api-fixtures";
 import { createQueryClientWrapper } from "@/test-utils/tanstack-query";
 import { useApiClients, useComments, useCreateComment } from ".";
 import { renderHook, waitFor } from "@testing-library/react";
@@ -10,34 +11,12 @@ import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 manageFetchMockGlobally();
 
 function mockNodeInfo() {
-  fetchMock.mockGlobal().route(
-    ({ url }) => url.includes("/nodeinfo/2.1"),
-    JSON.stringify({
-      version: "2.1",
-      software: {
-        name: "lemmy",
-        version: "0.19.12-4-gd8445881a",
-        repository: "https://github.com/LemmyNet/lemmy",
-        homepage: "https://join-lemmy.org/",
-      },
-      protocols: ["activitypub"],
-      usage: {
-        users: {
-          total: 177052,
-          activeHalfyear: 29704,
-          activeMonth: 15883,
-        },
-        localPosts: 529064,
-        localComments: 5009935,
-      },
-      openRegistrations: true,
-      services: {
-        inbound: [],
-        outbound: [],
-      },
-      metadata: {},
-    }),
-  );
+  fetchMock
+    .mockGlobal()
+    .route(
+      ({ url }) => url.includes("/nodeinfo/2.1"),
+      JSON.stringify({ software: { name: "lemmy", version: "0.19.12" } }),
+    );
 }
 
 function mockGetComments(length: number, parentId?: number) {
@@ -58,13 +37,7 @@ function mockGetComments(length: number, parentId?: number) {
     .mockGlobal()
     .route(
       ({ url }) => url.includes("/resolve_object"),
-      JSON.stringify({
-        post: {
-          post: {
-            id: 123,
-          },
-        },
-      }),
+      JSON.stringify(RESOLVE_POST_RES),
     )
     .route(
       ({ url }) => url.includes("/comment/list"),
