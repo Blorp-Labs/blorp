@@ -9,8 +9,10 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useVotePostPoll } from "@/src/lib/api/post-mutations";
 import { useRequireAuth } from "../../auth-context";
-import { useAuth } from "@/src/stores/auth";
+import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ABOVE_LINK_OVERLAY } from "../config";
+import { PersonAvatar } from "../../person/person-avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {
@@ -22,12 +24,15 @@ function PollItem({
   pct,
   text,
   showResults,
+  myVote,
 }: {
   mostVotedOption: boolean;
   pct: number;
   text: string;
   showResults: boolean;
+  myVote: boolean | undefined;
 }) {
+  const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
   return (
     <>
       {showResults && (
@@ -42,6 +47,15 @@ function PollItem({
       <span className={cn("relative", mostVotedOption && "text-white")}>
         {text}
       </span>
+      {me && myVote && (
+        <Tooltip>
+          <TooltipTrigger>
+            <PersonAvatar actorId={me.apId} person={me} size="xs" />
+          </TooltipTrigger>
+          <TooltipContent>You voted for this option</TooltipContent>
+        </Tooltip>
+      )}
+      <div className="flex-1" />
       {showResults && (
         <span className={cn("relative", mostVotedOption && "text-white")}>
           {formatPercent(pct)}%
@@ -111,7 +125,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                 )}
                 <label
                   htmlFor={id + choice.id}
-                  className="flex flex-row flex-1 justify-between"
+                  className="flex flex-row flex-1 gap-2"
                 >
                   <PollItem
                     showResults={showResults}
@@ -120,6 +134,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                     }
                     pct={pct}
                     text={choice.text}
+                    myVote={myVotes?.includes(choice.id)}
                   />
                 </label>
               </div>
@@ -151,7 +166,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                 )}
                 <label
                   htmlFor={id + choice.id}
-                  className="flex flex-row flex-1 justify-between"
+                  className="flex flex-row flex-1 gap-2"
                 >
                   <PollItem
                     showResults={showResults}
@@ -160,6 +175,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                     }
                     pct={pct}
                     text={choice.text}
+                    myVote={myVotes?.includes(choice.id)}
                   />
                 </label>
               </div>
