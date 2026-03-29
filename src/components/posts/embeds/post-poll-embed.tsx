@@ -67,7 +67,7 @@ function PollItem({
 
 export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const vote = useVotePostPoll(post.apId);
-  const [myChoices, setMyChoises] = useState<number[]>([]);
+  const [myChoices, setMyChoices] = useState<number[]>([]);
   const id = useId();
   const requireAuth = useRequireAuth();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -77,7 +77,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   }
   const numVotesArr = post.poll.choices.map((choice) => choice.numVotes);
   const totalVotes = _.sum(numVotesArr);
-  const mosteVotedOption = Math.max(...numVotesArr);
+  const mostVotedOption = Math.max(...numVotesArr);
 
   const endDate = post.poll.endDate;
   const ended = Boolean(endDate) && dayjs(endDate).isBefore(dayjs());
@@ -113,7 +113,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                     id={id + choice.id}
                     checked={myChoices.includes(choice.id)}
                     onCheckedChange={(val) =>
-                      setMyChoises((prev) => {
+                      setMyChoices((prev) => {
                         if (!val) {
                           return prev.filter((item) => item !== choice.id);
                         } else {
@@ -130,7 +130,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                   <PollItem
                     showResults={showResults}
                     mostVotedOption={
-                      !!mosteVotedOption && mosteVotedOption === choice.numVotes
+                      !!mostVotedOption && mostVotedOption === choice.numVotes
                     }
                     pct={pct}
                     text={choice.text}
@@ -148,7 +148,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
           disabled={ended}
           className="flex flex-col gap-2"
           value={myChoices[0] ? String(myChoices[0]) : null}
-          onValueChange={(val) => setMyChoises([_.toNumber(val)])}
+          onValueChange={(val) => setMyChoices([_.toNumber(val)])}
         >
           {post.poll.choices.map((choice) => {
             const pct = totalVotes ? choice.numVotes / totalVotes : 0;
@@ -171,7 +171,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                   <PollItem
                     showResults={showResults}
                     mostVotedOption={
-                      !!mosteVotedOption && mosteVotedOption === choice.numVotes
+                      !!mostVotedOption && mostVotedOption === choice.numVotes
                     }
                     pct={pct}
                     text={choice.text}

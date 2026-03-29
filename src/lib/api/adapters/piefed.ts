@@ -133,10 +133,10 @@ function extractEmojiReactionData(
 
 function convertPoll(poll: PostPoll): Schemas.Post["poll"] {
   return {
-    choices: poll.choices.map((choise) => ({
-      text: choise.choice_text,
-      id: choise.id,
-      numVotes: choise.num_votes ?? 0,
+    choices: poll.choices.map((choice) => ({
+      text: choice.choice_text,
+      id: choice.id,
+      numVotes: choice.num_votes ?? 0,
     })),
     endDate: poll.end_poll ?? null,
     localOnly: poll.local_only ?? false,

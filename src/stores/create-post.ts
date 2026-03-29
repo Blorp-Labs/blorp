@@ -188,7 +188,6 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
           ...post.poll,
           choices: post.poll.choices.map((c, i) => ({
             ...c,
-            id: c.id,
             sortOrder: i,
           })),
         };
