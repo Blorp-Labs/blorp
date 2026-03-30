@@ -648,7 +648,7 @@ export function CreatePost() {
                   id={`${id}-title`}
                   placeholder="Title"
                   value={draft.title ?? ""}
-                  className="text-2xl! font-bold"
+                  className="md:text-2xl! font-bold"
                   wrapperClassName="border-0 -mx-3 w-auto shadow-none"
                   onInput={(e) =>
                     patchDraft(draftId, {

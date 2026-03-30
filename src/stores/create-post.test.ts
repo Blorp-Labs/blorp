@@ -11,6 +11,7 @@ import {
 import {
   useCreatePostStore,
   postToDraft,
+  draftToCreatePostData,
   draftToEditPostData,
   isEmptyDraft,
   Draft,
@@ -68,6 +69,44 @@ describe("isEmptyDraft", () => {
       },
     };
     expect(isEmptyDraft(draft)).toBe(false);
+  });
+});
+
+describe("empty choice filtering", () => {
+  const baseDraft: Draft = {
+    type: "poll",
+    createdAt: Date.now(),
+    title: "Test poll",
+    communitySlug: "test@example.com",
+    apId: "https://example.com/post/1",
+    poll: {
+      endAmount: 7,
+      endUnit: "days",
+      mode: "single",
+      localOnly: false,
+      choices: [
+        { id: 1, text: "Option A", sortOrder: 0 },
+        { id: 2, text: "Option B", sortOrder: 1 },
+        { id: 0, text: "", sortOrder: 2 },
+        { id: 0, text: "   ", sortOrder: 3 },
+      ],
+    },
+  };
+
+  test("draftToCreatePostData filters empty choices", () => {
+    const result = draftToCreatePostData(baseDraft);
+    expect(result.poll?.choices.map((c) => c.text)).toEqual([
+      "Option A",
+      "Option B",
+    ]);
+  });
+
+  test("draftToEditPostData filters empty choices", () => {
+    const result = draftToEditPostData(baseDraft);
+    expect(result.poll?.choices.map((c) => c.text)).toEqual([
+      "Option A",
+      "Option B",
+    ]);
   });
 });
 

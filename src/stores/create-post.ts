@@ -135,6 +135,14 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
       // PieFed will drop poll if url exists
       post.url = null;
       post.thumbnailUrl = null;
+      if (post.poll) {
+        post.poll = {
+          ...post.poll,
+          choices: post.poll.choices
+            .filter((c) => c.text.trim().length > 0)
+            .map((c, i) => ({ ...c, sortOrder: i })),
+        };
+      }
       break;
     case "link":
   }
@@ -183,10 +191,12 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
       if (post.poll) {
         post.poll = {
           ...post.poll,
-          choices: post.poll.choices.map((c, i) => ({
-            ...c,
-            sortOrder: i,
-          })),
+          choices: post.poll.choices
+            .filter((c) => c.text.trim().length > 0)
+            .map((c, i) => ({
+              ...c,
+              sortOrder: i,
+            })),
         };
       }
       break;
