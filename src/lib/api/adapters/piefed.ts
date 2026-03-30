@@ -1468,6 +1468,7 @@ export class PieFedApi
       const data = await this.client.putApiAlphaPost({
         post_id,
         title: form.title,
+        // PieFed will drop the poll if we send url
         url: form.poll ? undefined : form.url,
         body: form.body ?? undefined,
         nsfw: form.nsfw ?? false,

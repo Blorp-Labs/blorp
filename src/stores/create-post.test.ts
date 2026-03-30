@@ -32,6 +32,14 @@ describe("isEmptyDraft", () => {
     choices: [],
   };
 
+  test("poll with no poll field is empty", () => {
+    const draft: Draft = {
+      type: "poll",
+      createdAt: Date.now(),
+    };
+    expect(isEmptyDraft(draft)).toBe(true);
+  });
+
   test("poll with all empty choices is empty", () => {
     const draft: Draft = {
       type: "poll",
