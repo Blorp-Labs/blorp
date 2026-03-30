@@ -532,8 +532,8 @@ export function CreatePost() {
                       type: val as Draft["type"],
                     };
                     if (
-                      (val === "poll" && !draft.poll) ||
-                      !draft.poll?.choices.length
+                      val === "poll" &&
+                      (!draft.poll || !draft.poll?.choices.length)
                     ) {
                       patch.poll = DEFAULT_POLL;
                     }
