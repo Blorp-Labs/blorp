@@ -9,8 +9,10 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useVotePostPoll } from "@/src/lib/api/post-mutations";
 import { useRequireAuth } from "../../auth-context";
-import { useAuth } from "@/src/stores/auth";
+import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ABOVE_LINK_OVERLAY } from "../config";
+import { PersonAvatar } from "../../person/person-avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {
@@ -22,12 +24,15 @@ function PollItem({
   pct,
   text,
   showResults,
+  myVote,
 }: {
   mostVotedOption: boolean;
   pct: number;
   text: string;
   showResults: boolean;
+  myVote: boolean | undefined;
 }) {
+  const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
   return (
     <>
       {showResults && (
@@ -42,14 +47,27 @@ function PollItem({
       <span className={cn("relative", mostVotedOption && "text-white")}>
         {text}
       </span>
-      {showResults && <span className="relative">{formatPercent(pct)}%</span>}
+      {me && myVote && (
+        <Tooltip>
+          <TooltipTrigger>
+            <PersonAvatar actorId={me.apId} person={me} size="xs" />
+          </TooltipTrigger>
+          <TooltipContent>You voted for this option</TooltipContent>
+        </Tooltip>
+      )}
+      <div className="flex-1" />
+      {showResults && (
+        <span className={cn("relative", mostVotedOption && "text-white")}>
+          {formatPercent(pct)}%
+        </span>
+      )}
     </>
   );
 }
 
 export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   const vote = useVotePostPoll(post.apId);
-  const [myChoices, setMyChoises] = useState<number[]>([]);
+  const [myChoices, setMyChoices] = useState<number[]>([]);
   const id = useId();
   const requireAuth = useRequireAuth();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -59,9 +77,10 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
   }
   const numVotesArr = post.poll.choices.map((choice) => choice.numVotes);
   const totalVotes = _.sum(numVotesArr);
-  const mosteVotedOption = Math.max(...numVotesArr);
+  const mostVotedOption = Math.max(...numVotesArr);
 
-  const ended = dayjs(post.poll.endDate).isBefore(dayjs());
+  const endDate = post.poll.endDate;
+  const ended = Boolean(endDate) && dayjs(endDate).isBefore(dayjs());
 
   const myVotes = post.poll.myVotes;
   const showResults = ended || Boolean(myVotes && myVotes.length);
@@ -94,7 +113,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                     id={id + choice.id}
                     checked={myChoices.includes(choice.id)}
                     onCheckedChange={(val) =>
-                      setMyChoises((prev) => {
+                      setMyChoices((prev) => {
                         if (!val) {
                           return prev.filter((item) => item !== choice.id);
                         } else {
@@ -106,15 +125,16 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                 )}
                 <label
                   htmlFor={id + choice.id}
-                  className="flex flex-row flex-1 justify-between"
+                  className="flex flex-row flex-1 gap-2"
                 >
                   <PollItem
                     showResults={showResults}
                     mostVotedOption={
-                      !!mosteVotedOption && mosteVotedOption === choice.numVotes
+                      !!mostVotedOption && mostVotedOption === choice.numVotes
                     }
                     pct={pct}
                     text={choice.text}
+                    myVote={myVotes?.includes(choice.id)}
                   />
                 </label>
               </div>
@@ -128,7 +148,7 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
           disabled={ended}
           className="flex flex-col gap-2"
           value={myChoices[0] ? String(myChoices[0]) : null}
-          onValueChange={(val) => setMyChoises([_.toNumber(val)])}
+          onValueChange={(val) => setMyChoices([_.toNumber(val)])}
         >
           {post.poll.choices.map((choice) => {
             const pct = totalVotes ? choice.numVotes / totalVotes : 0;
@@ -146,15 +166,16 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
                 )}
                 <label
                   htmlFor={id + choice.id}
-                  className="flex flex-row flex-1 justify-between"
+                  className="flex flex-row flex-1 gap-2"
                 >
                   <PollItem
                     showResults={showResults}
                     mostVotedOption={
-                      !!mosteVotedOption && mosteVotedOption === choice.numVotes
+                      !!mostVotedOption && mostVotedOption === choice.numVotes
                     }
                     pct={pct}
                     text={choice.text}
+                    myVote={myVotes?.includes(choice.id)}
                   />
                 </label>
               </div>
@@ -170,8 +191,11 @@ export function PostPollEmbed({ post }: { post: Schemas.Post }) {
       )}
 
       <span className="text-sm text-muted-foreground">
-        {totalVotes} votes / {ended ? "Ended " : "Ends "}
-        {dayjs(post.poll.endDate).format("lll")}
+        {_.compact([
+          `${totalVotes} votes`,
+          endDate &&
+            `${ended ? "Ended" : "Ends"} ${dayjs(endDate).format("lll")}`,
+        ]).join(" / ")}
       </span>
     </form>
   );

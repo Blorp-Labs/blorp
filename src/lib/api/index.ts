@@ -732,6 +732,24 @@ function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
 }
 
+export function useInstanceSoftware(
+  { instance }: { instance?: string },
+  options?: QueryOverwriteOptions,
+) {
+  return useQuery({
+    queryKey: ["getInstanceSoftware", instance],
+    queryFn: async () => {
+      if (!instance) {
+        throw new Error("this should never happen");
+      }
+      const api = await apiClient({ instance });
+      return api.software;
+    },
+    ...options,
+    enabled: _.isString(instance) && options?.enabled !== false,
+  });
+}
+
 export function useSite(
   { instance }: { instance: string },
   options?: QueryOverwriteOptions,

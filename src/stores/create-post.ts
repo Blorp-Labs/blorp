@@ -15,7 +15,7 @@ export type CommunityPartial = Pick<
 >;
 
 export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
-  type: "text" | "media" | "link";
+  type: "text" | "media" | "link" | "poll";
   createdAt: number;
 }
 
@@ -43,7 +43,14 @@ export function isEmptyDraft(draft: Draft) {
     "createdAt",
     "communitySlug",
     "communityApId",
+    "poll",
   ]);
+  if (
+    draft.poll &&
+    draft.poll.choices.map((c) => c.text.trim()).join("") !== ""
+  ) {
+    return false;
+  }
   for (const id in fields) {
     const field = fields[id as keyof typeof fields];
     if (_.isArray(field)) {
@@ -66,12 +73,31 @@ export function postToDraft(
     body: post.body ?? "",
     communitySlug: post.communitySlug,
     createdAt: dayjs(post.createdAt).toDate().valueOf(),
-    type: post.url ? "link" : post.thumbnailUrl ? "media" : "text",
+    type: post.url
+      ? "link"
+      : post.thumbnailUrl
+        ? "media"
+        : post.poll
+          ? "poll"
+          : "text",
     apId: post.apId,
     thumbnailUrl: post.thumbnailUrl,
     altText: post.altText,
     url: post.url,
     flairs: flairs ?? undefined,
+    poll: post.poll
+      ? {
+          endAmount: 1,
+          endUnit: "days",
+          mode: post.poll.mode,
+          localOnly: post.poll.localOnly,
+          choices: post.poll.choices.map((c, i) => ({
+            id: c.id,
+            text: c.text,
+            sortOrder: i,
+          })),
+        }
+      : undefined,
   };
 }
 
@@ -104,6 +130,19 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
       break;
     case "media":
       post.url = post.thumbnailUrl;
+      break;
+    case "poll":
+      // PieFed will drop poll if url exists
+      post.url = null;
+      post.thumbnailUrl = null;
+      if (post.poll) {
+        post.poll = {
+          ...post.poll,
+          choices: post.poll.choices
+            .filter((c) => c.text.trim().length > 0)
+            .map((c, i) => ({ ...c, sortOrder: i })),
+        };
+      }
       break;
     case "link":
   }
@@ -144,6 +183,22 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
       break;
     case "media":
       post.url = post.thumbnailUrl;
+      break;
+    case "poll":
+      // PieFed will drop poll if url exists
+      post.url = null;
+      post.thumbnailUrl = null;
+      if (post.poll) {
+        post.poll = {
+          ...post.poll,
+          choices: post.poll.choices
+            .filter((c) => c.text.trim().length > 0)
+            .map((c, i) => ({
+              ...c,
+              sortOrder: i,
+            })),
+        };
+      }
       break;
     case "link":
   }

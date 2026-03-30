@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { createSlug } from "./utils";
+import { createSlug, parseSlug } from "./utils";
 
 describe("createSlug", () => {
   test.each([
@@ -29,4 +29,23 @@ describe("createSlug", () => {
   //])('createSlug("%s").slug == ""', (actor_id) => {
   //  expect(createSlug({ actor_id })?.slug).toBe(undefined);
   //});
+});
+
+describe("parseSlug", () => {
+  test.each([
+    ["brexit@lemmy.world", "brexit", "lemmy.world"],
+    ["finance_greece@lemmy.world", "finance_greece", "lemmy.world"],
+    ["memes@midwest.social", "memes", "midwest.social"],
+    [
+      "onehundredninetysix@lemmy.blahaj.zone",
+      "onehundredninetysix",
+      "lemmy.blahaj.zone",
+    ],
+  ])('parseSlug("%s")', (slug, name, host) => {
+    expect(parseSlug(slug)).toEqual({ name, host });
+  });
+
+  test("undefined input returns undefined fields", () => {
+    expect(parseSlug(undefined)).toEqual({ name: undefined, host: undefined });
+  });
 });
