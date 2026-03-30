@@ -52,6 +52,7 @@ describe("imgur", () => {
       expect(embed.embedUrl).toBe("https://i.imgur.com/abc123.mp4");
     });
 
+    // TODO: does this test make sense, or is it outside of the scope of imgur?
     test("non-imgur .gifv url is not normalized", () => {
       const url = "https://example.com/clip.gifv";
       const { post } = api.getPost({ post: { url } });
@@ -75,52 +76,6 @@ describe("imgur", () => {
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("video");
       expect(embed.embedUrl).toBe("https://i.imgur.com/abc123.mp4");
-    });
-  });
-
-  describe("url and embedVideoUrl both set", () => {
-    // When embedVideoUrl holds a video file, it is checked before the url-based
-    // video check, so embedVideoUrl wins and becomes the embedUrl.
-    test("url=.gifv + embedVideoUrl=.mp4 → embedVideoUrl wins, type=video", () => {
-      const embedVideoUrl = "https://i.imgur.com/abc123.mp4";
-      const { post } = api.getPost({
-        post: { url: "https://i.imgur.com/abc123.gifv", embedVideoUrl },
-      });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("video");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
-
-    test("url=.mp4 + embedVideoUrl=.mp4 → embedVideoUrl wins", () => {
-      const embedVideoUrl = "https://i.imgur.com/other.mp4";
-      const { post } = api.getPost({
-        post: { url: "https://i.imgur.com/abc123.mp4", embedVideoUrl },
-      });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("video");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
-
-    // Image extensions in the url are detected before the embedVideoUrl video
-    // check, so a .gif url beats an .mp4 embedVideoUrl.
-    test("url=.gif + embedVideoUrl=.mp4 → url wins, type=image", () => {
-      const url = "https://i.imgur.com/abc123.gif";
-      const { post } = api.getPost({
-        post: { url, embedVideoUrl: "https://i.imgur.com/abc123.mp4" },
-      });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("image");
-      expect(embed.embedUrl).toBe(url);
-    });
-
-    test("url=.png + embedVideoUrl=.mp4 → url wins, type=image", () => {
-      const url = "https://i.imgur.com/abc123.png";
-      const { post } = api.getPost({
-        post: { url, embedVideoUrl: "https://i.imgur.com/abc123.mp4" },
-      });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("image");
-      expect(embed.embedUrl).toBe(url);
     });
   });
 
@@ -154,6 +109,27 @@ describe("imgur", () => {
       expect(embed.type).toBe("video");
       expect(embed.embedUrl).toBe("https://i.imgur.com/abc123.mp4");
     });
+  });
+});
+
+// ─── field priority ───────────────────────────────────────────────────────────
+//
+// embedVideoUrl should always win over url when both are set, regardless of
+// what url looks like. The .gif/.png/.jpg cases currently fail — the image
+// extension check on url fires before embedVideoUrl is considered.
+
+describe("field priority", () => {
+  test.each([
+    ["https://i.imgur.com/abc123.gifv", "https://i.imgur.com/other.mp4"],
+    ["https://i.imgur.com/abc123.mp4",  "https://i.imgur.com/other.mp4"],
+    ["https://i.imgur.com/abc123.gif",  "https://i.imgur.com/other.mp4"],
+    ["https://i.imgur.com/abc123.png",  "https://i.imgur.com/other.mp4"],
+    ["https://i.imgur.com/abc123.jpg",  "https://i.imgur.com/other.mp4"],
+  ])("url=%s + embedVideoUrl=%s → embedVideoUrl wins", (url, embedVideoUrl) => {
+    const { post } = api.getPost({ post: { url, embedVideoUrl } });
+    const embed = getPostEmbed(post);
+    expect(embed.type).toBe("video");
+    expect(embed.embedUrl).toBe(embedVideoUrl);
   });
 });
 
@@ -478,7 +454,9 @@ describe("soundcloud", () => {
   describe("via url", () => {
     test("track url", () => {
       const { post } = api.getPost({
-        post: { url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow" },
+        post: {
+          url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow",
+        },
       });
       expect(getPostEmbed(post).type).toBe("soundcloud");
     });
@@ -504,7 +482,8 @@ describe("soundcloud", () => {
     // Detection should be field-agnostic. Currently soundcloud only checks url,
     // so a soundcloud URL in embedVideoUrl falls through to generic-video.
     test("soundcloud embedVideoUrl → soundcloud, embedUrl set to embedVideoUrl", () => {
-      const embedVideoUrl = "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow";
+      const embedVideoUrl =
+        "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow";
       const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("soundcloud");
@@ -707,7 +686,9 @@ describe("peertube", () => {
   describe("via url", () => {
     test("/videos/watch/ UUID url", () => {
       const { post } = api.getPost({
-        post: { url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd" },
+        post: {
+          url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd",
+        },
       });
       expect(getPostEmbed(post).type).toBe("peertube");
     });
@@ -723,7 +704,9 @@ describe("peertube", () => {
     // is anchored with a plain $ so query params break /w/ URL matching.
     test("/videos/watch/ UUID url with query params (e.g. start time)", () => {
       const { post } = api.getPost({
-        post: { url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd?start=1m30s" },
+        post: {
+          url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd?start=1m30s",
+        },
       });
       expect(getPostEmbed(post).type).toBe("peertube");
     });
@@ -740,7 +723,8 @@ describe("peertube", () => {
     // Detection should be field-agnostic. Currently only url is checked, so a
     // peertube URL in embedVideoUrl falls through to generic-video.
     test("/videos/watch/ UUID in embedVideoUrl → peertube", () => {
-      const embedVideoUrl = "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd";
+      const embedVideoUrl =
+        "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd";
       const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("peertube");

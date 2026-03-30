@@ -40,6 +40,12 @@ we cannot know the underlying format a non-imgur host used.
 
 ## Known gaps with failing tests
 
+When url has an image extension (.gif, .png, .jpg) and embedVideoUrl holds a
+video, the image check on url fires before embedVideoUrl is read, causing url
+to win. embedVideoUrl should always take priority regardless of what url looks
+like.
+
+
 These are cases where the current implementation does not match expected
 behavior. Failing tests exist for each.
 
