@@ -411,6 +411,7 @@ export default function Post() {
               fullscreen
               scrollHost
               jumpMinItemHeight={50}
+              paddingEnd={50}
               renderJumpButton={(onClick) => (
                 <ContentGutters>
                   <div className="flex justify-end">

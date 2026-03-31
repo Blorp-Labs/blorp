@@ -133,6 +133,7 @@ function VirtualListInternal<T>({
   paginationControls,
   scrollToNextRef,
   jumpMinItemHeight = 5,
+  paddingEnd,
 }: {
   data?: T[] | readonly T[];
   estimatedItemSize: number;
@@ -153,6 +154,7 @@ function VirtualListInternal<T>({
   paginationControls?: ReactNode;
   scrollToNextRef?: React.MutableRefObject<(() => void) | null>;
   jumpMinItemHeight?: number;
+  paddingEnd?: number;
 }) {
   const index = useRef(0);
   const offset = useRef(0);
@@ -189,6 +191,7 @@ function VirtualListInternal<T>({
   const rowVirtualizer = useVirtualizer({
     count,
     overscan,
+    paddingEnd,
     lanes: numColumns === 1 ? undefined : numColumns,
     getScrollElement: () => scrollRef.current,
     estimateSize: (index) => cache.current?.[index]?.size ?? estimatedItemSize,
@@ -429,6 +432,7 @@ export function VirtualList<T>({
   paginationControls?: ReactNode;
   renderJumpButton?: (onClick: () => void) => ReactNode;
   jumpMinItemHeight?: number;
+  paddingEnd?: number;
 }) {
   const media = useMedia();
   const focused = useRef(false);
