@@ -6,6 +6,7 @@ import circleDependency from "vite-plugin-circular-dependency";
 import path from "path";
 import legacy from "@vitejs/plugin-legacy";
 import Sitemap from "vite-plugin-sitemap";
+import { VitePWA, type ManifestOptions } from "vite-plugin-pwa";
 import { resolveRoute } from "./src/routing/resolve-route";
 import { execSync } from "child_process";
 
@@ -89,6 +90,87 @@ const FEATURED_COMMUNITIES = [
   "linux@lemmy.world",
 ] as const;
 
+const pwaManifest = {
+  name: "Blorp",
+  short_name: "Blorp",
+  description:
+    "Blorp – A Threadiverse client for Lemmy and PieFed. Web, iOS & macOS, and more!",
+  start_url: "/",
+  scope: "/",
+  display: "standalone" as const,
+  background_color: "#ffffff",
+  theme_color: "#ffffff",
+  orientation: "portrait-primary" as const,
+  categories: ["social", "news"],
+  icons: [
+    {
+      src: "icons/icon-48.webp",
+      type: "image/webp",
+      sizes: "48x48",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-72.webp",
+      type: "image/webp",
+      sizes: "72x72",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-96.webp",
+      type: "image/webp",
+      sizes: "96x96",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-128.webp",
+      type: "image/webp",
+      sizes: "128x128",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-192.webp",
+      type: "image/webp",
+      sizes: "192x192",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-256.webp",
+      type: "image/webp",
+      sizes: "256x256",
+      purpose: "any",
+    },
+    {
+      src: "icons/icon-512.webp",
+      type: "image/webp",
+      sizes: "512x512",
+      purpose: "any maskable",
+    },
+  ],
+  screenshots: [
+    {
+      src: "screenshots/iphone-1.png",
+      sizes: "393x852",
+      type: "image/png",
+      form_factor: "narrow" as const,
+      label: "Blorp home feed",
+    },
+    {
+      src: "screenshots/iphone-2.png",
+      sizes: "393x852",
+      type: "image/png",
+      form_factor: "narrow" as const,
+      label: "Blorp community view",
+    },
+    {
+      src: "screenshots/iphone-3.png",
+      sizes: "393x852",
+      type: "image/png",
+      form_factor: "narrow" as const,
+      label: "Blorp post view",
+    },
+  ],
+} satisfies Partial<ManifestOptions>;
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Pages injects CF_PAGES_URL on every deployment (preview + production)
@@ -102,6 +184,14 @@ export default defineConfig(({ mode }) => {
     mode === "production" && (explicitBase || cfPagesUrl)
       ? `${explicitBase || cfPagesUrl}/`
       : "/";
+
+  // Only generate a service worker for web deployments. The same dist output
+  // is synced into Capacitor iOS/Android via `cap sync`, and a service worker
+  // there would intercept Capacitor bridge requests and trigger unexpected
+  // auto-reloads. Enable with CF_PAGES_URL (Cloudflare), VITE_BASE, or an
+  // explicit VITE_PWA=true opt-in.
+  const pwaEnabled =
+    !!cfPagesUrl || !!explicitBase || process.env["VITE_PWA"] === "true";
 
   return {
     envPrefix: "REACT_APP_",
@@ -117,6 +207,31 @@ export default defineConfig(({ mode }) => {
         ? [
             legacy({
               targets: ["defaults", "not IE 11"],
+            }),
+          ]
+        : []),
+      ...(pwaEnabled
+        ? [
+            VitePWA({
+              registerType: "autoUpdate",
+              manifestFilename: "manifest.json",
+              manifest: pwaManifest,
+              workbox: {
+                navigateFallback: "/index.html",
+                globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
+                globIgnores: ["**/index-legacy-*.js", "screenshots/**"],
+                maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+                runtimeCaching: [
+                  {
+                    urlPattern: /^https:\/\/.*\/api\/.*/,
+                    handler: "NetworkFirst",
+                    options: {
+                      cacheName: "api-cache",
+                      networkTimeoutSeconds: 10,
+                    },
+                  },
+                ],
+              },
             }),
           ]
         : []),
