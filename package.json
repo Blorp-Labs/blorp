@@ -94,7 +94,7 @@
     "compare-versions": "^6.1.1",
     "cursor-effects": "1.0.17",
     "dayjs": "^1.11.13",
-    "dompurify": "^3.2.6",
+    "dompurify": "3.3.3",
     "franc": "^6.2.0",
     "fuzzysort": "^3.1.0",
     "history": "~4",
