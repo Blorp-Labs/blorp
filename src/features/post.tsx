@@ -412,6 +412,7 @@ export default function Post() {
               scrollHost
               jumpMinItemHeight={50}
               paddingEnd={50}
+              scrollToIndexOffset={media.maxMd ? 58 : 0}
               renderJumpButton={(onClick) => (
                 <ContentGutters>
                   <div className="flex justify-end">

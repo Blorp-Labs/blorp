@@ -133,6 +133,7 @@ function VirtualListInternal<T>({
   paginationControls,
   scrollToNextRef,
   jumpMinItemHeight = 5,
+  scrollToIndexOffset = 0,
   paddingEnd,
 }: {
   data?: T[] | readonly T[];
@@ -154,6 +155,7 @@ function VirtualListInternal<T>({
   paginationControls?: ReactNode;
   scrollToNextRef?: React.MutableRefObject<(() => void) | null>;
   jumpMinItemHeight?: number;
+  scrollToIndexOffset?: number;
   paddingEnd?: number;
 }) {
   const index = useRef(0);
@@ -274,7 +276,6 @@ function VirtualListInternal<T>({
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
-  const scrollToIndex = rowVirtualizer.scrollToIndex;
 
   useEffect(() => {
     if (!scrollToNextRef) {
@@ -282,10 +283,11 @@ function VirtualListInternal<T>({
     }
     scrollToNextRef.current = () => {
       const scrollOffset = scrollRef.current?.scrollTop ?? 0;
-      const firstItem = virtualItems.find((item) => item.start > scrollOffset);
+      const firstItem = virtualItems.find(
+        (item) => item.start > scrollOffset + scrollToIndexOffset,
+      );
       const currentIndex = firstItem?.index ?? 0;
-      const startIndex =
-        currentIndex < headerLen ? headerLen : currentIndex + 1;
+      const startIndex = currentIndex < headerLen ? headerLen : currentIndex;
       let nextIndex = startIndex;
       while (nextIndex < count) {
         // Skip sticky headers (e.g. sort bar) so we don't get stuck
@@ -304,8 +306,9 @@ function VirtualListInternal<T>({
         }
 
         // Found a valid item to jump to
-        scrollToIndex(nextIndex, {
-          align: "start",
+        const itemStart =
+          cache.current[nextIndex]?.start ?? nextIndex * estimatedItemSize;
+        scrollToOffset(itemStart - scrollToIndexOffset, {
           behavior: "smooth",
         });
         break;
@@ -322,8 +325,9 @@ function VirtualListInternal<T>({
     estimatedItemSize,
     jumpMinItemHeight,
     virtualItems,
-    scrollToIndex,
     scrollRef,
+    scrollToIndexOffset,
+    scrollToOffset,
   ]);
 
   useEffect(() => {
@@ -432,6 +436,7 @@ export function VirtualList<T>({
   paginationControls?: ReactNode;
   renderJumpButton?: (onClick: () => void) => ReactNode;
   jumpMinItemHeight?: number;
+  scrollToIndexOffset?: number;
   paddingEnd?: number;
 }) {
   const media = useMedia();
