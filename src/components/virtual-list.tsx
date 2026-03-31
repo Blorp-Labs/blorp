@@ -270,15 +270,16 @@ function VirtualListInternal<T>({
     virtualizer: rowVirtualizer,
   });
 
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const scrollToIndex = rowVirtualizer.scrollToIndex;
+
   useEffect(() => {
     if (!scrollToNextRef) {
       return;
     }
     scrollToNextRef.current = () => {
       const scrollOffset = scrollRef.current?.scrollTop ?? 0;
-      const firstItem = rowVirtualizer
-        .getVirtualItems()
-        .find((item) => item.start >= scrollOffset);
+      const firstItem = virtualItems.find((item) => item.start > scrollOffset);
       const currentIndex = firstItem?.index ?? 0;
       const startIndex =
         currentIndex < headerLen ? headerLen : currentIndex + 1;
@@ -300,7 +301,7 @@ function VirtualListInternal<T>({
         }
 
         // Found a valid item to jump to
-        rowVirtualizer.scrollToIndex(nextIndex, {
+        scrollToIndex(nextIndex, {
           align: "start",
           behavior: "smooth",
         });
@@ -317,17 +318,20 @@ function VirtualListInternal<T>({
     stickyIndicies,
     estimatedItemSize,
     jumpMinItemHeight,
+    virtualItems,
+    scrollToIndex,
+    scrollRef,
   ]);
 
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
-    if (!lastItem || _.isNil(dataLen)) {
+    const [lastItem] = [...virtualItems].reverse();
+    if (!lastItem) {
       return;
     }
-    if (lastItem.index >= dataLen - 1) {
+    if (lastItem.index >= count - 1) {
       onEndReached?.();
     }
-  }, [dataLen, rowVirtualizer.getVirtualItems(), onEndReached]);
+  }, [count, virtualItems, onEndReached]);
 
   const colWidth = 100 / (numColumns ?? 1);
 
