@@ -270,7 +270,10 @@ function VirtualListInternal<T>({
     virtualizer: rowVirtualizer,
   });
 
-  if (scrollToNextRef) {
+  useEffect(() => {
+    if (!scrollToNextRef) {
+      return;
+    }
     scrollToNextRef.current = () => {
       const scrollOffset = scrollRef.current?.scrollTop ?? 0;
       const firstItem = rowVirtualizer
@@ -280,10 +283,7 @@ function VirtualListInternal<T>({
       const startIndex =
         currentIndex < headerLen ? headerLen : currentIndex + 1;
       let nextIndex = startIndex;
-      while (true) {
-        // Reached end of list
-        if (nextIndex >= count) break;
-
+      while (nextIndex < count) {
         // Skip sticky headers (e.g. sort bar) so we don't get stuck
         if (stickyIndicies?.includes(nextIndex)) {
           nextIndex++;
@@ -307,7 +307,17 @@ function VirtualListInternal<T>({
         break;
       }
     };
-  }
+    return () => {
+      scrollToNextRef.current = null;
+    };
+  }, [
+    scrollToNextRef,
+    headerLen,
+    count,
+    stickyIndicies,
+    estimatedItemSize,
+    jumpMinItemHeight,
+  ]);
 
   useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
