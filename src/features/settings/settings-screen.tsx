@@ -1,6 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import {
+  DARK_THEME_OPTIONS,
   DarkMode,
+  LIGHT_THEME_OPTIONS,
   POST_CARD_STYLE_OPTIONS,
   SHARE_LINK_TYPE_OPTIONS,
   ShareLinkType,
@@ -305,6 +307,11 @@ export default function SettingsPage() {
   const darkMode = useSettingsStore((s) => s.darkMode);
   const setDarkMode = useSettingsStore((s) => s.setDarkMode);
 
+  const lightTheme = useSettingsStore((s) => s.lightTheme);
+  const setLightTheme = useSettingsStore((s) => s.setLightTheme);
+  const darkTheme = useSettingsStore((s) => s.darkTheme);
+  const setDarkTheme = useSettingsStore((s) => s.setDarkTheme);
+
   const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const setVoteDisplaySetting = useSettingsStore(
     (s) => s.setVoteDisplaySetting,
@@ -433,6 +440,28 @@ export default function SettingsPage() {
             </Section>
 
             <Section title="APPEARANCE">
+              <SectionItem>
+                <label>Light theme</label>
+                <SimpleSelect
+                  options={LIGHT_THEME_OPTIONS}
+                  value={lightTheme}
+                  onChange={(opt) => setLightTheme(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
+              </SectionItem>
+              <SectionItem>
+                <label>Dark theme</label>
+                <SimpleSelect
+                  options={DARK_THEME_OPTIONS}
+                  value={darkTheme}
+                  onChange={(opt) => setDarkTheme(opt.value)}
+                  valueGetter={(opt) => opt.value}
+                  labelGetter={(opt) => opt.label}
+                  className="w-[160px]"
+                />
+              </SectionItem>
               <SectionItem>
                 <label>Dark / Light mode</label>
                 <SimpleSelect

@@ -9,6 +9,19 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
+export type LightTheme = "default-light" | "dracula-light";
+export type DarkTheme = "default-dark" | "dracula-dark";
+
+export const LIGHT_THEME_OPTIONS: { label: string; value: LightTheme }[] = [
+  { value: "default-light", label: "Default" },
+  { value: "dracula-light", label: "Dracula" },
+];
+
+export const DARK_THEME_OPTIONS: { label: string; value: DarkTheme }[] = [
+  { value: "default-dark", label: "Default" },
+  { value: "dracula-dark", label: "Dracula" },
+];
+
 // How vote counts are displayed in the UI.
 // "score"    → combined score in the middle between buttons
 // "upvotes"  → upvote count on the left, separator before downvote button
@@ -96,6 +109,10 @@ type SettingsStore = {
   setHideThresholdSetting: (newVal: ThresholdSetting) => void;
   collapseRemovedComments: boolean;
   setCollapseRemovedComments: (newVal: boolean) => void;
+  lightTheme: LightTheme;
+  setLightTheme: (newVal: LightTheme) => void;
+  darkTheme: DarkTheme;
+  setDarkTheme: (newVal: DarkTheme) => void;
   reset: () => void;
 };
 
@@ -116,6 +133,8 @@ const INIT_STATE = {
   collapseThresholdSetting: -10,
   hideThresholdSetting: "account",
   collapseRemovedComments: true,
+  lightTheme: "default-light",
+  darkTheme: "default-dark",
 } satisfies Partial<SettingsStore>;
 
 function pruneFilterKeywords(keywords: string[]) {
@@ -156,6 +175,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ hideThresholdSetting }),
       setCollapseRemovedComments: (collapseRemovedComments) =>
         set({ collapseRemovedComments }),
+      setLightTheme: (lightTheme) => set({ lightTheme }),
+      setDarkTheme: (darkTheme) => set({ darkTheme }),
       reset: () => {
         if (isTest()) {
           set(INIT_STATE);
