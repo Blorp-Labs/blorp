@@ -279,11 +279,17 @@ function VirtualListInternal<T>({
   const virtualItems = rowVirtualizer.getVirtualItems();
   const scrollToIndex = rowVirtualizer.scrollToIndex;
 
+  const disableHaptics = useSettingsStore((s) => s.disableHaptics);
   useEffect(() => {
     if (!scrollToNextRef) {
       return;
     }
     scrollToNextRef.current = () => {
+      if (!disableHaptics) {
+        Haptics.impact({
+          style: ImpactStyle.Medium,
+        });
+      }
       const scrollOffset = scrollRef.current?.scrollTop ?? 0;
       // scrollPaddingStart causes scrollToIndex(N) to land at
       // scrollTop = itemStart(N) - scrollToIndexOffset, so adding
@@ -314,7 +320,6 @@ function VirtualListInternal<T>({
         // Found a valid item to jump to
         scrollToIndex(nextIndex, {
           align: "start",
-          behavior: "smooth",
         });
         break;
       }
@@ -333,6 +338,7 @@ function VirtualListInternal<T>({
     scrollToIndex,
     scrollRef,
     scrollToIndexOffset,
+    disableHaptics,
   ]);
 
   useEffect(() => {
