@@ -9,6 +9,12 @@
  * so they don't need overrides here.
  */
 
+/*
+ * Dracula color palette — https://draculatheme.com
+ * Light theme colors from the Alucard spec, dark theme colors from the standard Dracula spec.
+ * MIT License — Copyright (c) 2023 Zeno Rocha
+ */
+
 /* ── Dracula Light ── */
 html[data-light-theme="dracula-light"] {
   --light-brand: #a3144d;
