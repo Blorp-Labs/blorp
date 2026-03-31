@@ -194,6 +194,7 @@ function VirtualListInternal<T>({
     count,
     overscan,
     paddingEnd,
+    scrollPaddingStart: scrollToIndexOffset,
     lanes: numColumns === 1 ? undefined : numColumns,
     getScrollElement: () => scrollRef.current,
     estimateSize: (index) => cache.current?.[index]?.size ?? estimatedItemSize,
@@ -276,6 +277,7 @@ function VirtualListInternal<T>({
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
+  const scrollToIndex = rowVirtualizer.scrollToIndex;
 
   useEffect(() => {
     if (!scrollToNextRef) {
@@ -283,6 +285,10 @@ function VirtualListInternal<T>({
     }
     scrollToNextRef.current = () => {
       const scrollOffset = scrollRef.current?.scrollTop ?? 0;
+      // scrollPaddingStart causes scrollToIndex(N) to land at
+      // scrollTop = itemStart(N) - scrollToIndexOffset, so adding
+      // scrollToIndexOffset back here makes firstItem resolve to N+1,
+      // meaning startIndex advances correctly without a separate +1.
       const firstItem = virtualItems.find(
         (item) => item.start > scrollOffset + scrollToIndexOffset,
       );
@@ -306,9 +312,8 @@ function VirtualListInternal<T>({
         }
 
         // Found a valid item to jump to
-        const itemStart =
-          cache.current[nextIndex]?.start ?? nextIndex * estimatedItemSize;
-        scrollToOffset(itemStart - scrollToIndexOffset, {
+        scrollToIndex(nextIndex, {
+          align: "start",
           behavior: "smooth",
         });
         break;
@@ -325,9 +330,9 @@ function VirtualListInternal<T>({
     estimatedItemSize,
     jumpMinItemHeight,
     virtualItems,
+    scrollToIndex,
     scrollRef,
     scrollToIndexOffset,
-    scrollToOffset,
   ]);
 
   useEffect(() => {
