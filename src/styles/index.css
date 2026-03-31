@@ -113,6 +113,10 @@
 
   /* ── Apply light mode by default ── */
   --radius: 0.625rem;
+  @apply palette-light;
+}
+
+@utility palette-light {
   --brand: var(--light-brand);
   --brand-secondary: var(--light-brand-secondary);
   --shad-background: var(--light-background);
@@ -148,52 +152,7 @@
   --shad-sidebar-ring: var(--light-sidebar-ring);
 }
 
-/* System prefers dark → switch to dark palette */
-@media (prefers-color-scheme: dark) {
-  :root:root {
-    --brand: var(--dark-brand);
-    --brand-secondary: var(--dark-brand-secondary);
-    --shad-background: var(--dark-background);
-    --shad-foreground: var(--dark-foreground);
-    --shad-card: var(--dark-card);
-    --shad-card-foreground: var(--dark-card-foreground);
-    --shad-popover: var(--dark-popover);
-    --shad-popover-foreground: var(--dark-popover-foreground);
-    --shad-primary: var(--dark-primary);
-    --shad-primary-foreground: var(--dark-primary-foreground);
-    --shad-secondary: var(--dark-secondary);
-    --shad-secondary-foreground: var(--dark-secondary-foreground);
-    --shad-muted: var(--dark-muted);
-    --shad-muted-foreground: var(--dark-muted-foreground);
-    --shad-accent: var(--dark-accent);
-    --shad-accent-foreground: var(--dark-accent-foreground);
-    --shad-destructive: var(--dark-destructive);
-    --shad-border: var(--dark-border);
-    --shad-input: var(--dark-input);
-    --shad-ring: var(--dark-ring);
-    --shad-chart-1: var(--dark-chart-1);
-    --shad-chart-2: var(--dark-chart-2);
-    --shad-chart-3: var(--dark-chart-3);
-    --shad-chart-4: var(--dark-chart-4);
-    --shad-chart-5: var(--dark-chart-5);
-    --shad-sidebar: var(--dark-sidebar);
-    --shad-sidebar-foreground: var(--dark-sidebar-foreground);
-    --shad-sidebar-primary: var(--dark-sidebar-primary);
-    --shad-sidebar-primary-foreground: var(--dark-sidebar-primary-foreground);
-    --shad-sidebar-accent: var(--dark-sidebar-accent);
-    --shad-sidebar-accent-foreground: var(--dark-sidebar-accent-foreground);
-    --shad-sidebar-border: var(--dark-sidebar-border);
-    --shad-sidebar-ring: var(--dark-sidebar-ring);
-  }
-}
-
-.dark {
-  @apply text-foreground;
-}
-
-/* Force dark mode (user override or .dark class) */
-.dark,
-html:root[data-dark-mode="dark"] {
+@utility palette-dark {
   --brand: var(--dark-brand);
   --brand-secondary: var(--dark-brand-secondary);
   --shad-background: var(--dark-background);
@@ -229,42 +188,32 @@ html:root[data-dark-mode="dark"] {
   --shad-sidebar-ring: var(--dark-sidebar-ring);
 }
 
+/*
+ * FOUC guard: applies dark aliases at CSS-parse-time (before React mounts)
+ * so users on a dark system setting never see a light flash. The attribute
+ * selector below takes over once DarkModeEffect runs and sets data-dark-mode.
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root:root {
+    @apply palette-dark;
+  }
+}
+
+.dark {
+  @apply text-foreground;
+}
+
+/* Force dark mode (user override or .dark class) */
+.dark,
+html:root[data-dark-mode="dark"] {
+  @apply palette-dark;
+}
+
 /* Force light mode when system is dark (user override) */
 @media (prefers-color-scheme: dark) {
   html:root[data-dark-mode="light"] {
-    --brand: var(--light-brand);
-    --brand-secondary: var(--light-brand-secondary);
-    --shad-background: var(--light-background);
-    --shad-foreground: var(--light-foreground);
-    --shad-card: var(--light-card);
-    --shad-card-foreground: var(--light-card-foreground);
-    --shad-popover: var(--light-popover);
-    --shad-popover-foreground: var(--light-popover-foreground);
-    --shad-primary: var(--light-primary);
-    --shad-primary-foreground: var(--light-primary-foreground);
-    --shad-secondary: var(--light-secondary);
-    --shad-secondary-foreground: var(--light-secondary-foreground);
-    --shad-muted: var(--light-muted);
-    --shad-muted-foreground: var(--light-muted-foreground);
-    --shad-accent: var(--light-accent);
-    --shad-accent-foreground: var(--light-accent-foreground);
-    --shad-destructive: var(--light-destructive);
-    --shad-border: var(--light-border);
-    --shad-input: var(--light-input);
-    --shad-ring: var(--light-ring);
-    --shad-chart-1: var(--light-chart-1);
-    --shad-chart-2: var(--light-chart-2);
-    --shad-chart-3: var(--light-chart-3);
-    --shad-chart-4: var(--light-chart-4);
-    --shad-chart-5: var(--light-chart-5);
-    --shad-sidebar: var(--light-sidebar);
-    --shad-sidebar-foreground: var(--light-sidebar-foreground);
-    --shad-sidebar-primary: var(--light-sidebar-primary);
-    --shad-sidebar-primary-foreground: var(--light-sidebar-primary-foreground);
-    --shad-sidebar-accent: var(--light-sidebar-accent);
-    --shad-sidebar-accent-foreground: var(--light-sidebar-accent-foreground);
-    --shad-sidebar-border: var(--light-sidebar-border);
-    --shad-sidebar-ring: var(--light-sidebar-ring);
+    @apply palette-light;
   }
 }
 
