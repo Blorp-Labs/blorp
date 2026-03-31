@@ -11,23 +11,23 @@
 
 /* ── Dracula Light ── */
 html[data-light-theme="dracula-light"] {
-  --light-brand: #d9369e;
-  --light-brand-secondary: #9669e0;
+  --light-brand: #a3144d;
+  --light-brand-secondary: #644ac9;
   --light-background: #f8f8f2;
   --light-foreground: #282a36;
   --light-card: #ffffff;
   --light-card-foreground: #282a36;
-  --light-popover: #ffffff;
+  --light-popover: #f8f8f2;
   --light-popover-foreground: #282a36;
   --light-primary: #282a36;
   --light-primary-foreground: #f8f8f2;
   --light-secondary: #e9e9e3;
   --light-secondary-foreground: #282a36;
   --light-muted: #e9e9e3;
-  --light-muted-foreground: #6272a4;
+  --light-muted-foreground: #6c664b;
   --light-accent: #e9e9e3;
   --light-accent-foreground: #282a36;
-  --light-destructive: #ff5555;
+  --light-destructive: #cb3a2a;
   --light-border: #d4d4cc;
   --light-input: #d4d4cc;
   --light-ring: #bd93f9;
