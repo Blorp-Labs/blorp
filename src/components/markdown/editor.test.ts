@@ -659,6 +659,14 @@ describe("upstream regressions", () => {
     setMarkdown(editor, md);
     expect(getMarkdown(editor)).toBe(md);
   });
+
+  // https://github.com/ueberdosis/tiptap/issues/7539
+  // HTML entities in markdown source (&lt; &gt;) are displayed as literal
+  // text instead of being decoded to their character equivalents.
+  it("#7539: &lt; and &gt; entities in markdown are decoded", () => {
+    setMarkdown(editor, "foo &lt;bar&gt; baz");
+    expect(editor.state.doc.textContent).toBe("foo <bar> baz");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -691,14 +699,6 @@ describe("known upstream bugs", () => {
       expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
     },
   );
-
-  // https://github.com/ueberdosis/tiptap/issues/7539
-  // HTML entities in markdown source (&lt; &gt;) are displayed as literal
-  // text instead of being decoded to their character equivalents.
-  it.fails("#7539: &lt; and &gt; entities in markdown are decoded", () => {
-    setMarkdown(editor, "foo &lt;bar&gt; baz");
-    expect(editor.state.doc.textContent).toBe("foo <bar> baz");
-  });
 
   // https://github.com/ueberdosis/tiptap/issues/7258
   // Escaped markdown characters (\*) are silently dropped instead of
