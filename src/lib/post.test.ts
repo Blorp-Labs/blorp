@@ -136,21 +136,16 @@ describe("article", () => {
 describe("image", () => {
   describe("via url", () => {
     test.each([
-      ["https://example.com/photo.jpeg"],
-      ["https://example.com/photo.jpg"],
-      ["https://example.com/photo.png"],
-      ["https://example.com/photo.webp"],
-      ["https://example.com/photo.gif"],
+      "https://example.com/photo.jpeg",
+      "https://example.com/photo.jpg",
+      "https://example.com/photo.png",
+      "https://example.com/photo.webp",
+      "https://example.com/photo.gif",
+      "https://example.com/photo.jpg?size=large",
     ])("%s → image", (url) => {
       const { post } = api.getPost({ post: { url } });
       expect(getPostEmbed(post).type).toBe("image");
-    });
-
-    test("query string after extension is stripped before matching", () => {
-      const { post } = api.getPost({
-        post: { url: "https://example.com/photo.jpg?size=large" },
-      });
-      expect(getPostEmbed(post).type).toBe("image");
+      expect(getPostEmbed(post).fullResThumbnail).toBe(url);
     });
   });
 
@@ -296,18 +291,20 @@ describe("imgur", () => {
 // safe — the ID capture stops at & or ?.
 
 describe("youtube", () => {
+  const youtubeUrls = [
+    "https://www.youtube.com/watch?v=LDU_Txk06tM",
+    "https://youtube.com/watch?v=LDU_Txk06tM",
+    "https://youtu.be/LDU_Txk06tM",
+    "https://www.youtube.com/shorts/LDU_Txk06tM",
+    "https://www.youtube.com/embed/LDU_Txk06tM",
+    "https://www.youtube.com/live/LDU_Txk06tM",
+    "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s",
+    "https://youtu.be/LDU_Txk06tM?t=90",
+    "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
+  ];
+
   describe("via url", () => {
-    test.each([
-      "https://www.youtube.com/watch?v=LDU_Txk06tM",
-      "https://youtube.com/watch?v=LDU_Txk06tM",
-      "https://youtu.be/LDU_Txk06tM",
-      "https://www.youtube.com/shorts/LDU_Txk06tM",
-      "https://www.youtube.com/embed/LDU_Txk06tM",
-      "https://www.youtube.com/live/LDU_Txk06tM",
-      "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s",
-      "https://youtu.be/LDU_Txk06tM?t=90",
-      "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
-    ])("url=%s → type=youtube", (url) => {
+    test.each(youtubeUrls)("url=%s → type=youtube", (url) => {
       const { post } = api.getPost({
         post: { url },
       });
@@ -317,67 +314,47 @@ describe("youtube", () => {
   });
 
   describe("via embedVideoUrl", () => {
-    test.each([
-      "https://www.youtube.com/watch?v=LDU_Txk06tM",
-      "https://youtube.com/watch?v=LDU_Txk06tM",
-      "https://youtu.be/LDU_Txk06tM",
-      "https://www.youtube.com/shorts/LDU_Txk06tM",
-      "https://www.youtube.com/embed/LDU_Txk06tM",
-      "https://www.youtube.com/live/LDU_Txk06tM",
-      "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s",
-      "https://youtu.be/LDU_Txk06tM?t=90",
-      "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
-    ])("url=%s → type=youtube", (embedVideoUrl) => {
-      const { post } = api.getPost({
-        post: { embedVideoUrl },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-      expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
-    });
+    test.each(youtubeUrls)(
+      "embedVideoUrl=%s → type=youtube",
+      (embedVideoUrl) => {
+        const { post } = api.getPost({
+          post: { embedVideoUrl },
+        });
+        expect(getPostEmbed(post).type).toBe("youtube");
+        expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
+      },
+    );
   });
 });
 
 // ─── vimeo ────────────────────────────────────────────────────────────────────
 
 describe("vimeo", () => {
+  const vimeoUrls = [
+    "https://vimeo.com/279580150",
+    "https://vimeo.com/279580150?t=30s",
+    // private video url with hash suffix
+    "https://vimeo.com/279580150/abc123def456",
+    "https://vimeo.com/channels/staffpicks/279580150",
+  ];
+
   describe("via url", () => {
-    test("standard numeric id url", () => {
+    test.each(vimeoUrls)("url=%s → type=vimeo", (url) => {
       const { post } = api.getPost({
-        post: { url: "https://vimeo.com/279580150" },
+        post: { url },
       });
       expect(getPostEmbed(post).type).toBe("vimeo");
-    });
-
-    test("url with timestamp param", () => {
-      const { post } = api.getPost({
-        post: { url: "https://vimeo.com/279580150?t=30s" },
-      });
-      expect(getPostEmbed(post).type).toBe("vimeo");
-    });
-
-    test("private video url with hash suffix", () => {
-      const { post } = api.getPost({
-        post: { url: "https://vimeo.com/279580150/abc123def456" },
-      });
-      expect(getPostEmbed(post).type).toBe("vimeo");
-    });
-
-    // Vimeo channel video URLs are real shareable links but the regex requires
-    // digits immediately after vimeo.com/ — the channel name blocks the match.
-    test("channel video url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://vimeo.com/channels/staffpicks/279580150" },
-      });
-      expect(getPostEmbed(post).type).toBe("vimeo");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // Detection should be field-agnostic. Currently only url is checked.
-    test("vimeo url in embedVideoUrl → vimeo", () => {
-      const embedVideoUrl = "https://vimeo.com/279580150";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+    test.each(vimeoUrls)("embedVideoUrl=%s → type=vimeo", (embedVideoUrl) => {
+      const { post } = api.getPost({
+        post: { embedVideoUrl },
+      });
       expect(getPostEmbed(post).type).toBe("vimeo");
+      expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
     });
   });
 
@@ -394,43 +371,34 @@ describe("vimeo", () => {
 // ─── soundcloud ───────────────────────────────────────────────────────────────
 
 describe("soundcloud", () => {
+  const urls = [
+    "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow",
+    "https://soundcloud.com/tomvalbyrotary/sets/my-playlist",
+    // on.soundcloud.com is the short link format SoundCloud generates when sharing
+    "https://on.soundcloud.com/abc123",
+  ];
+
   describe("via url", () => {
-    test("track url", () => {
+    test.each(urls)("url=%s → type=soundcloud", (url) => {
       const { post } = api.getPost({
         post: {
-          url: "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow",
+          url,
         },
       });
       expect(getPostEmbed(post).type).toBe("soundcloud");
-    });
-
-    test("sets/playlist url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://soundcloud.com/tomvalbyrotary/sets/my-playlist" },
-      });
-      expect(getPostEmbed(post).type).toBe("soundcloud");
-    });
-
-    // on.soundcloud.com is the short link format SoundCloud generates when
-    // sharing. Currently fails because detection only checks soundcloud.com/.
-    test("on.soundcloud.com short url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://on.soundcloud.com/abc123" },
-      });
-      expect(getPostEmbed(post).type).toBe("soundcloud");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // Detection should be field-agnostic. Currently soundcloud only checks url,
-    // so a soundcloud URL in embedVideoUrl falls through to generic-video.
-    test("soundcloud url in embedVideoUrl → soundcloud, embedUrl set to embedVideoUrl", () => {
-      const embedVideoUrl =
-        "https://soundcloud.com/tomvalbyrotary/youre-making-my-teeth-grow";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("soundcloud");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
+    test.each(urls)("embedVideoUrl=%s → type=soundcloud", (embedVideoUrl) => {
+      const { post } = api.getPost({
+        post: {
+          embedVideoUrl,
+        },
+      });
+      expect(getPostEmbed(post).type).toBe("soundcloud");
+      expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
     });
   });
 });
