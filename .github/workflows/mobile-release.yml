@@ -31,6 +31,8 @@ jobs:
     if: ${{ github.event_name == 'push' || (github.event.inputs.confirm == 'yes, deploy release' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both')) }}
     runs-on: macos-26
     timeout-minutes: 60
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,6 +101,8 @@ jobs:
     if: ${{ github.event_name == 'push' || (github.event.inputs.confirm == 'yes, deploy release' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -176,6 +180,8 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     runs-on: macos-15
     timeout-minutes: 90
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
