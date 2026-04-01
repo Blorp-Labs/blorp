@@ -1,6 +1,7 @@
 import { isYouTubeVideoUrl } from "./youtube";
 import { Schemas } from "./api/adapters/api-blueprint";
 import { urlStripAfterPath } from "./utils";
+import _ from "lodash";
 
 const VIEMO_REGEX = /https:\/\/vimeo.com\/[0-9]+/i;
 
@@ -10,6 +11,23 @@ const SPOTIFY_REGEX =
 const PEERTUBE_REGEX =
   /^https?:\/\/[\w.-]+\/videos\/watch\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:[?#].*)?$/i;
 const PEERTUBE_REGEX2 = /^https?:\/\/[\w.-]+\/w\/[0-9a-z]+$/i;
+
+function normalizeImgur(url: string) {
+  if (url.endsWith(".gifv")) {
+    return url.replace(/gifv$/, "mp4");
+  }
+  return url;
+}
+
+function normalizeVideoUrl<T>(url: string | T) {
+  if (!_.isString(url)) {
+    return url;
+  }
+  if (url.includes("://i.imgur.com/")) {
+    return normalizeImgur(url);
+  }
+  return url;
+}
 
 export function getPostEmbed(post: Schemas.Post) {
   const urlContentType = post.urlContentType;
@@ -106,6 +124,8 @@ export function getPostEmbed(post: Schemas.Post) {
   if (post.url && embedType === "image" && post.url !== thumbnail) {
     fullResThumbnail = post.url;
   }
+
+  embedUrl = normalizeVideoUrl(embedUrl);
 
   return {
     type: embedType,
