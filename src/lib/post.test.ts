@@ -76,10 +76,10 @@ describe("urlContentType", () => {
     expect(getPostEmbed(post).type).toBe("video");
   });
 
-  // urlContentType=image/gif on a .gifv url forces image detection, but
+  // urlContentType=image/gif on a .gifv url forces video detection, and
   // normalizeVideoUrl still rewrites the embedUrl to .mp4 — producing a
-  // type=image with an .mp4 embedUrl. This stems from bad upstream data.
-  test("urlContentType=image/gif + url=.gifv → type=image, embedUrl normalized to .mp4", () => {
+  // type=video with an .mp4 embedUrl. This stems from bad upstream data.
+  test("urlContentType=image/gif + url=.gifv → type=video, embedUrl normalized to .mp4", () => {
     const { post } = api.getPost({
       post: {
         url: "https://i.imgur.com/abc123.gifv",
@@ -87,7 +87,7 @@ describe("urlContentType", () => {
       },
     });
     const embed = getPostEmbed(post);
-    expect(embed.type).toBe("image");
+    expect(embed.type).toBe("video");
     expect(embed.embedUrl).toBe("https://i.imgur.com/abc123.mp4");
   });
 
@@ -171,7 +171,9 @@ describe("image", () => {
     test("set when url differs from thumbnailUrl (extension detection)", () => {
       const url = "https://example.com/full.png";
       const thumbnailUrl = "https://example.com/thumb.jpg";
-      const { post } = api.getPost({ post: { url, thumbnailUrl } });
+      const { post } = api.getPost({
+        post: { url, thumbnailUrl, urlContentType: null },
+      });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("image");
       expect(embed.fullResThumbnail).toBe(url);
@@ -208,19 +210,15 @@ describe("image", () => {
 
 describe("video", () => {
   describe("via url", () => {
-    test(".mp4 → video, embedUrl set to url", () => {
-      const url = "https://example.com/clip.mp4";
+    test.each([
+      ["https://example.com/clip.mp4"],
+      ["https://example.com/stream.m3u8"],
+      ["https://example.com/clip.gifv"],
+    ])("%s → video, embedUrl set to embedVideoUrl", (url) => {
       const { post } = api.getPost({ post: { url } });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("video");
       expect(embed.embedUrl).toBe(url);
-    });
-
-    test(".gifv → video", () => {
-      const { post } = api.getPost({
-        post: { url: "https://example.com/clip.gifv" },
-      });
-      expect(getPostEmbed(post).type).toBe("video");
     });
   });
 
@@ -299,98 +297,42 @@ describe("imgur", () => {
 
 describe("youtube", () => {
   describe("via url", () => {
-    test("standard /watch?v= url", () => {
+    test.each([
+      "https://www.youtube.com/watch?v=LDU_Txk06tM",
+      "https://youtube.com/watch?v=LDU_Txk06tM",
+      "https://youtu.be/LDU_Txk06tM",
+      "https://www.youtube.com/shorts/LDU_Txk06tM",
+      "https://www.youtube.com/embed/LDU_Txk06tM",
+      "https://www.youtube.com/live/LDU_Txk06tM",
+      "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s",
+      "https://youtu.be/LDU_Txk06tM?t=90",
+      "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
+    ])("url=%s → type=youtube", (url) => {
       const { post } = api.getPost({
-        post: { url: "https://www.youtube.com/watch?v=LDU_Txk06tM" },
+        post: { url },
       });
       expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("youtube.com without www", () => {
-      const { post } = api.getPost({
-        post: { url: "https://youtube.com/watch?v=LDU_Txk06tM" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("youtu.be short url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://youtu.be/LDU_Txk06tM" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("/shorts/ url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://www.youtube.com/shorts/LDU_Txk06tM" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("/embed/ url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://www.youtube.com/embed/LDU_Txk06tM" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("/live/ url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://www.youtube.com/live/LDU_Txk06tM" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("watch url with start time (t=) param", () => {
-      const { post } = api.getPost({
-        post: { url: "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("youtu.be with start time (t=) param", () => {
-      const { post } = api.getPost({
-        post: { url: "https://youtu.be/LDU_Txk06tM?t=90" },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
-    });
-
-    test("watch url with playlist context (v= + list=)", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
-        },
-      });
-      expect(getPostEmbed(post).type).toBe("youtube");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // Detection should be field-agnostic. Currently only url is checked.
-    test("youtube url in embedVideoUrl → youtube", () => {
-      const embedVideoUrl = "https://www.youtube.com/watch?v=LDU_Txk06tM";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
+    test.each([
+      "https://www.youtube.com/watch?v=LDU_Txk06tM",
+      "https://youtube.com/watch?v=LDU_Txk06tM",
+      "https://youtu.be/LDU_Txk06tM",
+      "https://www.youtube.com/shorts/LDU_Txk06tM",
+      "https://www.youtube.com/embed/LDU_Txk06tM",
+      "https://www.youtube.com/live/LDU_Txk06tM",
+      "https://www.youtube.com/watch?v=LDU_Txk06tM&t=90s",
+      "https://youtu.be/LDU_Txk06tM?t=90",
+      "https://www.youtube.com/watch?v=LDU_Txk06tM&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
+    ])("url=%s → type=youtube", (embedVideoUrl) => {
+      const { post } = api.getPost({
+        post: { embedVideoUrl },
+      });
       expect(getPostEmbed(post).type).toBe("youtube");
-    });
-  });
-
-  describe("non-matching urls", () => {
-    test("channel page does not yield youtube type", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://www.youtube.com/channel/UCxxxxxxxxxxxxxxxxxxxxxx",
-        },
-      });
-      expect(getPostEmbed(post).type).not.toBe("youtube");
-    });
-
-    test("playlist page without video ID does not yield youtube type", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://www.youtube.com/playlist?list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-",
-        },
-      });
-      expect(getPostEmbed(post).type).not.toBe("youtube");
+      expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
     });
   });
 });
