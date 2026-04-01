@@ -1,8 +1,9 @@
-# Releases must be 7 days old to give npm time to flag compromised packages
-minimumReleaseAge: 10080
+minimumReleaseAge: 10080 # 7 Days (in minues)
 
-savePrefix: ''
+savePrefix: ""
 
-trustPolicy: 'no-downgrade'
+trustPolicy: "no-downgrade"
+
+trustPolicyIgnoreAfter: 262800 # 6 Months (in minutes)
 
 blockExoticSubdeps: true
