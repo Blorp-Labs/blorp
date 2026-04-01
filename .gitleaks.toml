@@ -1,0 +1,11 @@
+[extend]
+  useDefault = true
+
+[allowlist]
+  description = "False positives"
+  commits = [
+    "dbc06c8a055d5e3827d940f88941d59e076303db", # token has been rotated
+  ]
+  paths = [
+    '''src/lib/utils\.test\.ts''',
+  ]
