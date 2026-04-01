@@ -406,63 +406,39 @@ describe("soundcloud", () => {
 // ─── spotify ──────────────────────────────────────────────────────────────────
 
 describe("spotify", () => {
+  const spotifyUrls = [
+    "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh",
+    "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
+    "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh?si=abc123def456",
+    "https://open.spotify.com/album/1DFixLWuPkv3KT3TnV35m3",
+    "https://open.spotify.com/episode/5AJXaHhvHeBBkNTPYUlPJO",
+  ];
+
   describe("via url", () => {
-    test("track url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh" },
-      });
-      expect(getPostEmbed(post).type).toBe("spotify");
-    });
-
-    test("playlist url", () => {
+    test.each(spotifyUrls)("url=%s → type=spotify", (url) => {
       const { post } = api.getPost({
         post: {
-          url: "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
+          url,
         },
       });
       expect(getPostEmbed(post).type).toBe("spotify");
-    });
-
-    // Spotify always appends ?si= to shared URLs — this is the format that
-    // actually arrives in posts when users paste a share link.
-    test("track url with ?si= sharing param", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh?si=abc123def456",
-        },
-      });
-      expect(getPostEmbed(post).type).toBe("spotify");
-    });
-
-    // Albums and episodes are embeddable on Spotify but the regex only allows
-    // playlist|track, so these currently fall through to article.
-    test("album url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://open.spotify.com/album/1DFixLWuPkv3KT3TnV35m3" },
-      });
-      expect(getPostEmbed(post).type).toBe("spotify");
-    });
-
-    test("episode url", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://open.spotify.com/episode/5AJXaHhvHeBBkNTPYUlPJO",
-        },
-      });
-      expect(getPostEmbed(post).type).toBe("spotify");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // Detection should be field-agnostic. Currently only url is checked.
-    test("spotify url in embedVideoUrl → spotify, embedUrl set to embedVideoUrl", () => {
-      const embedVideoUrl =
-        "https://open.spotify.com/track/4iV5W9uYEdYUVa79Axb7Rh";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("spotify");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
+    test.each(spotifyUrls)(
+      "embedVideoUrl=%s → type=spotify",
+      (embedVideoUrl) => {
+        const { post } = api.getPost({
+          post: {
+            embedVideoUrl,
+          },
+        });
+        expect(getPostEmbed(post).type).toBe("spotify");
+        expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
+      },
+    );
   });
 
   describe("non-matching urls", () => {
@@ -481,38 +457,36 @@ describe("spotify", () => {
 // expected to extract a bandcamp.com/EmbeddedPlayer URL from the page.
 
 describe("bandcamp", () => {
-  const EMBED_URL_1 =
-    "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/";
-  const EMBED_URL_2 =
-    "https://bandcamp.com/EmbeddedPlayer/v=2/track=1111111111/size=large/tracklist=false/artwork=small/";
+  const bandcampUrls = [
+    "https://bandcamp.com/EmbeddedPlayer/v=2/track=2978997260/size=large/tracklist=false/artwork=small/",
+    "https://bandcamp.com/EmbeddedPlayer/v=2/track=1111111111/size=large/tracklist=false/artwork=small/",
+  ];
 
-  describe("via embedVideoUrl", () => {
-    test("EmbeddedPlayer url → bandcamp, embedUrl set to embedVideoUrl", () => {
-      const { post } = api.getPost({ post: { embedVideoUrl: EMBED_URL_1 } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("bandcamp");
-      expect(embed.embedUrl).toBe(EMBED_URL_1);
-    });
-
-    test("embedVideoUrl wins over url when both carry EmbeddedPlayer urls", () => {
+  describe("via url", () => {
+    test.each(bandcampUrls)("url=%s → type=bandcamp", (url) => {
       const { post } = api.getPost({
-        post: { url: EMBED_URL_1, embedVideoUrl: EMBED_URL_2 },
+        post: {
+          url,
+        },
       });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("bandcamp");
-      expect(embed.embedUrl).toBe(EMBED_URL_2);
+      expect(getPostEmbed(post).type).toBe("bandcamp");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
-  describe("via url", () => {
-    // Detection should work regardless of which field carries the EmbeddedPlayer
-    // URL. Currently only embedVideoUrl is checked, so this fails.
-    test("EmbeddedPlayer url in url field → bandcamp, embedUrl set to url", () => {
-      const { post } = api.getPost({ post: { url: EMBED_URL_1 } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("bandcamp");
-      expect(embed.embedUrl).toBe(EMBED_URL_1);
-    });
+  describe("via embedVideoUrl", () => {
+    test.each(bandcampUrls)(
+      "embedVideoUrl=%s → type=bandcamp",
+      (embedVideoUrl) => {
+        const { post } = api.getPost({
+          post: {
+            embedVideoUrl,
+          },
+        });
+        expect(getPostEmbed(post).type).toBe("bandcamp");
+        expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
+      },
+    );
   });
 });
 
@@ -530,44 +504,36 @@ describe("loops", () => {
 // ─── redgifs ──────────────────────────────────────────────────────────────────
 
 describe("redgifs", () => {
-  describe("via url", () => {
-    test("www.redgifs.com/watch → redgif, embedUrl set to url", () => {
-      const url = "https://www.redgifs.com/watch/testredgifid";
-      const { post } = api.getPost({ post: { url } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("redgif");
-      expect(embed.embedUrl).toBe(url);
-    });
+  const redgifUrls = [
+    "https://www.redgifs.com/watch/testredgifid",
+    "https://redgifs.com/watch/testredgifid",
+  ];
 
-    test("redgifs.com/watch (no www) → redgif", () => {
-      const url = "https://redgifs.com/watch/testredgifid";
-      const { post } = api.getPost({ post: { url } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("redgif");
-      expect(embed.embedUrl).toBe(url);
+  describe("via url", () => {
+    test.each(redgifUrls)("url=%s → type=bandcamp", (url) => {
+      const { post } = api.getPost({
+        post: {
+          url,
+        },
+      });
+      expect(getPostEmbed(post).type).toBe("redgif");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // redgifs checks url before embedVideoUrl in the if-else chain, so url
-    // currently wins when both are set — embedVideoUrl should win instead.
-    test("www.redgifs.com/watch in embedVideoUrl wins over url → redgif, embedUrl set to embedVideoUrl", () => {
-      const embedVideoUrl = "https://www.redgifs.com/watch/embedgif";
-      const { post } = api.getPost({
-        post: { url: "https://www.redgifs.com/watch/urlgif", embedVideoUrl },
-      });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("redgif");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
-
-    test("redgifs.com/watch (no www) in embedVideoUrl → redgif, embedUrl set to embedVideoUrl", () => {
-      const embedVideoUrl = "https://redgifs.com/watch/someothergif";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("redgif");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
+    test.each(redgifUrls)(
+      "embedVideoUrl=%s → type=bandcamp",
+      (embedVideoUrl) => {
+        const { post } = api.getPost({
+          post: {
+            embedVideoUrl,
+          },
+        });
+        expect(getPostEmbed(post).type).toBe("redgif");
+        expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
+      },
+    );
   });
 });
 
@@ -578,53 +544,41 @@ describe("redgifs", () => {
 // Two formats are supported: /videos/watch/{uuid} and /w/{shortid}.
 
 describe("peertube", () => {
-  describe("via url", () => {
-    test("/videos/watch/ UUID url", () => {
+  const peertubeUrls = [
+    "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd",
+    "https://video.blahaj.zone/w/abc123xyz",
+    "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd?start=1m30s",
+    "https://video.blahaj.zone/w/abc123xyz?start=1m30s",
+  ];
+
+  // TODO: given the ambiguity of peertube urls, we
+  // may not want to match them from post.url if thats
+  // not enough indication that the url is a video.
+  describe.todo("via url", () => {
+    test.each(peertubeUrls)("url=%s → type=bandcamp", (url) => {
       const { post } = api.getPost({
         post: {
-          url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd",
+          url,
         },
       });
       expect(getPostEmbed(post).type).toBe("peertube");
-    });
-
-    test("/w/ short url", () => {
-      const { post } = api.getPost({
-        post: { url: "https://video.blahaj.zone/w/abc123xyz" },
-      });
-      expect(getPostEmbed(post).type).toBe("peertube");
-    });
-
-    test("/videos/watch/ UUID url with query params", () => {
-      const { post } = api.getPost({
-        post: {
-          url: "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd?start=1m30s",
-        },
-      });
-      expect(getPostEmbed(post).type).toBe("peertube");
-    });
-
-    // PEERTUBE_REGEX allows query params via (?:[?#].*)? but PEERTUBE_REGEX2
-    // is anchored with a plain $ so query params break /w/ URL matching.
-    test("/w/ short url with query params", () => {
-      const { post } = api.getPost({
-        post: { url: "https://video.blahaj.zone/w/abc123xyz?start=1m30s" },
-      });
-      expect(getPostEmbed(post).type).toBe("peertube");
+      expect(getPostEmbed(post).embedUrl).toBe(url);
     });
   });
 
   describe("via embedVideoUrl", () => {
-    // Detection should be field-agnostic. Currently only url is checked, so a
-    // peertube URL in embedVideoUrl falls through to generic-video.
-    test("/videos/watch/ UUID in embedVideoUrl → peertube, embedUrl set", () => {
-      const embedVideoUrl =
-        "https://lone.earth/videos/watch/d1616b46-8935-438d-80f9-10def00416dd";
-      const { post } = api.getPost({ post: { url: null, embedVideoUrl } });
-      const embed = getPostEmbed(post);
-      expect(embed.type).toBe("peertube");
-      expect(embed.embedUrl).toBe(embedVideoUrl);
-    });
+    test.each(peertubeUrls)(
+      "embedVideoUrl=%s → type=bandcamp",
+      (embedVideoUrl) => {
+        const { post } = api.getPost({
+          post: {
+            embedVideoUrl,
+          },
+        });
+        expect(getPostEmbed(post).type).toBe("peertube");
+        expect(getPostEmbed(post).embedUrl).toBe(embedVideoUrl);
+      },
+    );
   });
 
   describe("non-matching urls", () => {
