@@ -1,0 +1,9 @@
+minimumReleaseAge: 10080 # 7 Days (in minues)
+
+savePrefix: ""
+
+trustPolicy: "no-downgrade"
+
+trustPolicyIgnoreAfter: 262800 # 6 Months (in minutes)
+
+blockExoticSubdeps: true

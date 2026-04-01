@@ -1,5 +1,37 @@
 {
-  "plansDirectory": "../plans",
+  "permissions": {
+    "deny": [
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(nc *)",
+      "Bash(* | bash)",
+      "Bash(* | sh)",
+      "Bash(*|bash)",
+      "Bash(*|sh)",
+      "Bash(eval *)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Bash(source *)",
+      "Bash(. *)",
+      "Bash(npx *)",
+      "Bash(pnpx *)",
+      "Bash(pnpm dlx *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(sftp *)"
+    ],
+    "allow": [
+      "Bash(pnpm run test)",
+      "Bash(pnpm run test:ts)",
+      "Bash(pnpm run lint)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -7,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "file_path=$(cat | jq -r '.tool_input.file_path // .tool_input.notebook_path') && npx prettier --write \"$file_path\" 2>/dev/null; exit 0"
+            "command": "node scripts/prettier-hook.js"
           }
         ]
       }

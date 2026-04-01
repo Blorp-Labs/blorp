@@ -67,4 +67,10 @@ export default tseslint.config(
       "no-restricted-syntax": "off",
     },
   },
+  {
+    files: ["scripts/**"],
+    languageOptions: {
+      globals: { process: "readonly" },
+    },
+  },
 );
