@@ -155,12 +155,23 @@ describe("image", () => {
   });
 
   describe("fullResThumbnail", () => {
-    test("set when url differs from thumbnailUrl", () => {
+    // urlContentType-detected image: url is the high-res source
+    test("set when url differs from thumbnailUrl (urlContentType detection)", () => {
       const url = "https://example.com/full.jpg";
       const thumbnailUrl = "https://example.com/thumb.jpg";
       const { post } = api.getPost({
         post: { url, thumbnailUrl, urlContentType: "image/jpeg" },
       });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("image");
+      expect(embed.fullResThumbnail).toBe(url);
+    });
+
+    // extension-detected image: same behavior, no urlContentType needed
+    test("set when url differs from thumbnailUrl (extension detection)", () => {
+      const url = "https://example.com/full.png";
+      const thumbnailUrl = "https://example.com/thumb.jpg";
+      const { post } = api.getPost({ post: { url, thumbnailUrl } });
       const embed = getPostEmbed(post);
       expect(embed.type).toBe("image");
       expect(embed.fullResThumbnail).toBe(url);
@@ -172,6 +183,16 @@ describe("image", () => {
         post: { url, thumbnailUrl: url, urlContentType: "image/jpeg" },
       });
       expect(getPostEmbed(post).fullResThumbnail).toBeNull();
+    });
+
+    // urlContentType makes embedType=image but url is null — no high-res source
+    test("null when urlContentType=image but url is null", () => {
+      const { post } = api.getPost({
+        post: { url: null, urlContentType: "image/jpeg" },
+      });
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("image");
+      expect(embed.fullResThumbnail).toBeNull();
     });
 
     test("null for non-image types", () => {
