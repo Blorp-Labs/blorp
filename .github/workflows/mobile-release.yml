@@ -60,6 +60,8 @@ jobs:
       - name: Build web assets + cap sync
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+          REACT_APP_DEFAULT_INSTANCE: ${{ vars.REACT_APP_DEFAULT_INSTANCE }}
+          REACT_APP_NAME: ${{ vars.REACT_APP_NAME }}
         run: pnpm build
 
       - uses: ruby/setup-ruby@v1
@@ -121,6 +123,8 @@ jobs:
       - name: Build web assets + cap sync
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+          REACT_APP_DEFAULT_INSTANCE: ${{ vars.REACT_APP_DEFAULT_INSTANCE }}
+          REACT_APP_NAME: ${{ vars.REACT_APP_NAME }}
         run: |
           pnpm vite build
           pnpm exec cap sync android
@@ -200,6 +204,8 @@ jobs:
       - name: Build web assets
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+          REACT_APP_DEFAULT_INSTANCE: ${{ vars.REACT_APP_DEFAULT_INSTANCE }}
+          REACT_APP_NAME: ${{ vars.REACT_APP_NAME }}
         run: pnpm vite build && pnpm cp-package-json
 
       - name: Install Rust (universal targets)
