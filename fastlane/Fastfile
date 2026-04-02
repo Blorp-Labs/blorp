@@ -114,6 +114,8 @@ platform :android do
       "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
       "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
     }
+    signing_props["versionCode"] = ENV["VERSION_CODE"].to_i if ENV["VERSION_CODE"]
+    signing_props["versionName"] = ENV["VERSION_NAME"] if ENV["VERSION_NAME"]
 
     # Build AAB for Play Store
     gradle(task: "bundle", build_type: "Release", project_dir: "android/", properties: signing_props)

@@ -29,22 +29,18 @@ done
 # 2) Gradle files (any *.gradle under android/)
 ANDROID_GRADLE="$ROOT/android/app/build.gradle"
 if [ -f "$ANDROID_GRADLE" ]; then
-  # ── 2a) Bump versionCode by 1 ──────────────────────────────────────────
-  # Extract current numeric versionCode (supports both "versionCode 42" and "?: 42)" formats)
-  currentCode=$(grep -oE '[0-9]+\)?\s*$' "$ANDROID_GRADLE" | head -1 | grep -oE '[0-9]+')
-  if [[ -z "$currentCode" ]]; then
-    currentCode=$(grep -E "versionCode" "$ANDROID_GRADLE" | grep -oE '[0-9]+' | tail -1)
-  fi
+  # ── 2a) Bump versionCode ───────────────────────────────────────────────
+  currentCode=$(grep -E "^\s+versionCode [0-9]+" "$ANDROID_GRADLE" | grep -oE '[0-9]+')
   if [[ -n "$currentCode" ]]; then
     newCode=$(date -u +%s)
-    sed -i.bak -E "s/(\\?:[[:space:]]*)$currentCode/\1$newCode/g" "$ANDROID_GRADLE"
+    sed -i.bak -E "s/(versionCode )[0-9]+/\1$newCode/" "$ANDROID_GRADLE"
     echo "  ✔ versionCode bumped from $currentCode → $newCode (timestamp)"
   else
     echo "  ✖ Could not find versionCode; skipping build‐number bump"
   fi
 
   # ── 2b) Bump versionName from OLD_VER to NEW_VER ────────────────────────
-  sed -i.bak -E "s/(\\?:[[:space:]]*)\"$OLD_VER\"/\1\"$NEW_VER\"/g" "$ANDROID_GRADLE"
+  sed -i.bak -E "s/(versionName )\"$OLD_VER\"/\1\"$NEW_VER\"/" "$ANDROID_GRADLE"
   echo "  ✔ versionName"
 fi
 
