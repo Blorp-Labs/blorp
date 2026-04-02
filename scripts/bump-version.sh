@@ -36,9 +36,9 @@ if [ -f "$ANDROID_GRADLE" ]; then
     currentCode=$(grep -E "versionCode" "$ANDROID_GRADLE" | grep -oE '[0-9]+' | tail -1)
   fi
   if [[ -n "$currentCode" ]]; then
-    newCode=$((currentCode + 1))
+    newCode=$(date -u +%s)
     sed -i.bak -E "s/(\\?:[[:space:]]*)$currentCode/\1$newCode/g" "$ANDROID_GRADLE"
-    echo "  ✔ versionCode bumped from $currentCode → $newCode"
+    echo "  ✔ versionCode bumped from $currentCode → $newCode (timestamp)"
   else
     echo "  ✖ Could not find versionCode; skipping build‐number bump"
   fi
@@ -48,7 +48,15 @@ if [ -f "$ANDROID_GRADLE" ]; then
   echo "  ✔ versionName"
 fi
 
-# 3) Xcode project MARKETING_VERSION
+# 3) F-Droid metadata
+FDROID_YML="$ROOT/xyz.blorpblorp.app.yml"
+if [ -f "$FDROID_YML" ] && [[ -n "$newCode" ]]; then
+  sed -i.bak -E "s/^CurrentVersionCode:.*/CurrentVersionCode: $newCode/" "$FDROID_YML"
+  sed -i.bak -E "s/^CurrentVersion:.*/CurrentVersion: $NEW_VER/" "$FDROID_YML"
+  echo "  ✔ xyz.blorpblorp.app.yml (CurrentVersion, CurrentVersionCode)"
+fi
+
+# 4) Xcode project MARKETING_VERSION
 PBXPROJ="$ROOT/ios/App/App.xcodeproj/project.pbxproj"
 if [ -f "$PBXPROJ" ]; then
   sed -i.bak -E \
@@ -57,14 +65,14 @@ if [ -f "$PBXPROJ" ]; then
   echo "  ✔ project.pbxproj (MARKETING_VERSION)"
 fi
 
-# 4) Tauri
+# 5) Tauri
 TAURI="$ROOT/src-tauri/Cargo.toml"
 if [ -f "$TAURI" ]; then
   sed -i.bak -E "s/version = \"$OLD_VER\"/version = \"$NEW_VER\"/g" "$TAURI"
   echo "  ✔ Tauri (Cargo.toml)"
 fi
 
-# 5) Regenerate Cargo.lock
+# 6) Regenerate Cargo.lock
 if [ -d "$ROOT/src-tauri" ]; then
   pushd "$ROOT/src-tauri" >/dev/null
     cargo update -p Blorp --precise "$NEW_VER"
@@ -77,10 +85,10 @@ if ! ./scripts/validate-tauri.sh; then
   exit 1
 fi
 
-# 6) Cleanup .bak files
+# 7) Cleanup .bak files
 find "$ROOT" -type f -name "*.bak" -delete
 
-# 7) Commit, tag, and push
+# 8) Commit, tag, and push
 git -C "$ROOT" add -u
 git -C "$ROOT" commit -m "chore: bump version to $NEW_VER"
 echo "  ✔ Committed changes"
