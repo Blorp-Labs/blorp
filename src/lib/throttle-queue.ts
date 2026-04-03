@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import { useDeepCompareMemoize } from "use-deep-compare-effect";
 
 type Task<T> = () => Promise<T>;
@@ -12,14 +12,19 @@ interface QueueItem<T> {
 export class PriorityThrottledQueue {
   public tickTime = 50;
   private queue: QueueItem<any>[] = [];
-  private lastResolvedAt: number;
+  private lastResolvedAt: number = -1;
   private stopped = true;
   private preApprovedCount = 0;
   private loopOwner = 0;
 
   constructor(private interval: number) {
-    // Pretend the "last" finished exactly `interval` ago, so the first can run immediately
-    this.lastResolvedAt = Date.now() - interval;
+    this.resetTime();
+  }
+
+  private resetTime() {
+    // Date.now() represents that last processed item
+    // so -1 means an item has never been processed
+    this.lastResolvedAt = -1;
   }
 
   enqueue<T>(task: Task<T>): Promise<T> {
@@ -66,6 +71,9 @@ export class PriorityThrottledQueue {
     this.stopped = true;
     this.queue.forEach(({ reject }) => reject(new Error("Queue cleared")));
     this.queue = [];
+    // Reset so the next task after a clear+start runs immediately instead of
+    // waiting the remaining throttle interval (fixes comments freeze on revisit).
+    this.resetTime();
   }
 
   start(): void {

@@ -94,8 +94,8 @@ export function useThrottledInfiniteQuery<
           queryFn: (ctx: any) => {
             const pageParam = ctx.pageParam as any;
             return throttleQueue.enqueue<TQueryFnData>(async () => {
-              addWarmedKey(queryKeyStr);
               const value = await queryFn(ctx);
+              addWarmedKey(queryKeyStr);
               try {
                 const prev = queryClient.getQueryData<InfiniteData<any, any>>(
                   options.queryKey,

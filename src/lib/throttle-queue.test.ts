@@ -135,4 +135,30 @@ describe("PriorityThrottleQueue", () => {
     await vi.advanceTimersByTime(interval);
     expect(fn1.viFn).toHaveBeenCalledTimes(1);
   });
+
+  test("runs task immediately after clear+restart within throttle interval", async () => {
+    const interval = 5000;
+    const { PriorityThrottledQueue } = await import("./throttle-queue");
+    const queue = new PriorityThrottledQueue(interval);
+    queue.start();
+
+    const fn1 = mockPromise();
+    queue.enqueue(fn1.promise);
+    await vi.advanceTimersByTime(queue.tickTime);
+    await vi.runAllTicks();
+    expect(fn1.viFn).toHaveBeenCalledTimes(1);
+
+    // Simulate navigating away within the throttle window, then back
+    await vi.advanceTimersByTime(1000);
+    queue.clear();
+    queue.start();
+
+    const fn2 = mockPromise();
+    queue.enqueue(fn2.promise);
+
+    // Should fire after just tickTime — clear() resets the throttle window
+    await vi.advanceTimersByTime(queue.tickTime);
+    await vi.runAllTicks();
+    expect(fn2.viFn).toHaveBeenCalledTimes(1);
+  });
 });
