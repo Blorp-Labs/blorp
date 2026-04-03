@@ -776,11 +776,13 @@ function PostCommentInner({
               {!commentView.locked && !postLocked && !standalone && (
                 <CommentReplyButton
                   onClick={() =>
-                    loadCommentIntoEditor({
-                      postApId: commentView.postApId,
-                      queryKeyParentId: queryKeyParentId,
-                      parent: commentView,
-                    })
+                    requireAuth().then(() =>
+                      loadCommentIntoEditor({
+                        postApId: commentView.postApId,
+                        queryKeyParentId: queryKeyParentId,
+                        parent: commentView,
+                      }),
+                    )
                   }
                   className="z-10"
                 />

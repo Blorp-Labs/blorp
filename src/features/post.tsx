@@ -50,6 +50,7 @@ import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
 import { useQueryToast } from "../tanstack-query/hooks";
+import { useRequireAuth } from "../components/auth-context";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -113,6 +114,7 @@ function ReplyToPost({
   });
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
   const media = useMedia();
+  const requireAuth = useRequireAuth();
   return (
     <ContentGutters className={cn("md:pb-2 md:pt-5 bg-background", className)}>
       <div className="flex-1">
@@ -122,9 +124,11 @@ function ReplyToPost({
           <button
             className="py-2 max-md:py-4.5 md:px-3 md:border md:rounded-2xl w-full text-left text-muted-foreground md:text-sm"
             onClick={() =>
-              loadCommentIntoEditor({
-                postApId,
-              })
+              requireAuth().then(() =>
+                loadCommentIntoEditor({
+                  postApId,
+                }),
+              )
             }
           >
             Add a comment
