@@ -136,37 +136,29 @@ describe("PriorityThrottleQueue", () => {
     expect(fn1.viFn).toHaveBeenCalledTimes(1);
   });
 
-  // H4: lastResolvedAt is not reset when the queue is cleared and restarted.
-  // After clear()+start(), the next task should run immediately (after tickTime),
-  // not wait the remaining throttle interval from the previous session.
-  // This causes the comments query to appear frozen when revisiting a post within 5s.
   test("runs task immediately after clear+restart within throttle interval", async () => {
     const interval = 5000;
     const { PriorityThrottledQueue } = await import("./throttle-queue");
     const queue = new PriorityThrottledQueue(interval);
     queue.start();
 
-    // Simulate initial load (sets lastResolvedAt)
     const fn1 = mockPromise();
     queue.enqueue(fn1.promise);
     await vi.advanceTimersByTime(queue.tickTime);
     await vi.runAllTicks();
     expect(fn1.viFn).toHaveBeenCalledTimes(1);
 
-    // User navigates away ~1s later (still within the 5s throttle window)
+    // Simulate navigating away within the throttle window, then back
     await vi.advanceTimersByTime(1000);
     queue.clear();
-
-    // User navigates back — queue restarts
     queue.start();
 
-    // New task enqueued (e.g. comments query fires on remount)
     const fn2 = mockPromise();
     queue.enqueue(fn2.promise);
 
-    // Should fire after just tickTime (50ms), but bug causes it to wait ~4s
+    // Should fire after just tickTime — clear() resets the throttle window
     await vi.advanceTimersByTime(queue.tickTime);
     await vi.runAllTicks();
-    expect(fn2.viFn).toHaveBeenCalledTimes(1); // FAILS — proves H4 bug
+    expect(fn2.viFn).toHaveBeenCalledTimes(1);
   });
 });
