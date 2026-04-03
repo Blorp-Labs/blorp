@@ -4,13 +4,17 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CacheKey, CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas, postSchema } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
-type CachedPost = {
-  data: Schemas.Post;
-  lastUsed: number;
-};
+const cachedPostSchema = z.object({
+  data: postSchema,
+  lastUsed: z.number(),
+});
+
+type CachedPost = z.infer<typeof cachedPostSchema>;
 
 type SortsStore = {
   posts: Record<CacheKey, CachedPost>;
@@ -132,10 +136,11 @@ export const usePostsStore = create<SortsStore>()(
         return {
           ...current,
           ...persisted,
-          posts: {
-            ...current.posts,
-            ...persisted.posts,
-          },
+          posts: mergeCacheObject(
+            persisted.posts,
+            current.posts,
+            cachedPostSchema,
+          ),
         } satisfies SortsStore;
       },
     },

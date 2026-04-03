@@ -19,6 +19,31 @@ afterEach(() => {
   useCommentsStore.getState().reset();
 });
 
+describe("merge (cross-tab version skew protection)", () => {
+  test("accepts valid persisted comments", () => {
+    const comment = api.getComment({ id: 456 });
+    const key = prefix(comment.path);
+
+    const merge = useCommentsStore.persist.getOptions().merge!;
+    const result = merge(
+      { comments: { [key]: { data: comment, lastUsed: Date.now() } } },
+      useCommentsStore.getState(),
+    );
+
+    expect(result.comments[key]?.data).toMatchObject(comment);
+  });
+
+  test("rejects persisted comments with invalid schema", () => {
+    const merge = useCommentsStore.persist.getOptions().merge!;
+    const result = merge(
+      { comments: { "some-key": { outdatedField: "old format" } } },
+      useCommentsStore.getState(),
+    );
+
+    expect(result.comments).toEqual({});
+  });
+});
+
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 
 describe("persisted state snapshot", () => {

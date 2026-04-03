@@ -4,16 +4,20 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas, commentSchema } from "../lib/api/adapters/api-blueprint";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
 import { isTest } from "../lib/device";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
-type CachedComment = {
-  data: Schemas.Comment;
-  remove?: boolean;
-  lastUsed: number;
-};
+const cachedCommentSchema = z.object({
+  data: commentSchema,
+  remove: z.boolean().optional(),
+  lastUsed: z.number(),
+});
+
+type CachedComment = z.infer<typeof cachedCommentSchema>;
 
 type CommentPath = Schemas.Comment["path"];
 
@@ -142,10 +146,11 @@ export const useCommentsStore = create<SortsStore>()(
         return {
           ...current,
           ...persisted,
-          comments: {
-            ...current.comments,
-            ...persisted.comments,
-          },
+          comments: mergeCacheObject(
+            persisted.comments,
+            current.comments,
+            cachedCommentSchema,
+          ),
         } satisfies SortsStore;
       },
     },

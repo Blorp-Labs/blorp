@@ -4,21 +4,28 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { Account, CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import {
+  Schemas,
+  communitySchema,
+  personSchema,
+} from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
-type Data = {
-  communityView: Schemas.Community;
-  mods?: Schemas.Person[];
-  flairs?: { id: number }[];
-};
+const cachedCommunitySchema = z.object({
+  data: z.object({
+    communityView: communitySchema,
+    mods: z.array(personSchema).optional(),
+    flairs: z.array(z.object({ id: z.number() })).optional(),
+  }),
+  lastUsed: z.number(),
+});
 
-type CachedCommunity = {
-  data: Data;
-  lastUsed: number;
-};
+type Data = z.infer<typeof cachedCommunitySchema>["data"];
+type CachedCommunity = z.infer<typeof cachedCommunitySchema>;
 
 type CommunityStore = {
   communities: Record<string, CachedCommunity>;
@@ -180,10 +187,11 @@ export const useCommunitiesStore = create<CommunityStore>()(
         return {
           ...current,
           ...persisted,
-          communities: {
-            ...current.communities,
-            ...persisted.communities,
-          },
+          communities: mergeCacheObject(
+            persisted.communities,
+            current.communities,
+            cachedCommunitySchema,
+          ),
         } satisfies CommunityStore;
       },
     },

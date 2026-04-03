@@ -3,8 +3,10 @@ import {
   scoreDisplayFromSite,
   shouldShowDownvotes,
   resolveThreshold,
+  mergeCacheObject,
 } from "./utils";
 import * as api from "@/test-utils/api";
+import z from "zod";
 
 // ─── scoreDisplayFromSite ────────────────────────────────────────────────────
 
@@ -161,6 +163,69 @@ describe("shouldShowDownvotes — 'account' mode", () => {
 
   test("account scoreDisplay='none' → hide button even when server enables them", () => {
     expect(shouldShowDownvotes("account", true, "none")).toBe(false);
+  });
+});
+
+// ─── mergeCacheObject ────────────────────────────────────────────────────────
+
+const itemSchema = z.object({ value: z.string(), lastUsed: z.number() });
+type Item = z.infer<typeof itemSchema>;
+const makeItem = (value: string): Item => ({ value, lastUsed: 0 });
+
+describe("mergeCacheObject", () => {
+  test("returns empty object when both are empty", () => {
+    expect(mergeCacheObject({}, {}, itemSchema)).toEqual({});
+  });
+
+  test("returns current when persisted is undefined", () => {
+    const current = { a: makeItem("hello") };
+    expect(mergeCacheObject(undefined, current, itemSchema)).toEqual(current);
+  });
+
+  test("returns current when persisted is empty", () => {
+    const current = { a: makeItem("hello") };
+    expect(mergeCacheObject({}, current, itemSchema)).toEqual(current);
+  });
+
+  test("returns persisted when current is empty", () => {
+    const persisted = { a: makeItem("hello") };
+    expect(mergeCacheObject(persisted, {}, itemSchema)).toEqual(persisted);
+  });
+
+  test("merges both when both are valid, persisted wins on conflict", () => {
+    const current = { a: makeItem("current-a"), b: makeItem("current-b") };
+    const persisted = {
+      a: makeItem("persisted-a"),
+      c: makeItem("persisted-c"),
+    };
+    const result = mergeCacheObject(persisted, current, itemSchema);
+    expect(result["a"]).toEqual(persisted["a"]);
+    expect(result["b"]).toEqual(current["b"]);
+    expect(result["c"]).toEqual(persisted["c"]);
+  });
+
+  test("rejects current with invalid schema, keeps valid persisted", () => {
+    const invalidCurrent = { a: { wrong: "shape" } } as any;
+    const validPersisted = { b: makeItem("hello") };
+    const result = mergeCacheObject(validPersisted, invalidCurrent, itemSchema);
+    expect(result).not.toHaveProperty("a");
+    expect(result).toHaveProperty("b");
+  });
+
+  test("rejects persisted with invalid schema, keeps valid current", () => {
+    const validCurrent = { a: makeItem("hello") };
+    const invalidPersisted = { b: { wrong: "shape" } } as any;
+    const result = mergeCacheObject(invalidPersisted, validCurrent, itemSchema);
+    expect(result).toHaveProperty("a");
+    expect(result).not.toHaveProperty("b");
+  });
+
+  test("returns empty object when both have invalid schema", () => {
+    const invalidCurrent = { a: { wrong: "shape" } } as any;
+    const invalidPersisted = { b: { wrong: "shape" } } as any;
+    expect(
+      mergeCacheObject(invalidPersisted, invalidCurrent, itemSchema),
+    ).toEqual({});
   });
 });
 

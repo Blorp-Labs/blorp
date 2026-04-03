@@ -4,17 +4,20 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas, flairSchema } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
+
+const cachedFlairSchema = z.object({
+  data: flairSchema,
+  lastUsed: z.number(),
+});
 
 type Data = Schemas.Flair;
-
-type CachedFlair = {
-  data: Data;
-  lastUsed: number;
-};
+type CachedFlair = z.infer<typeof cachedFlairSchema>;
 
 type FlairStore = {
   flairs: Record<string, CachedFlair>;
@@ -99,10 +102,11 @@ export const useFlairsStore = create<FlairStore>()(
         return {
           ...current,
           ...persisted,
-          flairs: {
-            ...current.flairs,
-            ...persisted.flairs,
-          },
+          flairs: mergeCacheObject(
+            persisted.flairs,
+            current.flairs,
+            cachedFlairSchema,
+          ),
         } satisfies FlairStore;
       },
     },

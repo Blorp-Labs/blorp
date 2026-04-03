@@ -8,6 +8,8 @@ import { Forms, Schemas } from "../lib/api/adapters/api-blueprint";
 import { isNotNil } from "../lib/utils";
 import { isTest } from "../lib/device";
 import { useMemo } from "react";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
 export type CommunityPartial = Pick<
   Community,
@@ -18,6 +20,13 @@ export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
   type: "text" | "media" | "link" | "poll";
   createdAt: number;
 }
+
+const draftSchema = z
+  .object({
+    type: z.enum(["text", "media", "link", "poll"]),
+    createdAt: z.number(),
+  })
+  .passthrough() as z.ZodType<Draft>;
 
 type CreatePostStore = {
   drafts: Record<string, Draft>;
@@ -290,10 +299,11 @@ export const useCreatePostStore = create<CreatePostStore>()(
         return {
           ...current,
           ...persisted,
-          drafts: {
-            ...current.drafts,
-            ...persisted.drafts,
-          },
+          drafts: mergeCacheObject(
+            persisted.drafts,
+            current.drafts,
+            draftSchema,
+          ),
         } satisfies CreatePostStore;
       },
     },

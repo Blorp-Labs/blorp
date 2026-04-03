@@ -1,4 +1,5 @@
 import { getAccountSite, useAuth } from "./auth";
+import z from "zod";
 import {
   useSettingsStore,
   type ScoreDisplay,
@@ -9,11 +10,37 @@ import { type Schemas } from "../lib/api/adapters/api-blueprint";
 
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 
+export function mergeCacheObject<T>(
+  persisted: Record<string, T> | undefined,
+  current: Record<string, T>,
+  schema: z.ZodType<T>,
+): Record<string, T> {
+  let result: Record<string, T> = {};
+
+  try {
+    const firstKey = Object.keys(current)[0];
+    if (firstKey && schema.safeParse(current[firstKey]).success) {
+      result = { ...result, ...current };
+    }
+  } catch {}
+
+  try {
+    const firstKey = Object.keys(persisted ?? {})[0];
+    if (firstKey && schema.safeParse(persisted?.[firstKey]).success) {
+      result = { ...result, ...persisted };
+    }
+  } catch {}
+
+  return result;
+}
+
 export function scoreDisplayFromSite(
   voteDisplaySetting: VoteDisplaySetting,
   site: Schemas.Site | undefined,
 ): ScoreDisplay {
-  if (voteDisplaySetting !== "account") return voteDisplaySetting;
+  if (voteDisplaySetting !== "account") {
+    return voteDisplaySetting;
+  }
 
   // "account" mode — derive from account/server settings.
   // When both showUpvotes and showDownvotes are enabled Lemmy ignores
@@ -25,10 +52,18 @@ export function scoreDisplayFromSite(
   const showDownvotes = (site?.showDownvotes ?? true) && serverEnablesDownvotes;
   const showScores = site?.showScores ?? true;
 
-  if (showUpvotes && showDownvotes) return "score";
-  if (showUpvotes) return "upvotes";
-  if (showDownvotes) return "downvotes";
-  if (showScores) return "score";
+  if (showUpvotes && showDownvotes) {
+    return "score";
+  }
+  if (showUpvotes) {
+    return "upvotes";
+  }
+  if (showDownvotes) {
+    return "downvotes";
+  }
+  if (showScores) {
+    return "score";
+  }
   return "none";
 }
 
@@ -37,7 +72,9 @@ export function shouldShowDownvotes(
   serverCapability: boolean,
   scoreDisplay: ScoreDisplay,
 ): boolean {
-  if (voteDisplaySetting === "none") return false;
+  if (voteDisplaySetting === "none") {
+    return false;
+  }
   if (voteDisplaySetting === "account") {
     // Use the resolved display mode rather than site.showDownvotes directly.
     // e.g. "score" mode has showDownvotes=false on the account but the
@@ -52,7 +89,9 @@ export function resolveThreshold(
   setting: ThresholdSetting,
   accountThreshold: number | undefined,
 ): number | null {
-  if (setting === "account") return accountThreshold ?? null;
+  if (setting === "account") {
+    return accountThreshold ?? null;
+  }
   return setting;
 }
 

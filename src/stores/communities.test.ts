@@ -195,6 +195,37 @@ describe("useCommunitiesStore", () => {
   });
 });
 
+describe("merge (cross-tab version skew protection)", () => {
+  test("accepts valid persisted communities", () => {
+    const communityView = api.getCommunity({ id: 1 });
+    const key = prefix(communityView.slug);
+
+    const merge = useCommunitiesStore.persist.getOptions().merge!;
+    const result = merge(
+      {
+        communities: {
+          [key]: { data: { communityView }, lastUsed: Date.now() },
+        },
+      },
+      useCommunitiesStore.getState(),
+    );
+
+    expect(result.communities[key]?.data.communityView).toMatchObject(
+      communityView,
+    );
+  });
+
+  test("rejects persisted communities with invalid schema", () => {
+    const merge = useCommunitiesStore.persist.getOptions().merge!;
+    const result = merge(
+      { communities: { "some-key": { outdatedField: "old format" } } },
+      useCommunitiesStore.getState(),
+    );
+
+    expect(result.communities).toEqual({});
+  });
+});
+
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 
 describe("persisted state snapshot", () => {

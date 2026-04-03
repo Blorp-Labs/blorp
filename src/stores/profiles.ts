@@ -4,13 +4,17 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { Account, CacheKey, CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas, personSchema } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
-type CachedProfile = {
-  data: Schemas.Person;
-  lastUsed: number;
-};
+const cachedProfileSchema = z.object({
+  data: personSchema,
+  lastUsed: z.number(),
+});
+
+type CachedProfile = z.infer<typeof cachedProfileSchema>;
 
 type ProfilesStore = {
   profiles: Record<CacheKey, CachedProfile>;
@@ -126,10 +130,11 @@ export const useProfilesStore = create<ProfilesStore>()(
         return {
           ...current,
           ...persisted,
-          profiles: {
-            ...current.profiles,
-            ...persisted.profiles,
-          },
+          profiles: mergeCacheObject(
+            persisted.profiles,
+            current.profiles,
+            cachedProfileSchema,
+          ),
         } satisfies ProfilesStore;
       },
     },
