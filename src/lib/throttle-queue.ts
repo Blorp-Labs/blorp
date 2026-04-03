@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import { useDeepCompareMemoize } from "use-deep-compare-effect";
 
 type Task<T> = () => Promise<T>;
@@ -66,6 +66,9 @@ export class PriorityThrottledQueue {
     this.stopped = true;
     this.queue.forEach(({ reject }) => reject(new Error("Queue cleared")));
     this.queue = [];
+    // Reset so the next task after a clear+start runs immediately instead of
+    // waiting the remaining throttle interval (fixes comments freeze on revisit).
+    this.lastResolvedAt = Date.now() - this.interval;
   }
 
   start(): void {
