@@ -12,14 +12,19 @@ interface QueueItem<T> {
 export class PriorityThrottledQueue {
   public tickTime = 50;
   private queue: QueueItem<any>[] = [];
-  private lastResolvedAt: number;
+  private lastResolvedAt: number = -1;
   private stopped = true;
   private preApprovedCount = 0;
   private loopOwner = 0;
 
   constructor(private interval: number) {
-    // Pretend the "last" finished exactly `interval` ago, so the first can run immediately
-    this.lastResolvedAt = Date.now() - interval;
+    this.resetTime();
+  }
+
+  private resetTime() {
+    // Date.now() represents that last processed item
+    // so -1 means an item has never been processed
+    this.lastResolvedAt = -1;
   }
 
   enqueue<T>(task: Task<T>): Promise<T> {
@@ -68,7 +73,7 @@ export class PriorityThrottledQueue {
     this.queue = [];
     // Reset so the next task after a clear+start runs immediately instead of
     // waiting the remaining throttle interval (fixes comments freeze on revisit).
-    this.lastResolvedAt = Date.now() - this.interval;
+    this.resetTime();
   }
 
   start(): void {
