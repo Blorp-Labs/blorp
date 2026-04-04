@@ -34,12 +34,7 @@ jobs:
         run: sudo apt-get install -y graphviz
 
       - name: Generate DOT graph
-        run: |
-          pnpm exec depcruise src \
-            --no-config \
-            --include-only "^src" \
-            --collapse "^src/[^/]+" \
-            --output-type dot > dep-graph.dot
+        run: pnpm exec depcruise src --output-type dot > dep-graph.dot
 
       - name: Render PNG from DOT
         run: dot -T png -Gdpi=150 dep-graph.dot > dep-graph.png
