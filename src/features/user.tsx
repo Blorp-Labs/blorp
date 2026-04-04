@@ -8,7 +8,7 @@ import {
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
-import { usePagination } from "../hooks/use-pagination";
+import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { decodeApId, encodeApId } from "../api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";

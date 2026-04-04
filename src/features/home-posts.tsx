@@ -28,7 +28,7 @@ import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { SearchBar } from "./search/search-bar";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
-import { usePagination } from "../hooks/use-pagination";
+import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
 import { Page } from "../components/page";

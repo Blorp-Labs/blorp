@@ -7,8 +7,8 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./ui/pagination";
-import { ContentGutters } from "./gutters";
+} from "../ui/pagination";
+import { ContentGutters } from "../gutters";
 
 export type PaginationControlsProps = {
   currentPage: number;
