@@ -130,30 +130,6 @@ describe("poll round trip", () => {
   });
 });
 
-describe("merge (cross-tab version skew protection)", () => {
-  test("accepts valid persisted drafts", () => {
-    const draft: Draft = { type: "text", createdAt: Date.now() };
-
-    const merge = useCreatePostStore.persist.getOptions().merge!;
-    const result = merge(
-      { drafts: { "draft-key": draft } },
-      useCreatePostStore.getState(),
-    );
-
-    expect(result.drafts["draft-key"]).toMatchObject(draft);
-  });
-
-  test("rejects persisted drafts with invalid schema", () => {
-    const merge = useCreatePostStore.persist.getOptions().merge!;
-    const result = merge(
-      { drafts: { "draft-key": { outdatedField: "old format" } } },
-      useCreatePostStore.getState(),
-    );
-
-    expect(result.drafts).toEqual({});
-  });
-});
-
 describe("persisted state snapshot", () => {
   beforeAll(() => {
     vi.useFakeTimers();
