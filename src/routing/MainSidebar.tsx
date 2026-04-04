@@ -3,7 +3,8 @@ import { Link, ParamsFor } from "@/src/routing/index";
 import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import { getAccountSite, useAuth, useShouldShowNsfw } from "@/src/stores/auth";
+import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { useNsfwVisibility } from "@/src/lib/nsfw";
 import {
   useModeratingCommunities,
   useNotificationCount,
@@ -210,10 +211,10 @@ export function MainSidebar() {
     instanceHost = url.host;
   } catch {}
 
-  const showNsfw = useShouldShowNsfw();
+  const nsfwVisibility = useNsfwVisibility();
 
   const fiveRecentCommunities = recentCommunities
-    .filter((c) => (showNsfw ? true : !c.nsfw))
+    .filter((c) => (nsfwVisibility !== "hide" ? true : !c.nsfw))
     .slice(0, 5);
 
   return (

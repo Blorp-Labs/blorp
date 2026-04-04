@@ -446,12 +446,14 @@ export function useAmIAdmin() {
   });
 }
 
+/** @deprecated Use useNsfwVisibility() from src/lib/nsfw.ts instead */
 export function useShouldShowNsfw() {
   return (
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false
   );
 }
 
+/** @deprecated Use useNsfwVisibility() from src/lib/nsfw.ts instead */
 export function useShouldBlurNsfw() {
   return (
     useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true

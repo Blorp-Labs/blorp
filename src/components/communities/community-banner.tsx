@@ -2,7 +2,8 @@ import { twMerge } from "tailwind-merge";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
-import { useIsCommunityBlocked, useShouldBlurNsfw } from "@/src/stores/auth";
+import { useIsCommunityBlocked } from "@/src/stores/auth";
+import { useNsfwVisibility } from "@/src/lib/nsfw";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
   COMMUNITY_NSFW_ICON_BLUR_CLASS,
@@ -14,7 +15,7 @@ export function CommunityBanner({ communityName }: { communityName?: string }) {
 
   const data = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
-  const blurNsfw = useShouldBlurNsfw();
+  const blurNsfw = useNsfwVisibility() === "blur";
 
   const communityView = data?.communityView;
   const banner = data?.communityView.banner ?? undefined;

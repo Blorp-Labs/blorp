@@ -32,6 +32,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
+import { useNsfwVisibility } from "@/src/lib/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -1013,8 +1014,7 @@ function PostCardErrorFallback({
 }
 
 function PostCardInner(props: PostProps) {
-  const showNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.showNsfw) ?? false;
+  const nsfwVisibility = useNsfwVisibility();
 
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
   const postCardStyle = props.postCardStyle ?? globalPostCardStyle;
@@ -1045,7 +1045,7 @@ function PostCardInner(props: PostProps) {
     }
   }
 
-  if (post?.nsfw === true && !showNsfw) {
+  if (post?.nsfw === true && nsfwVisibility === "hide") {
     return props.detailView ? <Notice>Hidden due to NSFW</Notice> : null;
   }
 
