@@ -26,7 +26,7 @@ import {
   MainSidebar,
   MainSidebarCollapseButton,
   useMainSidebarWidth,
-} from "./routing/MainSidebar";
+} from "./components/MainSidebar";
 import {
   LEFT_SIDEBAR_MENU_ID,
   RIGHT_SIDEBAR_MENU_ID,

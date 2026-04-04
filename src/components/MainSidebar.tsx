@@ -12,18 +12,18 @@ import {
   useSubscribedCommunities,
 } from "@/src/api";
 import { CommunityCard } from "@/src/components/communities/community-card";
-import { LEFT_SIDEBAR_MENU_ID, TABS } from "./config";
-import { Separator } from "../components/ui/separator";
+import { LEFT_SIDEBAR_MENU_ID, TABS } from "../routing/config";
+import { Separator } from "./ui/separator";
 import {
   DocumentsOutline,
   LockClosedOutline,
   ScrollTextOutline,
   Shield,
   SidebarOutline,
-} from "../components/icons";
-import { useLinkContext } from "./link-context";
-import { RoutePath } from "./routes";
-import { BadgeCount } from "../components/badge-count";
+} from "./icons";
+import { useLinkContext } from "../routing/link-context";
+import { RoutePath } from "../routing/routes";
+import { BadgeCount } from "./badge-count";
 import {
   Collapsible,
   CollapsibleContent,
@@ -32,18 +32,14 @@ import {
 import { ChevronsUpDown } from "lucide-react";
 import { useSidebarStore } from "../stores/sidebars";
 import { IoSettingsOutline } from "react-icons/io5";
-import { Button } from "../components/ui/button";
+import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { isTauri } from "../lib/device";
-import { ChevronLeft, ChevronRight } from "../components/icons";
+import { ChevronLeft, ChevronRight } from "./icons";
 import { useMedia } from "../hooks";
-import { usePathname } from "./hooks";
-import { Skeleton } from "../components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "../components/ui/tooltip";
+import { usePathname } from "../routing/hooks";
+import { Skeleton } from "./ui/skeleton";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 
 function useMainSidebarCollapsed() {
   const media = useMedia();

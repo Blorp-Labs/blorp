@@ -47,7 +47,7 @@ import {
 } from "../lib/utils";
 import { compressImage } from "../lib/image";
 import { useFlairsStore } from "@/src/stores/flairs";
-import { confetti } from "@/src/features/easter-eggs/confetti";
+import { confetti } from "@/src/lib/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../lib/post";
 import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
