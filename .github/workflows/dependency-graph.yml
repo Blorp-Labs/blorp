@@ -36,6 +36,7 @@ jobs:
       - name: Generate DOT graph
         run: |
           pnpm exec depcruise src \
+            --no-config \
             --include-only "^src" \
             --collapse "^src/[^/]+" \
             --output-type dot > dep-graph.dot
