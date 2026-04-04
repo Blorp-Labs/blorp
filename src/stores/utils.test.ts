@@ -227,6 +227,15 @@ describe("mergeCacheObject", () => {
       mergeCacheObject(invalidPersisted, invalidCurrent, itemSchema),
     ).toEqual({});
   });
+
+  test("works with flat string values, not just object values", () => {
+    const persisted = { a: "hello" };
+    const current = { b: "world" };
+    expect(mergeCacheObject(persisted, current, z.string())).toEqual({
+      a: "hello",
+      b: "world",
+    });
+  });
 });
 
 // ─── resolveThreshold ────────────────────────────────────────────────────────
