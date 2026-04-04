@@ -23,7 +23,7 @@ import { useSidebarStore } from "@/src/stores/sidebars";
 import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
 import { Skeleton } from "../ui/skeleton";
-import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
+import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import {

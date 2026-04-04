@@ -1,0 +1,363 @@
+
+> blorp@1.12.2 lint /Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph
+> eslint .
+
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/api/adapters/lemmy-common.ts
+  24:11  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/api/adapters/piefed.ts
+   117:11  warning  Empty block statement                                                      no-empty
+  1887:24  warning  'form' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  1887:52  warning  'options' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  1893:5   warning  'form' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  1894:5   warning  'options' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  1900:27  warning  'form' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  1905:30  warning  'form' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/api/index.ts
+  2237:16  warning  'queryKeyPrefix' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/MainSidebar.tsx
+  208:11  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/adaptable/action-menu/action-menu.tsx
+  17:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  20:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/adaptable/responsive-tooltip.tsx
+  1:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/auth-context.tsx
+  269:15  warning  Empty block statement  no-empty
+  737:13  warning  Empty block statement  no-empty
+  744:47  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/comments/comment-buttons.tsx
+  15:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  18:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  23:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  25:31  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  30:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/comments/comment-creator-badge.tsx
+  3:23  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  4:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/comments/comment-reply-modal.tsx
+   5:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  15:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  17:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/comments/comment-skeleton.tsx
+  1:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/comments/post-comment.tsx
+    1:34  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   25:43  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   34:8   error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   36:53  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   37:33  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   39:23  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   40:24  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   43:33  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   49:8   error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   51:40  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   61:43  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   71:34  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  252:27  warning  Empty block statement                                                                                       no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-banner.tsx
+  3:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-card.stories.tsx
+   4:8  warning  '_' is defined but never used                                                                                                               unused-imports/no-unused-imports
+  20:6  warning  React Hook useEffect has missing dependencies: 'cacheCommunity' and 'getCachePrefixer'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-card.tsx
+   8:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  10:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-hover-card.tsx
+  11:8  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-join-button.tsx
+  2:31  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-post-sort-bar.tsx
+  2:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/communities/community-sidebar.tsx
+   9:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  26:47  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  32:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  33:28  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  34:33  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  40:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  42:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  47:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  51:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "features"    boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/lemmy-sort.tsx
+  401:11  warning  Empty block statement  no-empty
+  464:11  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/local-server/local-server-sidebar.tsx
+    2:34  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+    3:27  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+    8:8   error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   10:28  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   27:11  warning  Empty block statement                                                                                       no-empty
+  116:11  warning  Empty block statement                                                                                       no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/code-block.tsx
+  5:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  6:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/editor-extensions/mention-menu.tsx
+  28:31  warning  Expected { after 'if' condition  curly
+  29:43  warning  Expected { after 'if' condition  curly
+  50:30  warning  Expected { after 'if' condition  curly
+  61:22  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/editor-extensions/spoiler-plugin.tsx
+  46:55  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/editor.tsx
+   23:24  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"                                   boundaries/dependencies
+   30:24  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"                                   boundaries/dependencies
+   41:36  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"                                   boundaries/dependencies
+  186:19  warning  'url' is never reassigned. Use 'const' instead                                                                                               prefer-const
+  216:19  warning  Empty block statement                                                                                                                        no-empty
+  528:6   warning  React Hook useEffect has missing dependencies: 'editor?.commands' and 'editor?.storage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/remove-md.tsx
+  25:32  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/markdown/renderer.tsx
+  12:23  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  13:35  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/modlog/modlog-row.tsx
+  2:33  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  9:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/multi-community-feeds/feed-join-button.tsx
+  1:31  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/multi-community-feeds/multi-community-feed-banner.tsx
+  2:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/multi-community-feeds/multi-community-feed-sidebar.tsx
+   3:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   7:53  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  12:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  13:33  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  19:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  21:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  25:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  26:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "features"    boundaries/dependencies
+  32:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  35:28  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/page/content-warning.tsx
+  5:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  7:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  8:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/page/index.tsx
+  11:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  13:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  14:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  15:35  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/page/not-found.tsx
+   4:35  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   5:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   6:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  10:53  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  11:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/pagination/pagination-controls.tsx
+  10:8  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-action-menu.tsx
+    3:47  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   14:33  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  115:23  warning  Empty block statement                                                                                       no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-avatar.tsx
+  5:8  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-badge.tsx
+  2:38  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-card.tsx
+  6:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  8:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-hover-card.tsx
+   5:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  10:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/person/person-sidebar.tsx
+   5:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   9:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  11:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  12:29  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  22:23  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  26:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/embeds/generic-video-embed.tsx
+  2:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/embeds/post-article-embed.tsx
+   9:26  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  53:15  warning  Expected { after 'if' condition                                                                             curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/embeds/post-poll-embed.tsx
+   4:44  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   6:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   7:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  14:30  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  15:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/embeds/redgif-embed.tsx
+  36:14  warning  Expected { after 'if' condition  curly
+  44:25  warning  Expected { after 'if' condition  curly
+  77:22  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/nsfw-blur-toggle.tsx
+  2:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post-buttons.tsx
+  13:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  23:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  24:45  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  27:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  32:8   error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  39:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post-byline.tsx
+    7:48  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   10:53  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   15:8   error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   19:36  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   20:33  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   27:37  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   29:23  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   45:39  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   46:34  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+   47:33  error    There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  188:27  warning  Empty block statement                                                                                       no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post-creator-badge.tsx
+  2:23  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  3:57  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post-remove.tsx
+  14:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  15:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  16:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  17:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post-report.tsx
+  14:39  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  15:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  16:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  17:32  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/posts/post.tsx
+  19:34  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  26:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  38:27  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  48:23  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  49:26  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  50:35  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+  59:24  error  There is no rule allowing dependencies from elements of type "components" to elements of type "components"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/progressive-image.tsx
+  64:25  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/ui/dropdown-menu.tsx
+  3:10  warning  'CheckIcon' is defined but never used  unused-imports/no-unused-imports
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/ui/simple-select.tsx
+  37:34  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/universal-links.tsx
+  12:15  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/components/virtual-list.tsx
+  105:6   warning  React Hook useEffect has a missing dependency: 'virtualizer'. Either include it or remove the dependency array                            react-hooks/exhaustive-deps
+  277:6   warning  React Hook useEffect has a missing dependency: 'rowVirtualizer'. Either include it or remove the dependency array                         react-hooks/exhaustive-deps
+  277:16  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/create-post.tsx
+  175:27  warning  Empty block statement                                                                                       no-empty
+  844:30  warning  React Hook useCallback received a function whose dependencies are unknown. Pass an inline function instead  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/debug-page.tsx
+  64:13  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/explore/explore-screen.tsx
+  39:27  error  There is no rule allowing dependencies from elements of type "features" to elements of type "features"  boundaries/dependencies
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/home-posts.tsx
+  67:6  warning  React Hook useMemo has an unnecessary dependency: 'active'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/multi-community-feed-posts.tsx
+  62:10  warning  'search' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  62:18  warning  'setSearch' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/post.tsx
+  183:13  warning  Empty block statement  no-empty
+  194:13  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/resolver.tsx
+  56:6  warning  React Hook useEffect has a missing dependency: 'data'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/settings/manage-blocks-screen.tsx
+  148:9  warning  The 'blockedPersonApIds' logical expression could make the dependencies of useMemo Hook (at line 183) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'blockedPersonApIds' in its own useMemo() Hook            react-hooks/exhaustive-deps
+  149:9  warning  The 'blockedCommunitySlugIds' logical expression could make the dependencies of useMemo Hook (at line 183) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'blockedCommunitySlugIds' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  150:9  warning  The 'instanceBlocks' logical expression could make the dependencies of useMemo Hook (at line 183) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'instanceBlocks' in its own useMemo() Hook                    react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/features/site-modlog.tsx
+  21:11  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/lib/image.ts
+  1:8  warning  '_' is defined but never used  unused-imports/no-unused-imports
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/lib/markdown.ts
+  3:49  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/lib/tauri.ts
+  1:8  warning  '_' is defined but never used  unused-imports/no-unused-imports
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/lib/throttle-queue.ts
+  132:69  warning  React Hook useMemo has an unnecessary dependency: 'memo'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/lib/utils.ts
+   60:22  warning  Expected { after 'if' condition  curly
+   61:27  warning  Expected { after 'if' condition  curly
+   62:27  warning  Expected { after 'if' condition  curly
+  107:18  warning  Expected { after 'if' condition  curly
+  117:23  warning  Expected { after 'if' condition  curly
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/routing/resolve-route.tsx
+  32:7  warning  This assigned value is not used in subsequent statements  no-useless-assignment
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/stores/utils.ts
+  25:11  warning  Empty block statement  no-empty
+  32:11  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/src/tanstack-query/throttled-infinite-query.ts
+  127:23  warning  Empty block statement  no-empty
+
+/Users/christianjuth/personal-projects/blorp/blorp-app/untangle-dep-graph/vite.config.ts
+  14:5  warning  Expected { after 'if' condition  curly
+
+✖ 204 problems (135 errors, 69 warnings)
+  0 errors and 23 warnings potentially fixable with the `--fix` option.
+
+ ELIFECYCLE  Command failed with exit code 1.

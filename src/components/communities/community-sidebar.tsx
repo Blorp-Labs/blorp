@@ -48,7 +48,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Schemas } from "@/src/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
-import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
+import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);

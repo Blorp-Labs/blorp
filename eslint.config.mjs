@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import unusedImports from "eslint-plugin-unused-imports";
+import boundaries from "eslint-plugin-boundaries";
 import { restrictions } from "./eslint/restricted-syntax.js";
 import { importRestrictions } from "./eslint/restricted-imports.js";
 
@@ -72,6 +73,102 @@ export default tseslint.config(
     files: ["scripts/**"],
     languageOptions: {
       globals: { process: "readonly" },
+    },
+  },
+  {
+    plugins: { boundaries },
+    settings: {
+      "boundaries/elements": [
+        { type: "api-blueprint", pattern: "src/api-blueprint*" },
+        { type: "lib", pattern: "src/lib/**/*" },
+        { type: "stores", pattern: "src/stores/**/*" },
+        { type: "tanstack-query", pattern: "src/tanstack-query/**/*" },
+        { type: "hooks", pattern: "src/hooks/**/*" },
+        { type: "api", pattern: "src/api/**/*" },
+        { type: "components", pattern: "src/components/**/*" },
+        { type: "features", pattern: "src/features/**/*" },
+        { type: "routing", pattern: "src/routing/**/*" },
+        { type: "styles", pattern: "src/styles/**/*" },
+      ],
+      "boundaries/ignore": ["src/*.{ts,tsx}", "test-utils/**/*"],
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+    },
+    rules: {
+      "boundaries/dependencies": [
+        "error",
+        {
+          default: "disallow",
+          rules: [
+            { from: "api-blueprint", allow: [] },
+            { from: "lib", allow: ["api-blueprint"] },
+            { from: "stores", allow: ["api-blueprint", "lib"] },
+            {
+              from: "tanstack-query",
+              allow: ["api-blueprint", "lib", "stores"],
+            },
+            {
+              from: "hooks",
+              allow: ["api-blueprint", "lib", "stores", "tanstack-query"],
+            },
+            {
+              from: "api",
+              allow: [
+                "api-blueprint",
+                "lib",
+                "stores",
+                "tanstack-query",
+                "hooks",
+                "routing",
+              ],
+            },
+            {
+              from: "components",
+              allow: [
+                "api-blueprint",
+                "lib",
+                "stores",
+                "tanstack-query",
+                "hooks",
+                "api",
+                "components",
+                "routing",
+              ],
+            },
+            {
+              from: "features",
+              allow: [
+                "api-blueprint",
+                "lib",
+                "stores",
+                "tanstack-query",
+                "hooks",
+                "api",
+                "components",
+                "features",
+                "routing",
+              ],
+            },
+            {
+              from: "routing",
+              allow: [
+                "api-blueprint",
+                "lib",
+                "stores",
+                "tanstack-query",
+                "hooks",
+                "api",
+                "components",
+                "features",
+              ],
+            },
+            { from: "styles", allow: [] },
+          ],
+        },
+      ],
     },
   },
 );
