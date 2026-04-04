@@ -40,7 +40,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
-import { useShareActions } from "@/src/hooks/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import {
   Collapsible,

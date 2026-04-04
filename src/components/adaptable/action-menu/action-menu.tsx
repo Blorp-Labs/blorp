@@ -15,9 +15,9 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { useMedia } from "../../hooks";
-import { cn } from "../../lib/utils";
-import { Button } from "../ui/button";
+import { useMedia } from "../../../hooks";
+import { cn } from "../../../lib/utils";
+import { Button } from "../../ui/button";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useSettingsStore } from "@/src/stores/settings";
 

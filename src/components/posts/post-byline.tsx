@@ -44,7 +44,7 @@ import { getPostMyVote, getPostSaved } from "@/src/api/adapters/utils";
 import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
-import { useShareActions } from "@/src/hooks/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 
 export function usePostActions({
   post,

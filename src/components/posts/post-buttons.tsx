@@ -17,11 +17,9 @@ import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostFromStore } from "@/src/stores/posts";
 import {
-  shareImage,
   useShareActions,
-  downloadImage,
   useImageShareActions,
-} from "@/src/hooks/share";
+} from "@/src/components/adaptable/action-menu/hooks";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/api/utils";
 import { getPostEmbed } from "@/src/lib/post";
@@ -40,6 +38,7 @@ import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
+import { downloadImage, shareImage } from "@/src/hooks/share";
 
 export function usePostVoting(apId?: string) {
   const postView = usePostFromStore(apId);

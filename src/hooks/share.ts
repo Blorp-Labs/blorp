@@ -9,19 +9,13 @@ import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { isAndroid, isCapacitor, isFirefox, isTauri } from "../lib/device";
-import { ActionMenuProps } from "../components/adaptable/action-menu";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
 import { isErrorLike } from "../lib/utils";
-import {
-  ShareLinkType,
-  SHARE_LINK_TYPE_OPTIONS,
-  useSettingsStore,
-} from "../stores/settings";
-import { Account, parseAccountInfo, useAuth } from "../stores/auth";
-import { useSelectAlert } from ".";
+import { ShareLinkType } from "../stores/settings";
+import { Account, parseAccountInfo } from "../stores/auth";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -354,7 +348,7 @@ function resolveShareUrl(
   return null;
 }
 
-function getShareUrl(
+export function getShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
   account?: Account,
@@ -374,7 +368,7 @@ export function useCanShare() {
   return share;
 }
 
-async function copyToClipboard(text: string) {
+export async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
   } catch (e) {
@@ -400,110 +394,4 @@ export async function shareRoute(route: string) {
   } catch (e) {
     console.error("Error sharing URL:", e);
   }
-}
-
-export function useShareActions(
-  label: string,
-  entity: ShareEntityContext | null | undefined,
-) {
-  const canShareNative = useCanShare();
-  const shareLinkType = useSettingsStore((s) => s.shareLinkType);
-  const setShareLinkType = useSettingsStore((s) => s.setShareLinkType);
-  const account = useAuth((s) => s.getSelectedAccount());
-  const selectAlert = useSelectAlert();
-
-  if (!entity) {
-    return [];
-  }
-
-  const getMode = async (): Promise<ShareLinkType | null> => {
-    if (shareLinkType !== null) {
-      return shareLinkType;
-    }
-    try {
-      const selected = await selectAlert({
-        header: "How would you like to share? Change this later in Settings.",
-        message:
-          '"My Instance" uses whatever account or guess account you have selected',
-        options: SHARE_LINK_TYPE_OPTIONS.map((o) => ({
-          text: o.label,
-          value: o.value,
-        })),
-      });
-      setShareLinkType(selected);
-      return selected;
-    } catch {
-      return null;
-    }
-  };
-
-  const doShare = async () => {
-    const mode = await getMode();
-    if (mode) {
-      const url = getShareUrl(mode, entity, account);
-      try {
-        const result = await Share.canShare();
-        if (result.value) {
-          await Share.share({ url });
-        } else if (_.isFunction(navigator.share)) {
-          await navigator.share({ url });
-        }
-      } catch (e) {
-        console.error("Error sharing URL:", e);
-      }
-    }
-  };
-
-  const doCopy = async () => {
-    const mode = await getMode();
-    if (mode) {
-      const url = getShareUrl(mode, entity, account);
-      copyToClipboard(url);
-    }
-  };
-
-  return [
-    {
-      text: "Share",
-      actions: [
-        ...(canShareNative
-          ? [
-              {
-                text: `Share link to ${label}`,
-                onClick: doShare,
-              },
-            ]
-          : []),
-        {
-          text: `Copy link to ${label}`,
-          onClick: doCopy,
-        },
-      ],
-    },
-  ] satisfies ActionMenuProps["actions"];
-}
-
-export function useImageShareActions({
-  imageSrc,
-}: {
-  imageSrc?: string;
-}): ActionMenuProps<string>["actions"] {
-  return [
-    ...(imageSrc
-      ? [
-          {
-            text: "Share image",
-            onClick: () => shareImage(imageSrc, imageSrc),
-          },
-        ]
-      : []),
-    ...(imageSrc
-      ? [
-          {
-            text: "Download image",
-            onClick: () => downloadImage(imageSrc, imageSrc),
-          },
-        ]
-      : []),
-  ];
 }

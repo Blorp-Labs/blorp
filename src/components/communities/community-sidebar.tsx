@@ -31,7 +31,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { PersonCard } from "../person/person-card";
-import { useShareActions } from "@/src/hooks/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { Sidebar, SidebarContent } from "../sidebar";
 import {
   Collapsible,

@@ -10,7 +10,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { useShareActions } from "@/src/hooks/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { Sidebar, SidebarContent } from "../sidebar";
 import {
   Collapsible,

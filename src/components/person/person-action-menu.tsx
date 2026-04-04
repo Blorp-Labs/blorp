@@ -11,7 +11,7 @@ import {
   useAuth,
   useIsPersonBlocked,
 } from "@/src/stores/auth";
-import { useShareActions } from "@/src/hooks/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
