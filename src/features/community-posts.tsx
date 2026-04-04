@@ -23,7 +23,7 @@ import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
-import { useUpdateRecentCommunity } from "../stores/recent-communities";
+import { useUpdateRecentCommunity } from "../hooks/use-update-recent-communities";
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";

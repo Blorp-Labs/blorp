@@ -9,7 +9,7 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
-import { useUpdateRecentCommunity } from "../stores/recent-communities";
+import { useUpdateRecentCommunity } from "../hooks/use-update-recent-communities";
 
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";

@@ -14,7 +14,8 @@ import {
 import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/api-blueprint";
-import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
+import { useTagUserStore } from "@/src/stores/user-tags";
+import { useTagUser } from "@/src/hooks/use-tag-user";
 import { useLinkContext } from "@/src/routing/link-context";
 
 dayjs.extend(localizedFormat);

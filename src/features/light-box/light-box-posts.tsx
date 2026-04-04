@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommunity, usePost, usePosts } from "@/src/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
-import { useUpdateRecentCommunity } from "@/src/stores/recent-communities";
+import { useUpdateRecentCommunity } from "@/src/hooks/use-update-recent-communities";
 import { BiHelpCircle } from "react-icons/bi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
