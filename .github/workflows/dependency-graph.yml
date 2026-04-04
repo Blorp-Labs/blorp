@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Graphviz
-        run: sudo apt-get install -y graphviz
+        run: sudo apt-get install -y graphviz imagemagick
 
       - name: Generate DOT graph
         run: pnpm exec depcruise src --output-type dot > dep-graph.dot
