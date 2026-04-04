@@ -4,7 +4,7 @@ import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
-import { useShouldShowNsfw } from "@/src/lib/nsfw";
+import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import {
   useModeratingCommunities,
   useNotificationCount,

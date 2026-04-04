@@ -26,7 +26,7 @@ import {
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
 import { useSettingsStore } from "@/src/stores/settings";
-import { useIsContentWarningActive } from "@/src/lib/nsfw";
+import { useIsContentWarningActive } from "@/src/hooks/nsfw";
 import { ContentWarningPageContent } from "./content-warning";
 
 function PageErrorFallback({

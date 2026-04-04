@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Button } from "../ui/button";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
-import { useNsfwVisibility } from "@/src/lib/nsfw";
+import { useNsfwVisibility } from "@/src/hooks/nsfw";
 
 export function useBlurNsfwState(
   nsfw: boolean,

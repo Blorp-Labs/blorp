@@ -9,7 +9,7 @@ import {
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { Account } from "@/src/stores/auth";
-import { useShouldBlurNsfw } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";

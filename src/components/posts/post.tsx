@@ -32,7 +32,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldShowNsfw } from "@/src/lib/nsfw";
+import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";

@@ -2,7 +2,7 @@ import { useLinkContext } from "../../routing/link-context";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
-import { useShouldBlurNsfw } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "@/src/components/communities/utils";
 import { Link, resolveRoute } from "@/src/routing/index";

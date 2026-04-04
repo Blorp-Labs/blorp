@@ -3,7 +3,7 @@ import { useCommunityFromStore } from "@/src/stores/communities";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { useIsCommunityBlocked } from "@/src/stores/auth";
-import { useShouldBlurNsfw } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
   COMMUNITY_NSFW_ICON_BLUR_CLASS,

@@ -17,7 +17,7 @@ import {
   useIsCommunityBlocked,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldBlurNsfw } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
