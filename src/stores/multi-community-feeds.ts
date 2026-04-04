@@ -4,19 +4,25 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CachePrefixer, useAuth } from "./auth";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import {
+  Schemas,
+  multiCommunityFeedSchema,
+} from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
+import z from "zod";
+import { mergeCacheObject } from "./utils";
 
-type Data = {
-  feedView: Schemas.MultiCommunityFeed;
-};
+const cachedFeedSchema = z.object({
+  data: z.object({
+    feedView: multiCommunityFeedSchema,
+  }),
+  lastUsed: z.number(),
+});
 
-type CachedFeed = {
-  data: Data;
-  lastUsed: number;
-};
+type Data = z.infer<typeof cachedFeedSchema>["data"];
+type CachedFeed = z.infer<typeof cachedFeedSchema>;
 
 type FeedStore = {
   feeds: Record<string, CachedFeed>;
@@ -151,10 +157,11 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
         return {
           ...current,
           ...persisted,
-          feeds: {
-            ...current.feeds,
-            ...persisted.feeds,
-          },
+          feeds: mergeCacheObject(
+            current.feeds,
+            persisted.feeds,
+            cachedFeedSchema,
+          ),
         } satisfies FeedStore;
       },
     },

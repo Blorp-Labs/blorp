@@ -126,6 +126,31 @@ describe("usePostsStore", () => {
   });
 });
 
+describe("merge (cross-tab version skew protection)", () => {
+  test("accepts valid persisted posts", () => {
+    const post = api.getPost({ post: { id: 123 } });
+    const key = prefix(post.post.apId);
+
+    const merge = usePostsStore.persist.getOptions().merge!;
+    const result = merge(
+      { posts: { [key]: { data: post.post, lastUsed: Date.now() } } },
+      usePostsStore.getState(),
+    );
+
+    expect(result.posts[key]?.data).toMatchObject(post.post);
+  });
+
+  test("rejects persisted posts with invalid schema", () => {
+    const merge = usePostsStore.persist.getOptions().merge!;
+    const result = merge(
+      { posts: { "some-key": { outdatedField: "old format" } } },
+      usePostsStore.getState(),
+    );
+
+    expect(result.posts).toEqual({});
+  });
+});
+
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 
 describe("persisted state snapshot", () => {

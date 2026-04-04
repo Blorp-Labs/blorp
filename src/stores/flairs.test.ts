@@ -7,6 +7,31 @@ import _ from "lodash";
 
 const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
 
+describe("merge (cross-tab version skew protection)", () => {
+  test("accepts valid persisted flairs", () => {
+    const flair = api.getFlair({ id: 100 });
+    const key = prefix(flair.id);
+
+    const merge = useFlairsStore.persist.getOptions().merge!;
+    const result = merge(
+      { flairs: { [key]: { data: flair, lastUsed: Date.now() } } },
+      useFlairsStore.getState(),
+    );
+
+    expect(result.flairs[key]?.data).toMatchObject(flair);
+  });
+
+  test("rejects persisted flairs with invalid schema", () => {
+    const merge = useFlairsStore.persist.getOptions().merge!;
+    const result = merge(
+      { flairs: { "some-key": { outdatedField: "old format" } } },
+      useFlairsStore.getState(),
+    );
+
+    expect(result.flairs).toEqual({});
+  });
+});
+
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 
 describe("persisted state snapshot", () => {

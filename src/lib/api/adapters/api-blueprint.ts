@@ -20,7 +20,7 @@ export enum Software {
 
 const communitySlug = z.string();
 
-const flairSchema = z.object({
+export const flairSchema = z.object({
   apId: z.string().optional().nullable(),
   id: z.number(),
   backgroundColor: z.string().nullable(),
@@ -28,7 +28,7 @@ const flairSchema = z.object({
   title: z.string(),
 });
 
-const personSchema = z.object({
+export const personSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -123,7 +123,7 @@ export const postSchema = z.object({
     }),
   ),
 });
-const communitySchema = z.object({
+export const communitySchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
@@ -153,7 +153,7 @@ const communitySchema = z.object({
     .optional(),
   nsfw: z.boolean(),
 });
-const multiCommunityFeedSchema = z.object({
+export const multiCommunityFeedSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),

@@ -3,8 +3,10 @@ import {
   scoreDisplayFromSite,
   shouldShowDownvotes,
   resolveThreshold,
+  mergeCacheObject,
 } from "./utils";
 import * as api from "@/test-utils/api";
+import z from "zod";
 
 // ─── scoreDisplayFromSite ────────────────────────────────────────────────────
 
@@ -161,6 +163,78 @@ describe("shouldShowDownvotes — 'account' mode", () => {
 
   test("account scoreDisplay='none' → hide button even when server enables them", () => {
     expect(shouldShowDownvotes("account", true, "none")).toBe(false);
+  });
+});
+
+// ─── mergeCacheObject ────────────────────────────────────────────────────────
+
+const itemSchema = z.object({ value: z.string(), lastUsed: z.number() });
+type Item = z.infer<typeof itemSchema>;
+const makeItem = (value: string): Item => ({ value, lastUsed: 0 });
+
+describe("mergeCacheObject", () => {
+  test("returns empty object when both are empty", () => {
+    expect(mergeCacheObject({}, {}, itemSchema)).toEqual({});
+  });
+
+  test("returns b when a is undefined", () => {
+    const b = { x: makeItem("hello") };
+    expect(mergeCacheObject(undefined, b, itemSchema)).toEqual(b);
+  });
+
+  test("returns b when a is empty", () => {
+    const b = { x: makeItem("hello") };
+    expect(mergeCacheObject({}, b, itemSchema)).toEqual(b);
+  });
+
+  test("returns a when b is undefined", () => {
+    const a = { x: makeItem("hello") };
+    expect(mergeCacheObject(a, undefined, itemSchema)).toEqual(a);
+  });
+
+  test("returns a when b is empty", () => {
+    const a = { x: makeItem("hello") };
+    expect(mergeCacheObject(a, {}, itemSchema)).toEqual(a);
+  });
+
+  test("merges both when both are valid, b wins on conflict", () => {
+    const a = { x: makeItem("a-x"), y: makeItem("a-y") };
+    const b = { x: makeItem("b-x"), z: makeItem("b-z") };
+    const result = mergeCacheObject(a, b, itemSchema);
+    expect(result["x"]).toEqual(b["x"]);
+    expect(result["y"]).toEqual(a["y"]);
+    expect(result["z"]).toEqual(b["z"]);
+  });
+
+  test("rejects a with invalid schema, keeps valid b", () => {
+    const invalidA = { x: { wrong: "shape" } } as any;
+    const validB = { y: makeItem("hello") };
+    const result = mergeCacheObject(invalidA, validB, itemSchema);
+    expect(result).not.toHaveProperty("x");
+    expect(result).toHaveProperty("y");
+  });
+
+  test("rejects b with invalid schema, keeps valid a", () => {
+    const validA = { x: makeItem("hello") };
+    const invalidB = { y: { wrong: "shape" } } as any;
+    const result = mergeCacheObject(validA, invalidB, itemSchema);
+    expect(result).toHaveProperty("x");
+    expect(result).not.toHaveProperty("y");
+  });
+
+  test("returns empty object when both have invalid schema", () => {
+    const invalidA = { x: { wrong: "shape" } } as any;
+    const invalidB = { y: { wrong: "shape" } } as any;
+    expect(mergeCacheObject(invalidA, invalidB, itemSchema)).toEqual({});
+  });
+
+  test("works with flat string values, not just object values", () => {
+    const a = { x: "hello" };
+    const b = { y: "world" };
+    expect(mergeCacheObject(a, b, z.string())).toEqual({
+      x: "hello",
+      y: "world",
+    });
   });
 });
 

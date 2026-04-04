@@ -216,6 +216,31 @@ describe("getFeedSubscribed", () => {
   });
 });
 
+describe("merge (cross-tab version skew protection)", () => {
+  test("accepts valid persisted feeds", () => {
+    const feedView = api.getFeed({ id: 1 });
+    const key = prefix(feedView.apId);
+
+    const merge = useMultiCommunityFeedStore.persist.getOptions().merge!;
+    const result = merge(
+      { feeds: { [key]: { data: { feedView }, lastUsed: Date.now() } } },
+      useMultiCommunityFeedStore.getState(),
+    );
+
+    expect(result.feeds[key]?.data.feedView).toMatchObject(feedView);
+  });
+
+  test("rejects persisted feeds with invalid schema", () => {
+    const merge = useMultiCommunityFeedStore.persist.getOptions().merge!;
+    const result = merge(
+      { feeds: { "some-key": { outdatedField: "old format" } } },
+      useMultiCommunityFeedStore.getState(),
+    );
+
+    expect(result.feeds).toEqual({});
+  });
+});
+
 const FIXED_DATE = new Date("2024-01-01T00:00:00.000Z");
 
 describe("persisted state snapshot", () => {

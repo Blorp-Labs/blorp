@@ -4,6 +4,7 @@ import { createStorage, sync } from "./storage";
 import { useConfirmationAlert } from "../lib/hooks";
 import z from "zod";
 import { isTest } from "../lib/device";
+import { mergeCacheObject } from "./utils";
 
 type InboxStore = {
   userTags: Record<string, string>;
@@ -49,10 +50,11 @@ export const useTagUserStore = create<InboxStore>()(
         return {
           ...current,
           ...persisted,
-          userTags: {
-            ...current.userTags,
-            ...persisted.userTags,
-          },
+          userTags: mergeCacheObject(
+            current.userTags,
+            persisted.userTags,
+            z.string(),
+          ),
         } satisfies InboxStore;
       },
     },
