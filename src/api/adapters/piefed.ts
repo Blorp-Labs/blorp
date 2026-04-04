@@ -8,7 +8,7 @@ import {
   resolveObjectResponseSchema,
   Schemas,
   Software,
-} from "./api-blueprint";
+} from "../../api-blueprint";
 import z from "zod";
 import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";

@@ -13,7 +13,7 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Button } from "@/src/components/ui/button";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { getSelectedAsMarkdownQuote } from "@/src/lib/markdown";
 

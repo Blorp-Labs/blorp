@@ -1,5 +1,10 @@
 import z from "zod";
-export { Errors } from "@/src/tanstack-query/errors";
+
+export const Errors = {
+  MFA_REQUIRED: new Error("MFA_REQUIRED"),
+  NOT_IMPLEMENTED: Error("NOT_IMPLEMENTED"),
+  OBJECT_NOT_FOUND: new Error("couldnt_find_object"),
+};
 
 export const INIT_PAGE_TOKEN = "INIT_PAGE_TOKEN";
 

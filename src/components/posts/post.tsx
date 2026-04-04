@@ -34,7 +34,7 @@ import {
 } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { Separator } from "../ui/separator";
 import { SpotifyEmbed } from "./embeds/post-spotify-embed";
 import { SoundCloudEmbed } from "./embeds/soundcloud-embed";

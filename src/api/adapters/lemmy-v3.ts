@@ -9,7 +9,7 @@ import {
   Errors,
   Software,
   resolveObjectResponseSchema,
-} from "./api-blueprint";
+} from "../../api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
 import z from "zod";

@@ -1,4 +1,4 @@
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { commentIsAnswer } from "@/src/api/adapters/utils";
 
 export function getCommentBgClass(config: {

@@ -45,7 +45,7 @@ import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
 import { useConfirmationAlert } from "@/src/hooks/index";
 import { Skeleton } from "../ui/skeleton";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
 import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";

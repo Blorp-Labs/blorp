@@ -51,7 +51,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Software } from "../api/adapters/api-blueprint";
+import { Software } from "../api-blueprint";
 import { ToolbarTitle } from "./toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 

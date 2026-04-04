@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import utcPlugin from "dayjs/plugin/utc";
-import { Schemas, Software } from "@/src/api/adapters/api-blueprint";
+import { Schemas, Software } from "@/src/api-blueprint";
 import { createSlug } from "@/src/api/utils";
 import _ from "lodash";
 

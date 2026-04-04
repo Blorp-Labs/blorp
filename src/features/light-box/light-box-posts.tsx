@@ -31,7 +31,7 @@ import z from "zod";
 import { decodeApId, encodeApId } from "@/src/api/utils";
 import { useLinkContext } from "@/src/routing/link-context";
 import { useParams } from "@/src/routing";
-import { Forms } from "@/src/api/adapters/api-blueprint";
+import { Forms } from "@/src/api-blueprint";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { Button } from "@/src/components/ui/button";
 import { IonButtons, IonButton, IonModal, IonTitle } from "@ionic/react";

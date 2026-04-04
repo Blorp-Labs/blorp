@@ -4,7 +4,7 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { env } from "../env";
 import z from "zod";
-import { Schemas, siteSchema } from "../api/adapters/api-blueprint";
+import { Schemas, siteSchema } from "../api-blueprint";
 import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../lib/utils";

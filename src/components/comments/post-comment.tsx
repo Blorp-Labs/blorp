@@ -57,7 +57,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";

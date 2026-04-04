@@ -30,7 +30,7 @@ import { Button } from "@/src/components/ui/button";
 import { useIsActiveRoute, useMedia } from "@/src/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { PageTitle } from "@/src/components/page-title";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";

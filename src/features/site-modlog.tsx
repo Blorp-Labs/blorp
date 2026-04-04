@@ -7,7 +7,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { VirtualList } from "../components/virtual-list";
 import { usePagination } from "../components/pagination/use-pagination";
 import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
-import { Schemas } from "../api/adapters/api-blueprint";
+import { Schemas } from "../api-blueprint";
 import { ContentGutters } from "../components/gutters";
 import { useAuth } from "../stores/auth";
 import { Page } from "../components/page";

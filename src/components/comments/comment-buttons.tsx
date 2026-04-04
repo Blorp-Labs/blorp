@@ -13,7 +13,7 @@ import {
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Button } from "../ui/button";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/hooks";

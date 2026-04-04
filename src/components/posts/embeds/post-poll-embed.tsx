@@ -1,4 +1,4 @@
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import _ from "lodash";
 import { cn } from "@/src/lib/utils";
 import { RadioGroupItem, RadioGroup } from "../../ui/radio-group";

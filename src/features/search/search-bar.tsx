@@ -17,7 +17,7 @@ import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
 import { encodeApId } from "@/src/api/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import type { Forms } from "@/src/api/adapters/api-blueprint";
+import type { Forms } from "@/src/api-blueprint";
 import {
   useDebouncedState,
   useIsActiveRoute,

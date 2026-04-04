@@ -22,7 +22,7 @@ import {
   useUploadImage,
 } from "../api";
 import { supportsPollCreation } from "../api/adapters/support";
-import { Forms } from "../api/adapters/api-blueprint";
+import { Forms } from "../api-blueprint";
 import _ from "lodash";
 import {
   IonButton,

@@ -13,7 +13,7 @@ import { LuLoaderCircle } from "react-icons/lu";
 import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
 import { encodeApId } from "../../api/utils";
-import { Schemas } from "../../api/adapters/api-blueprint";
+import { Schemas } from "../../api-blueprint";
 import { useRequireAuth } from "../auth-context";
 import { apIdFromCommunitySlug } from "../../api/adapters/utils";
 import { env } from "../../env";

@@ -20,7 +20,7 @@ import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";

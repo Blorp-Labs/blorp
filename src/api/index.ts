@@ -34,12 +34,7 @@ import {
   useThrottledInfiniteQuery,
 } from "../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
-import {
-  Errors,
-  Forms,
-  INIT_PAGE_TOKEN,
-  Schemas,
-} from "./adapters/api-blueprint";
+import { Errors, Forms, INIT_PAGE_TOKEN, Schemas } from "../api-blueprint";
 import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";

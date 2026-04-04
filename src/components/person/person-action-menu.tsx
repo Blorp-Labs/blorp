@@ -13,7 +13,7 @@ import {
 } from "@/src/stores/auth";
 import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { resolveRoute } from "../../routing/index";
-import { Schemas } from "@/src/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api-blueprint";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { useLinkContext } from "@/src/routing/link-context";
 

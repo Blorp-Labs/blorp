@@ -38,7 +38,7 @@ import {
   Report,
 } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { Schemas } from "../api/adapters/api-blueprint";
+import { Schemas } from "../api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Button } from "../components/ui/button";
 import {

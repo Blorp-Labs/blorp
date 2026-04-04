@@ -1,6 +1,6 @@
 import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useApiClients, usePostsKey } from ".";
-import { ApiBlueprint, Forms, Schemas } from "./adapters/api-blueprint";
+import { ApiBlueprint, Forms, Schemas } from "../api-blueprint";
 import { useAuth } from "@/src/stores/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isErrorLike } from "../lib/utils";

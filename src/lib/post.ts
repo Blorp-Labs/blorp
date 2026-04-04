@@ -1,5 +1,5 @@
 import { isYouTubeVideoUrl } from "./youtube";
-import { Schemas } from "../api/adapters/api-blueprint";
+import { Schemas } from "../api-blueprint";
 import { urlStripAfterPath } from "./utils";
 import _ from "lodash";
 
