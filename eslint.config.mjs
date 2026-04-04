@@ -168,10 +168,10 @@ export default tseslint.config(
               target: "./src/features",
               from: ["./src/styles"],
             },
-            // routing: allow [api-blueprint, lib, stores, tanstack-query, hooks, api, components, features]
+            // routing: allow [api-blueprint, lib, stores, tanstack-query, hooks, api, components, features, routing]
             {
               target: "./src/routing",
-              from: ["./src/routing", "./src/styles"],
+              from: ["./src/styles"],
             },
             // styles: allow []
             {
