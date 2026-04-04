@@ -1,4 +1,4 @@
-name: Dependency Graph
+name: PR Quality
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   dependency-graph:
-    name: Generate dependency graph
+    name: Dependency Graph
     runs-on: ubuntu-latest
     permissions:
       contents: write

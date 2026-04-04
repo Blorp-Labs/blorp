@@ -1,4 +1,4 @@
-name: PR Title
+name: PR Quality
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   check-title:
+    name: Title Check
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
