@@ -1,4 +1,5 @@
-import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {

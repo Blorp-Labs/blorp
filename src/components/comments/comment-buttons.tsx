@@ -1,5 +1,6 @@
 import { useLikeComment } from "@/src/api/index";
-import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
 import { ButtonHTMLAttributes, DetailedHTMLProps, useId } from "react";
 import { cn } from "@/src/lib/utils";
