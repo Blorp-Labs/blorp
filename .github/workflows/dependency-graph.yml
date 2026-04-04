@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,6 +74,13 @@ jobs:
             git push origin artifacts
           fi
 
+  post-comment:
+    name: Post Comment
+    runs-on: ubuntu-latest
+    needs: dependency-graph
+    permissions:
+      pull-requests: write
+    steps:
       - name: Post comment on PR
         uses: actions/github-script@v7
         with:
