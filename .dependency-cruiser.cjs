@@ -15,10 +15,10 @@ module.exports = {
         collapsePattern: "^src/[^/]+",
         theme: {
           graph: {
-            rankdir: "LR",
-            nodesep: 0.6,
-            ranksep: 1.5,
-            concentrate: true,
+            rankdir: "TB",
+            splines: "ortho",
+            nodesep: 1.0,
+            ranksep: 2.0,
             fontname: "Helvetica",
           },
           node: {
