@@ -9,21 +9,25 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/src/components/ui/hover-card";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { AggregateBadges } from "../aggregates";
 import { CommunityJoinButton } from "./community-join-button";
 import { DateTime } from "../datetime";
+import { useHistory } from "@/src/routing";
 
 dayjs.extend(localizedFormat);
 
 export function CommunityHoverCard({
   communityName,
   children,
+  asChild,
 }: {
   communityName: string;
   children: React.ReactNode;
+  asChild?: boolean;
 }) {
   const [enabled, setEnabled] = useState(false);
+  const { push } = useHistory();
   useCommunity({
     name: communityName,
     enabled,
@@ -32,10 +36,24 @@ export function CommunityHoverCard({
 
   const community = data?.communityView;
   const createdAt = community ? dayjs(community.createdAt) : null;
+  const href = community ? `/c/${community.slug}` : undefined;
+
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (href) {
+      e.preventDefault();
+      push(href as never, {} as never);
+    }
+  };
+
+  const trigger = (
+    <a href={href} onClick={handleClick}>
+      {children}
+    </a>
+  );
 
   return (
     <HoverCard onOpenChange={() => setEnabled(true)}>
-      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
+      <HoverCardTrigger asChild>{asChild ? children : trigger}</HoverCardTrigger>
       <HoverCardContent
         align="start"
         className="flex flex-col gap-2.5 py-4 flex-1"

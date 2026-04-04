@@ -8,12 +8,13 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/src/components/ui/hover-card";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { AggregateBadges } from "../aggregates";
 import { DateTime } from "../datetime";
 import { PersonBadge } from "./person-badge";
 import { HoverCardContentProps } from "@radix-ui/react-hover-card";
+import { useHistory } from "@/src/routing";
 
 dayjs.extend(localizedFormat);
 
@@ -29,14 +30,29 @@ export function PersonHoverCard({
   align?: HoverCardContentProps["align"];
 }) {
   const [enabled, setEnabled] = useState(false);
+  const { push } = useHistory();
 
   usePersonDetails({ actorId, enabled });
   const personView = useProfileFromStore(actorId);
   const createdAt = personView ? dayjs(personView.createdAt) : null;
+  const href = personView ? `/u/${personView.slug}` : undefined;
+
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (href) {
+      e.preventDefault();
+      push(href as never, {} as never);
+    }
+  };
+
+  const trigger = (
+    <a href={href} onClick={handleClick}>
+      {children}
+    </a>
+  );
 
   return (
     <HoverCard onOpenChange={() => setEnabled(true)}>
-      <HoverCardTrigger asChild={asChild}>{children}</HoverCardTrigger>
+      <HoverCardTrigger asChild>{asChild ? children : trigger}</HoverCardTrigger>
       <HoverCardContent
         align={align}
         className="flex flex-col gap-3 py-4 flex-1 w-72"
