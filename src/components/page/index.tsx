@@ -26,7 +26,7 @@ import {
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
 import { useSettingsStore } from "@/src/stores/settings";
-import { env } from "@/src/env";
+import { useIsContentWarningActive } from "@/src/lib/nsfw";
 import { ContentWarningPageContent } from "./content-warning";
 
 function PageErrorFallback({
@@ -171,12 +171,10 @@ export function Page({
   const contentWarningAccepted = useSettingsStore(
     (s) => s.contentWarningAccepted,
   );
+  const contentWarningActive = useIsContentWarningActive();
   const needsLogin = requireLogin && !isLoggedIn;
   const needsContentWarning =
-    !needsLogin &&
-    !isLoggedIn &&
-    env.contentWarning.length > 0 &&
-    !contentWarningAccepted;
+    !isLoggedIn && contentWarningActive && !contentWarningAccepted;
   return (
     <DefaultIonPage ref={ref} {...props}>
       <ErrorBoundary FallbackComponent={PageErrorFallback}>

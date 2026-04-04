@@ -22,6 +22,8 @@ export function useBlurNsfwState(
     nsfw && visibility !== "show" && !revealed && !isRevealedByNavigation;
   const blurClassName = nsfwHidden ? "blur-3xl" : "";
   const onReveal = useCallback(() => {
+    // Shouldn't happen — the page gate blocks access when visibility is "hide".
+    // Guard here as a safety net so revealing is never possible in that state.
     if (visibility === "hide") {
       return;
     }
