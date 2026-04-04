@@ -42,7 +42,7 @@ jobs:
             --output-type dot > dep-graph.dot
 
       - name: Render PNG from DOT
-        run: dot -T png dep-graph.dot > dep-graph.png
+        run: dot -T png -Gdpi=150 dep-graph.dot > dep-graph.png
 
       - name: Upload artifacts for debugging
         uses: actions/upload-artifact@v4
