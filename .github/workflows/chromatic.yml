@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   chromatic:
-    name: Run Chromatic
+    name: Upload
     if: github.event.pull_request.draft == false || github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

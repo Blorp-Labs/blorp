@@ -1,4 +1,4 @@
-name: Run tests
+name: Tests
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   vitest:
-    name: Run Vitest Tests
+    name: Vitest
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -44,7 +44,7 @@ jobs:
           comment-on: "commit"
 
   playwright:
-    name: Run Playwright Tests
+    name: E2E
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -98,7 +98,7 @@ jobs:
           retention-days: 30
 
   lint:
-    name: Lint (ESLint)
+    name: Lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
