@@ -177,63 +177,63 @@ describe("mergeCacheObject", () => {
     expect(mergeCacheObject({}, {}, itemSchema)).toEqual({});
   });
 
-  test("returns current when persisted is undefined", () => {
-    const current = { a: makeItem("hello") };
-    expect(mergeCacheObject(undefined, current, itemSchema)).toEqual(current);
+  test("returns b when a is undefined", () => {
+    const b = { x: makeItem("hello") };
+    expect(mergeCacheObject(undefined, b, itemSchema)).toEqual(b);
   });
 
-  test("returns current when persisted is empty", () => {
-    const current = { a: makeItem("hello") };
-    expect(mergeCacheObject({}, current, itemSchema)).toEqual(current);
+  test("returns b when a is empty", () => {
+    const b = { x: makeItem("hello") };
+    expect(mergeCacheObject({}, b, itemSchema)).toEqual(b);
   });
 
-  test("returns persisted when current is empty", () => {
-    const persisted = { a: makeItem("hello") };
-    expect(mergeCacheObject(persisted, {}, itemSchema)).toEqual(persisted);
+  test("returns a when b is undefined", () => {
+    const a = { x: makeItem("hello") };
+    expect(mergeCacheObject(a, undefined, itemSchema)).toEqual(a);
   });
 
-  test("merges both when both are valid, persisted wins on conflict", () => {
-    const current = { a: makeItem("current-a"), b: makeItem("current-b") };
-    const persisted = {
-      a: makeItem("persisted-a"),
-      c: makeItem("persisted-c"),
-    };
-    const result = mergeCacheObject(persisted, current, itemSchema);
-    expect(result["a"]).toEqual(persisted["a"]);
-    expect(result["b"]).toEqual(current["b"]);
-    expect(result["c"]).toEqual(persisted["c"]);
+  test("returns a when b is empty", () => {
+    const a = { x: makeItem("hello") };
+    expect(mergeCacheObject(a, {}, itemSchema)).toEqual(a);
   });
 
-  test("rejects current with invalid schema, keeps valid persisted", () => {
-    const invalidCurrent = { a: { wrong: "shape" } } as any;
-    const validPersisted = { b: makeItem("hello") };
-    const result = mergeCacheObject(validPersisted, invalidCurrent, itemSchema);
-    expect(result).not.toHaveProperty("a");
-    expect(result).toHaveProperty("b");
+  test("merges both when both are valid, b wins on conflict", () => {
+    const a = { x: makeItem("a-x"), y: makeItem("a-y") };
+    const b = { x: makeItem("b-x"), z: makeItem("b-z") };
+    const result = mergeCacheObject(a, b, itemSchema);
+    expect(result["x"]).toEqual(b["x"]);
+    expect(result["y"]).toEqual(a["y"]);
+    expect(result["z"]).toEqual(b["z"]);
   });
 
-  test("rejects persisted with invalid schema, keeps valid current", () => {
-    const validCurrent = { a: makeItem("hello") };
-    const invalidPersisted = { b: { wrong: "shape" } } as any;
-    const result = mergeCacheObject(invalidPersisted, validCurrent, itemSchema);
-    expect(result).toHaveProperty("a");
-    expect(result).not.toHaveProperty("b");
+  test("rejects a with invalid schema, keeps valid b", () => {
+    const invalidA = { x: { wrong: "shape" } } as any;
+    const validB = { y: makeItem("hello") };
+    const result = mergeCacheObject(invalidA, validB, itemSchema);
+    expect(result).not.toHaveProperty("x");
+    expect(result).toHaveProperty("y");
+  });
+
+  test("rejects b with invalid schema, keeps valid a", () => {
+    const validA = { x: makeItem("hello") };
+    const invalidB = { y: { wrong: "shape" } } as any;
+    const result = mergeCacheObject(validA, invalidB, itemSchema);
+    expect(result).toHaveProperty("x");
+    expect(result).not.toHaveProperty("y");
   });
 
   test("returns empty object when both have invalid schema", () => {
-    const invalidCurrent = { a: { wrong: "shape" } } as any;
-    const invalidPersisted = { b: { wrong: "shape" } } as any;
-    expect(
-      mergeCacheObject(invalidPersisted, invalidCurrent, itemSchema),
-    ).toEqual({});
+    const invalidA = { x: { wrong: "shape" } } as any;
+    const invalidB = { y: { wrong: "shape" } } as any;
+    expect(mergeCacheObject(invalidA, invalidB, itemSchema)).toEqual({});
   });
 
   test("works with flat string values, not just object values", () => {
-    const persisted = { a: "hello" };
-    const current = { b: "world" };
-    expect(mergeCacheObject(persisted, current, z.string())).toEqual({
-      a: "hello",
-      b: "world",
+    const a = { x: "hello" };
+    const b = { y: "world" };
+    expect(mergeCacheObject(a, b, z.string())).toEqual({
+      x: "hello",
+      y: "world",
     });
   });
 });

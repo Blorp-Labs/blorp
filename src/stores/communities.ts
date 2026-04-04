@@ -188,8 +188,8 @@ export const useCommunitiesStore = create<CommunityStore>()(
           ...current,
           ...persisted,
           communities: mergeCacheObject(
-            persisted.communities,
             current.communities,
+            persisted.communities,
             cachedCommunitySchema,
           ),
         } satisfies CommunityStore;

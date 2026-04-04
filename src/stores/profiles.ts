@@ -131,8 +131,8 @@ export const useProfilesStore = create<ProfilesStore>()(
           ...current,
           ...persisted,
           profiles: mergeCacheObject(
-            persisted.profiles,
             current.profiles,
+            persisted.profiles,
             cachedProfileSchema,
           ),
         } satisfies ProfilesStore;

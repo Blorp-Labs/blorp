@@ -137,8 +137,8 @@ export const usePostsStore = create<SortsStore>()(
           ...current,
           ...persisted,
           posts: mergeCacheObject(
-            persisted.posts,
             current.posts,
+            persisted.posts,
             cachedPostSchema,
           ),
         } satisfies SortsStore;

@@ -11,23 +11,23 @@ import { type Schemas } from "../lib/api/adapters/api-blueprint";
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 
 export function mergeCacheObject<T>(
-  persisted: Record<string, T> | undefined,
-  current: Record<string, T>,
+  a: Record<string, T> | undefined,
+  b: Record<string, T> | undefined,
   schema: z.ZodType<T>,
 ): Record<string, T> {
   let result: Record<string, T> = {};
 
   try {
-    const firstKey = Object.keys(current)[0];
-    if (firstKey && schema.safeParse(current[firstKey]).success) {
-      result = { ...result, ...current };
+    const firstKey = Object.keys(a ?? {})[0];
+    if (firstKey && schema.safeParse(a?.[firstKey]).success) {
+      result = { ...result, ...a };
     }
   } catch {}
 
   try {
-    const firstKey = Object.keys(persisted ?? {})[0];
-    if (firstKey && schema.safeParse(persisted?.[firstKey]).success) {
-      result = { ...result, ...persisted };
+    const firstKey = Object.keys(b ?? {})[0];
+    if (firstKey && schema.safeParse(b?.[firstKey]).success) {
+      result = { ...result, ...b };
     }
   } catch {}
 

@@ -103,8 +103,8 @@ export const useFlairsStore = create<FlairStore>()(
           ...current,
           ...persisted,
           flairs: mergeCacheObject(
-            persisted.flairs,
             current.flairs,
+            persisted.flairs,
             cachedFlairSchema,
           ),
         } satisfies FlairStore;

@@ -158,8 +158,8 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
           ...current,
           ...persisted,
           feeds: mergeCacheObject(
-            persisted.feeds,
             current.feeds,
+            persisted.feeds,
             cachedFeedSchema,
           ),
         } satisfies FeedStore;

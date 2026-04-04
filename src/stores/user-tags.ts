@@ -51,8 +51,8 @@ export const useTagUserStore = create<InboxStore>()(
           ...current,
           ...persisted,
           userTags: mergeCacheObject(
-            persisted.userTags,
             current.userTags,
+            persisted.userTags,
             z.string(),
           ),
         } satisfies InboxStore;

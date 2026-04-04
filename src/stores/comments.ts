@@ -147,8 +147,8 @@ export const useCommentsStore = create<SortsStore>()(
           ...current,
           ...persisted,
           comments: mergeCacheObject(
-            persisted.comments,
             current.comments,
+            persisted.comments,
             cachedCommentSchema,
           ),
         } satisfies SortsStore;
