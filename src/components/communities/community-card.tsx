@@ -8,7 +8,8 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { Account, useShouldBlurNsfw } from "@/src/stores/auth";
+import { Account } from "@/src/stores/auth";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";

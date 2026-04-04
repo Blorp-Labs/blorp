@@ -101,6 +101,8 @@ type SettingsStore = {
   // an account with showNsfw=true, and is never cleared programmatically.
   nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
+  contentWarningAccepted: boolean;
+  setContentWarningAccepted: (value: boolean) => void;
   voteDisplaySetting: VoteDisplaySetting;
   setVoteDisplaySetting: (newVal: VoteDisplaySetting) => void;
   collapseThresholdSetting: ThresholdSetting;
@@ -129,6 +131,7 @@ const INIT_STATE = {
   paginationMode: "infinite",
   darkMode: "system",
   nsfwPreviouslyEnabled: false,
+  contentWarningAccepted: false,
   voteDisplaySetting: "account",
   collapseThresholdSetting: -10,
   hideThresholdSetting: "account",
@@ -167,6 +170,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setDarkMode: (darkMode) => set({ darkMode }),
       setNsfwPreviouslyEnabled: (nsfwPreviouslyEnabled) =>
         set({ nsfwPreviouslyEnabled }),
+      setContentWarningAccepted: (contentWarningAccepted) =>
+        set({ contentWarningAccepted }),
       setVoteDisplaySetting: (voteDisplaySetting) =>
         set({ voteDisplaySetting }),
       setCollapseThresholdSetting: (collapseThresholdSetting) =>

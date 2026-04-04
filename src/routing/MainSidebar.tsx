@@ -3,7 +3,8 @@ import { Link, ParamsFor } from "@/src/routing/index";
 import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import { getAccountSite, useAuth, useShouldShowNsfw } from "@/src/stores/auth";
+import { getAccountSite, useAuth } from "@/src/stores/auth";
+import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import {
   useModeratingCommunities,
   useNotificationCount,

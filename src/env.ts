@@ -70,6 +70,10 @@ const WINDOW_REACT_APP_INSTANCE_SELECTION_MODE = getDockerInjectedEnv(
   "REACT_APP_INSTANCE_SELECTION_MODE",
 );
 
+const WINDOW_REACT_APP_CONTENT_WARNING = getDockerInjectedEnv(
+  "REACT_APP_CONTENT_WARNING",
+);
+
 function parseBoolean(bool?: string) {
   switch (bool?.toLowerCase()) {
     case "true":
@@ -99,6 +103,7 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
       "default_first",
       "default_random",
     ]),
+    REACT_APP_CONTENT_WARNING: z.string().default(""),
   },
   runtimeEnv: {
     REACT_APP_COMMIT_SHA: import.meta.env["REACT_APP_COMMIT_SHA"],
@@ -123,6 +128,10 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
       import.meta.env["REACT_APP_INSTANCE_SELECTION_MODE"] ||
       "default_first"
     ).toLowerCase(),
+    REACT_APP_CONTENT_WARNING:
+      WINDOW_REACT_APP_CONTENT_WARNING ||
+      import.meta.env["REACT_APP_CONTENT_WARNING"] ||
+      "",
   },
   onValidationError: (issues) => {
     console.error("❌ Invalid environment variables:", issues);
@@ -148,4 +157,5 @@ export const env = {
   ...config,
   defaultInstances,
   defaultInstance,
+  contentWarning: config.REACT_APP_CONTENT_WARNING,
 };

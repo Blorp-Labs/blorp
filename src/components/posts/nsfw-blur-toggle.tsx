@@ -1,14 +1,13 @@
 import { useCallback, useState } from "react";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { Button } from "../ui/button";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
+import { useNsfwVisibility } from "@/src/hooks/nsfw";
 
 export function useBlurNsfwState(
   nsfw: boolean,
   options?: { apId?: string; detailView?: boolean },
 ) {
-  const blurNsfw =
-    useAuth((s) => getAccountSite(s.getSelectedAccount())?.blurNsfw) ?? true;
+  const visibility = useNsfwVisibility();
   const [revealed, setRevealed] = useState(false);
   const isRevealedByNavigation = useNsfwRevealedPostsStore(
     (s) =>
@@ -17,14 +16,20 @@ export function useBlurNsfwState(
 
   const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
 
-  const nsfwHidden = nsfw && blurNsfw && !revealed && !isRevealedByNavigation;
+  const nsfwHidden =
+    nsfw && visibility !== "show" && !revealed && !isRevealedByNavigation;
   const blurClassName = nsfwHidden ? "blur-3xl" : "";
   const onReveal = useCallback(() => {
+    // Shouldn't happen — the page gate blocks access when visibility is "hide".
+    // Guard here as a safety net so revealing is never possible in that state.
+    if (visibility === "hide") {
+      return;
+    }
     setRevealed(true);
     if (options?.apId) {
       revealPost(options.apId);
     }
-  }, [options?.apId, revealPost]);
+  }, [visibility, options?.apId, revealPost]);
 
   return { nsfwHidden, blurClassName, onReveal };
 }

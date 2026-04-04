@@ -6,16 +6,16 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { useRequireAuth } from "./auth-context";
-import { ContentGutters } from "./gutters";
-import { Button } from "./ui/button";
-import { MenuButton, UserDropdown } from "./nav";
-import { ToolbarButtons } from "./toolbar/toolbar-buttons";
-import { ToolbarTitle } from "./toolbar/toolbar-title";
-import { ToolbarBackButton } from "./toolbar/toolbar-back-button";
-import { usePathname } from "../routing/hooks";
-import { STACK_ROOT_PATHS } from "../routing/routes";
-import { NotFoundPageContent } from "../features/not-found";
+import { useRequireAuth } from "../auth-context";
+import { ContentGutters } from "../gutters";
+import { Button } from "../ui/button";
+import { MenuButton, UserDropdown } from "../nav";
+import { ToolbarButtons } from "../toolbar/toolbar-buttons";
+import { ToolbarTitle } from "../toolbar/toolbar-title";
+import { ToolbarBackButton } from "../toolbar/toolbar-back-button";
+import { usePathname } from "../../routing/hooks";
+import { STACK_ROOT_PATHS } from "../../routing/routes";
+import { NotFoundPageContent } from "./not-found";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
@@ -25,6 +25,9 @@ import {
   buildErrorReport,
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
+import { useSettingsStore } from "@/src/stores/settings";
+import { useIsContentWarningActive } from "@/src/hooks/nsfw";
+import { ContentWarningPageContent } from "./content-warning";
 
 function PageErrorFallback({
   error,
@@ -165,12 +168,20 @@ export function Page({
   ref?: React.Ref<HTMLElement | undefined | null>;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const contentWarningAccepted = useSettingsStore(
+    (s) => s.contentWarningAccepted,
+  );
+  const contentWarningActive = useIsContentWarningActive();
   const needsLogin = requireLogin && !isLoggedIn;
+  const needsContentWarning =
+    !isLoggedIn && contentWarningActive && !contentWarningAccepted;
   return (
     <DefaultIonPage ref={ref} {...props}>
       <ErrorBoundary FallbackComponent={PageErrorFallback}>
         {needsLogin ? (
           <LoginRequiredPageContent />
+        ) : needsContentWarning ? (
+          <ContentWarningPageContent />
         ) : notFound ? (
           <NotFoundPageContent
             apId={notFoundApId}

@@ -2,7 +2,8 @@ import { twMerge } from "tailwind-merge";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
-import { useIsCommunityBlocked, useShouldBlurNsfw } from "@/src/stores/auth";
+import { useIsCommunityBlocked } from "@/src/stores/auth";
+import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
   COMMUNITY_NSFW_ICON_BLUR_CLASS,
