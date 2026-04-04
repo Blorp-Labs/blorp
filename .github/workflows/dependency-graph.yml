@@ -33,18 +33,23 @@ jobs:
       - name: Install Graphviz
         run: sudo apt-get install -y graphviz
 
-      - name: Generate dependency graph
+      - name: Generate DOT graph
         run: |
           pnpm exec depcruise src \
             --include-only "^src" \
             --collapse "^src/[^/]+" \
-            --output-type dot | dot -T png > dep-graph.png
+            --output-type dot > dep-graph.dot
 
-      - name: Upload PNG as build artifact
+      - name: Render PNG from DOT
+        run: dot -T png dep-graph.dot > dep-graph.png
+
+      - name: Upload artifacts for debugging
         uses: actions/upload-artifact@v4
         with:
           name: dep-graph-${{ github.event.pull_request.number }}
-          path: dep-graph.png
+          path: |
+            dep-graph.dot
+            dep-graph.png
 
       - name: Push PNG to artifacts branch
         run: |
