@@ -80,7 +80,7 @@ export const useFlairsStore = create<FlairStore>()(
           }
         }
 
-        return flairs;
+        set({ flairs });
       },
       reset: () => {
         if (isTest()) {
