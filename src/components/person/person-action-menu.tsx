@@ -15,6 +15,7 @@ import { useShareActions } from "@/src/lib/share";
 import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
+import { useLinkContext } from "@/src/routing/link-context";
 
 dayjs.extend(localizedFormat);
 
@@ -44,6 +45,7 @@ export function usePersonActions({
 
   const tagUser = useTagUser();
 
+  const linkCtx = useLinkContext();
   const shareActions = useShareActions(
     personLabel,
     person
@@ -51,7 +53,7 @@ export function usePersonActions({
           type: "person",
           apId: person.apId,
           slug: person.slug,
-          route: resolveRoute("/messages/chat/:userId", {
+          route: resolveRoute(`${linkCtx.root}u/:userId`, {
             userId: encodeApId(person.apId),
           }),
         }
