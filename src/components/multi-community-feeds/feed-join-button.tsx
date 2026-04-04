@@ -3,7 +3,7 @@ import { useFollowFeed } from "@/src/lib/api/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import { getFeedSubscribed } from "@/src/lib/api/adapters/utils";
-import { useConfirmationAlert } from "@/src/lib/hooks";
+import { useConfirmationAlert } from "@/src/hooks";
 
 interface Props {
   feedApId: string | undefined;

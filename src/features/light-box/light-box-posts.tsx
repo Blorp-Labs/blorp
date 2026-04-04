@@ -16,7 +16,7 @@ import {
   useNavbarHeight,
   useTabbarHeight,
   useUrlSearchState,
-} from "@/src/lib/hooks";
+} from "@/src/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";

@@ -24,7 +24,7 @@ import {
   usePrivateMessagesCount,
 } from "../lib/api";
 import { LuMenu } from "react-icons/lu";
-import { useConfirmationAlert, useMedia } from "../lib/hooks";
+import { useConfirmationAlert, useMedia } from "../hooks";
 import {
   IoPersonOutline,
   IoBookmarksOutline,

@@ -1,7 +1,7 @@
 import { createContext, useContext, useId, useState } from "react";
 import { useCreateComment, useEditComment } from "@/src/lib/api/index";
 import _ from "lodash";
-import { useMedia } from "@/src/lib/hooks/index";
+import { useMedia } from "@/src/hooks/index";
 import { MarkdownEditor } from "../markdown/editor";
 import { useCommentRepliesStore } from "@/src/stores/comment-replies";
 import {

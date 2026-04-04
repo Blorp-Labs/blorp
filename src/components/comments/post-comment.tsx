@@ -40,7 +40,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/hooks/share";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import {
   Collapsible,
@@ -49,7 +49,7 @@ import {
 } from "../ui/collapsible";
 import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
-import { useMedia } from "@/src/lib/hooks/index";
+import { useMedia, useInputAlert } from "@/src/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -68,7 +68,6 @@ import {
   getCommentMyVote,
   getCommentSaved,
 } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";

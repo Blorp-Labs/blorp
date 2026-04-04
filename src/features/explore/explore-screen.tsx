@@ -15,7 +15,7 @@ import {
 } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useIsActiveRoute, useMedia } from "../../lib/hooks";
+import { useIsActiveRoute, useMedia } from "../../hooks";
 import {
   IonContent,
   IonHeader,

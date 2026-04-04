@@ -1,7 +1,6 @@
 import { SmallScreenSidebar } from "@/src/components/communities/community-sidebar";
 import { useMemo } from "react";
 import { useCommunity } from "../lib/api";
-import _ from "lodash";
 import {
   IonContent,
   IonHeader,
@@ -18,7 +17,7 @@ import { useLinkContext } from "../routing/link-context";
 import { ContentGutters } from "../components/gutters";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { useCommunityFromStore } from "../stores/communities";

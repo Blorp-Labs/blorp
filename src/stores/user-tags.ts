@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
-import { useConfirmationAlert } from "../lib/hooks";
+import { useConfirmationAlert } from "../hooks";
 import z from "zod";
 import { isTest } from "../lib/device";
 import { mergeCacheObject } from "./utils";

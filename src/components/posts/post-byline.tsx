@@ -41,10 +41,10 @@ import {
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/lib/api/index";
 import { getPostMyVote, getPostSaved } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/hooks/share";
 
 export function usePostActions({
   post,

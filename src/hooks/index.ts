@@ -10,7 +10,7 @@ import {
 import { InAppBrowser } from "@capacitor/inappbrowser";
 import type z from "zod";
 import { AlertInput, useIonAlert } from "@ionic/react";
-import { Deferred } from "../deferred";
+import { Deferred } from "../lib/deferred";
 import { useMedia } from "./use-media";
 import _ from "lodash";
 import { useIsActiveRoute } from "./navigation-hooks";
@@ -33,7 +33,9 @@ export function useElementHasFocus<T extends HTMLElement | null>(
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) return;
+    if (!element) {
+      return;
+    }
 
     const observer = new IntersectionObserver(([entry]) => {
       if (entry) {
@@ -318,7 +320,9 @@ export function useElementRect<T extends HTMLElement | null>(
   });
 
   useLayoutEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current) {
+      return;
+    }
 
     const updateRect = () => {
       if (ref.current) {

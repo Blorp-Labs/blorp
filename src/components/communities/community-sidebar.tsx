@@ -31,7 +31,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { PersonCard } from "../person/person-card";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/hooks/share";
 import { Sidebar, SidebarContent } from "../sidebar";
 import {
   Collapsible,
@@ -43,7 +43,7 @@ import { Separator } from "../ui/separator";
 import { useSidebarStore } from "@/src/stores/sidebars";
 import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
-import { useConfirmationAlert } from "@/src/lib/hooks/index";
+import { useConfirmationAlert } from "@/src/hooks/index";
 import { Skeleton } from "../ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Flair } from "../flair";

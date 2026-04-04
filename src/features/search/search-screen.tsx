@@ -19,11 +19,7 @@ import { Link, useParams } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { UserDropdown } from "@/src/components/nav";
-import {
-  useKeyboardShortcut,
-  useMedia,
-  useUrlSearchState,
-} from "@/src/lib/hooks";
+import { useKeyboardShortcut, useMedia, useUrlSearchState } from "@/src/hooks";
 import { PostReportProvider } from "@/src/components/posts/post-report";
 import z from "zod";
 import { PersonCard } from "@/src/components/person/person-card";

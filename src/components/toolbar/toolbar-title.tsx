@@ -1,4 +1,4 @@
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { cva, VariantProps } from "class-variance-authority";
 

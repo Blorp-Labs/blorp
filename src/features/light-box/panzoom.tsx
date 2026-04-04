@@ -13,7 +13,7 @@ import "swiper/css/virtual";
 import "swiper/css/zoom";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import Panzoom, { PanzoomOptions } from "@panzoom/panzoom";
-import { useSafeAreaInsets } from "@/src/lib/hooks";
+import { useSafeAreaInsets } from "@/src/hooks";
 
 type Fn = (event: "zoom-in" | "zoom-out") => void;
 

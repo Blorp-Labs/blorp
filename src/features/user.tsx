@@ -8,7 +8,7 @@ import {
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { decodeApId, encodeApId } from "../lib/api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
@@ -21,7 +21,7 @@ import { Link, resolveRoute, useParams } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia, useUrlSearchState } from "../hooks";
 import { PostReportProvider } from "../components/posts/post-report";
 import { useIsPersonBlocked } from "../stores/auth";
 import z from "zod";

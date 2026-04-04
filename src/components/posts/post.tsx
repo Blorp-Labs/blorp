@@ -41,7 +41,7 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";

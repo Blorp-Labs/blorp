@@ -22,7 +22,7 @@ import {
   useDebouncedState,
   useIsActiveRoute,
   useKeyboardShortcut,
-} from "@/src/lib/hooks";
+} from "@/src/hooks";
 import { isIos, isMacOs } from "@/src/lib/device";
 import { useSearchStore } from "@/src/stores/search";
 

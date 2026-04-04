@@ -1,4 +1,4 @@
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import ReactPlayer from "react-player";
 import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";

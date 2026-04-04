@@ -18,7 +18,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { removeMd } from "@/src/components/markdown/remove-md";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { Page } from "@/src/components/page";
 
 const NO_ITEMS = "NO_ITEMS";

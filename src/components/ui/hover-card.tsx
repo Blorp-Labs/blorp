@@ -2,7 +2,7 @@ import * as React from "react";
 import { HoverCard as HoverCardPrimitive } from "radix-ui";
 
 import { cn } from "@/src/lib/utils";
-import { useIsActiveRoute } from "@/src/lib/hooks";
+import { useIsActiveRoute } from "@/src/hooks";
 
 function HoverCard({
   ...props

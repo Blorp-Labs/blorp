@@ -3,7 +3,7 @@ import { setupIonicReact } from "@ionic/react";
 import _ from "lodash";
 import { useEffect } from "react";
 import Router from "./routing/Router";
-import { useTheme } from "./lib/hooks/use-theme";
+import { useTheme } from "./hooks/use-theme";
 import { useSettingsStore } from "./stores/settings";
 import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";

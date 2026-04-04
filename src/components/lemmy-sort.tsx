@@ -1,7 +1,7 @@
 import { useFiltersStore } from "@/src/stores/filters";
 import { useMemo } from "react";
 import { useAuth } from "../stores/auth";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { ActionMenu, ActionMenuProps } from "./adaptable/action-menu";
 import _ from "lodash";
 

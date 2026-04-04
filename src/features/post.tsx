@@ -37,7 +37,7 @@ import {
   useIonPageElement,
   useMedia,
   useTheme,
-} from "../lib/hooks";
+} from "../hooks";
 import { Page } from "../components/page";
 import { CommentSkeleton } from "../components/comments/comment-skeleton";
 import { useLinkContext } from "../routing/link-context";

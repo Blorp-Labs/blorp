@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import _ from "lodash";
 import { App } from "@capacitor/app";
-import { useSettingsStore } from "../../stores/settings";
+import { useSettingsStore } from "../stores/settings";
 
 // create the MQL once
 const mql: Partial<MediaQueryList> & { matches: boolean } = _.isFunction(
@@ -32,7 +32,9 @@ if (_.isFunction(mql.addEventListener)) {
 
 // Re-check on app resume in case the system theme changed while backgrounded
 App.addListener("appStateChange", ({ isActive }) => {
-  if (isActive) handler();
+  if (isActive) {
+    handler();
+  }
 });
 
 // subscribe & snapshot
@@ -95,7 +97,11 @@ export function useTheme(): Theme {
     getThemeSnapshot,
     getThemeSnapshot,
   );
-  if (darkModeSetting === "dark") return "dark";
-  if (darkModeSetting === "light") return "light";
+  if (darkModeSetting === "dark") {
+    return "dark";
+  }
+  if (darkModeSetting === "light") {
+    return "light";
+  }
   return systemTheme;
 }

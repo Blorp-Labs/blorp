@@ -12,7 +12,7 @@ import {
   useNavbarHeight,
   useSafeAreaInsets,
   useUrlSearchState,
-} from "../../lib/hooks";
+} from "../../hooks";
 import z from "zod";
 import { ToolbarTitle } from "../../components/toolbar/toolbar-title";
 import { cn } from "../../lib/utils";

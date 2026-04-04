@@ -21,7 +21,7 @@ import {
   useShareActions,
   downloadImage,
   useImageShareActions,
-} from "@/src/lib/share";
+} from "@/src/hooks/share";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/lib/api/utils";
 import { getPostEmbed } from "@/src/lib/post";
@@ -37,7 +37,7 @@ import {
   getPostMyVote,
   getPostEmojiReactions,
 } from "@/src/lib/api/adapters/utils";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import {
   useAddPostReactionEmoji,
   useLikePost,

@@ -4,24 +4,24 @@
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import { privilegedFetch } from "./privileged-fetch";
+import { privilegedFetch } from "../lib/privileged-fetch";
 import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { isAndroid, isCapacitor, isFirefox, isTauri } from "./device";
+import { isAndroid, isCapacitor, isFirefox, isTauri } from "../lib/device";
 import { ActionMenuProps } from "../components/adaptable/action-menu";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
-import { isErrorLike } from "./utils";
+import { isErrorLike } from "../lib/utils";
 import {
   ShareLinkType,
   SHARE_LINK_TYPE_OPTIONS,
   useSettingsStore,
 } from "../stores/settings";
 import { Account, parseAccountInfo, useAuth } from "../stores/auth";
-import { useSelectAlert } from "./hooks/index";
+import { useSelectAlert } from ".";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -136,7 +136,9 @@ async function ensureAlbumIdentifier(
 ): Promise<string | undefined> {
   const { albums } = await Media.getAlbums(); // returns list of { identifier, name, type }
   const existing = albums.find((a) => a.name === albumName);
-  if (existing) return existing.identifier;
+  if (existing) {
+    return existing.identifier;
+  }
 
   await Media.createAlbum({ name: albumName });
   const after = (await Media.getAlbums()).albums;
@@ -168,7 +170,9 @@ export async function downloadImage(name: string, imageUrl: string) {
     }
 
     const blob = await response.blob();
-    if (!blob) return;
+    if (!blob) {
+      return;
+    }
 
     const filename = getFileName(blob, name);
 
@@ -220,7 +224,9 @@ export async function shareImage(name: string, imageUrl: string) {
     }
     const blob = await response.blob();
 
-    if (!blob) return;
+    if (!blob) {
+      return;
+    }
 
     const filename = getFileName(blob, name);
 
@@ -307,7 +313,9 @@ function resolveShareUrl(
       if (entity.type === "multi-community-feed") {
         return entity.apId;
       }
-      if (!instance) return null;
+      if (!instance) {
+        return null;
+      }
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.slug}`;
       }
@@ -409,7 +417,9 @@ export function useShareActions(
   }
 
   const getMode = async (): Promise<ShareLinkType | null> => {
-    if (shareLinkType !== null) return shareLinkType;
+    if (shareLinkType !== null) {
+      return shareLinkType;
+    }
     try {
       const selected = await selectAlert({
         header: "How would you like to share? Change this later in Settings.",

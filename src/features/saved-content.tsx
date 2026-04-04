@@ -5,7 +5,7 @@ import {
 } from "@/src/components/posts/post";
 import { ContentGutters } from "../components/gutters";
 import { memo, useMemo } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import { useAvailableSorts, useComments, usePosts } from "../lib/api";
@@ -20,7 +20,7 @@ import { Link } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia, useUrlSearchState } from "../hooks";
 import z from "zod";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";

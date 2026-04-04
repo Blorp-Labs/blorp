@@ -5,7 +5,7 @@ import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { VirtualList } from "../components/virtual-list";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { ContentGutters } from "../components/gutters";

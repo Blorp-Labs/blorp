@@ -6,7 +6,7 @@ import * as api from "@/test-utils/api";
 import { useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { useEffect, useState } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 
 // 50 posts for the basic feed stories
 const POST_FEED = Array.from({ length: 50 }).map((_i, index) =>

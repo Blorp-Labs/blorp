@@ -4,7 +4,7 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { Schemas } from "../lib/api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
-import { useIsActiveRoute } from "../lib/hooks";
+import { useIsActiveRoute } from "../hooks";
 import { useEffect } from "react";
 
 type RecentCommunityStore = {

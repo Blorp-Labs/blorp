@@ -10,7 +10,7 @@ import {
 import { RouteDefs, routeDefs, RoutePath } from "./routes";
 import z from "zod";
 import { isDev } from "../lib/device";
-import { RouteSearchParamProvider } from "../lib/hooks/use-url-search-state";
+import { RouteSearchParamProvider } from "../hooks/use-url-search-state";
 export { resolveRoute } from "./resolve-route";
 
 // lookup schema by path

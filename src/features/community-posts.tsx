@@ -9,7 +9,7 @@ import {
 } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
@@ -33,7 +33,7 @@ import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import {

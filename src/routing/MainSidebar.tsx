@@ -36,7 +36,7 @@ import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
 import { isTauri } from "../lib/device";
 import { ChevronLeft, ChevronRight } from "../components/icons";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { usePathname } from "./hooks";
 import { Skeleton } from "../components/ui/skeleton";
 import {

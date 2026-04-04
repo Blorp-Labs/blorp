@@ -16,7 +16,7 @@ import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
@@ -67,7 +67,9 @@ export function CommentEmojiReactions({
   onReact?: (emoji?: string) => void;
 }) {
   const allReactions = reactions ?? [];
-  if (allReactions.length === 0) return null;
+  if (allReactions.length === 0) {
+    return null;
+  }
   const truncated = allReactions.slice(0, MAX_REACTIONS);
 
   if (truncated.length > 4) {

@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useIonRouter } from "@ionic/react";
-import { dispatchScrollEvent } from "../scroll-events";
+import { dispatchScrollEvent } from "../lib/scroll-events";
 import {
   PaginationControls,
   PaginationControlsProps,
-} from "../../components/pagination-controls";
+} from "../components/pagination-controls";
 
 export type { PaginationControlsProps };
 

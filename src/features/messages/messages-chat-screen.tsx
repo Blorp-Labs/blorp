@@ -27,7 +27,7 @@ import { PersonAvatar } from "@/src/components/person/person-avatar";
 import TextareaAutosize from "react-textarea-autosize";
 import { Send } from "@/src/components/icons";
 import { Button } from "@/src/components/ui/button";
-import { useIsActiveRoute, useMedia } from "@/src/lib/hooks";
+import { useIsActiveRoute, useMedia } from "@/src/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { PageTitle } from "@/src/components/page-title";
 import { Schemas } from "@/src/lib/api/adapters/api-blueprint";

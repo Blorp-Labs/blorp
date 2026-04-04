@@ -13,7 +13,7 @@ import {
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { Route, Redirect } from "@/src/routing/index";
-import { useMedia } from "@/src/lib/hooks/index";
+import { useMedia } from "@/src/hooks/index";
 import { useNotificationCount, usePrivateMessagesCount } from "@/src/lib/api";
 import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
