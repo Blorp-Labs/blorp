@@ -15,6 +15,7 @@ export default tseslint.config(
       "ios/**",
       "src-tauri/**",
       "public/**",
+      ".dependency-cruiser.cjs",
     ],
   },
   js.configs.recommended,
