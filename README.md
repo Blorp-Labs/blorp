@@ -115,6 +115,16 @@ docker run -d \
   ghcr.io/blorp-labs/blorp:latest
 ```
 
+### Environment variables
+
+| Variable                             | Description                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| `REACT_APP_NAME`                     | App name shown in the UI                                                    |
+| `REACT_APP_DEFAULT_INSTANCE`         | Comma-separated list of default Lemmy/PieFed instances                      |
+| `REACT_APP_LOCK_TO_DEFAULT_INSTANCE` | Set to `1` to prevent users from adding other instances                     |
+| `REACT_APP_INSTANCE_SELECTION_MODE`  | How to pick the default instance (`default_first`, `default_random`)        |
+| `REACT_APP_CONTENT_WARNING`          | When set, logged-out users must accept this content warning before browsing |
+
 ## 💬 Blorp Community
 
 Want to ask questions, share feedback, or just chat with other Blorp users? Head over to our community at  
