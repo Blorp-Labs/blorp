@@ -15,7 +15,7 @@ import { ToolbarTitle } from "../toolbar/toolbar-title";
 import { ToolbarBackButton } from "../toolbar/toolbar-back-button";
 import { usePathname } from "../../routing/hooks";
 import { STACK_ROOT_PATHS } from "../../routing/routes";
-import { NotFoundPageContent } from "../../features/not-found";
+import { NotFoundPageContent } from "./not-found";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
