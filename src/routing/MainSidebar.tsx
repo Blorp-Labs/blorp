@@ -10,7 +10,7 @@ import {
   useNotificationCount,
   usePrivateMessagesCount,
   useSubscribedCommunities,
-} from "@/src/lib/api";
+} from "@/src/api";
 import { CommunityCard } from "@/src/components/communities/community-card";
 import { LEFT_SIDEBAR_MENU_ID, TABS } from "./config";
 import { Separator } from "../components/ui/separator";

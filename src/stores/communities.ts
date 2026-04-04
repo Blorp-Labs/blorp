@@ -8,7 +8,7 @@ import {
   Schemas,
   communitySchema,
   personSchema,
-} from "../lib/api/adapters/api-blueprint";
+} from "../api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";

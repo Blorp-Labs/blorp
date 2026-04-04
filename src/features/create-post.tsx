@@ -20,9 +20,9 @@ import {
   useSearch,
   useSoftware,
   useUploadImage,
-} from "../lib/api";
-import { supportsPollCreation } from "../lib/api/adapters/support";
-import { Forms } from "../lib/api/adapters/api-blueprint";
+} from "../api";
+import { supportsPollCreation } from "../api/adapters/support";
+import { Forms } from "../api/adapters/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -72,7 +72,7 @@ import { Page } from "../components/page";
 import { SimpleSelect } from "../components/ui/simple-select";
 import { Trash } from "../components/icons";
 import { Separator } from "../components/ui/separator";
-import { parseSlug } from "../lib/api/utils";
+import { parseSlug } from "../api/utils";
 
 dayjs.extend(localizedFormat);
 

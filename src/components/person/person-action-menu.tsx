@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
-import { useBlockPerson } from "@/src/lib/api";
+import { useBlockPerson } from "@/src/api";
 import {
   getAccountActorId,
   useAuth,
@@ -13,7 +13,7 @@ import {
 } from "@/src/stores/auth";
 import { useShareActions } from "@/src/hooks/share";
 import { resolveRoute } from "../../routing/index";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
 import { useLinkContext } from "@/src/routing/link-context";
 

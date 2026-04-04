@@ -16,7 +16,7 @@ import {
   useRefreshAuth,
   useRegister,
   useSite,
-} from "../lib/api";
+} from "../api";
 import fuzzysort from "fuzzysort";
 import _ from "lodash";
 import {
@@ -51,7 +51,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Software } from "../lib/api/adapters/api-blueprint";
+import { Software } from "../api/adapters/api-blueprint";
 import { ToolbarTitle } from "./toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 

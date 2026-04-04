@@ -1,6 +1,6 @@
 import { Deferred } from "@/src/lib/deferred";
 import { LoadingButton } from "../ui/button";
-import { useFollowCommunity } from "@/src/lib/api/index";
+import { useFollowCommunity } from "@/src/api/index";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useIonAlert } from "@ionic/react";
 import { useAuth } from "@/src/stores/auth";

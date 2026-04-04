@@ -8,7 +8,7 @@ import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { Account } from "@/src/stores/auth";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { useLinkContext } from "../../routing/link-context";
 import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";

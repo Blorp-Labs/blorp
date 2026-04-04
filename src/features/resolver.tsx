@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Page } from "../components/page";
 import { useHistory, useLocation } from "react-router";
-import { useResolveObject } from "../lib/api";
+import { useResolveObject } from "../api";
 import { resolveRoute } from "../routing";
-import { encodeApId } from "../lib/api/utils";
+import { encodeApId } from "../api/utils";
 
 const origin = (() => {
   try {

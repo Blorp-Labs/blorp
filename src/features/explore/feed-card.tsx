@@ -9,7 +9,7 @@ import { cn } from "../../lib/utils";
 import { abbriviateNumber } from "../../lib/format";
 import { useLinkContext } from "../../routing/link-context";
 import { removeMd } from "../../components/markdown/remove-md";
-import { encodeApId } from "../../lib/api/utils";
+import { encodeApId } from "../../api/utils";
 import { useMultiCommunityFeedFromStore } from "../../stores/multi-community-feeds";
 
 export const FEEDS = "Feeds";

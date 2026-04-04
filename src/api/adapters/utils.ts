@@ -36,25 +36,37 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
 
 export function apIdFromCommunitySlug(slug: string): string | undefined {
   const parts = slug.split("@");
-  if (parts.length !== 2) return undefined;
+  if (parts.length !== 2) {
+    return undefined;
+  }
   const [name, host] = parts;
-  if (!name || !host) return undefined;
+  if (!name || !host) {
+    return undefined;
+  }
   return `https://${host}/c/${name}`;
 }
 
 export function getPostEmojiReactions(post: Schemas.Post) {
   const reactions = post.emojiReactions;
   const optimistic = post.optimisticMyEmojiReaction;
-  if (!optimistic) return reactions;
-  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  if (!optimistic) {
+    return reactions;
+  }
+  if (reactions.some((r) => r.token === optimistic)) {
+    return reactions;
+  }
   return [...reactions, { token: optimistic, count: 1 }];
 }
 
 export function getCommentEmojiReactions(comment: Schemas.Comment) {
   const reactions = comment.emojiReactions;
   const optimistic = comment.optimisticMyEmojiReaction;
-  if (!optimistic) return reactions;
-  if (reactions.some((r) => r.token === optimistic)) return reactions;
+  if (!optimistic) {
+    return reactions;
+  }
+  if (reactions.some((r) => r.token === optimistic)) {
+    return reactions;
+  }
   return [...reactions, { token: optimistic, count: 1 }];
 }
 

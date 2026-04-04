@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { MAX_CACHE_MS } from "../stores/config";
-import { compareErrors } from "../lib/api/adapters/api-blueprint";
+import { compareErrors } from "../api/adapters/api-blueprint";
 
 export const queryClient = new QueryClient({
   defaultOptions: {

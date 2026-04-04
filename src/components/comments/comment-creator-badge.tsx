@@ -1,4 +1,4 @@
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { Robot, Shield, ShieldCheckmark } from "../icons";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";

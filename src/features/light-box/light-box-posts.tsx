@@ -1,6 +1,6 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCommunity, usePost, usePosts } from "@/src/lib/api";
+import { useCommunity, usePost, usePosts } from "@/src/api";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useUpdateRecentCommunity } from "@/src/stores/recent-communities";
@@ -28,10 +28,10 @@ import {
 } from "@/src/components/posts/post-buttons";
 import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
-import { decodeApId, encodeApId } from "@/src/lib/api/utils";
+import { decodeApId, encodeApId } from "@/src/api/utils";
 import { useLinkContext } from "@/src/routing/link-context";
 import { useParams } from "@/src/routing";
-import { Forms } from "@/src/lib/api/adapters/api-blueprint";
+import { Forms } from "@/src/api/adapters/api-blueprint";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { Button } from "@/src/components/ui/button";
 import { IonButtons, IonButton, IonModal, IonTitle } from "@ionic/react";

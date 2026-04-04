@@ -2,7 +2,7 @@ import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useLinkContext } from "../../routing/link-context";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { Link } from "@/src/routing/index";
 import {
   PostArticleEmbed,
@@ -34,7 +34,7 @@ import {
 } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { Separator } from "../ui/separator";
 import { SpotifyEmbed } from "./embeds/post-spotify-embed";
 import { SoundCloudEmbed } from "./embeds/soundcloud-embed";

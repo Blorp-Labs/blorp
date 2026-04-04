@@ -12,8 +12,8 @@ import {
 import z from "zod";
 import { createSlug } from "../utils";
 import { getFlairLookup } from "@/src/stores/create-post";
-import { isNotNil } from "../../utils";
-import { parseOgData } from "../../html-parsing";
+import { isNotNil } from "../../lib/utils";
+import { parseOgData } from "../../lib/html-parsing";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 import {
   Comment,

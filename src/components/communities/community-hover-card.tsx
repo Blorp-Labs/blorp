@@ -1,4 +1,4 @@
-import { useCommunity } from "@/src/lib/api/index";
+import { useCommunity } from "@/src/api/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useCommunityFromStore } from "@/src/stores/communities";

@@ -5,7 +5,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 
 export function PersonAvatar({
   actorId,

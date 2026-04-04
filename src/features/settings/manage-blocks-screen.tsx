@@ -15,11 +15,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
-import {
-  useBlockPerson,
-  useBlockCommunity,
-  useBlockInstance,
-} from "@/src/lib/api";
+import { useBlockPerson, useBlockCommunity, useBlockInstance } from "@/src/api";
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
 import { X } from "@/src/components/icons";

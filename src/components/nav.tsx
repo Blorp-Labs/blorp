@@ -9,7 +9,7 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { parseAccountInfo, useAuth } from "../stores/auth";
 import { useLinkContext } from "../routing/link-context";
-import { encodeApId } from "../lib/api/utils";
+import { encodeApId } from "../api/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -22,7 +22,7 @@ import {
   useLogout,
   useNotificationCount,
   usePrivateMessagesCount,
-} from "../lib/api";
+} from "../api";
 import { LuMenu } from "react-icons/lu";
 import { useConfirmationAlert, useMedia } from "../hooks";
 import {

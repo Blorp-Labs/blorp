@@ -9,7 +9,7 @@ import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
 import { runTauriSecurityFix } from "./lib/create-storage";
-import { useNotificationCount } from "./lib/api";
+import { useNotificationCount } from "./api";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isDev, isTauri } from "./lib/device";
 import { updateTauri } from "./lib/tauri";

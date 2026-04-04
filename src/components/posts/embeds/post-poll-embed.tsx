@@ -1,4 +1,4 @@
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import _ from "lodash";
 import { cn } from "@/src/lib/utils";
 import { RadioGroupItem, RadioGroup } from "../../ui/radio-group";
@@ -7,7 +7,7 @@ import { Checkbox } from "../../ui/checkbox";
 import { Button } from "../../ui/button";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
-import { useVotePostPoll } from "@/src/lib/api/post-mutations";
+import { useVotePostPoll } from "@/src/api/post-mutations";
 import { useRequireAuth } from "../../auth-context";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ABOVE_LINK_OVERLAY } from "../config";

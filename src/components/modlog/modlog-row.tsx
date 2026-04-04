@@ -1,8 +1,8 @@
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { PersonHoverCard } from "@/src/components/person/person-hover-card";
 import { Link } from "@/src/routing/index";
 import { useLinkContext } from "@/src/routing/link-context";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { RelativeTime } from "../relative-time";
 import { ContentGutters } from "../gutters";
 import { cn } from "@/src/lib/utils";

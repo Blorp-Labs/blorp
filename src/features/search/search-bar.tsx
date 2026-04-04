@@ -6,7 +6,7 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/src/components/ui/command";
-import { useSearch } from "@/src/lib/api";
+import { useSearch } from "@/src/api";
 import { cn } from "@/src/lib/utils";
 import { usePostFromStore } from "@/src/stores/posts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,9 +15,9 @@ import { useProfileFromStore } from "@/src/stores/profiles";
 import { useLinkContext } from "@/src/routing/link-context";
 import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import type { Forms } from "@/src/lib/api/adapters/api-blueprint";
+import type { Forms } from "@/src/api/adapters/api-blueprint";
 import {
   useDebouncedState,
   useIsActiveRoute,

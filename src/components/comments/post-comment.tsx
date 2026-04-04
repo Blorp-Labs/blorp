@@ -20,12 +20,12 @@ import {
   useMarkCommentAsAnswer,
   useSaveComment,
   useSoftware,
-} from "@/src/lib/api/index";
+} from "@/src/api/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
 import { useLinkContext } from "../../routing/link-context";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/api/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {
   Avatar,
@@ -57,7 +57,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
@@ -67,7 +67,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
   getCommentSaved,
-} from "@/src/lib/api/adapters/utils";
+} from "@/src/api/adapters/utils";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";

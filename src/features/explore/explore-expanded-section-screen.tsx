@@ -2,8 +2,8 @@ import {
   useListCommunities,
   useModeratingCommunities,
   useSubscribedCommunities,
-} from "@/src/lib/api/index";
-import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
+} from "@/src/api/index";
+import { useListMultiCommunityFeeds } from "@/src/api/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,

@@ -7,7 +7,7 @@ import { CachePrefixer, useAuth } from "./auth";
 import {
   Schemas,
   multiCommunityFeedSchema,
-} from "../lib/api/adapters/api-blueprint";
+} from "../api/adapters/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";

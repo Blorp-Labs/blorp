@@ -1,5 +1,5 @@
 import { createContext, useContext, useId, useState } from "react";
-import { useCreateComment, useEditComment } from "@/src/lib/api/index";
+import { useCreateComment, useEditComment } from "@/src/api/index";
 import _ from "lodash";
 import { useMedia } from "@/src/hooks/index";
 import { MarkdownEditor } from "../markdown/editor";
@@ -13,7 +13,7 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Button } from "@/src/components/ui/button";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/api/adapters/api-blueprint";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { getSelectedAsMarkdownQuote } from "@/src/lib/markdown";
 

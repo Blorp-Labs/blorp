@@ -14,7 +14,7 @@ import {
   useReplies,
   useResolvePostReportMutation,
   useResolveCommentReportMutation,
-} from "@/src/lib/api/index";
+} from "@/src/api/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
@@ -38,7 +38,7 @@ import {
   Report,
 } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas } from "../api/adapters/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Button } from "../components/ui/button";
 import {
@@ -46,8 +46,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../components/ui/tooltip";
-import { encodeApId } from "../lib/api/utils";
-import { getCommentSaved } from "../lib/api/adapters/utils";
+import { encodeApId } from "../api/utils";
+import { getCommentSaved } from "../api/adapters/utils";
 import {
   CommentButtonBar,
   CommentVoting,

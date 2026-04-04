@@ -13,7 +13,7 @@ import {
 } from "./api-blueprint";
 import { createSlug } from "../utils";
 import _ from "lodash";
-import { exhaustiveList, isErrorLike, ErrorLike } from "../../utils";
+import { exhaustiveList, isErrorLike, ErrorLike } from "../../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 
 function translateError(err: ErrorLike): Error {
