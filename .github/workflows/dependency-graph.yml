@@ -37,7 +37,10 @@ jobs:
         run: pnpm exec depcruise src --output-type dot > dep-graph.dot
 
       - name: Render PNG from DOT
-        run: dot -T png -Gdpi=150 dep-graph.dot > dep-graph.png
+        run: |
+          dot -T png -Gdpi=150 dep-graph.dot > dep-graph.png
+          SIZE=$(identify -format "%[fx:max(w,h)]" dep-graph.png)
+          convert dep-graph.png -gravity center -background white -extent "${SIZE}x${SIZE}" dep-graph.png
 
       - name: Upload artifacts for debugging
         uses: actions/upload-artifact@v4
