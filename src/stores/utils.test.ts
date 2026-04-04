@@ -236,6 +236,19 @@ describe("mergeCacheObject", () => {
       y: "world",
     });
   });
+
+  test("tab running old schema passes through unknown fields added by newer schema", () => {
+    // Simulates two tabs on different app versions. Tab B runs a newer version
+    // that added `newField` to the schema. Tab A (old version) merges tab B's
+    // persisted data using the old schema — it should pass through `newField`
+    // untouched so that switching back to tab B doesn't lose it.
+    const versionBData = {
+      key: { value: "hello", lastUsed: 0, newField: "extra" },
+    };
+    const result = mergeCacheObject({}, versionBData, itemSchema);
+    expect(result["key"]).toMatchObject({ value: "hello", lastUsed: 0 });
+    expect((result["key"] as any).newField).toBe("extra");
+  });
 });
 
 // ─── resolveThreshold ────────────────────────────────────────────────────────
