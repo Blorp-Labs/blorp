@@ -67,7 +67,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
   getCommentSaved,
-} from "@/src/api/adapters/utils";
+} from "@/src/lib/api";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";

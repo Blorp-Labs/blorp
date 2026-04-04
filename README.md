@@ -92,7 +92,7 @@ open ios/App/App.xcworkspace   # always open .xcworkspace, not .xcodeproj
 | `pnpm build`     | Production build (Vite + Capacitor sync)      |
 | `pnpm test`      | Run Vitest unit tests                         |
 | `pnpm test:ts`   | TypeScript type check                         |
-| `pnpm lint`      | Lint via oxlint                               |
+| `pnpm lint`      | Lint via ESLint                               |
 | `pnpm test:e2e`  | Playwright E2E tests (run `pnpm build` first) |
 | `pnpm storybook` | Component Storybook                           |
 

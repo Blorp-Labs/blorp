@@ -39,7 +39,7 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
-import { getCommentSaved } from "../api/adapters/utils";
+import { getCommentSaved } from "../lib/api";
 import { Bookmark } from "../components/icons";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";

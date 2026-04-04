@@ -15,7 +15,7 @@ import { resolveRoute } from "../../routing";
 import { encodeApId } from "../../api/utils";
 import { Schemas } from "../../api-blueprint";
 import { useRequireAuth } from "../auth-context";
-import { apIdFromCommunitySlug } from "../../api/adapters/utils";
+import { apIdFromCommunitySlug } from "../../lib/api";
 import { env } from "../../env";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {

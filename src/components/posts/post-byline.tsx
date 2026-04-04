@@ -40,7 +40,7 @@ import {
 } from "@/src/api/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/api/index";
-import { getPostMyVote, getPostSaved } from "@/src/api/adapters/utils";
+import { getPostMyVote, getPostSaved } from "@/src/lib/api";
 import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";

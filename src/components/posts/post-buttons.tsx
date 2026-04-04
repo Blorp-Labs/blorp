@@ -32,7 +32,7 @@ import {
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/api-blueprint";
-import { getPostMyVote, getPostEmojiReactions } from "@/src/api/adapters/utils";
+import { getPostMyVote, getPostEmojiReactions } from "@/src/lib/api";
 import { useMedia } from "@/src/hooks";
 import { useAddPostReactionEmoji, useLikePost } from "@/src/api/post-mutations";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";

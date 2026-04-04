@@ -47,7 +47,7 @@ import {
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
-import { getCommentSaved } from "@/src/api/adapters/utils";
+import { getCommentSaved } from "@/src/lib/api";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 

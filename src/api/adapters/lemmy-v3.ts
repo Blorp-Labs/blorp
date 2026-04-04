@@ -15,7 +15,7 @@ import _ from "lodash";
 import z from "zod";
 import { ErrorLike, exhaustiveList, isErrorLike } from "../../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
-import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "../../lib/api";
 
 function translateError(err: ErrorLike): Error {
   const name = err.name.trim().toLowerCase();

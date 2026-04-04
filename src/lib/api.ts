@@ -1,4 +1,4 @@
-import { Schemas } from "../../api-blueprint";
+import { Schemas } from "../api-blueprint";
 import _ from "lodash";
 
 /**

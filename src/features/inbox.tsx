@@ -47,7 +47,7 @@ import {
   TooltipTrigger,
 } from "../components/ui/tooltip";
 import { encodeApId } from "../api/utils";
-import { getCommentSaved } from "../api/adapters/utils";
+import { getCommentSaved } from "../lib/api";
 import {
   CommentButtonBar,
   CommentVoting,
