@@ -40,6 +40,12 @@ jobs:
             --collapse "^src/[^/]+" \
             --output-type dot | dot -T png > dep-graph.png
 
+      - name: Upload PNG as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dep-graph-${{ github.event.pull_request.number }}
+          path: dep-graph.png
+
       - name: Push PNG to artifacts branch
         run: |
           PNG_NAME="dep-graph-${{ github.event.pull_request.number }}.png"
