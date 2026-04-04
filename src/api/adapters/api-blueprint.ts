@@ -1,17 +1,7 @@
 import z from "zod";
+export { Errors } from "@/src/tanstack-query/errors";
 
 export const INIT_PAGE_TOKEN = "INIT_PAGE_TOKEN";
-
-export const Errors = {
-  MFA_REQUIRED: new Error("MFA_REQUIRED"),
-  NOT_IMPLEMENTED: Error("NOT_IMPLEMENTED"),
-  OBJECT_NOT_FOUND: new Error("couldnt_find_object"),
-};
-
-export function compareErrors(err: Error, key: keyof typeof Errors) {
-  const target = Errors[key].message;
-  return err.name === target || err.message === target;
-}
 
 export enum Software {
   LEMMY = "lemmy",

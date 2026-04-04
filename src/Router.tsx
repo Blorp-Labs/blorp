@@ -20,17 +20,21 @@ import { dispatchScrollEvent } from "@/src/lib/scroll-events";
 import { isAndroid } from "@/src/lib/device";
 import { AppUrlListener } from "@/src/components/universal-links";
 import { CreatePost } from "@/src/features/create-post";
-import { cn } from "../lib/utils";
-import { UserSidebar } from "../components/nav";
+import { cn } from "./lib/utils";
+import { UserSidebar } from "./components/nav";
 import {
   MainSidebar,
   MainSidebarCollapseButton,
   useMainSidebarWidth,
-} from "./MainSidebar";
-import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID, TABS } from "./config";
-import InstanceSidebar from "../features/instance-sidebar";
-import { useAuth } from "../stores/auth";
-import { usePathname } from "./hooks";
+} from "./routing/MainSidebar";
+import {
+  LEFT_SIDEBAR_MENU_ID,
+  RIGHT_SIDEBAR_MENU_ID,
+  TABS,
+} from "./routing/config";
+import InstanceSidebar from "./features/instance-sidebar";
+import { useAuth } from "./stores/auth";
+import { usePathname } from "./routing/hooks";
 
 const DebugPage = lazy(() => import("@/src/features/debug-page"));
 const CSAE = lazy(() => import("@/src/features/csae"));
