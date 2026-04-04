@@ -9,7 +9,7 @@ import {
 import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { Account } from "@/src/stores/auth";
-import { useNsfwVisibility } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/lib/nsfw";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
@@ -36,7 +36,7 @@ export function CommunityCard({
   const fromCommunityCache = useCommunityFromStore(communitySlug, account);
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 
-  const blurNsfw = useNsfwVisibility() === "blur";
+  const blurNsfw = useShouldBlurNsfw();
 
   // TODO: FIX THIS
   const linkCtx = useLinkContext();

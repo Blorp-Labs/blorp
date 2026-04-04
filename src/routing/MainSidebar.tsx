@@ -4,7 +4,7 @@ import _ from "lodash";
 import { twMerge } from "tailwind-merge";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
-import { useNsfwVisibility } from "@/src/lib/nsfw";
+import { useShouldShowNsfw } from "@/src/lib/nsfw";
 import {
   useModeratingCommunities,
   useNotificationCount,
@@ -211,10 +211,10 @@ export function MainSidebar() {
     instanceHost = url.host;
   } catch {}
 
-  const nsfwVisibility = useNsfwVisibility();
+  const showNsfw = useShouldShowNsfw();
 
   const fiveRecentCommunities = recentCommunities
-    .filter((c) => (nsfwVisibility !== "hide" ? true : !c.nsfw))
+    .filter((c) => (showNsfw ? true : !c.nsfw))
     .slice(0, 5);
 
   return (

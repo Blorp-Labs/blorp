@@ -17,7 +17,7 @@ import {
   useIsCommunityBlocked,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useNsfwVisibility } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/lib/nsfw";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
@@ -71,7 +71,7 @@ export function SmallScreenSidebar({
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const communityView = community?.communityView;
   const isBlocked = useIsCommunityBlocked(communityName);
-  const blurNsfw = useNsfwVisibility() === "blur";
+  const blurNsfw = useShouldBlurNsfw();
 
   const actions = useCommunityActions({
     communityName,
@@ -327,7 +327,7 @@ function CommunitySidebarInner({
   const linkCtx = useLinkContext();
   const data = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
-  const blurNsfw = useNsfwVisibility() === "blur";
+  const blurNsfw = useShouldBlurNsfw();
   const isPostRevealed = useNsfwRevealedPostsStore(
     (s) => !!(postApId && s.isRevealed(postApId)),
   );

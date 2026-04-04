@@ -3,7 +3,7 @@ import { useCommunityFromStore } from "@/src/stores/communities";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { useIsCommunityBlocked } from "@/src/stores/auth";
-import { useNsfwVisibility } from "@/src/lib/nsfw";
+import { useShouldBlurNsfw } from "@/src/lib/nsfw";
 import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
   COMMUNITY_NSFW_ICON_BLUR_CLASS,
@@ -15,7 +15,7 @@ export function CommunityBanner({ communityName }: { communityName?: string }) {
 
   const data = useCommunityFromStore(communityName);
   const isBlocked = useIsCommunityBlocked(communityName);
-  const blurNsfw = useNsfwVisibility() === "blur";
+  const blurNsfw = useShouldBlurNsfw();
 
   const communityView = data?.communityView;
   const banner = data?.communityView.banner ?? undefined;

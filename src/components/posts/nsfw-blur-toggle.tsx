@@ -3,8 +3,6 @@ import { Button } from "../ui/button";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import { useNsfwVisibility } from "@/src/lib/nsfw";
 
-export { useNsfwVisibility };
-
 export function useBlurNsfwState(
   nsfw: boolean,
   options?: { apId?: string; detailView?: boolean },

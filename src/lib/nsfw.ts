@@ -33,3 +33,15 @@ export function useNsfwVisibility(): "hide" | "blur" | "show" {
 
   return "hide";
 }
+
+// True when NSFW posts should be rendered (possibly blurred). Equivalent to
+// the old useShouldShowNsfw() in stores/auth.ts.
+export function useShouldShowNsfw(): boolean {
+  return useNsfwVisibility() !== "hide";
+}
+
+// True when rendered NSFW content should be blurred. Equivalent to the old
+// useShouldBlurNsfw() in stores/auth.ts.
+export function useShouldBlurNsfw(): boolean {
+  return useNsfwVisibility() !== "show";
+}
