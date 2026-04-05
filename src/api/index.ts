@@ -12,7 +12,7 @@ import {
   parseAccountInfo,
   useAuth,
 } from "../stores/auth";
-
+// eslint-disable-next-line no-restricted-imports -- intentional: useRefreshAuth iterates multiple accounts and must scope each cache write to a specific account explicitly
 import { getCachePrefixer } from "../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";

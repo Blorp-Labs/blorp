@@ -17,15 +17,9 @@
  * should carry an eslint-disable-next-line comment explaining the intent.
  */
 const noDirectGetCachePrefixer = {
-  paths: [
+  patterns: [
     {
-      name: "../../stores/auth",
-      importNames: ["getCachePrefixer"],
-      message:
-        "Don't import getCachePrefixer directly. Use useAuth((s) => s.getCachePrefixer) instead — the hook-bound version is scoped to the selected account automatically.",
-    },
-    {
-      name: "@/src/stores/auth",
+      group: ["**/stores/auth"],
       importNames: ["getCachePrefixer"],
       message:
         "Don't import getCachePrefixer directly. Use useAuth((s) => s.getCachePrefixer) instead — the hook-bound version is scoped to the selected account automatically.",
