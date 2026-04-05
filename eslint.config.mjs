@@ -4,7 +4,6 @@ import reactHooks from "eslint-plugin-react-hooks";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import unusedImports from "eslint-plugin-unused-imports";
 import importX from "eslint-plugin-import-x";
-import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import { restrictions } from "./eslint/restricted-syntax.js";
 import { importRestrictions } from "./eslint/restricted-imports.js";
 
@@ -78,11 +77,11 @@ export default tseslint.config(
   },
   {
     plugins: { "import-x": importX },
-    settings: {
-      "import-x/resolver-next": [
-        createTypeScriptImportResolver({ alwaysTryTypes: true }),
-      ],
-    },
+    // settings: {
+    //   "import-x/resolver-next": [
+    //     createTypeScriptImportResolver({ alwaysTryTypes: true }),
+    //   ],
+    // },
     rules: {
       "import-x/no-restricted-paths": [
         "error",
