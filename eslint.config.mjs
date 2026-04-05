@@ -142,14 +142,13 @@ export default tseslint.config(
                 "./src/styles",
               ],
             },
-            // hooks: allow [api-blueprint, lib, stores, tanstack-query]
+            // hooks: allow [api-blueprint, lib, stores, tanstack-query, routing]
             {
               target: "./src/hooks",
               from: [
                 "./src/api",
                 "./src/components",
                 "./src/features",
-                "./src/routing",
                 "./src/styles",
               ],
             },
@@ -168,10 +167,10 @@ export default tseslint.config(
               target: "./src/features",
               from: ["./src/styles"],
             },
-            // routing: allow [api-blueprint, lib, stores, tanstack-query, hooks, api, components, features, routing]
+            // routing: allow [api-blueprint, lib, stores, tanstack-query, api, components, features, routing]
             {
               target: "./src/routing",
-              from: ["./src/styles"],
+              from: ["./src/hooks", "./src/styles"],
             },
             // styles: allow []
             {

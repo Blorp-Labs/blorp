@@ -27,7 +27,7 @@ import { useUpdateRecentCommunity } from "../hooks/use-update-recent-communities
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { Link } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";

@@ -9,7 +9,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Account } from "@/src/stores/auth";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { encodeApId } from "@/src/api/utils";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
 import { abbriviateNumber } from "@/src/lib/format";

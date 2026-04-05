@@ -13,7 +13,7 @@ import { cn } from "@/src/lib/utils";
 import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostFromStore } from "@/src/stores/posts";

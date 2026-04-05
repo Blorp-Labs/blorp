@@ -8,7 +8,7 @@ import {
   DropdownMenuLabel,
 } from "@/src/components/ui/dropdown-menu";
 import { parseAccountInfo, useAuth } from "../stores/auth";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { encodeApId } from "../api/utils";
 import {
   Avatar,

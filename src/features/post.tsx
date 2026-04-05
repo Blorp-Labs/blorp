@@ -40,7 +40,7 @@ import {
 } from "../hooks";
 import { Page } from "../components/page";
 import { CommentSkeleton } from "../components/comments/comment-skeleton";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { CommentSortSelect } from "../components/lemmy-sort";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";

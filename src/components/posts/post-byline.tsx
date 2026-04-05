@@ -1,4 +1,4 @@
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";

@@ -29,7 +29,7 @@ import {
 import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
 import { decodeApId, encodeApId } from "@/src/api/utils";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useParams } from "@/src/routing";
 import { Forms } from "@/src/api-blueprint";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";

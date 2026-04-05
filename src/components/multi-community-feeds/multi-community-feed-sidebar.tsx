@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";

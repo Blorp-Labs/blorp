@@ -14,7 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
 import { useCommentsByPaths } from "../stores/comments";
 import { MarkdownRenderer } from "../components/markdown/renderer";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { encodeApId } from "../api/utils";
 import { Link } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";

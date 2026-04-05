@@ -12,7 +12,7 @@ import { usePostFromStore } from "@/src/stores/posts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
 import { encodeApId } from "@/src/api/utils";

@@ -1,7 +1,7 @@
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { useParams } from "../../routing";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useCallback, useRef, useState } from "react";
 import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
 import { UserDropdown } from "../../components/nav";

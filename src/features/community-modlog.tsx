@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useModlog, useCommunity } from "../api";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useParams } from "@/src/routing/index";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";

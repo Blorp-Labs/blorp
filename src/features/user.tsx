@@ -14,7 +14,7 @@ import { decodeApId, encodeApId } from "../api/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
 import { useCommentsByPaths } from "../stores/comments";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useProfileFromStore } from "../stores/profiles";
 import { usePostFromStore } from "../stores/posts";
 import { Link, resolveRoute, useParams } from "@/src/routing/index";

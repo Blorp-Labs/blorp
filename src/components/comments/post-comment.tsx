@@ -24,7 +24,7 @@ import {
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { encodeApId } from "@/src/api/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {

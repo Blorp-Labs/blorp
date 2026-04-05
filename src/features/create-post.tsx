@@ -57,7 +57,7 @@ import { Deferred } from "../lib/deferred";
 import z from "zod";
 import { usePostFromStore } from "../stores/posts";
 import { getAccountActorId, useAuth } from "../stores/auth";
-import { usePathname } from "../routing/hooks";
+import { usePathname } from "@/src/hooks/use-pathname";
 import { Sidebar, SidebarContent } from "../components/sidebar";
 import {
   useCommunitiesFromStore,

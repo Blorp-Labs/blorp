@@ -21,7 +21,7 @@ import {
   Shield,
   SidebarOutline,
 } from "./icons";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { RoutePath } from "../routing/routes";
 import { BadgeCount } from "./badge-count";
 import {
@@ -37,7 +37,7 @@ import { cn } from "../lib/utils";
 import { isTauri } from "../lib/device";
 import { ChevronLeft, ChevronRight } from "./icons";
 import { useMedia } from "../hooks";
-import { usePathname } from "../routing/hooks";
+import { usePathname } from "@/src/hooks/use-pathname";
 import { Skeleton } from "./ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 

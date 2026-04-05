@@ -23,7 +23,7 @@ import { useKeyboardShortcut, useMedia, useUrlSearchState } from "@/src/hooks";
 import { PostReportProvider } from "@/src/components/posts/post-report";
 import z from "zod";
 import { PersonCard } from "@/src/components/person/person-card";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { BadgeIcon } from "@/src/components/badge-count";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";

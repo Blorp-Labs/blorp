@@ -1,5 +1,5 @@
 import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/lib/post";
 import { encodeApId } from "@/src/api/utils";

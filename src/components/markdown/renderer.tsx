@@ -1,7 +1,7 @@
 import MarkdownIt from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 import markdownitContainer, { ContainerOpts } from "markdown-it-container";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import parse, {
   DOMNode,
   domToReact,

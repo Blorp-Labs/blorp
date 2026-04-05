@@ -12,7 +12,7 @@ import { Sidebar, SidebarContent } from "@/src/components/sidebar";
 import { useSidebarStore } from "@/src/stores/sidebars";
 import { AggregateBadges } from "../aggregates";
 import { Link } from "@/src/routing/index";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 
 function InstanceSidebar({ asPage }: { asPage?: boolean }) {
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));

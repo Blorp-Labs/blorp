@@ -16,7 +16,7 @@ import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/api-blueprint";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useTagUser } from "@/src/hooks/use-tag-user";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 
 dayjs.extend(localizedFormat);
 

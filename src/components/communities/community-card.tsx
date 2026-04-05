@@ -1,5 +1,5 @@
 import { abbriviateNumber } from "@/src/lib/format";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { Link } from "@/src/routing/index";
 import {
   Avatar,

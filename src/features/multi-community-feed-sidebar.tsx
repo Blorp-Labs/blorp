@@ -14,7 +14,7 @@ import { Page } from "@/src/components/page";
 
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { ContentGutters } from "../components/gutters";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
