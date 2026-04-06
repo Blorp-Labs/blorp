@@ -1,6 +1,6 @@
 import { SmallScreenSidebar } from "@/src/components/communities/community-sidebar";
 import { useMemo } from "react";
-import { useCommunity } from "../api";
+import { useCommunity } from "../queries";
 import {
   IonContent,
   IonHeader,

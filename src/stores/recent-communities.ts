@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
-import { Schemas } from "../api-blueprint";
+import { Schemas } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 
 type RecentCommunityStore = {

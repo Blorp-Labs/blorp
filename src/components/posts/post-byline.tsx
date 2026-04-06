@@ -15,12 +15,12 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId } from "@/src/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
-import { Schemas } from "@/src/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
@@ -37,10 +37,10 @@ import {
   useLockPost,
   useSavePost,
   useAddPostReactionEmoji,
-} from "@/src/api/post-mutations";
+} from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
-import { useSoftware } from "@/src/api/index";
-import { getPostMyVote, getPostSaved } from "@/src/lib/api";
+import { useSoftware } from "@/src/queries/index";
+import { getPostMyVote, getPostSaved } from "@/src/apis/utils";
 import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";

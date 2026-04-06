@@ -8,8 +8,8 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
-import { useSoftware } from "@/src/api/index";
-import { supportsFeeds } from "@/src/api/adapters/support";
+import { useSoftware } from "@/src/queries/index";
+import { supportsFeeds } from "@/src/apis/support";
 import { Page } from "@/src/components/page";
 
 import { UserDropdown } from "../components/nav";

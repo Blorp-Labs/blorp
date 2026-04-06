@@ -1,8 +1,8 @@
 import { LoadingButton } from "../ui/button";
-import { useFollowFeed } from "@/src/api/index";
+import { useFollowFeed } from "@/src/queries/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
-import { getFeedSubscribed } from "@/src/lib/api";
+import { getFeedSubscribed } from "@/src/apis/utils";
 import { useConfirmationAlert } from "@/src/hooks";
 
 interface Props {

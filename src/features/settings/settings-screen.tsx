@@ -11,7 +11,7 @@ import {
   VoteDisplaySetting,
   useSettingsStore,
 } from "@/src/stores/settings";
-import { useLogout, useSoftware } from "@/src/api/index";
+import { useLogout, useSoftware } from "@/src/queries/index";
 import {
   Account,
   getAccountSite,

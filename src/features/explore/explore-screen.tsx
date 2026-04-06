@@ -2,8 +2,8 @@ import {
   useAvailableSorts,
   useListCommunities,
   useSoftware,
-} from "@/src/api/index";
-import { useListMultiCommunityFeeds } from "@/src/api/index";
+} from "@/src/queries/index";
+import { useListMultiCommunityFeeds } from "@/src/queries/index";
 import { CommunityCard } from "../../components/communities/community-card";
 import {
   useCallback,
@@ -47,7 +47,7 @@ import { useCommunityFromStore } from "../../stores/communities";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
 import { removeMd } from "../../components/markdown/remove-md";
-import { supportsFeeds } from "../../api/adapters/support";
+import { supportsFeeds } from "../../apis/support";
 import { FeedCard, FEEDS } from "./feed-card";
 import { ExpandedCommunities } from "./explore-expanded-section-screen";
 import { SortControlBarContent } from "./sort-bar";

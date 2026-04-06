@@ -22,8 +22,8 @@ import {
   useImageShareActions,
 } from "@/src/components/adaptable/action-menu/hooks";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { encodeApId } from "@/src/api/utils";
-import { getPostEmbed } from "@/src/lib/post";
+import { encodeApId } from "@/src/apis/utils";
+import { getPostEmbed } from "@/src/apis/post-embed";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import {
   HoverCard,
@@ -31,10 +31,13 @@ import {
   HoverCardContent,
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
-import { Schemas } from "@/src/api-blueprint";
-import { getPostMyVote, getPostEmojiReactions } from "@/src/lib/api";
+import { Schemas } from "@/src/apis/api-blueprint";
+import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
 import { useMedia } from "@/src/hooks";
-import { useAddPostReactionEmoji, useLikePost } from "@/src/api/post-mutations";
+import {
+  useAddPostReactionEmoji,
+  useLikePost,
+} from "@/src/queries/post-mutations";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";

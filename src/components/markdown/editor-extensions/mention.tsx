@@ -3,7 +3,7 @@ import { SuggestionOptions } from "@tiptap/suggestion";
 import { MentionNodeAttrs } from "@tiptap/extension-mention";
 import { ReactRenderer } from "@tiptap/react";
 import MentionMenu from "./mention-menu"; // the Radix Popover component below
-import { useApiClients } from "@/src/api";
+import { useApiClients } from "@/src/queries";
 import { useMemo, useRef } from "react";
 
 const makeRenderer = () => {

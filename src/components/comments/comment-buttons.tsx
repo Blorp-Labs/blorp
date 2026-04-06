@@ -1,4 +1,4 @@
-import { useLikeComment } from "@/src/api/index";
+import { useLikeComment } from "@/src/queries/index";
 import { resolveVoteCounts } from "@/src/lib/voting";
 import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
@@ -14,7 +14,7 @@ import {
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Button } from "../ui/button";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
-import { Schemas } from "@/src/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia } from "@/src/hooks";

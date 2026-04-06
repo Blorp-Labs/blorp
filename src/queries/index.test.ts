@@ -6,7 +6,7 @@ import { useApiClients, useComments, useCreateComment } from ".";
 import { renderHook, waitFor } from "@testing-library/react";
 import { CommentResponse, GetCommentsResponse } from "lemmy-v3";
 import _ from "lodash";
-import { resetApiClients } from "./adapters/client";
+import { resetApiClients } from "../apis/client";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 manageFetchMockGlobally();
 

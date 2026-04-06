@@ -6,7 +6,7 @@ import {
   useComments,
   useCommunity,
   useResolveObject,
-} from "@/src/api/index";
+} from "@/src/queries/index";
 import {
   StickyPostHeader,
   PostCard,

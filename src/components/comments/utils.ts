@@ -1,5 +1,5 @@
-import { Schemas } from "@/src/api-blueprint";
-import { commentIsAnswer } from "@/src/lib/api";
+import { Schemas } from "@/src/apis/api-blueprint";
+import { commentIsAnswer } from "@/src/apis/utils";
 
 export function getCommentBgClass(config: {
   commentView: Schemas.Comment | undefined;

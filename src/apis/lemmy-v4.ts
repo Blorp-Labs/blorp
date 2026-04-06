@@ -10,10 +10,10 @@ import {
   resolveObjectResponseSchema,
   Schemas,
   Software,
-} from "../../api-blueprint";
-import { createSlug } from "../utils";
+} from "./api-blueprint";
+import { createSlug } from "./utils";
 import _ from "lodash";
-import { exhaustiveList, isErrorLike, ErrorLike } from "../../lib/utils";
+import { exhaustiveList, isErrorLike, ErrorLike } from "../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 
 function translateError(err: ErrorLike): Error {

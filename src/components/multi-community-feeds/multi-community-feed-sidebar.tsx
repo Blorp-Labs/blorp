@@ -30,7 +30,7 @@ import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "../communities/community-card";
-import { encodeApId } from "@/src/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { FeedJoinButton } from "./feed-join-button";
 import { PersonCard } from "../person/person-card";
 

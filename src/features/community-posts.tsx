@@ -17,7 +17,7 @@ import {
   useCommunity,
   useMostRecentPost,
   usePosts,
-} from "../api";
+} from "../queries";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";

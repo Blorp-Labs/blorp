@@ -87,86 +87,86 @@ export default tseslint.config(
         "error",
         {
           zones: [
-            // api-blueprint: allow []
-            {
-              target: "./src/api-blueprint.ts",
-              from: [
-                "./src/lib",
-                "./src/stores",
-                "./src/tanstack-query",
-                "./src/hooks",
-                "./src/api",
-                "./src/components",
-                "./src/features",
-                "./src/routing",
-                "./src/styles",
-              ],
-            },
-            // lib: allow [api-blueprint]
+            // lib: allow []
             {
               target: "./src/lib",
               from: [
+                "./src/apis",
                 "./src/stores",
                 "./src/tanstack-query",
                 "./src/hooks",
-                "./src/api",
+                "./src/queries",
                 "./src/components",
                 "./src/features",
                 "./src/routing",
                 "./src/styles",
               ],
             },
-            // stores: allow [api-blueprint, lib]
+            // apis: allow [lib]
+            {
+              target: "./src/apis",
+              from: [
+                "./src/stores",
+                "./src/tanstack-query",
+                "./src/hooks",
+                "./src/queries",
+                "./src/components",
+                "./src/features",
+                "./src/routing",
+                "./src/styles",
+              ],
+            },
+            // stores: allow [lib, apis]
             {
               target: "./src/stores",
               from: [
                 "./src/tanstack-query",
                 "./src/hooks",
-                "./src/api",
+                "./src/queries",
                 "./src/components",
                 "./src/features",
                 "./src/routing",
                 "./src/styles",
               ],
             },
-            // tanstack-query: allow [api-blueprint, lib, stores]
+            // tanstack-query: allow [lib, apis, stores]
             {
               target: "./src/tanstack-query",
               from: [
                 "./src/hooks",
-                "./src/api",
+                "./src/queries",
                 "./src/components",
                 "./src/features",
                 "./src/routing",
                 "./src/styles",
               ],
             },
-            // hooks: allow [api-blueprint, lib, stores, tanstack-query, routing]
+            // hooks: allow [lib, apis, stores, tanstack-query, routing]
             {
               target: "./src/hooks",
               from: [
-                "./src/api",
+                "./src/queries",
                 "./src/components",
                 "./src/features",
                 "./src/styles",
               ],
             },
-            // api: allow [api-blueprint, lib, stores, tanstack-query, hooks, routing]
+            // queries: allow [lib, apis, stores, tanstack-query, hooks, routing]
             {
-              target: "./src/api",
+              target: "./src/queries",
               from: ["./src/components", "./src/features", "./src/styles"],
             },
-            // components: allow [api-blueprint, lib, stores, tanstack-query, hooks, api, components, routing]
+            // components: allow [lib, apis, stores, tanstack-query, hooks, queries, routing]
             {
               target: "./src/components",
               from: ["./src/features", "./src/styles"],
             },
-            // features: allow [api-blueprint, lib, stores, tanstack-query, hooks, api, components, features, routing]
+            // features: allow [lib, apis, stores, tanstack-query, hooks, queries, components, routing]
             {
               target: "./src/features",
               from: ["./src/styles"],
             },
-            // routing: allow [api-blueprint, lib, stores, tanstack-query, api, components, features, routing]
+            // routing: allow [lib, apis, stores, tanstack-query, queries, components, features]
             {
               target: "./src/routing",
               from: ["./src/hooks", "./src/styles"],
@@ -176,10 +176,11 @@ export default tseslint.config(
               target: "./src/styles",
               from: [
                 "./src/lib",
+                "./src/apis",
                 "./src/stores",
                 "./src/tanstack-query",
                 "./src/hooks",
-                "./src/api",
+                "./src/queries",
                 "./src/components",
                 "./src/features",
                 "./src/routing",

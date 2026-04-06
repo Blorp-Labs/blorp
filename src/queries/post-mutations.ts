@@ -1,10 +1,10 @@
 import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useApiClients, usePostsKey } from ".";
-import { ApiBlueprint, Forms, Schemas } from "../api-blueprint";
+import { ApiBlueprint, Forms, Schemas } from "../apis/api-blueprint";
 import { useAuth } from "@/src/stores/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isErrorLike } from "../lib/utils";
-import { extractErrorContent } from "./utils";
+import { extractErrorContent } from "../apis/utils";
 import { toast } from "sonner";
 import _ from "lodash";
 

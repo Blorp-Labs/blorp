@@ -1,4 +1,4 @@
-import { useAvailableSorts, useCommunity, useSearch } from "@/src/api";
+import { useAvailableSorts, useCommunity, useSearch } from "@/src/queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -40,14 +40,14 @@ import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
-import { encodeApId } from "@/src/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import {
   CommentButtonBar,
   CommentVoting,
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
-import { getCommentSaved } from "@/src/lib/api";
+import { getCommentSaved } from "@/src/apis/utils";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 

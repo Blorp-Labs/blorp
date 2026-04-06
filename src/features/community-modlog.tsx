@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useModlog, useCommunity } from "../api";
+import { useModlog, useCommunity } from "../queries";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useParams } from "@/src/routing/index";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
@@ -11,7 +11,7 @@ import { Page } from "../components/page";
 import { VirtualList } from "../components/virtual-list";
 import { usePagination } from "../components/pagination/use-pagination";
 import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
-import { Schemas } from "../api-blueprint";
+import { Schemas } from "../apis/api-blueprint";
 import { ContentGutters } from "../components/gutters";
 
 export default function CommunityModlog() {

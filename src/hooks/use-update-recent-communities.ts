@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useRecentCommunitiesStore } from "../stores/recent-communities";
 import { useIsActiveRoute } from "./navigation-hooks";
-import { Schemas } from "../api-blueprint";
+import { Schemas } from "../apis/api-blueprint";
 
 export function useUpdateRecentCommunity(communityView?: Schemas.Community) {
   const isActive = useIsActiveRoute();

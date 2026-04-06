@@ -1,5 +1,5 @@
 import { ContentGutters } from "../components/gutters";
-import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../api";
+import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -10,7 +10,7 @@ import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
 import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
-import { decodeApId, encodeApId } from "../api/utils";
+import { decodeApId, encodeApId } from "../apis/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
 import { useCommentsByPaths } from "../stores/comments";
@@ -39,7 +39,7 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
-import { getCommentSaved } from "../lib/api";
+import { getCommentSaved } from "../apis/utils";
 import { Bookmark } from "../components/icons";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";

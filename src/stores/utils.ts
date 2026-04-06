@@ -6,7 +6,7 @@ import {
   type ThresholdSetting,
   type VoteDisplaySetting,
 } from "./settings";
-import { type Schemas } from "../api-blueprint";
+import { type Schemas } from "../apis/api-blueprint";
 
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 

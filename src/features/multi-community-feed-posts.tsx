@@ -14,8 +14,8 @@ import {
   useMultiCommunityFeed,
   usePosts,
   useSoftware,
-} from "../api";
-import { supportsFeeds } from "../api/adapters/support";
+} from "../queries";
+import { supportsFeeds } from "../apis/support";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
@@ -42,7 +42,7 @@ import { usePostsStore } from "../stores/posts";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Separator } from "../components/ui/separator";
-import { decodeApId } from "../api/utils";
+import { decodeApId } from "../apis/utils";
 import { useMultiCommunityFeedFromStore } from "../stores/multi-community-feeds";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
 import { Page } from "../components/page";

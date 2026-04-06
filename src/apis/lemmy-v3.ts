@@ -9,13 +9,13 @@ import {
   Errors,
   Software,
   resolveObjectResponseSchema,
-} from "../../api-blueprint";
-import { createSlug } from "../utils";
+} from "./api-blueprint";
+import { createSlug } from "./utils";
 import _ from "lodash";
 import z from "zod";
-import { ErrorLike, exhaustiveList, isErrorLike } from "../../lib/utils";
+import { ErrorLike, exhaustiveList, isErrorLike } from "../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
-import { shrinkBlockedCommunity, shrinkBlockedPerson } from "../../lib/api";
+import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 function translateError(err: ErrorLike): Error {
   const name = err.name.trim().toLowerCase();

@@ -4,7 +4,7 @@ import { v4 as uuid } from "uuid";
 import _ from "lodash";
 import { Deferred } from "@/src/lib/deferred";
 import { useAuth } from "@/src/stores/auth";
-import { useCommunity } from "@/src/api";
+import { useCommunity } from "@/src/queries";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { resolveRoute } from "@/src/routing";
 

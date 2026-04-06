@@ -1,6 +1,6 @@
 import { LemmyV3Api } from "./lemmy-v3";
 import { LemmyV4Api } from "./lemmy-v4";
-import { ApiBlueprint } from "../../api-blueprint";
+import { ApiBlueprint } from "./api-blueprint";
 import z from "zod";
 import _ from "lodash";
 import { PieFedApi } from "./piefed";

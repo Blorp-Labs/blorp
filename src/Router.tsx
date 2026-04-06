@@ -15,7 +15,7 @@ import { Route as RRRoute } from "react-router-dom";
 import { IonReactRouter } from "@ionic/react-router";
 import { Redirect } from "@/src/routing/index";
 import { useMedia } from "@/src/hooks/index";
-import { useNotificationCount, usePrivateMessagesCount } from "@/src/api";
+import { useNotificationCount, usePrivateMessagesCount } from "@/src/queries";
 import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
 import { isAndroid } from "@/src/lib/device";

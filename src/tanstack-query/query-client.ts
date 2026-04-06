@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { MAX_CACHE_MS } from "../stores/config";
-import { Errors } from "../api-blueprint";
+import { Errors } from "../apis/api-blueprint";
 
 export function compareErrors(err: Error, key: keyof typeof Errors) {
   const target = Errors[key].message;

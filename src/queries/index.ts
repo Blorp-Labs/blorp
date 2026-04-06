@@ -21,7 +21,7 @@ import { useSettingsStore } from "../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../stores/comments";
 import { useCommunitiesStore } from "../stores/communities";
-import { extractErrorContent, lemmyTimestamp } from "./utils";
+import { extractErrorContent, lemmyTimestamp } from "../apis/utils";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { toast } from "sonner";
 import {
@@ -34,8 +34,8 @@ import {
   useThrottledInfiniteQuery,
 } from "../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
-import { Errors, Forms, INIT_PAGE_TOKEN, Schemas } from "../api-blueprint";
-import { apiClient } from "./adapters/client";
+import { Errors, Forms, INIT_PAGE_TOKEN, Schemas } from "../apis/api-blueprint";
+import { apiClient } from "../apis/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
@@ -45,7 +45,7 @@ import { compressImage } from "../lib/image";
 import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/lib/confetti";
 import { useHistory } from "@/src/routing";
-import { getPostEmbed } from "../lib/post";
+import { getPostEmbed } from "../apis/post-embed";
 import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
