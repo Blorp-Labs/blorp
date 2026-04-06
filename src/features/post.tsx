@@ -49,7 +49,7 @@ import { cn } from "../lib/utils";
 import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
-import { useQueryToast } from "../tanstack-query/hooks";
+import { useQueryToast } from "../hooks/use-query-toast";
 import { useRequireAuth } from "../components/auth-context";
 
 function SafeAreaBottom() {
