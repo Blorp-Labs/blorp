@@ -39,12 +39,8 @@ import { apiClient } from "./adapters/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
-import {
-  ensureValue,
-  isErrorLike,
-  isNotNil,
-  normalizeInstance,
-} from "../lib/utils";
+import { ensureValue, isErrorLike, isNotNil } from "../lib/utils";
+import { normalizeInstance } from "../normalize-instance";
 import { compressImage } from "../lib/image";
 import { useFlairsStore } from "@/src/stores/flairs";
 import { confetti } from "@/src/lib/confetti";

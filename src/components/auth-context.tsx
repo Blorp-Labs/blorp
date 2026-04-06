@@ -41,7 +41,8 @@ import { Textarea } from "./ui/textarea";
 import { MarkdownRenderer } from "./markdown/renderer";
 import { env } from "../env";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { cn, normalizeInstance } from "../lib/utils";
+import { cn } from "../lib/utils";
+import { normalizeInstance } from "../normalize-instance";
 import { ToolbarButtons } from "./toolbar/toolbar-buttons";
 import {
   Select,
