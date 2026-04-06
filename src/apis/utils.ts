@@ -140,3 +140,26 @@ export function getFeedSubscribed(feed: Schemas.MultiCommunityFeed) {
     (feed.subscribed ? "Subscribed" : "NotSubscribed")
   );
 }
+
+export function getFlairLookup(flairs?: Schemas.Flair[] | null) {
+  if (!flairs) {
+    return () => undefined;
+  }
+  const flairsById = _.keyBy(flairs, "id");
+  const flairsByTitle = _.keyBy(flairs, "title");
+  const flairsByApId = _.keyBy(
+    flairs.filter((f) => f.apId),
+    "apId",
+  );
+  return ({ apId, title, id }: Partial<Schemas.Flair>) => {
+    if (apId && flairsByApId[apId]) {
+      return flairsByApId[apId];
+    }
+    if (id && flairsById[id]) {
+      return flairsById[id];
+    }
+    if (title && flairsByTitle[title]) {
+      return flairsByTitle[title];
+    }
+  };
+}
