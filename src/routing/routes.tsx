@@ -124,7 +124,6 @@ export const routeDefs = {
   ...buildRoute("/privacy"),
   ...buildRoute("/terms"),
   ...buildRoute("/csae"),
-  ...buildRoute("/licenses"),
 } as const;
 
 export type RouteDefs = typeof routeDefs;

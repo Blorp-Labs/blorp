@@ -15,7 +15,6 @@ import { CommunityCard } from "@/src/components/communities/community-card";
 import { LEFT_SIDEBAR_MENU_ID, TABS } from "../routing/config";
 import { Separator } from "./ui/separator";
 import {
-  DocumentsOutline,
   LockClosedOutline,
   ScrollTextOutline,
   Shield,
@@ -437,10 +436,6 @@ export function MainSidebar() {
 
             <SidebarLink icon={<ScrollTextOutline />} to="/terms">
               Terms of Use
-            </SidebarLink>
-
-            <SidebarLink icon={<DocumentsOutline />} to="/licenses">
-              OSS Licenses
             </SidebarLink>
           </>
         )}
