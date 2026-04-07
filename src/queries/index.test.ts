@@ -2,6 +2,7 @@ import { beforeEach, test, expect, describe, vi } from "vitest";
 import * as lemmy from "@/test-utils/lemmy";
 import { RESOLVE_POST_RES } from "@/test-utils/lemmy-api-fixtures";
 import { createQueryClientWrapper } from "@/test-utils/tanstack-query";
+// eslint-disable-next-line no-restricted-imports -- TODO: import from specific file
 import { useApiClients, useComments, useCreateComment } from ".";
 import { renderHook, waitFor } from "@testing-library/react";
 import { CommentResponse, GetCommentsResponse } from "lemmy-v3";
