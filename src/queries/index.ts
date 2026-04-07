@@ -411,10 +411,12 @@ export function useMostRecentPost(
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
+  const showNsfw = useShouldShowNsfw();
 
   form = {
     showRead: !hideRead,
     sort,
+    showNsfw,
     ...form,
   } satisfies Forms.GetPosts;
 
