@@ -11,26 +11,33 @@ import {
   IonBadge,
   IonLabel,
 } from "@ionic/react";
+import { Route as RRRoute } from "react-router-dom";
 import { IonReactRouter } from "@ionic/react-router";
-import { Route, Redirect } from "@/src/routing/index";
-import { useMedia } from "@/src/lib/hooks/index";
-import { useNotificationCount, usePrivateMessagesCount } from "@/src/lib/api";
+import { Redirect } from "@/src/routing/index";
+import { useMedia } from "@/src/hooks/index";
+import { useNotificationCount, usePrivateMessagesCount } from "@/src/queries";
 import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
 import { isAndroid } from "@/src/lib/device";
 import { AppUrlListener } from "@/src/components/universal-links";
 import { CreatePost } from "@/src/features/create-post";
-import { cn } from "../lib/utils";
-import { UserSidebar } from "../components/nav";
+import { cn } from "./lib/utils";
+import { UserSidebar } from "./components/nav";
 import {
   MainSidebar,
   MainSidebarCollapseButton,
   useMainSidebarWidth,
-} from "./MainSidebar";
-import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID, TABS } from "./config";
-import InstanceSidebar from "../features/instance-sidebar";
-import { useAuth } from "../stores/auth";
-import { usePathname } from "./hooks";
+} from "./components/MainSidebar";
+import {
+  LEFT_SIDEBAR_MENU_ID,
+  RIGHT_SIDEBAR_MENU_ID,
+  TABS,
+} from "./routing/config";
+import InstanceSidebar from "./features/instance-sidebar";
+import { useAuth } from "./stores/auth";
+import { usePathname } from "@/src/hooks/use-pathname";
+import { RoutePath } from "./routing/routes";
+import { RouteSearchParamProvider } from "./hooks/use-url-search-state";
 
 const DebugPage = lazy(() => import("@/src/features/debug-page"));
 const CSAE = lazy(() => import("@/src/features/csae"));
@@ -115,6 +122,33 @@ function useMenuSwipeEnabled(side: "from-right" | "from-left") {
     // communities named lightbox
     return !/\/lightbox(\/|\?|$)/.test(path);
   }
+}
+
+interface TypedRouteProps<Path extends RoutePath>
+  extends Omit<
+    React.ComponentProps<typeof RRRoute>,
+    "path" | "children" | "component"
+  > {
+  path: Path;
+  children?: React.ReactNode;
+  component?: React.ComponentType;
+}
+
+function RouteContent({ children }: { children: React.ReactNode }) {
+  return <RouteSearchParamProvider>{children}</RouteSearchParamProvider>;
+}
+
+export function Route<Path extends RoutePath>({
+  path,
+  children,
+  component: Component,
+  ...rest
+}: TypedRouteProps<Path>) {
+  return (
+    <RRRoute path={path} {...rest}>
+      <RouteContent>{Component ? <Component /> : children}</RouteContent>
+    </RRRoute>
+  );
 }
 
 const HOME_STACK = [

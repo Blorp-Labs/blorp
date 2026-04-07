@@ -1,4 +1,4 @@
-import { useTheme } from "@/src/lib/hooks";
+import { useTheme } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
 

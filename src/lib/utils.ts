@@ -25,31 +25,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function normalizeInstance(instance: string) {
-  const parts = instance.split(".");
-
-  if (parts.length < 2 || !parts[1]?.length) {
-    throw new Error(`Invalid URL: "${instance}"`);
-  }
-
-  // Trim whitespace
-  let url = instance.trim();
-
-  // Prepend http:// if no protocol is found
-  if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
-  }
-
-  // Use the URL API for parsing and formatting
-  try {
-    const urlObj = new URL(url);
-    // toString() will include protocol, host, pathname, search, and hash
-    return `${urlObj.protocol}//${urlObj.host}`;
-  } catch {
-    throw new Error(`Invalid URL: "${instance}"`);
-  }
-}
-
 export function formatOrdinal(n: number) {
   const abs = Math.abs(n); // handle negatives if you want
   const rem100 = abs % 100;
@@ -57,9 +32,13 @@ export function formatOrdinal(n: number) {
   let suffix = "th";
 
   if (rem100 < 11 || rem100 > 13) {
-    if (rem10 === 1) suffix = "st";
-    else if (rem10 === 2) suffix = "nd";
-    else if (rem10 === 3) suffix = "rd";
+    if (rem10 === 1) {
+      suffix = "st";
+    } else if (rem10 === 2) {
+      suffix = "nd";
+    } else if (rem10 === 3) {
+      suffix = "rd";
+    }
   }
 
   return `${n}${suffix}`;
@@ -104,7 +83,9 @@ const jwtPayloadSchema = z.object({ exp: z.number() });
 export function unsafeParseJwt(token: string): { exp?: number } {
   try {
     const base64 = token.split(".")[1]?.replace(/-/g, "+").replace(/_/g, "/");
-    if (!base64) return {};
+    if (!base64) {
+      return {};
+    }
     const parsed = jwtPayloadSchema.safeParse(JSON.parse(atob(base64)));
     return parsed.success ? parsed.data : {};
   } catch {
@@ -114,7 +95,9 @@ export function unsafeParseJwt(token: string): { exp?: number } {
 
 export const assert = import.meta.env.DEV
   ? (condition: boolean, msg?: string) => {
-      if (!condition) throw new Error(msg ?? "Assertion failed");
+      if (!condition) {
+        throw new Error(msg ?? "Assertion failed");
+      }
     }
   : () => {};
 

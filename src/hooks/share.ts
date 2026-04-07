@@ -4,24 +4,18 @@
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import { privilegedFetch } from "./privileged-fetch";
+import { privilegedFetch } from "../lib/privileged-fetch";
 import { env } from "../env";
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { isAndroid, isCapacitor, isFirefox, isTauri } from "./device";
-import { ActionMenuProps } from "../components/adaptable/action-menu";
+import { isAndroid, isCapacitor, isFirefox, isTauri } from "../lib/device";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { Media } from "@capacitor-community/media";
 import { toast } from "sonner";
-import { isErrorLike } from "./utils";
-import {
-  ShareLinkType,
-  SHARE_LINK_TYPE_OPTIONS,
-  useSettingsStore,
-} from "../stores/settings";
-import { Account, parseAccountInfo, useAuth } from "../stores/auth";
-import { useSelectAlert } from "./hooks/index";
+import { isErrorLike } from "../lib/utils";
+import { ShareLinkType } from "../stores/settings";
+import { Account, parseAccountInfo } from "../stores/auth";
 
 function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -136,7 +130,9 @@ async function ensureAlbumIdentifier(
 ): Promise<string | undefined> {
   const { albums } = await Media.getAlbums(); // returns list of { identifier, name, type }
   const existing = albums.find((a) => a.name === albumName);
-  if (existing) return existing.identifier;
+  if (existing) {
+    return existing.identifier;
+  }
 
   await Media.createAlbum({ name: albumName });
   const after = (await Media.getAlbums()).albums;
@@ -168,7 +164,9 @@ export async function downloadImage(name: string, imageUrl: string) {
     }
 
     const blob = await response.blob();
-    if (!blob) return;
+    if (!blob) {
+      return;
+    }
 
     const filename = getFileName(blob, name);
 
@@ -220,7 +218,9 @@ export async function shareImage(name: string, imageUrl: string) {
     }
     const blob = await response.blob();
 
-    if (!blob) return;
+    if (!blob) {
+      return;
+    }
 
     const filename = getFileName(blob, name);
 
@@ -307,7 +307,9 @@ function resolveShareUrl(
       if (entity.type === "multi-community-feed") {
         return entity.apId;
       }
-      if (!instance) return null;
+      if (!instance) {
+        return null;
+      }
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.slug}`;
       }
@@ -346,7 +348,7 @@ function resolveShareUrl(
   return null;
 }
 
-function getShareUrl(
+export function getShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
   account?: Account,
@@ -366,7 +368,7 @@ export function useCanShare() {
   return share;
 }
 
-async function copyToClipboard(text: string) {
+export async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
   } catch (e) {
@@ -392,108 +394,4 @@ export async function shareRoute(route: string) {
   } catch (e) {
     console.error("Error sharing URL:", e);
   }
-}
-
-export function useShareActions(
-  label: string,
-  entity: ShareEntityContext | null | undefined,
-) {
-  const canShareNative = useCanShare();
-  const shareLinkType = useSettingsStore((s) => s.shareLinkType);
-  const setShareLinkType = useSettingsStore((s) => s.setShareLinkType);
-  const account = useAuth((s) => s.getSelectedAccount());
-  const selectAlert = useSelectAlert();
-
-  if (!entity) {
-    return [];
-  }
-
-  const getMode = async (): Promise<ShareLinkType | null> => {
-    if (shareLinkType !== null) return shareLinkType;
-    try {
-      const selected = await selectAlert({
-        header: "How would you like to share? Change this later in Settings.",
-        message:
-          '"My Instance" uses whatever account or guess account you have selected',
-        options: SHARE_LINK_TYPE_OPTIONS.map((o) => ({
-          text: o.label,
-          value: o.value,
-        })),
-      });
-      setShareLinkType(selected);
-      return selected;
-    } catch {
-      return null;
-    }
-  };
-
-  const doShare = async () => {
-    const mode = await getMode();
-    if (mode) {
-      const url = getShareUrl(mode, entity, account);
-      try {
-        const result = await Share.canShare();
-        if (result.value) {
-          await Share.share({ url });
-        } else if (_.isFunction(navigator.share)) {
-          await navigator.share({ url });
-        }
-      } catch (e) {
-        console.error("Error sharing URL:", e);
-      }
-    }
-  };
-
-  const doCopy = async () => {
-    const mode = await getMode();
-    if (mode) {
-      const url = getShareUrl(mode, entity, account);
-      copyToClipboard(url);
-    }
-  };
-
-  return [
-    {
-      text: "Share",
-      actions: [
-        ...(canShareNative
-          ? [
-              {
-                text: `Share link to ${label}`,
-                onClick: doShare,
-              },
-            ]
-          : []),
-        {
-          text: `Copy link to ${label}`,
-          onClick: doCopy,
-        },
-      ],
-    },
-  ] satisfies ActionMenuProps["actions"];
-}
-
-export function useImageShareActions({
-  imageSrc,
-}: {
-  imageSrc?: string;
-}): ActionMenuProps<string>["actions"] {
-  return [
-    ...(imageSrc
-      ? [
-          {
-            text: "Share image",
-            onClick: () => shareImage(imageSrc, imageSrc),
-          },
-        ]
-      : []),
-    ...(imageSrc
-      ? [
-          {
-            text: "Download image",
-            onClick: () => downloadImage(imageSrc, imageSrc),
-          },
-        ]
-      : []),
-  ];
 }

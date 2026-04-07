@@ -1,4 +1,4 @@
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Badge, badgeVariants } from "../ui/badge";
 import { useIsAdmin } from "@/src/stores/auth";
 import { Robot, ShieldCheckmark } from "../icons";

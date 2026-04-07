@@ -1,7 +1,7 @@
 import { Robot, Shield, ShieldCheckmark } from "../icons";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 
 export function PostCreatorBadge({
   isMod,

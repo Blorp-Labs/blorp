@@ -1,4 +1,4 @@
-import { useAvailableSorts } from "@/src/lib/api/index";
+import { useAvailableSorts } from "@/src/queries/index";
 import { ContentGutters } from "@/src/components/gutters";
 import { useIonRouter } from "@ionic/react";
 import { Link } from "@/src/routing/index";

@@ -17,15 +17,9 @@
  * should carry an eslint-disable-next-line comment explaining the intent.
  */
 const noDirectGetCachePrefixer = {
-  paths: [
+  patterns: [
     {
-      name: "../../stores/auth",
-      importNames: ["getCachePrefixer"],
-      message:
-        "Don't import getCachePrefixer directly. Use useAuth((s) => s.getCachePrefixer) instead — the hook-bound version is scoped to the selected account automatically.",
-    },
-    {
-      name: "@/src/stores/auth",
+      group: ["**/stores/auth"],
       importNames: ["getCachePrefixer"],
       message:
         "Don't import getCachePrefixer directly. Use useAuth((s) => s.getCachePrefixer) instead — the hook-bound version is scoped to the selected account automatically.",
@@ -33,4 +27,22 @@ const noDirectGetCachePrefixer = {
   ],
 };
 
-export const importRestrictions = noDirectGetCachePrefixer;
+/**
+ * Bare-dot imports (`from "."`) resolve through a barrel index file, which
+ * makes it easy to accidentally import across folder-boundary rules and creates
+ * ambiguity about which module is actually being used. Import the specific
+ * file directly instead.
+ */
+const noBarrelDotImport = {
+  paths: [
+    {
+      name: ".",
+      message: 'Import from the specific file instead of the barrel ".".',
+    },
+  ],
+};
+
+export const importRestrictions = {
+  paths: [...noBarrelDotImport.paths],
+  patterns: [...noDirectGetCachePrefixer.patterns],
+};

@@ -1,8 +1,8 @@
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Robot, Shield, ShieldCheckmark } from "../icons";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { cn } from "@/src/lib/utils";

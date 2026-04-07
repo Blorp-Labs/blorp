@@ -2,8 +2,8 @@ import {
   useListCommunities,
   useModeratingCommunities,
   useSubscribedCommunities,
-} from "@/src/lib/api/index";
-import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
+} from "@/src/queries/index";
+import { useListMultiCommunityFeeds } from "@/src/queries/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -11,7 +11,7 @@ import {
 import { useMemo } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useMedia } from "../../lib/hooks";
+import { useMedia } from "../../hooks";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../../components/nav";
 import { CommunityFilter } from "../../components/lemmy-sort";

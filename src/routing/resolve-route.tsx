@@ -1,5 +1,6 @@
 import { compile } from "path-to-regexp";
 import { RoutePath } from "./routes";
+// eslint-disable-next-line no-restricted-imports -- TODO: import from specific file
 import { ParamsFor } from ".";
 
 //

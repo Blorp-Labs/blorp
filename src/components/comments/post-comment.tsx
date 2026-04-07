@@ -20,12 +20,12 @@ import {
   useMarkCommentAsAnswer,
   useSaveComment,
   useSoftware,
-} from "@/src/lib/api/index";
+} from "@/src/queries/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
-import { useLinkContext } from "../../routing/link-context";
-import { encodeApId } from "@/src/lib/api/utils";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
+import { encodeApId } from "@/src/apis/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {
   Avatar,
@@ -40,7 +40,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
 import { ContentGutters } from "../gutters";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import {
   Collapsible,
@@ -49,7 +49,7 @@ import {
 } from "../ui/collapsible";
 import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
-import { useMedia } from "@/src/lib/hooks/index";
+import { useMedia, useInputAlert } from "@/src/hooks/index";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -57,7 +57,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
@@ -67,8 +67,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
   getCommentSaved,
-} from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+} from "@/src/apis/utils";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";

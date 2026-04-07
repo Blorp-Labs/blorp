@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import _ from "lodash";
-import { normalizeInstance } from "./lib/utils";
+import { normalizeInstance } from "./normalize-instance";
 
 const FALLBACK_INSTANCE = "https://lemmy.zip";
 

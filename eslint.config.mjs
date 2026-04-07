@@ -3,8 +3,40 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import unusedImports from "eslint-plugin-unused-imports";
+import importX from "eslint-plugin-import-x";
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import { restrictions } from "./eslint/restricted-syntax.js";
 import { importRestrictions } from "./eslint/restricted-imports.js";
+
+const SRC_FOLDERS = [
+  "apis",
+  "components",
+  "features",
+  "hooks",
+  "lib",
+  "queries",
+  "routing",
+  "stores",
+  "styles",
+  "tanstack-query",
+];
+
+function buildRestrictedSrcZone(target, from) {
+  if (!SRC_FOLDERS.includes(target)) {
+    throw new Error(`Invalid src target folder "${target}"`);
+  }
+  for (const folder of from) {
+    if (!SRC_FOLDERS.includes(folder)) {
+      throw new Error(`Invalid src folder "${folder}"`);
+    }
+  }
+  return {
+    target: `./src/${target}`,
+    from: SRC_FOLDERS.filter((f) => !from.includes(f) && f !== target).map(
+      (f) => `./src/${f}`,
+    ),
+  };
+}
 
 export default tseslint.config(
   {
@@ -72,6 +104,71 @@ export default tseslint.config(
     files: ["scripts/**"],
     languageOptions: {
       globals: { process: "readonly" },
+    },
+  },
+  {
+    plugins: { "import-x": importX },
+    settings: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({ alwaysTryTypes: true }),
+      ],
+    },
+    rules: {
+      "import-x/no-restricted-paths": [
+        "error",
+        {
+          zones: [
+            buildRestrictedSrcZone("lib", []),
+            buildRestrictedSrcZone("apis", ["lib"]),
+            buildRestrictedSrcZone("stores", ["lib", "apis"]),
+            buildRestrictedSrcZone("tanstack-query", ["lib", "apis", "stores"]),
+            buildRestrictedSrcZone("hooks", [
+              "lib",
+              "apis",
+              "stores",
+              "tanstack-query",
+              "routing",
+            ]),
+            buildRestrictedSrcZone("queries", [
+              "lib",
+              "apis",
+              "stores",
+              "tanstack-query",
+              "hooks",
+              "routing",
+            ]),
+            buildRestrictedSrcZone("components", [
+              "lib",
+              "apis",
+              "stores",
+              "tanstack-query",
+              "hooks",
+              "queries",
+              "routing",
+            ]),
+            buildRestrictedSrcZone("features", [
+              "lib",
+              "apis",
+              "stores",
+              "tanstack-query",
+              "hooks",
+              "queries",
+              "components",
+              "routing",
+            ]),
+            buildRestrictedSrcZone("routing", [
+              "lib",
+              "apis",
+              "stores",
+              "tanstack-query",
+              "queries",
+              "components",
+              "features",
+            ]),
+            buildRestrictedSrcZone("styles", []),
+          ],
+        },
+      ],
     },
   },
 );

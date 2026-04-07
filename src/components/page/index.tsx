@@ -13,7 +13,7 @@ import { MenuButton, UserDropdown } from "../nav";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { ToolbarTitle } from "../toolbar/toolbar-title";
 import { ToolbarBackButton } from "../toolbar/toolbar-back-button";
-import { usePathname } from "../../routing/hooks";
+import { usePathname } from "@/src/hooks/use-pathname";
 import { STACK_ROOT_PATHS } from "../../routing/routes";
 import { NotFoundPageContent } from "./not-found";
 import { ErrorBoundary } from "react-error-boundary";

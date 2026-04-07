@@ -3,12 +3,12 @@ import {
   useBlockCommunity,
   useBlockInstance,
   useCommunity,
-} from "@/src/lib/api/index";
+} from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { CommunityJoinButton } from "./community-join-button";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
@@ -31,7 +31,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { PersonCard } from "../person/person-card";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { Sidebar, SidebarContent } from "../sidebar";
 import {
   Collapsible,
@@ -43,12 +43,12 @@ import { Separator } from "../ui/separator";
 import { useSidebarStore } from "@/src/stores/sidebars";
 import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
-import { useConfirmationAlert } from "@/src/lib/hooks/index";
+import { useConfirmationAlert } from "@/src/hooks/index";
 import { Skeleton } from "../ui/skeleton";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
-import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
+import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 
 dayjs.extend(localizedFormat);

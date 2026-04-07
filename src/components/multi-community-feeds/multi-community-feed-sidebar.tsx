@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { LuCakeSlice } from "react-icons/lu";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
@@ -10,7 +10,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { Sidebar, SidebarContent } from "../sidebar";
 import {
   Collapsible,
@@ -23,14 +23,14 @@ import { useSidebarStore } from "@/src/stores/sidebars";
 import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
 import { Skeleton } from "../ui/skeleton";
-import { EasterEggBox } from "@/src/features/easter-eggs/EasterEggBox";
+import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
 import { DateTime } from "../datetime";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import {
   CommunityCard,
   CommunityCardSkeleton,
 } from "../communities/community-card";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { FeedJoinButton } from "./feed-join-button";
 import { PersonCard } from "../person/person-card";
 

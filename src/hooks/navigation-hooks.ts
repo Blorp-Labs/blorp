@@ -1,6 +1,7 @@
-import { usePathname } from "@/src/routing/hooks";
-import { RoutePath } from "@/src/routing/routes";
 import { useCallback, useEffect, useRef } from "react";
+import { RoutePath } from "@/src/routing/routes";
+import { usePathname } from "./use-pathname";
+import { useIonRouter } from "@ionic/react";
 
 function normalizePath(p: string) {
   return p.replace(/\/$/, "");
@@ -46,4 +47,30 @@ export function useHideTabBarOnMount() {
       };
     }
   }, [isActive]);
+}
+
+type Root = "/home/" | "/communities/" | "/inbox/";
+
+export function useLinkContext(): {
+  root: Root;
+} {
+  try {
+    const pathname = useIonRouter().routeInfo.pathname;
+
+    let root: "/home/" | "/communities/" | "/inbox/" = "/home/";
+
+    if (pathname.startsWith("/communities")) {
+      root = "/communities/";
+    } else if (pathname.startsWith("/inbox")) {
+      root = "/inbox/";
+    }
+
+    return {
+      root,
+    };
+  } catch {
+    return {
+      root: "/home/",
+    };
+  }
 }

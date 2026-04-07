@@ -19,7 +19,7 @@ import {
   useBlockPerson,
   useBlockCommunity,
   useBlockInstance,
-} from "@/src/lib/api";
+} from "@/src/queries";
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
 import { X } from "@/src/components/icons";

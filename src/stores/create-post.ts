@@ -4,10 +4,11 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import dayjs from "dayjs";
-import { Forms, Schemas } from "../lib/api/adapters/api-blueprint";
+import { Forms, Schemas } from "../apis/api-blueprint";
 import { isNotNil } from "../lib/utils";
 import { isTest } from "../lib/device";
 import { useMemo } from "react";
+import { getFlairLookup } from "../apis/utils";
 
 export type CommunityPartial = Pick<
   Community,
@@ -303,29 +304,6 @@ export const useCreatePostStore = create<CreatePostStore>()(
 let alreadyClean = false;
 
 sync(useCreatePostStore);
-
-export function getFlairLookup(flairs?: Schemas.Flair[] | null) {
-  if (!flairs) {
-    return () => undefined;
-  }
-  const flairsById = _.keyBy(flairs, "id");
-  const flairsByTitle = _.keyBy(flairs, "title");
-  const flairsByApId = _.keyBy(
-    flairs.filter((f) => f.apId),
-    "apId",
-  );
-  return ({ apId, title, id }: Partial<Schemas.Flair>) => {
-    if (apId && flairsByApId[apId]) {
-      return flairsByApId[apId];
-    }
-    if (id && flairsById[id]) {
-      return flairsById[id];
-    }
-    if (title && flairsByTitle[title]) {
-      return flairsByTitle[title];
-    }
-  };
-}
 
 export function useFlairLookup(flairs?: Schemas.Flair[] | null) {
   return useMemo(() => getFlairLookup(flairs), [flairs]);

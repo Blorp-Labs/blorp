@@ -1,5 +1,5 @@
 import { ContentGutters } from "../components/gutters";
-import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../lib/api";
+import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -8,20 +8,20 @@ import {
 import { MarkdownRenderer } from "../components/markdown/renderer";
 import { VirtualList } from "../components/virtual-list";
 import { memo, useEffect, useMemo } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
-import { decodeApId, encodeApId } from "../lib/api/utils";
+import { decodeApId, encodeApId } from "../apis/utils";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
 import { useCommentsByPaths } from "../stores/comments";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useProfileFromStore } from "../stores/profiles";
 import { usePostFromStore } from "../stores/posts";
 import { Link, resolveRoute, useParams } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia, useUrlSearchState } from "../hooks";
 import { PostReportProvider } from "../components/posts/post-report";
 import { useIsPersonBlocked } from "../stores/auth";
 import z from "zod";
@@ -39,7 +39,7 @@ import {
 } from "../components/comments/comment-buttons";
 import { useCommentActions } from "../components/comments/post-comment";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
-import { getCommentSaved } from "../lib/api/adapters/utils";
+import { getCommentSaved } from "../apis/utils";
 import { Bookmark } from "../components/icons";
 import { RelativeTime } from "../components/relative-time";
 import { Separator } from "../components/ui/separator";

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { createSlug, parseSlug } from "./utils";
+import { createSlug, parseSlug } from "../apis/utils";
 
 describe("createSlug", () => {
   test.each([

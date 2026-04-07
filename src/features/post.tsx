@@ -6,7 +6,7 @@ import {
   useComments,
   useCommunity,
   useResolveObject,
-} from "@/src/lib/api/index";
+} from "@/src/queries/index";
 import {
   StickyPostHeader,
   PostCard,
@@ -37,10 +37,10 @@ import {
   useIonPageElement,
   useMedia,
   useTheme,
-} from "../lib/hooks";
+} from "../hooks";
 import { Page } from "../components/page";
 import { CommentSkeleton } from "../components/comments/comment-skeleton";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { CommentSortSelect } from "../components/lemmy-sort";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
@@ -49,7 +49,7 @@ import { cn } from "../lib/utils";
 import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
-import { useQueryToast } from "../tanstack-query/hooks";
+import { useQueryToast } from "../hooks/use-query-toast";
 import { useRequireAuth } from "../components/auth-context";
 
 function SafeAreaBottom() {

@@ -6,23 +6,23 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/src/components/ui/command";
-import { useSearch } from "@/src/lib/api";
+import { useSearch } from "@/src/queries";
 import { cn } from "@/src/lib/utils";
 import { usePostFromStore } from "@/src/stores/posts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import type { Forms } from "@/src/lib/api/adapters/api-blueprint";
+import type { Forms } from "@/src/apis/api-blueprint";
 import {
   useDebouncedState,
   useIsActiveRoute,
   useKeyboardShortcut,
-} from "@/src/lib/hooks";
+} from "@/src/hooks";
 import { isIos, isMacOs } from "@/src/lib/device";
 import { useSearchStore } from "@/src/stores/search";
 

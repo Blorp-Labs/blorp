@@ -16,7 +16,7 @@ import {
   useRefreshAuth,
   useRegister,
   useSite,
-} from "../lib/api";
+} from "../queries";
 import fuzzysort from "fuzzysort";
 import _ from "lodash";
 import {
@@ -41,7 +41,8 @@ import { Textarea } from "./ui/textarea";
 import { MarkdownRenderer } from "./markdown/renderer";
 import { env } from "../env";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { cn, normalizeInstance } from "../lib/utils";
+import { cn } from "../lib/utils";
+import { normalizeInstance } from "../normalize-instance";
 import { ToolbarButtons } from "./toolbar/toolbar-buttons";
 import {
   Select,
@@ -51,7 +52,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Software } from "../lib/api/adapters/api-blueprint";
+import { Software } from "../apis/api-blueprint";
 import { ToolbarTitle } from "./toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 

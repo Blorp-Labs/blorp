@@ -11,7 +11,7 @@ import {
   VoteDisplaySetting,
   useSettingsStore,
 } from "@/src/stores/settings";
-import { useLogout, useSoftware } from "@/src/lib/api/index";
+import { useLogout, useSoftware } from "@/src/queries/index";
 import {
   Account,
   getAccountSite,
@@ -32,7 +32,7 @@ import { PersonCard } from "@/src/components/person/person-card";
 import { openUrl } from "@/src/lib/linking";
 import { resolveRoute } from "@/src/routing";
 import { SectionItem, Section } from "./shared-components";
-import { useConfirmationAlert, useIsActiveRoute } from "@/src/lib/hooks/index";
+import { useConfirmationAlert, useIsActiveRoute } from "@/src/hooks/index";
 import { DebouncedInput } from "@/src/components/debounced-input";
 import { FiChevronRight } from "react-icons/fi";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
@@ -52,7 +52,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { SimpleSelect } from "@/src/components/ui/simple-select";
-import { useReducedMotionSystemSetting } from "@/src/lib/hooks/use-reduced-motion";
+import { useReducedMotionSystemSetting } from "@/src/hooks/use-reduced-motion";
 import { Page } from "@/src/components/page";
 import { env } from "@/src/env";
 

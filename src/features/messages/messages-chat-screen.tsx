@@ -5,8 +5,8 @@ import {
   useCreatePrivateMessage,
   useMarkPriavteMessageRead,
   usePrivateMessages,
-} from "@/src/lib/api";
-import { decodeApId } from "@/src/lib/api/utils";
+} from "@/src/queries";
+import { decodeApId } from "@/src/apis/utils";
 import { cn } from "@/src/lib/utils";
 import { Link, useParams } from "@/src/routing";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
@@ -27,10 +27,10 @@ import { PersonAvatar } from "@/src/components/person/person-avatar";
 import TextareaAutosize from "react-textarea-autosize";
 import { Send } from "@/src/components/icons";
 import { Button } from "@/src/components/ui/button";
-import { useIsActiveRoute, useMedia } from "@/src/lib/hooks";
+import { useIsActiveRoute, useMedia } from "@/src/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { PageTitle } from "@/src/components/page-title";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";

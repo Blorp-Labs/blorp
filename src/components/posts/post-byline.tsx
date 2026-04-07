@@ -1,4 +1,4 @@
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
@@ -15,12 +15,12 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
@@ -37,14 +37,14 @@ import {
   useLockPost,
   useSavePost,
   useAddPostReactionEmoji,
-} from "@/src/lib/api/post-mutations";
+} from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
-import { useSoftware } from "@/src/lib/api/index";
-import { getPostMyVote, getPostSaved } from "@/src/lib/api/adapters/utils";
-import { useInputAlert } from "@/src/lib/hooks/index";
+import { useSoftware } from "@/src/queries/index";
+import { getPostMyVote, getPostSaved } from "@/src/apis/utils";
+import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 
 export function usePostActions({
   post,

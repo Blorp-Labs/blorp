@@ -1,9 +1,9 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCommunity, usePost, usePosts } from "@/src/lib/api";
+import { useCommunity, usePost, usePosts } from "@/src/queries";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
-import { useUpdateRecentCommunity } from "@/src/stores/recent-communities";
+import { useUpdateRecentCommunity } from "@/src/hooks/use-update-recent-communities";
 import { BiHelpCircle } from "react-icons/bi";
 import { UserDropdown } from "@/src/components/nav";
 import { PageTitle } from "@/src/components/page-title";
@@ -16,7 +16,7 @@ import {
   useNavbarHeight,
   useTabbarHeight,
   useUrlSearchState,
-} from "@/src/lib/hooks";
+} from "@/src/hooks";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button";
 import { cn } from "@/src/lib/utils";
@@ -28,16 +28,16 @@ import {
 } from "@/src/components/posts/post-buttons";
 import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
-import { decodeApId, encodeApId } from "@/src/lib/api/utils";
-import { useLinkContext } from "@/src/routing/link-context";
+import { decodeApId, encodeApId } from "@/src/apis/utils";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useParams } from "@/src/routing";
-import { Forms } from "@/src/lib/api/adapters/api-blueprint";
+import { Forms } from "@/src/apis/api-blueprint";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { Button } from "@/src/components/ui/button";
 import { IonButtons, IonButton, IonModal, IonTitle } from "@ionic/react";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
-import { getPostEmbed } from "@/src/lib/post";
+import { getPostEmbed } from "@/src/apis/post-embed";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { Swiper, SwiperRef, SwiperSlide } from "swiper/react";
 import { Virtual, Mousewheel } from "swiper/modules";

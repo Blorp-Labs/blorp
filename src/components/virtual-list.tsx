@@ -21,11 +21,7 @@ import {
 } from "@ionic/react";
 import { subscribeToScrollEvent } from "../lib/scroll-events";
 import _ from "lodash";
-import {
-  useElementHasFocus,
-  useIsInAppBrowserOpen,
-  useMedia,
-} from "../lib/hooks";
+import { useElementHasFocus, useIsInAppBrowserOpen, useMedia } from "../hooks";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";

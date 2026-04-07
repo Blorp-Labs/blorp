@@ -14,17 +14,17 @@ import {
   useReplies,
   useResolvePostReportMutation,
   useResolveCommentReportMutation,
-} from "@/src/lib/api/index";
+} from "@/src/queries/index";
 import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
 import { useMemo } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import _ from "lodash";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
-import { useConfirmationAlert, useMedia } from "../lib/hooks";
+import { useConfirmationAlert, useMedia } from "../hooks";
 import { useInboxStore } from "../stores/inbox";
 import { Skeleton } from "../components/ui/skeleton";
 import { EllipsisActionMenu } from "../components/adaptable/action-menu";
@@ -38,7 +38,7 @@ import {
   Report,
 } from "../components/icons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas } from "../apis/api-blueprint";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { Button } from "../components/ui/button";
 import {
@@ -46,8 +46,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../components/ui/tooltip";
-import { encodeApId } from "../lib/api/utils";
-import { getCommentSaved } from "../lib/api/adapters/utils";
+import { encodeApId } from "../apis/utils";
+import { getCommentSaved } from "../apis/utils";
 import {
   CommentButtonBar,
   CommentVoting,

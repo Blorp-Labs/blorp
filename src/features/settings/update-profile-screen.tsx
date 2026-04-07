@@ -11,7 +11,7 @@ import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button"
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { useState } from "react";
 import { MarkdownEditor } from "@/src/components/markdown/editor";
-import { useRemoveUserAvatar, useUpdateUserSettings } from "@/src/lib/api";
+import { useRemoveUserAvatar, useUpdateUserSettings } from "@/src/queries";
 import { Button } from "@/src/components/ui/button";
 import { useHistory } from "react-router";
 import { useDropzone } from "react-dropzone";
@@ -39,7 +39,9 @@ const NSFW_DISPLAY_OPTIONS: { value: NsfwDisplay; label: string }[] = [
 ];
 
 function toNsfwDisplay(showNsfw: boolean, blurNsfw: boolean): NsfwDisplay {
-  if (!showNsfw) return "hidden";
+  if (!showNsfw) {
+    return "hidden";
+  }
   return blurNsfw ? "blur" : "show";
 }
 
@@ -68,10 +70,18 @@ function toScoreDisplay(
   showDownvotes: boolean,
   showScores: boolean,
 ): ScoreDisplay {
-  if (showUpvotes && showDownvotes) return "score";
-  if (showUpvotes) return "upvotes";
-  if (showDownvotes) return "downvotes";
-  if (showScores) return "score";
+  if (showUpvotes && showDownvotes) {
+    return "score";
+  }
+  if (showUpvotes) {
+    return "upvotes";
+  }
+  if (showDownvotes) {
+    return "downvotes";
+  }
+  if (showScores) {
+    return "score";
+  }
   return "none";
 }
 

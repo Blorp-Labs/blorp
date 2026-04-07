@@ -4,7 +4,7 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { CacheKey, CachePrefixer, useAuth } from "./auth";
-import { Schemas, postSchema } from "../lib/api/adapters/api-blueprint";
+import { Schemas, postSchema } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import z from "zod";
 import { mergeCacheObject } from "./utils";

@@ -1,5 +1,5 @@
 import { useIonRouter } from "@ionic/react";
-import { RoutePath } from "./routes";
+import { RoutePath } from "@/src/routing/routes";
 
 export function usePathname() {
   try {

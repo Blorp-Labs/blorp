@@ -1,5 +1,5 @@
 import { isCapacitor } from "@/src/lib/device";
-import { useElementRect, useIsActiveRoute, useMedia } from "@/src/lib/hooks";
+import { useElementRect, useIsActiveRoute, useMedia } from "@/src/hooks";
 import { Oneko as oneko } from "lots-o-nekos";
 import { useEffect, useRef, useState } from "react";
 import _ from "lodash";

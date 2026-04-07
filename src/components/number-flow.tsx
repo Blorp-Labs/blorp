@@ -1,5 +1,5 @@
 import NumberFlowBase, { NumberFlowProps } from "@number-flow/react";
-import { useReducedMotion } from "../lib/hooks/use-reduced-motion";
+import { useReducedMotion } from "../hooks/use-reduced-motion";
 
 export function NumberFlow(props: NumberFlowProps) {
   const reducedMotion = useReducedMotion();

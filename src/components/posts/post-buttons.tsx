@@ -1,4 +1,5 @@
-import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
@@ -12,19 +13,17 @@ import { cn } from "@/src/lib/utils";
 import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
-import { useLinkContext } from "../../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
 import { usePostFromStore } from "@/src/stores/posts";
 import {
-  shareImage,
   useShareActions,
-  downloadImage,
   useImageShareActions,
-} from "@/src/lib/share";
+} from "@/src/components/adaptable/action-menu/hooks";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { encodeApId } from "@/src/lib/api/utils";
-import { getPostEmbed } from "@/src/lib/post";
+import { encodeApId } from "@/src/apis/utils";
+import { getPostEmbed } from "@/src/apis/post-embed";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import {
   HoverCard,
@@ -32,20 +31,18 @@ import {
   HoverCardContent,
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import {
-  getPostMyVote,
-  getPostEmojiReactions,
-} from "@/src/lib/api/adapters/utils";
-import { useMedia } from "@/src/lib/hooks";
+import { Schemas } from "@/src/apis/api-blueprint";
+import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
+import { useMedia } from "@/src/hooks";
 import {
   useAddPostReactionEmoji,
   useLikePost,
-} from "@/src/lib/api/post-mutations";
+} from "@/src/queries/post-mutations";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
+import { downloadImage, shareImage } from "@/src/hooks/share";
 
 export function usePostVoting(apId?: string) {
   const postView = usePostFromStore(apId);

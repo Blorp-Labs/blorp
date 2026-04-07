@@ -11,7 +11,7 @@ import * as api from "@/test-utils/api";
 import { useMultiCommunityFeedStore } from "./multi-community-feeds";
 import { renderHook, act } from "@testing-library/react";
 import { getCachePrefixer } from "./auth";
-import { getFeedSubscribed } from "../lib/api/adapters/utils";
+import { getFeedSubscribed } from "../apis/utils";
 import _ from "lodash";
 
 const prefix = getCachePrefixer({ instance: "123", uuid: "test" });

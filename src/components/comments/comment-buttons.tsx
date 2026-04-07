@@ -1,5 +1,6 @@
-import { useLikeComment } from "@/src/lib/api/index";
-import { resolveVoteCounts, useVoteHaptics } from "@/src/lib/voting";
+import { useLikeComment } from "@/src/queries/index";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
 import { ButtonHTMLAttributes, DetailedHTMLProps, useId } from "react";
 import { cn } from "@/src/lib/utils";
@@ -13,10 +14,10 @@ import {
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Button } from "../ui/button";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
-import { useMedia } from "@/src/lib/hooks";
+import { useMedia } from "@/src/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
@@ -67,7 +68,9 @@ export function CommentEmojiReactions({
   onReact?: (emoji?: string) => void;
 }) {
   const allReactions = reactions ?? [];
-  if (allReactions.length === 0) return null;
+  if (allReactions.length === 0) {
+    return null;
+  }
   const truncated = allReactions.slice(0, MAX_REACTIONS);
 
   if (truncated.length > 4) {

@@ -1,10 +1,11 @@
 import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
+// eslint-disable-next-line no-restricted-imports -- TODO: import from specific file
 import { useApiClients, usePostsKey } from ".";
-import { ApiBlueprint, Forms, Schemas } from "./adapters/api-blueprint";
+import { ApiBlueprint, Forms, Schemas } from "../apis/api-blueprint";
 import { useAuth } from "@/src/stores/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { isErrorLike } from "../utils";
-import { extractErrorContent } from "./utils";
+import { isErrorLike } from "../lib/utils";
+import { extractErrorContent } from "../apis/utils";
 import { toast } from "sonner";
 import _ from "lodash";
 

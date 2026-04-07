@@ -1,4 +1,4 @@
-import { Schemas } from "../lib/api/adapters/api-blueprint";
+import { Schemas } from "../apis/api-blueprint";
 import { Badge } from "./ui/badge";
 
 export function Flair({

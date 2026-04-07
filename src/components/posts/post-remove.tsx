@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostFromStore } from "@/src/stores/posts";
-import { useRemoveComment } from "@/src/lib/api";
+import { useRemoveComment } from "@/src/queries";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,
@@ -15,7 +15,7 @@ import { Button } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
-import { useRemovePost } from "@/src/lib/api/post-mutations";
+import { useRemovePost } from "@/src/queries/post-mutations";
 
 const Context = createContext<{
   apId?: string;

@@ -7,7 +7,7 @@ import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import {
   useResolveObject,
   useResolveObjectAcrossAccounts,
-} from "../../lib/api";
+} from "../../queries";
 import { getAccountSite, parseAccountInfo, useAuth } from "../../stores/auth";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -15,10 +15,10 @@ import { Button } from "../ui/button";
 import { LuLoaderCircle } from "react-icons/lu";
 import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
-import { encodeApId } from "../../lib/api/utils";
-import { Schemas } from "../../lib/api/adapters/api-blueprint";
+import { encodeApId } from "../../apis/utils";
+import { Schemas } from "../../apis/api-blueprint";
 import { useRequireAuth } from "../auth-context";
-import { apIdFromCommunitySlug } from "../../lib/api/adapters/utils";
+import { apIdFromCommunitySlug } from "../../apis/utils";
 import { env } from "../../env";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {

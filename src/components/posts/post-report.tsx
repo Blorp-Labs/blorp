@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostFromStore } from "@/src/stores/posts";
-import { useCreatePostReport, useCreateCommentReport } from "@/src/lib/api";
+import { useCreatePostReport, useCreateCommentReport } from "@/src/queries";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,

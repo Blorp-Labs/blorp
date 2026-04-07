@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
 } from "@/src/components/ui/dropdown-menu";
 import { parseAccountInfo, useAuth } from "../stores/auth";
-import { useLinkContext } from "../routing/link-context";
-import { encodeApId } from "../lib/api/utils";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
+import { encodeApId } from "../apis/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -22,9 +22,9 @@ import {
   useLogout,
   useNotificationCount,
   usePrivateMessagesCount,
-} from "../lib/api";
+} from "../queries";
 import { LuMenu } from "react-icons/lu";
-import { useConfirmationAlert, useMedia } from "../lib/hooks";
+import { useConfirmationAlert, useMedia } from "../hooks";
 import {
   IoPersonOutline,
   IoBookmarksOutline,

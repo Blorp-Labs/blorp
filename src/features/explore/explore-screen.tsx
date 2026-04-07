@@ -2,8 +2,8 @@ import {
   useAvailableSorts,
   useListCommunities,
   useSoftware,
-} from "@/src/lib/api/index";
-import { useListMultiCommunityFeeds } from "@/src/lib/api/index";
+} from "@/src/queries/index";
+import { useListMultiCommunityFeeds } from "@/src/queries/index";
 import { CommunityCard } from "../../components/communities/community-card";
 import {
   useCallback,
@@ -15,7 +15,7 @@ import {
 } from "react";
 import { useFiltersStore } from "@/src/stores/filters";
 import { ContentGutters } from "@/src/components/gutters";
-import { useIsActiveRoute, useMedia } from "../../lib/hooks";
+import { useIsActiveRoute, useMedia } from "../../hooks";
 import {
   IonContent,
   IonHeader,
@@ -47,7 +47,7 @@ import { useCommunityFromStore } from "../../stores/communities";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
 import { removeMd } from "../../components/markdown/remove-md";
-import { supportsFeeds } from "../../lib/api/adapters/support";
+import { supportsFeeds } from "../../apis/support";
 import { FeedCard, FEEDS } from "./feed-card";
 import { ExpandedCommunities } from "./explore-expanded-section-screen";
 import { SortControlBarContent } from "./sort-bar";

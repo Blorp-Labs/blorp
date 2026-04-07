@@ -1,21 +1,22 @@
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
-import { useBlockPerson } from "@/src/lib/api";
+import { useBlockPerson } from "@/src/queries";
 import {
   getAccountActorId,
   useAuth,
   useIsPersonBlocked,
 } from "@/src/stores/auth";
-import { useShareActions } from "@/src/lib/share";
+import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { resolveRoute } from "../../routing/index";
-import { Schemas } from "@/src/lib/api/adapters/api-blueprint";
-import { useTagUser, useTagUserStore } from "@/src/stores/user-tags";
-import { useLinkContext } from "@/src/routing/link-context";
+import { Schemas } from "@/src/apis/api-blueprint";
+import { useTagUserStore } from "@/src/stores/user-tags";
+import { useTagUser } from "@/src/hooks/use-tag-user";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 
 dayjs.extend(localizedFormat);
 

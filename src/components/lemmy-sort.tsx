@@ -1,7 +1,7 @@
 import { useFiltersStore } from "@/src/stores/filters";
 import { useMemo } from "react";
 import { useAuth } from "../stores/auth";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { ActionMenu, ActionMenuProps } from "./adaptable/action-menu";
 import _ from "lodash";
 
@@ -20,7 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { useAvailableSorts } from "../lib/api";
+import { useAvailableSorts } from "../queries";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {

@@ -8,17 +8,17 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { Link, useParams } from "@/src/routing/index";
-import { useSoftware } from "@/src/lib/api/index";
-import { supportsFeeds } from "@/src/lib/api/adapters/support";
+import { useSoftware } from "@/src/queries/index";
+import { supportsFeeds } from "@/src/apis/support";
 import { Page } from "@/src/components/page";
 
 import { UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { ContentGutters } from "../components/gutters";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 

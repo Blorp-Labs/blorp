@@ -20,9 +20,9 @@ import {
   useSearch,
   useSoftware,
   useUploadImage,
-} from "../lib/api";
-import { supportsPollCreation } from "../lib/api/adapters/support";
-import { Forms } from "../lib/api/adapters/api-blueprint";
+} from "../queries";
+import { supportsPollCreation } from "../apis/support";
+import { Forms } from "../apis/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -51,13 +51,13 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Link } from "@/src/routing/index";
 import { v4 as uuid } from "uuid";
 import { MdDelete } from "react-icons/md";
-import { useMedia, useUrlSearchState } from "../lib/hooks";
+import { useMedia, useUrlSearchState } from "../hooks";
 import { RelativeTime } from "../components/relative-time";
 import { Deferred } from "../lib/deferred";
 import z from "zod";
 import { usePostFromStore } from "../stores/posts";
 import { getAccountActorId, useAuth } from "../stores/auth";
-import { usePathname } from "../routing/hooks";
+import { usePathname } from "@/src/hooks/use-pathname";
 import { Sidebar, SidebarContent } from "../components/sidebar";
 import {
   useCommunitiesFromStore,
@@ -72,7 +72,7 @@ import { Page } from "../components/page";
 import { SimpleSelect } from "../components/ui/simple-select";
 import { Trash } from "../components/icons";
 import { Separator } from "../components/ui/separator";
-import { parseSlug } from "../lib/api/utils";
+import { parseSlug } from "../apis/utils";
 
 dayjs.extend(localizedFormat);
 

@@ -3,9 +3,8 @@ import { SuggestionOptions } from "@tiptap/suggestion";
 import { MentionNodeAttrs } from "@tiptap/extension-mention";
 import { ReactRenderer } from "@tiptap/react";
 import MentionMenu from "./mention-menu"; // the Radix Popover component below
-import { useApiClients } from "@/src/lib/api";
+import { useApiClients } from "@/src/queries";
 import { useMemo, useRef } from "react";
-import _ from "lodash";
 
 const makeRenderer = () => {
   let renderer: ReactRenderer | null = null;
@@ -87,7 +86,9 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
     };
 
     const cleanup = () => {
-      if (signal) signal.removeEventListener("abort", onAbort);
+      if (signal) {
+        signal.removeEventListener("abort", onAbort);
+      }
     };
 
     if (signal) {

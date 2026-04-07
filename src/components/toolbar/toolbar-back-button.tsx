@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/utils";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { IonBackButton } from "@ionic/react";
 
 export function ToolbarBackButton({ className }: { className?: string }) {

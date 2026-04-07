@@ -9,7 +9,7 @@ import {
 } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
 import { Fragment, memo, useMemo, useState } from "react";
-import { usePagination } from "../lib/hooks/use-pagination";
+import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
@@ -17,23 +17,23 @@ import {
   useCommunity,
   useMostRecentPost,
   usePosts,
-} from "../lib/api";
+} from "../queries";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
-import { useUpdateRecentCommunity } from "../stores/recent-communities";
+import { useUpdateRecentCommunity } from "../hooks/use-update-recent-communities";
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
-import { useLinkContext } from "../routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { Link } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaArrowUp } from "react-icons/fa6";
-import { useMedia } from "../lib/hooks";
+import { useMedia } from "../hooks";
 import { CommunityPostSortBar } from "../components/communities/community-post-sort-bar";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import {

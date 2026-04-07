@@ -1,6 +1,6 @@
-import { isYouTubeVideoUrl } from "./youtube";
-import { Schemas } from "./api/adapters/api-blueprint";
-import { urlStripAfterPath } from "./utils";
+import { isYouTubeVideoUrl } from "../lib/youtube";
+import { Schemas } from "./api-blueprint";
+import { urlStripAfterPath } from "../lib/utils";
 import _ from "lodash";
 
 const VIEMO_REGEX = /https:\/\/vimeo.com\/[0-9]+/i;

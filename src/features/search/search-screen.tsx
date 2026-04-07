@@ -1,4 +1,4 @@
-import { useAvailableSorts, useCommunity, useSearch } from "@/src/lib/api";
+import { useAvailableSorts, useCommunity, useSearch } from "@/src/queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -19,15 +19,11 @@ import { Link, useParams } from "@/src/routing/index";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "@/src/components/page-title";
 import { UserDropdown } from "@/src/components/nav";
-import {
-  useKeyboardShortcut,
-  useMedia,
-  useUrlSearchState,
-} from "@/src/lib/hooks";
+import { useKeyboardShortcut, useMedia, useUrlSearchState } from "@/src/hooks";
 import { PostReportProvider } from "@/src/components/posts/post-report";
 import z from "zod";
 import { PersonCard } from "@/src/components/person/person-card";
-import { useLinkContext } from "@/src/routing/link-context";
+import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { BadgeIcon } from "@/src/components/badge-count";
 import { PersonAvatar } from "@/src/components/person/person-avatar";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
@@ -44,14 +40,14 @@ import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
-import { encodeApId } from "@/src/lib/api/utils";
+import { encodeApId } from "@/src/apis/utils";
 import {
   CommentButtonBar,
   CommentVoting,
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
-import { getCommentSaved } from "@/src/lib/api/adapters/utils";
+import { getCommentSaved } from "@/src/apis/utils";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 

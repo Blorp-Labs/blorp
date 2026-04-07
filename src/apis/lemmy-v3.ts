@@ -10,10 +10,10 @@ import {
   Software,
   resolveObjectResponseSchema,
 } from "./api-blueprint";
-import { createSlug } from "../utils";
+import { createSlug } from "./utils";
 import _ from "lodash";
 import z from "zod";
-import { ErrorLike, exhaustiveList, isErrorLike } from "../../utils";
+import { ErrorLike, exhaustiveList, isErrorLike } from "../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
 import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 

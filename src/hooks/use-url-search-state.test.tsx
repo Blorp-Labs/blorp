@@ -11,7 +11,7 @@ import {
 let mockPathname = "/lightbox";
 let mockSearch = "";
 
-vi.mock("@/src/routing/hooks", () => ({
+vi.mock("@/src/hooks/use-pathname", () => ({
   usePathname: () => mockPathname,
 }));
 
