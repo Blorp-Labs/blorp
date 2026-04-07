@@ -49,7 +49,6 @@ const MessagesChat = lazy(
   () => import("@/src/features/messages/messages-chat-screen"),
 );
 const Privacy = lazy(() => import("@/src/features/privacy"));
-const OSLicenses = lazy(() => import("@/src/features/licenses"));
 const Terms = lazy(() => import("@/src/features/terms"));
 const Support = lazy(() => import("@/src/features/support"));
 const HomeFeed = lazy(() => import("@/src/features/home-posts"));
@@ -532,9 +531,6 @@ function Tabs() {
               </Route>
               <Route exact path="/privacy">
                 <Privacy />
-              </Route>
-              <Route exact path="/licenses">
-                <OSLicenses />
               </Route>
               <Route exact path="/terms">
                 <Terms />
