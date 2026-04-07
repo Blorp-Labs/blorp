@@ -1,5 +1,8 @@
 minimumReleaseAge: 10080 # 7 Days (in minues)
 
+minimumReleaseAgeExclude:
+  - "@blorp-labs/*"
+
 savePrefix: ""
 
 trustPolicy: "no-downgrade"

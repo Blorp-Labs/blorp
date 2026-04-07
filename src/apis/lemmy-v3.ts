@@ -850,6 +850,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           limit: this.limit,
           community_name: form.communitySlug,
           saved_only: form.savedOnly,
+          show_nsfw: form.showNsfw,
         },
         options,
       );
@@ -1066,6 +1067,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
             form.pageCursor === INIT_PAGE_TOKEN
               ? 1
               : _.parseInt(form.pageCursor) + 1,
+          show_nsfw: form.showNsfw,
         },
         options,
       );
