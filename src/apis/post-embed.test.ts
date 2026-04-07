@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { getPostEmbed } from "./post";
+import { getPostEmbed } from "./post-embed";
 import * as api from "@/test-utils/api";
 
 // ─── field priority ───────────────────────────────────────────────────────────
