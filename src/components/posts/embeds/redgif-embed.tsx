@@ -3,6 +3,7 @@ import { assert, cn, unsafeParseJwt } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
 import { ShowNsfwButton, useBlurNsfwState } from "../nsfw-blur-toggle";
 import { privilegedFetch } from "@/src/lib/privileged-fetch";
+import pRetry from "p-retry";
 
 type GifData = { src: string; width: number; height: number };
 
@@ -33,15 +34,19 @@ const getToken = async (): Promise<string> => {
 const getRedGifData = async (url: string): Promise<GifData | undefined> => {
   try {
     const id = new URL(url).pathname.split("/").pop();
-    if (!id) return undefined;
+    if (!id) {
+      return undefined;
+    }
 
     const gifUrl = `https://api.redgifs.com/v2/gifs/${id}`;
-    const token = await getToken();
+    const token = await pRetry(getToken, { retries: 3 });
     const { gif } = await fetchJson(gifUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (!gif?.urls?.hd) return undefined;
+    if (!gif?.urls?.hd) {
+      return undefined;
+    }
     return { src: gif.urls.hd, width: gif.width, height: gif.height };
   } catch {
     return undefined;
@@ -74,7 +79,9 @@ export function RedGifEmbed({
     if (!nsfwHidden) {
       let aborted = false;
       getRedGifData(url).then((result) => {
-        if (aborted) return;
+        if (aborted) {
+          return;
+        }
         if (result) {
           setData(result);
         } else {
