@@ -47,6 +47,7 @@ import { confetti } from "@/src/lib/confetti";
 import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../apis/post-embed";
 import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
+import { useShouldShowNsfw } from "../hooks/nsfw";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -458,13 +459,12 @@ export function usePosts(form: Forms.GetPosts) {
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
+  const showNsfw = useShouldShowNsfw();
 
   form = {
     showRead: !hideRead,
     sort,
-    /* pageCursor: pageParam === "init" ? undefined : pageParam, */
-    /* sort, */
-    /* communitySlug: form.community_name, */
+    showNsfw,
     ...form,
   };
 
@@ -552,43 +552,35 @@ export function usePosts(form: Forms.GetPosts) {
   };
 }
 
-function useListCommunitiesKey() {
-  const { queryKeyPrefix } = useApiClients();
-  return [...queryKeyPrefix, "listCommunities"];
-}
-
 export function useListCommunities(
   form: Forms.GetCommunities,
   options?: QueryOverwriteOptions,
 ) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const { api } = useApiClients();
+  const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const queryKey = useListCommunitiesKey();
   const { communitySort } = useAvailableSorts();
-  const sort = form.sort ?? communitySort;
+  const showNsfw = useShouldShowNsfw();
 
-  queryKey.push("sort", sort);
-
-  if (form.type) {
-    queryKey.push("type", form.type);
-  }
+  form = {
+    sort: form.sort ?? communitySort,
+    showNsfw,
+    ...form,
+  };
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
 
   const enabled = options?.enabled ?? true;
 
   return useThrottledInfiniteQuery({
-    queryKey,
+    queryKey: [...queryKeyPrefix, "listCommunities", form],
     queryFn: async ({ pageParam, signal }) => {
       const { communities, nextCursor } = await (
         await api
       ).getCommunities(
         {
           ...form,
-          //show_nsfw: showNsfw,
           pageCursor: pageParam,
-          sort,
         },
         {
           signal,

@@ -834,6 +834,7 @@ export class PieFedApi
           type_: form.type,
           saved_only: form.savedOnly,
           feed_id,
+          ...(form.showNsfw ? { nsfw: "Include" } : {}),
         },
         options,
       );
@@ -841,7 +842,10 @@ export class PieFedApi
         ? posts
         : posts.filter((p) => !p.read);
       return {
-        nextCursor: isNotNil(next_page) ? String(next_page) : null,
+        nextCursor:
+          // PieFed has a bug where it returns 0 posts and a next_cursor,
+          // so the posts.length check is to prevent DOSing PieFed API
+          isNotNil(next_page) && posts.length > 0 ? String(next_page) : null,
         posts: filteredPosts.map((post) => ({
           post: convertPost({ postView: post }),
           creator: convertPerson({ person: post.creator }, "partial"),
@@ -868,6 +872,7 @@ export class PieFedApi
                 : pageCursorToInt(form.pageCursor),
             sort: sort === "TopAll" ? "Top" : sort,
             type_: form.type,
+            show_nsfw: form.showNsfw,
           },
           options,
         );
@@ -1147,7 +1152,6 @@ export class PieFedApi
               parent_id: form.parentId,
               max_depth: form.maxDepth,
               saved_only: form.savedOnly,
-              // @ts-expect-error type_ is missing from piefed's input schema but is implemented
               type_: "All",
             },
             options,
@@ -1441,7 +1445,6 @@ export class PieFedApi
                 form.pageCursor === INIT_PAGE_TOKEN
                   ? undefined
                   : pageCursorToInt(form.pageCursor),
-              // @ts-expect-error type_ is missing from piefed's input schema but is implemented
               type_: "All",
             },
             options,

@@ -554,6 +554,7 @@ export namespace Forms {
     sort?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
     pageCursor?: string;
+    showNsfw?: boolean;
   };
 
   export type GetMultiCommunityFeeds = {

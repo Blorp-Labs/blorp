@@ -13,8 +13,8 @@ importers:
   .:
     dependencies:
       "@blorp-labs/piefed-api-client":
-        specifier: 0.0.0-cc3101d
-        version: 0.0.0-cc3101d
+        specifier: 0.0.0-906d602
+        version: 0.0.0-906d602
       "@capacitor-community/media":
         specifier: 8.0.1
         version: 8.0.1(@capacitor/core@7.5.0)
@@ -1324,10 +1324,10 @@ packages:
       }
     engines: { node: ">=18" }
 
-  "@blorp-labs/piefed-api-client@0.0.0-cc3101d":
+  "@blorp-labs/piefed-api-client@0.0.0-906d602":
     resolution:
       {
-        integrity: sha512-Wm7o8GXwjN/jlW+b6PKuae55fIA1hmGqwucBsGnWManQZHKWaJGjAMnWYdDEuiXeH/vXg1biMriremYxS3FncA==,
+        integrity: sha512-dshZdsY59uZwsVWjie8OCbxYybLKHVddSk+uCOhsknVVDusvG07dkTfX/geGTN13vHlv54uJB189jaRPoZVhkQ==,
       }
 
   "@capacitor-community/media@8.0.1":
@@ -13954,7 +13954,7 @@ snapshots:
 
   "@bcoe/v8-coverage@1.0.2": {}
 
-  "@blorp-labs/piefed-api-client@0.0.0-cc3101d":
+  "@blorp-labs/piefed-api-client@0.0.0-906d602":
     dependencies:
       zod: 3.25.76
 
