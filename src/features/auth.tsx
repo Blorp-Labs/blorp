@@ -1,8 +1,6 @@
 import {
-  createContext,
   FormEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -10,15 +8,11 @@ import {
 } from "react";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import {
-  // eslint-disable-next-line local/no-query-hooks-in-components -- auth-context is a session bootstrapper, not a UI component. It owns the auth lifecycle (login, register, captcha, site config) and is the only appropriate place to fetch these.
   useCaptchaQuery,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useInstancesQuery,
   useLoginMutation,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useRefreshAuthQuery,
   useRegisterMutation,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useSiteQuery,
 } from "../queries";
 import fuzzysort from "fuzzysort";
@@ -30,35 +24,37 @@ import {
   IonModal,
   IonToolbar,
 } from "@ionic/react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "./ui/input-otp";
+} from "../components/ui/input-otp";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaPlay, FaPause } from "react-icons/fa";
 import { MdOutlineRefresh } from "react-icons/md";
-import { Textarea } from "./ui/textarea";
-import { MarkdownRenderer } from "./markdown/renderer";
+import { Textarea } from "../components/ui/textarea";
+import { MarkdownRenderer } from "../components/markdown/renderer";
 import { env } from "../env";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { cn } from "../lib/utils";
 import { normalizeInstance } from "../normalize-instance";
-import { ToolbarButtons } from "./toolbar/toolbar-buttons";
+import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import {
   Select,
   SelectContent,
   SelectTrigger,
   SelectItem,
   SelectValue,
-} from "./ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+} from "../components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Software } from "../apis/api-blueprint";
-import { ToolbarTitle } from "./toolbar/toolbar-title";
+import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
+import { AuthContext } from "../hooks/use-require-auth";
+import { Field, FieldLabel } from "../components/ui/field";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
@@ -145,12 +141,6 @@ const AudioPlayButton = ({ src }: { src: string }) => {
   );
 };
 
-const Context = createContext<{
-  authenticate: (config?: { addAccount?: boolean }) => Promise<void>;
-}>({
-  authenticate: () => Promise.reject(),
-});
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = useRefreshAuthQuery();
 
@@ -195,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refresh.isSuccess, isLoggedIn, site, authenticate]);
 
   return (
-    <Context.Provider
+    <AuthContext.Provider
       value={{
         authenticate,
       }}
@@ -207,12 +197,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onSuccess={() => promise?.resolve()}
         addAccount={promise?.addAccount === true}
       />
-    </Context.Provider>
+    </AuthContext.Provider>
   );
-}
-
-export function useRequireAuth() {
-  return useContext(Context).authenticate;
 }
 
 function useAuthSite({
@@ -418,110 +404,119 @@ function LoginForm({
   return (
     <form
       onSubmit={submitLogin}
-      className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden"
+      className="gap-4 flex flex-col p-6 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden"
       data-testid="login-form"
     >
-      <div className="flex flex-col gap-1">
-        <label className="text-muted-foreground text-sm">Username</label>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-5">
+        <span className="text-2xl font-bold">Login to {instance.baseurl}</span>
+
+        <p>
+          Login with your <b>{instance.baseurl}</b> credentials. If your account
+          is hosted on a different server, you must change instance before
+          loggin in.
+        </p>
+
+        <Field>
+          <FieldLabel required>Username</FieldLabel>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Username"
+              id="username"
+              defaultValue={userName}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+            />
+            <InstanceSelect instance={instance} setInstance={setInstance} />
+          </div>
+        </Field>
+
+        <Field>
+          <FieldLabel required>Password</FieldLabel>
           <Input
-            placeholder="Username"
-            id="username"
-            defaultValue={userName}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
+            placeholder="Enter password"
+            type="password"
+            id="password"
+            defaultValue={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
             required
           />
-          <InstanceSelect instance={instance} setInstance={setInstance} />
-        </div>
-      </div>
+        </Field>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-muted-foreground text-sm">Password</label>
-        <Input
-          placeholder="Enter password"
-          type="password"
-          id="password"
-          defaultValue={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          required
-        />
-      </div>
+        {(login.needsMfa || _.isString(mfaToken)) && (
+          <InputOTP
+            data-testid="otp-input"
+            maxLength={6}
+            defaultValue={mfaToken}
+            onChange={(newMfa) => {
+              setMfaToken(newMfa);
+              if (newMfa.length === 6) {
+                mutateLogin(newMfa);
+              }
+            }}
+            autoComplete="one-time-code"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            required
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+            </InputOTPGroup>
+            <InputOTPSeparator />
+            <InputOTPGroup>
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+        )}
 
-      {(login.needsMfa || _.isString(mfaToken)) && (
-        <InputOTP
-          data-testid="otp-input"
-          maxLength={6}
-          defaultValue={mfaToken}
-          onChange={(newMfa) => {
-            setMfaToken(newMfa);
-            if (newMfa.length === 6) {
-              mutateLogin(newMfa);
-            }
-          }}
-          autoComplete="one-time-code"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          required
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-          </InputOTPGroup>
-          <InputOTPSeparator />
-          <InputOTPGroup>
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-      )}
-
-      <Button type="submit" className="mx-auto">
-        Sign In
-        {login.isPending && <LuLoaderCircle className="animate-spin" />}
-      </Button>
-
-      <span className="mx-auto">
-        Need an account?
-        <Button type="button" variant="link" onClick={handleSignup}>
-          Sign up
+        <Button type="submit" className="">
+          Sign In
+          {login.isPending && <LuLoaderCircle className="animate-spin" />}
         </Button>
-      </span>
 
-      {site.data?.site.privateInstance === false && (
-        <Button
-          type="button"
-          className="mx-auto"
-          variant="ghost"
-          onClick={() => {
-            if (addAccount) {
-              addAccountFn({
-                instance: instance.url,
-              });
-            } else {
-              updateSelectedAccount({
-                instance: instance.url,
-              });
-            }
-            // setInstance(null);
-            onClose();
-          }}
-        >
-          Continue as Guest
-        </Button>
-      )}
+        <span className="mx-auto">
+          <Button type="button" variant="link" onClick={handleSignup}>
+            Sign up
+          </Button>
 
-      <LegalNotice instance={instance} />
+          {site.data?.site.privateInstance === false && (
+            <Button
+              type="button"
+              className="mx-auto"
+              variant="link"
+              onClick={() => {
+                if (addAccount) {
+                  addAccountFn({
+                    instance: instance.url,
+                  });
+                } else {
+                  updateSelectedAccount({
+                    instance: instance.url,
+                  });
+                }
+                // setInstance(null);
+                onClose();
+              }}
+            >
+              Continue as Guest
+            </Button>
+          )}
+        </span>
+
+        <LegalNotice instance={instance} />
+      </div>
     </form>
   );
 }
@@ -753,9 +748,7 @@ function useInstanceState() {
   return [_instance, setInstanceLocal] as const;
 }
 
-const INIT_STEP = env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
-  ? "login"
-  : "instance-selection";
+const INIT_STEP = "login";
 
 function AuthModal({
   open,
@@ -773,6 +766,7 @@ function AuthModal({
   );
 
   const [instance, setInstance] = useInstanceState();
+  console.log(step, instance);
   const modal = useRef<HTMLIonModalElement>(null);
 
   const [software, setSoftware] = useState<Software>(
@@ -819,7 +813,7 @@ function AuthModal({
             <ToolbarTitle numRightIcons={0}>
               {step === "instance-selection"
                 ? "Chose an instance"
-                : instance.baseurl}
+                : "Change instance"}
             </ToolbarTitle>
           </ToolbarButtons>
           {step !== "instance-selection" && (

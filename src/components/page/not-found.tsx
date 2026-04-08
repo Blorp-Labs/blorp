@@ -19,9 +19,9 @@ import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
 import { encodeApId } from "../../apis/utils";
 import { Schemas } from "../../apis/api-blueprint";
-import { useRequireAuth } from "../auth-context";
 import { apIdFromCommunitySlug } from "../../apis/utils";
 import { env } from "../../env";
+import { useRequireAuth } from "@/src/hooks";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {

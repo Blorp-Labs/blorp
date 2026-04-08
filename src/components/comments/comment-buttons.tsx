@@ -1,7 +1,6 @@
 import { useLikeCommentMutation } from "@/src/queries/index";
 import { resolveVoteCounts } from "@/src/lib/voting";
 import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
-import { useRequireAuth } from "../auth-context";
 import { ButtonHTMLAttributes, DetailedHTMLProps, useId } from "react";
 import { cn } from "@/src/lib/utils";
 import {
@@ -17,7 +16,7 @@ import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
-import { useMedia } from "@/src/hooks";
+import { useMedia, useRequireAuth } from "@/src/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";

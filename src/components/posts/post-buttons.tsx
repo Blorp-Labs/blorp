@@ -1,6 +1,5 @@
 import { resolveVoteCounts } from "@/src/lib/voting";
 import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
-import { useRequireAuth } from "../auth-context";
 import { Link, resolveRoute } from "@/src/routing/index";
 import {
   PiArrowFatUpBold,
@@ -33,7 +32,7 @@ import {
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
-import { useMedia } from "@/src/hooks";
+import { useMedia, useRequireAuth } from "@/src/hooks";
 import {
   useAddPostReactionEmojiMutation,
   useLikePostMutation,

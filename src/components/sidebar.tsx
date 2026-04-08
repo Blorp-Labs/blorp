@@ -5,14 +5,13 @@ import { useCreatePostStore } from "@/src/stores/create-post";
 import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
 import { useIonRouter } from "@ionic/react";
-import { usePathname } from "@/src/hooks/use-pathname";
+import { usePathname, useRequireAuth } from "@/src/hooks";
 import { Button } from "./ui/button";
 import {
   BLORP_COMMUNITY,
   buildErrorReport,
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
-import { useRequireAuth } from "./auth-context";
 
 function SidebarErrorFallback({
   error,

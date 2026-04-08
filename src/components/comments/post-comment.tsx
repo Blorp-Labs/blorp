@@ -23,7 +23,6 @@ import {
 } from "@/src/queries/index";
 import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
-import { useRequireAuth } from "../auth-context";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { encodeApId } from "@/src/apis/utils";
 import { Link, resolveRoute } from "../../routing/index";
@@ -49,7 +48,7 @@ import {
 } from "../ui/collapsible";
 import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
-import { useMedia, useInputAlert } from "@/src/hooks/index";
+import { useMedia, useInputAlert, useRequireAuth } from "@/src/hooks";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
