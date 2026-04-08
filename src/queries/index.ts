@@ -402,6 +402,9 @@ export function usePostsKey(config?: Forms.GetPosts) {
   return queryKey;
 }
 
+/** How often to check for new posts in the feed. */
+const NEW_POSTS_CHECK_INTERVAL_MS = 60_000;
+
 export function useMostRecentPost(
   featuredContext: "local" | "community" | "feed",
   form: Forms.GetPosts,
@@ -412,7 +415,7 @@ export function useMostRecentPost(
 ) {
   const { api, queryKeyPrefix } = useApiClients();
 
-  const postsIsStale = useIsStale(postsQuery, 60_000);
+  const postsIsStale = useIsStale(postsQuery, NEW_POSTS_CHECK_INTERVAL_MS);
 
   const { postSort } = useAvailableSorts();
   const sort = form.sort ?? postSort;
@@ -457,7 +460,7 @@ export function useMostRecentPost(
         })?.post.apId ?? null
       );
     },
-    refetchInterval: 1000 * 60,
+    refetchInterval: NEW_POSTS_CHECK_INTERVAL_MS,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
