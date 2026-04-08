@@ -11,7 +11,10 @@ import { ToolbarBackButton } from "@/src/components/toolbar/toolbar-back-button"
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { useState } from "react";
 import { MarkdownEditor } from "@/src/components/markdown/editor";
-import { useRemoveUserAvatar, useUpdateUserSettings } from "@/src/queries";
+import {
+  useRemoveUserAvatarMutation,
+  useUpdateUserSettingsMutation,
+} from "@/src/queries";
 import { Button } from "@/src/components/ui/button";
 import { useHistory } from "react-router";
 import { useDropzone } from "react-dropzone";
@@ -219,8 +222,8 @@ export default function SettingsPage() {
   const canShowNsfwSetting =
     !(isCapacitor() && isIos()) || nsfwPreviouslyEnabled;
 
-  const updateUserSettings = useUpdateUserSettings();
-  const removeUserAvatar = useRemoveUserAvatar();
+  const updateUserSettings = useUpdateUserSettingsMutation();
+  const removeUserAvatar = useRemoveUserAvatarMutation();
   const history = useHistory();
 
   const { person } = account

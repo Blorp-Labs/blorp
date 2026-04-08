@@ -10,12 +10,12 @@ import {
 } from "react";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import {
-  useCaptcha,
-  useInstances,
-  useLogin,
-  useRefreshAuth,
-  useRegister,
-  useSite,
+  useCaptchaQuery,
+  useInstancesQuery,
+  useLoginMutation,
+  useRefreshAuthQuery,
+  useRegisterMutation,
+  useSiteQuery,
 } from "../queries";
 import fuzzysort from "fuzzysort";
 import _ from "lodash";
@@ -148,7 +148,7 @@ const Context = createContext<{
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const refresh = useRefreshAuth();
+  const refresh = useRefreshAuthQuery();
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
@@ -218,7 +218,7 @@ function useAuthSite({
   search?: string;
   instance: SelectedInstance;
 }) {
-  return useSite({
+  return useSiteQuery({
     instance: search || instance.baseurl || env.defaultInstance,
   });
 }
@@ -243,9 +243,9 @@ function InstanceSelectionPage({
     }
   }, [search]);
 
-  const instances = useInstances();
+  const instances = useInstancesQuery();
 
-  const site = useSite(
+  const site = useSiteQuery(
     {
       instance: searchUrl ?? instance.baseurl,
     },
@@ -378,7 +378,7 @@ function LoginForm({
   const [password, setPassword] = useState("");
   const [mfaToken, setMfaToken] = useState<string>();
 
-  const login = useLogin({
+  const login = useLoginMutation({
     addAccount,
     instance: instance.url,
   });
@@ -533,7 +533,7 @@ function SignupForm({
   setInstance: (val: string) => void;
   addAccount: boolean;
 }) {
-  const captcha = useCaptcha({
+  const captcha = useCaptchaQuery({
     instance: instance.url,
   });
 
@@ -544,12 +544,12 @@ function SignupForm({
   const [answer, setAnswer] = useState("");
   const [captchaAnswer, setCaptchaAnswer] = useState("");
 
-  const register = useRegister({
+  const register = useRegisterMutation({
     addAccount,
     instance: instance.url,
   });
 
-  const site = useSite({
+  const site = useSiteQuery({
     instance: instance.url,
   });
 

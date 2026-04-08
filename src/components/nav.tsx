@@ -19,9 +19,9 @@ import { useRequireAuth } from "./auth-context";
 import { IonMenuButton, IonMenuToggle } from "@ionic/react";
 import { IoPerson, IoSettingsOutline } from "react-icons/io5";
 import {
-  useLogout,
-  useNotificationCount,
-  usePrivateMessagesCount,
+  useLogoutMutation,
+  useNotificationCountQuery,
+  usePrivateMessagesCountQuery,
 } from "../queries";
 import { LuMenu } from "react-icons/lu";
 import { useConfirmationAlert, useMedia } from "../hooks";
@@ -45,8 +45,8 @@ function AccountNotificationBadge({
   accountUuid: string;
   children: React.ReactNode;
 }) {
-  const inboxCount = useNotificationCount()[accountUuid];
-  const pmCount = usePrivateMessagesCount()[accountUuid];
+  const inboxCount = useNotificationCountQuery()[accountUuid];
+  const pmCount = usePrivateMessagesCountQuery()[accountUuid];
   return (
     <BadgeCount showBadge={!!inboxCount || !!pmCount}>{children}</BadgeCount>
   );
@@ -58,7 +58,7 @@ export function UserDropdown() {
   const getConfirmation = useConfirmationAlert();
   const media = useMedia();
   const linkCtx = useLinkContext();
-  const logout = useLogout();
+  const logout = useLogoutMutation();
   const requireAuth = useRequireAuth();
 
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
@@ -66,8 +66,8 @@ export function UserDropdown() {
   const accounts = useAuth((s) => s.accounts);
   const selectAccount = useAuth((s) => s.selectAccount);
 
-  const inboxCounts = useNotificationCount();
-  const pmCounts = usePrivateMessagesCount();
+  const inboxCounts = useNotificationCountQuery();
+  const pmCounts = usePrivateMessagesCountQuery();
   const count =
     _.sum(
       Object.entries(inboxCounts)
@@ -247,14 +247,14 @@ export function UserDropdown() {
 export function UserSidebar() {
   const getConfirmation = useConfirmationAlert();
   const linkCtx = useLinkContext();
-  const logout = useLogout();
+  const logout = useLogoutMutation();
   const requireAuth = useRequireAuth();
 
   const selectedAccount = useAuth((s) => s.getSelectedAccount());
   const accounts = useAuth((s) => s.accounts);
   const selectAccount = useAuth((s) => s.selectAccount);
-  const inboxAcounts = useNotificationCount();
-  const pmCounts = usePrivateMessagesCount();
+  const inboxAcounts = useNotificationCountQuery();
+  const pmCounts = usePrivateMessagesCountQuery();
 
   const { person, instance } = parseAccountInfo(selectedAccount);
   const userName = person?.slug.split("@")[0];

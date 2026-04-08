@@ -3,7 +3,7 @@ import * as lemmy from "@/test-utils/lemmy";
 import { RESOLVE_POST_RES } from "@/test-utils/lemmy-api-fixtures";
 import { createQueryClientWrapper } from "@/test-utils/tanstack-query";
 // eslint-disable-next-line no-restricted-imports -- TODO: import from specific file
-import { useApiClients, useComments, useCreateComment } from ".";
+import { useApiClients, useCommentsQuery, useCreateCommentMutation } from ".";
 import { renderHook, waitFor } from "@testing-library/react";
 import { CommentResponse, GetCommentsResponse } from "lemmy-v3";
 import _ from "lodash";
@@ -88,7 +88,7 @@ describe("creating comments", () => {
     mockGetComments(numComments);
     const allComments = renderHook(
       () =>
-        useComments({
+        useCommentsQuery({
           postApId: POST_AP_ID,
         }),
       {
@@ -96,7 +96,7 @@ describe("creating comments", () => {
       },
     );
 
-    const createComment = renderHook(() => useCreateComment(), {
+    const createComment = renderHook(() => useCreateCommentMutation(), {
       wrapper: queryClientWrapper,
     });
 
@@ -144,7 +144,7 @@ describe("creating comments", () => {
 
     const allComments = renderHook(
       () =>
-        useComments({
+        useCommentsQuery({
           postApId: POST_AP_ID,
         }),
       {
@@ -152,7 +152,7 @@ describe("creating comments", () => {
       },
     );
 
-    const createComment = renderHook(() => useCreateComment(), {
+    const createComment = renderHook(() => useCreateCommentMutation(), {
       wrapper: queryClientWrapper,
     });
 
@@ -205,7 +205,7 @@ describe("creating comments", () => {
 
     const allComments = renderHook(
       () =>
-        useComments({
+        useCommentsQuery({
           postApId: POST_AP_ID,
           parentId: PARENT_ID,
         }),
@@ -214,7 +214,7 @@ describe("creating comments", () => {
       },
     );
 
-    const createComment = renderHook(() => useCreateComment(), {
+    const createComment = renderHook(() => useCreateCommentMutation(), {
       wrapper: queryClientWrapper,
     });
 

@@ -14,11 +14,11 @@ import {
 import { useCommentsByPaths } from "@/src/stores/comments";
 import { RelativeTime } from "../relative-time";
 import {
-  useAddCommentReactionEmoji,
-  useDeleteComment,
-  useLockComment,
-  useMarkCommentAsAnswer,
-  useSaveComment,
+  useAddCommentReactionEmojiMutation,
+  useDeleteCommentMutation,
+  useLockCommentMutation,
+  useMarkCommentAsAnswerMutation,
+  useSaveCommentMutation,
   useSoftware,
 } from "@/src/queries/index";
 import { CommentTree } from "@/src/lib/comment-tree";
@@ -114,9 +114,9 @@ export function useCommentActions({
     (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
   );
 
-  const saveComment = useSaveComment(commentView?.path);
-  const markCommentAsAnswer = useMarkCommentAsAnswer();
-  const addReactionEmoji = useAddCommentReactionEmoji();
+  const saveComment = useSaveCommentMutation(commentView?.path);
+  const markCommentAsAnswer = useMarkCommentAsAnswerMutation();
+  const addReactionEmoji = useAddCommentReactionEmojiMutation();
   const inputAlert = useInputAlert();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
@@ -126,8 +126,8 @@ export function useCommentActions({
   const showReportModal = useShowCommentReportModal();
   const requireAuth = useRequireAuth();
 
-  const deleteComment = useDeleteComment();
-  const lockComment = useLockComment();
+  const deleteComment = useDeleteCommentMutation();
+  const lockComment = useLockCommentMutation();
 
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
 
@@ -595,7 +595,7 @@ function PostCommentInner({
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
   const requireAuth = useRequireAuth();
-  const addReactionEmoji = useAddCommentReactionEmoji();
+  const addReactionEmoji = useAddCommentReactionEmojiMutation();
 
   const editingState = useCommentEditingState({
     comment: commentView,

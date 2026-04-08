@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Page } from "../components/page";
 import { useHistory, useLocation } from "react-router";
-import { useResolveObject } from "../queries";
+import { useResolveObjectQuery } from "../queries";
 import { resolveRoute } from "../routing";
 import { encodeApId } from "../apis/utils";
 
@@ -21,7 +21,7 @@ export default function ApResolver() {
   const { replace } = useHistory();
   const apId = origin + location.pathname;
 
-  const resolveQuery = useResolveObject({ q: apId });
+  const resolveQuery = useResolveObjectQuery({ q: apId });
   const { data } = resolveQuery;
 
   useEffect(() => {

@@ -7,8 +7,8 @@ import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import {
   useModeratingCommunities,
-  useNotificationCount,
-  usePrivateMessagesCount,
+  useNotificationCountQuery,
+  usePrivateMessagesCountQuery,
   useSubscribedCommunities,
 } from "@/src/queries";
 import { CommunityCard } from "@/src/components/communities/community-card";
@@ -48,8 +48,8 @@ function useMainSidebarCollapsed() {
 function SidebarTabs() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
-  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
-  const inboxCount = useNotificationCount()[selectedAccountUuid];
+  const messageCount = usePrivateMessagesCountQuery()[selectedAccountUuid];
+  const inboxCount = useNotificationCountQuery()[selectedAccountUuid];
   const pathname = useIonRouter().routeInfo.pathname;
 
   return (

@@ -7,7 +7,7 @@ import { Checkbox } from "../../ui/checkbox";
 import { Button } from "../../ui/button";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
-import { useVotePostPoll } from "@/src/queries/post-mutations";
+import { useVotePostPollMutation } from "@/src/queries/post-mutations";
 import { useRequireAuth } from "../../auth-context";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ABOVE_LINK_OVERLAY } from "../config";
@@ -66,7 +66,7 @@ function PollItem({
 }
 
 export function PostPollEmbed({ post }: { post: Schemas.Post }) {
-  const vote = useVotePostPoll(post.apId);
+  const vote = useVotePostPollMutation(post.apId);
   const [myChoices, setMyChoices] = useState<number[]>([]);
   const id = useId();
   const requireAuth = useRequireAuth();

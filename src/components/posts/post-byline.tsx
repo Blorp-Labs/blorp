@@ -36,7 +36,7 @@ import {
   useFeaturePost,
   useLockPost,
   useSavePost,
-  useAddPostReactionEmoji,
+  useAddPostReactionEmojiMutation,
 } from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/queries/index";
@@ -60,7 +60,7 @@ export function usePostActions({
   const lockPost = useLockPost();
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePost();
-  const addReactionEmoji = useAddPostReactionEmoji();
+  const addReactionEmoji = useAddPostReactionEmojiMutation();
   const inputAlert = useInputAlert();
   const { software } = useSoftware();
 

@@ -20,7 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
-import { useAvailableSorts } from "../queries";
+import { useAvailableSortsQuery } from "../queries";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 
 function humanizeText(str: string) {
@@ -96,7 +96,7 @@ function getIconCommunitySort(sort: string) {
 export function CommunitySortSelect() {
   const setCommunitySort = useFiltersStore((s) => s.setCommunitySort);
 
-  const { communitySorts, communitySort } = useAvailableSorts();
+  const { communitySorts, communitySort } = useAvailableSortsQuery();
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
     if (communitySorts) {
@@ -167,7 +167,7 @@ export function CommentSortSelect({
 }) {
   const setCommentSort = useFiltersStore((s) => s.setCommentSort);
 
-  const { commentSorts, commentSort } = useAvailableSorts();
+  const { commentSorts, commentSort } = useAvailableSortsQuery();
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
     if (commentSorts) {
@@ -266,7 +266,7 @@ export function PostSortButton({
 
   const media = useMedia();
 
-  const { postSorts, postSort } = useAvailableSorts();
+  const { postSorts, postSort } = useAvailableSortsQuery();
 
   const actions: ActionMenuProps<string>["actions"] = useMemo(() => {
     if (postSorts) {

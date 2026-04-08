@@ -12,7 +12,7 @@ import {
   parseAccountInfo,
   useAuth,
 } from "../stores/auth";
-// eslint-disable-next-line no-restricted-imports -- intentional: useRefreshAuth iterates multiple accounts and must scope each cache write to a specific account explicitly
+// eslint-disable-next-line no-restricted-imports -- intentional: useRefreshAuthQuery iterates multiple accounts and must scope each cache write to a specific account explicitly
 import { getCachePrefixer } from "../stores/auth";
 import { useEffect, useMemo, useState } from "react";
 import { useIsStale } from "../hooks/use-is-stale";
@@ -139,7 +139,7 @@ export function useSoftware(account?: Account) {
   return software;
 }
 
-export function usePersonDetails({
+export function usePersonDetailsQuery({
   actorId,
   enabled = true,
 }: {
@@ -189,14 +189,14 @@ function usePersonFeedKey({
   return queryKey;
 }
 
-export function usePersonFeed({
+export function usePersonFeedQuery({
   apIdOrUsername,
   type,
   sort,
 }: SetOptional<Forms.GetPersonContent, "apIdOrUsername">) {
   const { api } = useApiClients();
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
 
   sort ??= postSort;
 
@@ -245,7 +245,7 @@ export function usePersonFeed({
   });
 }
 
-export function usePost({
+export function usePostQuery({
   ap_id: apId,
   enabled,
 }: {
@@ -329,7 +329,7 @@ function useCommentsKey() {
   };
 }
 
-export function useComments(
+export function useCommentsQuery(
   form: Forms.GetComments,
   options?: {
     enabled?: boolean;
@@ -337,7 +337,7 @@ export function useComments(
 ) {
   const enabled = options?.enabled ?? true;
 
-  const { commentSort } = useAvailableSorts();
+  const { commentSort } = useAvailableSortsQuery();
   const sort = form.sort ?? commentSort;
   const { api } = useApiClients();
 
@@ -388,7 +388,7 @@ export function usePostsKey(config?: Forms.GetPosts) {
   const { queryKeyPrefix } = useApiClients();
   const { communitySlug, ...form } = config ?? {};
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
   const sort = form?.sort ?? postSort;
 
   const queryKey = [...queryKeyPrefix, sort];
@@ -405,7 +405,7 @@ export function usePostsKey(config?: Forms.GetPosts) {
 /** How often to check for new posts in the feed. */
 const NEW_POSTS_CHECK_INTERVAL_MS = 60_000;
 
-export function useMostRecentPost(
+export function useMostRecentPostQuery(
   featuredContext: "local" | "community" | "feed",
   form: Forms.GetPosts,
   // WARNING: do not destructure this at the call site — TanStack Query warns
@@ -417,7 +417,7 @@ export function useMostRecentPost(
 
   const postsIsStale = useIsStale(postsQuery, NEW_POSTS_CHECK_INTERVAL_MS);
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
@@ -466,11 +466,11 @@ export function useMostRecentPost(
   });
 }
 
-export function usePosts(form: Forms.GetPosts) {
+export function usePostsQuery(form: Forms.GetPosts) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
   const sort = form.sort ?? postSort;
 
   const hideRead = useSettingsStore((s) => s.hideRead);
@@ -552,14 +552,14 @@ export function usePosts(form: Forms.GetPosts) {
   });
 }
 
-export function useListCommunities(
+export function useListCommunitiesQuery(
   form: Forms.GetCommunities,
   options?: QueryOverwriteOptions,
 ) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api, queryKeyPrefix } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const { communitySort } = useAvailableSorts();
+  const { communitySort } = useAvailableSortsQuery();
   const showNsfw = useShouldShowNsfw();
 
   form = {
@@ -606,7 +606,7 @@ export function useListCommunities(
   });
 }
 
-export function useListMultiCommunityFeeds(
+export function useListMultiCommunityFeedsQuery(
   form: Forms.GetMultiCommunityFeeds,
   options?: QueryOverwriteOptions,
 ) {
@@ -630,7 +630,7 @@ export function useListMultiCommunityFeeds(
   });
 }
 
-export function useMultiCommunityFeed(
+export function useMultiCommunityFeedQuery(
   form: Forms.GetMultiCommunityFeed,
   options?: QueryOverwriteOptions,
 ) {
@@ -659,7 +659,7 @@ export function useMultiCommunityFeed(
   });
 }
 
-export function useCommunity({
+export function useCommunityQuery({
   enabled = true,
   ...form
 }: {
@@ -715,7 +715,7 @@ function is2faError(err?: Error | null) {
   return err && err.message.includes("missing_totp_token");
 }
 
-export function useInstanceSoftware(
+export function useInstanceSoftwareQuery(
   { instance }: { instance?: string },
   options?: QueryOverwriteOptions,
 ) {
@@ -733,7 +733,7 @@ export function useInstanceSoftware(
   });
 }
 
-export function useSite(
+export function useSiteQuery(
   { instance }: { instance: string },
   options?: QueryOverwriteOptions,
 ) {
@@ -747,7 +747,7 @@ export function useSite(
   });
 }
 
-export function useRegister(config: {
+export function useRegisterMutation(config: {
   addAccount?: boolean;
   instance?: string;
 }) {
@@ -813,7 +813,10 @@ export function useRegister(config: {
   };
 }
 
-export function useLogin(config: { addAccount?: boolean; instance?: string }) {
+export function useLoginMutation(config: {
+  addAccount?: boolean;
+  instance?: string;
+}) {
   const { api } = useApiClients(config);
 
   const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
@@ -867,7 +870,7 @@ function useRefreshAuthKey() {
   return ["refreshAuth", ...apis.map((api) => api.queryKeyPrefix.join("_"))];
 }
 
-export function useRefreshAuth() {
+export function useRefreshAuthQuery() {
   const { apis } = useApiClients();
 
   const updateAccountSite = useAuth((s) => s.updateAccountSite);
@@ -952,7 +955,7 @@ export function useRefreshAuth() {
   });
 }
 
-export function useLogout() {
+export function useLogoutMutation() {
   const listingType = useFiltersStore((s) => s.listingType);
   const setListingType = useFiltersStore((s) => s.setListingType);
   const communitiesListingType = useFiltersStore(
@@ -987,7 +990,7 @@ export function useLogout() {
   return mut;
 }
 
-export function useUpdateUserSettings() {
+export function useUpdateUserSettingsMutation() {
   const queryClient = useQueryClient();
   const queryKey = useRefreshAuthKey();
 
@@ -1024,7 +1027,7 @@ export function useUpdateUserSettings() {
   });
 }
 
-export function useRemoveUserAvatar() {
+export function useRemoveUserAvatarMutation() {
   const queryClient = useQueryClient();
   const queryKey = useRefreshAuthKey();
 
@@ -1053,7 +1056,7 @@ interface CustumCreateCommentLike extends Forms.LikeComment {
   path: string;
 }
 
-export function useLikeComment() {
+export function useLikeCommentMutation() {
   const { api } = useApiClients();
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const patchComment = useCommentsStore((s) => s.patchComment);
@@ -1100,7 +1103,7 @@ export function useLikeComment() {
   });
 }
 
-export function useSaveComment(path?: string) {
+export function useSaveCommentMutation(path?: string) {
   const queryClient = useQueryClient();
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
@@ -1153,7 +1156,7 @@ interface CreateComment extends Forms.CreateComment {
   queryKeyParentId?: number;
 }
 
-export function useCreateComment() {
+export function useCreateCommentMutation() {
   const queryClient = useQueryClient();
   const { api } = useApiClients();
   const myProfile = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
@@ -1345,7 +1348,7 @@ export function useCreateComment() {
   });
 }
 
-export function useEditComment() {
+export function useEditCommentMutation() {
   const { api } = useApiClients();
   const cacheComments = useCommentsStore((s) => s.cacheComments);
   const patchComment = useCommentsStore((s) => s.patchComment);
@@ -1367,7 +1370,7 @@ export function useEditComment() {
   });
 }
 
-export function useDeleteComment() {
+export function useDeleteCommentMutation() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
   const cacheComments = useCommentsStore((s) => s.cacheComments);
@@ -1402,7 +1405,7 @@ function usePrivateMessagesKey() {
   return getPrivateMessagesKey(queryKeyPrefix);
 }
 
-export function usePrivateMessages(form: Forms.GetPrivateMessages) {
+export function usePrivateMessagesQuery(form: Forms.GetPrivateMessages) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const queryKey = usePrivateMessagesKey();
@@ -1438,7 +1441,7 @@ export function usePrivateMessages(form: Forms.GetPrivateMessages) {
   });
 }
 
-export function useCreatePrivateMessage(
+export function useCreatePrivateMessageMutation(
   recipient: Pick<Schemas.Person, "apId" | "id" | "slug">,
 ) {
   const account = useAuth((s) => s.getSelectedAccount());
@@ -1496,7 +1499,7 @@ function usePrivateMessageCountQueryKey() {
   return queryKey;
 }
 
-export function usePrivateMessagesCount() {
+export function usePrivateMessagesCountQuery() {
   const { apis } = useApiClients();
   const isLoggedIn = useAuth((a) => a.isLoggedIn());
   const selectedAccountUuid = useAuth((a) => a.getSelectedAccount().uuid);
@@ -1551,7 +1554,7 @@ export function usePrivateMessagesCount() {
   return data ?? {};
 }
 
-export function useMarkPriavteMessageRead() {
+export function useMarkPrivateMessageReadMutation() {
   const { api } = useApiClients();
   const queryClient = useQueryClient();
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
@@ -1624,7 +1627,7 @@ function useRepliesQueryKey(form?: Forms.GetReplies) {
   return _.compact([...queryKeyPrefix, "getReplies", form]);
 }
 
-export function useReplies(form: Forms.GetReplies) {
+export function useRepliesQuery(form: Forms.GetReplies) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const queryKey = useRepliesQueryKey(form);
@@ -1664,7 +1667,7 @@ function usePersonMentionsKey(form: Forms.GetMentions) {
   return [...queryKeyPrefix, "getPersonMentions", form];
 }
 
-export function usePersonMentions(form: Forms.GetMentions) {
+export function usePersonMentionsQuery(form: Forms.GetMentions) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const { api } = useApiClients();
   const queryKey = usePersonMentionsKey(form);
@@ -1897,7 +1900,7 @@ export function useCommentReportsQuery() {
   });
 }
 
-export function useModlog(form: Forms.GetModlog) {
+export function useModlogQuery(form: Forms.GetModlog) {
   const { api } = useApiClients();
   const queryKey = ["modlog", form.communitySlug ?? "site"];
 
@@ -1925,7 +1928,7 @@ function useNotificationCountQueryKey() {
   return queryKey;
 }
 
-export function useNotificationCount() {
+export function useNotificationCountQuery() {
   const { apis } = useApiClients();
   const isLoggedIn = useAuth((a) => a.isLoggedIn());
 
@@ -2010,10 +2013,10 @@ export function useNotificationCount() {
   return data ?? {};
 }
 
-export function useSearch(form: Forms.Search) {
+export function useSearchQuery(form: Forms.Search) {
   const { api, queryKeyPrefix } = useApiClients();
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
   form = {
     sort: postSort,
     ...form,
@@ -2068,7 +2071,7 @@ export function useSearch(form: Forms.Search) {
   });
 }
 
-export function useInstances() {
+export function useInstancesQuery() {
   return useQuery({
     queryKey: ["getInstances"],
     queryFn: async ({ signal }) => {
@@ -2110,7 +2113,7 @@ export function useInstances() {
   });
 }
 
-export function useFollowCommunity() {
+export function useFollowCommunityMutation() {
   const { api, queryKeyPrefix } = useApiClients();
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2175,7 +2178,7 @@ export function useFollowCommunity() {
   });
 }
 
-export function useFollowFeed() {
+export function useFollowFeedMutation() {
   const { api, queryKeyPrefix } = useApiClients();
 
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2221,7 +2224,7 @@ export function useFollowFeed() {
   });
 }
 
-export function useMarkAllRead() {
+export function useMarkAllReadMutation() {
   const { api, queryKeyPrefix } = useApiClients();
   const queryClient = useQueryClient();
 
@@ -2286,7 +2289,7 @@ export function useMarkAllRead() {
   });
 }
 
-export function useMarkReplyRead() {
+export function useMarkReplyReadMutation() {
   const { api } = useApiClients();
   const queryClient = useQueryClient();
 
@@ -2335,7 +2338,7 @@ export function useMarkReplyRead() {
   });
 }
 
-export function useMarkPersonMentionRead() {
+export function useMarkPersonMentionReadMutation() {
   const { api, queryKeyPrefix } = useApiClients();
   const queryClient = useQueryClient();
 
@@ -2385,7 +2388,7 @@ export function useMarkPersonMentionRead() {
   });
 }
 
-export function useCreatePost() {
+export function useCreatePostMutation() {
   const history = useHistory();
   const { api } = useApiClients();
   const queryClient = useQueryClient();
@@ -2435,7 +2438,7 @@ export function useCreatePost() {
   });
 }
 
-export function useEditPost(apId: string) {
+export function useEditPostMutation(apId: string) {
   const history = useHistory();
   const { api } = useApiClients();
   const patchPost = usePostsStore((s) => s.patchPost);
@@ -2465,7 +2468,7 @@ export function useEditPost(apId: string) {
   });
 }
 
-export function useCreatePostReport() {
+export function useCreatePostReportMutation() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async (form: Forms.CreatePostReport) =>
@@ -2480,7 +2483,7 @@ export function useCreatePostReport() {
   });
 }
 
-export function useCreateCommentReport() {
+export function useCreateCommentReportMutation() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async (form: Forms.CreateCommentReport) =>
@@ -2495,7 +2498,10 @@ export function useCreateCommentReport() {
   });
 }
 
-export function useBlockPerson(options?: { account?: Account; apId?: string }) {
+export function useBlockPersonMutation(options?: {
+  account?: Account;
+  apId?: string;
+}) {
   const { account, apId } = options ?? {};
   const queryClient = useQueryClient();
   const { api } = useApiClients(account);
@@ -2526,7 +2532,7 @@ export function useBlockPerson(options?: { account?: Account; apId?: string }) {
   });
 }
 
-export function useBlockInstance(options?: { account?: Account }) {
+export function useBlockInstanceMutation(options?: { account?: Account }) {
   const { account } = options ?? {};
   const queryClient = useQueryClient();
   const { api } = useApiClients(account);
@@ -2549,7 +2555,7 @@ export function useBlockInstance(options?: { account?: Account }) {
   });
 }
 
-export function useBlockCommunity(options?: {
+export function useBlockCommunityMutation(options?: {
   account?: Account;
   communitySlug?: string;
 }) {
@@ -2581,7 +2587,7 @@ export function useBlockCommunity(options?: {
   });
 }
 
-export function useRemoveComment() {
+export function useRemoveCommentMutation() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2612,7 +2618,7 @@ export function useRemoveComment() {
   });
 }
 
-export function useLockComment() {
+export function useLockCommentMutation() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2643,7 +2649,7 @@ export function useLockComment() {
   });
 }
 
-export function useMarkCommentAsAnswer() {
+export function useMarkCommentAsAnswerMutation() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2674,7 +2680,7 @@ export function useMarkCommentAsAnswer() {
   });
 }
 
-export function useAddCommentReactionEmoji() {
+export function useAddCommentReactionEmojiMutation() {
   const { api } = useApiClients();
   const patchComment = useCommentsStore((s) => s.patchComment);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -2702,7 +2708,7 @@ export function useAddCommentReactionEmoji() {
   });
 }
 
-export function useUploadImage() {
+export function useUploadImageMutation() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async ({ image }: Forms.UploadImage) => {
@@ -2724,7 +2730,7 @@ export function useUploadImage() {
   });
 }
 
-export function useCaptcha({
+export function useCaptchaQuery({
   instance,
   enabled,
 }: {
@@ -2763,7 +2769,7 @@ export function useModeratingCommunities() {
   );
 }
 
-export function useAvailableSorts() {
+export function useAvailableSortsQuery() {
   const { api, queryKeyPrefix } = useApiClients();
   const communitySort = useFiltersStore((s) => s.communitySort);
   const postSort = useFiltersStore((s) => s.postSort);
@@ -2796,7 +2802,7 @@ export function useAvailableSorts() {
   };
 }
 
-export function useResolveObject(
+export function useResolveObjectQuery(
   config: {
     q: string | undefined;
     instance?: string;
@@ -2822,7 +2828,7 @@ export function useResolveObject(
   });
 }
 
-export function useResolveObjectAcrossAccounts(apId: string | undefined) {
+export function useResolveObjectAcrossAccountsQuery(apId: string | undefined) {
   const { apis } = useApiClients();
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const accounts = useAuth((s) => s.accounts);
@@ -2869,7 +2875,7 @@ export function useResolveObjectAcrossAccounts(apId: string | undefined) {
   });
 }
 
-export function useLinkMetadata() {
+export function useLinkMetadataMutation() {
   const { api } = useApiClients();
   return useMutation({
     mutationFn: async (form: Forms.GetLinkMetadata) => {

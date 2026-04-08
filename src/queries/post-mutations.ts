@@ -20,7 +20,7 @@ function createPostMutation<
   invalidateSavedPosts?: boolean;
 }) {
   const { apiFn, key, optimisticKey, formatError } = config;
-  return () => {
+  return function usePostMutation() {
     const { api } = useApiClients();
     const patchPost = usePostsStore((s) => s.patchPost);
     const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -127,7 +127,7 @@ export const useLikePost = createPostMutation({
   },
 });
 
-export function useAddPostReactionEmoji() {
+export function useAddPostReactionEmojiMutation() {
   const { api } = useApiClients();
   const patchPost = usePostsStore((s) => s.patchPost);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -156,7 +156,7 @@ export function useAddPostReactionEmoji() {
   });
 }
 
-export function useVotePostPoll(apId: string) {
+export function useVotePostPollMutation(apId: string) {
   const { api } = useApiClients();
   const post = usePostFromStore(apId);
   const patchPost = usePostsStore((s) => s.patchPost);

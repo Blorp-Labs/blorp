@@ -1,4 +1,4 @@
-import { useModlog } from "../queries";
+import { useModlogQuery } from "../queries";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { UserDropdown } from "../components/nav";
 import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
@@ -20,7 +20,7 @@ export default function SiteModlog() {
     instanceHost = url.host;
   } catch {}
 
-  const modlogQuery = useModlog({});
+  const modlogQuery = useModlogQuery({});
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: modlogQuery.data?.pages,

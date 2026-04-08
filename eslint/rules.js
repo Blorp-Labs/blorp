@@ -42,7 +42,7 @@ function getEnclosingFunctionName(node) {
 }
 
 /**
- * Rule 1: useQuery may only be called inside a hook whose name ends in "Query".
+ * Rule 1: useQuery and useThrottledInfiniteQuery may only be called inside a hook whose name ends in "Query".
  *
  * This makes it immediately obvious from the call site that a hook fetches data,
  * and prevents useQuery from being called directly inside components or
@@ -60,7 +60,7 @@ export const queryHookNaming = {
     type: "problem",
     docs: {
       description:
-        'useQuery may only be called inside a hook whose name ends in "Query"',
+        'useQuery and useThrottledInfiniteQuery may only be called inside a hook whose name ends in "Query"',
     },
     messages: {
       badName:
@@ -73,7 +73,7 @@ export const queryHookNaming = {
       CallExpression(node) {
         if (
           node.callee.type !== "Identifier" ||
-          node.callee.name !== "useQuery"
+          !["useQuery", "useThrottledInfiniteQuery"].includes(node.callee.name)
         ) {
           return;
         }

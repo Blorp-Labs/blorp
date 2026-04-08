@@ -1,9 +1,9 @@
 import {
-  useAvailableSorts,
-  useListCommunities,
+  useAvailableSortsQuery,
+  useListCommunitiesQuery,
   useSoftware,
 } from "@/src/queries/index";
-import { useListMultiCommunityFeeds } from "@/src/queries/index";
+import { useListMultiCommunityFeedsQuery } from "@/src/queries/index";
 import { CommunityCard } from "../../components/communities/community-card";
 import {
   useCallback,
@@ -181,7 +181,7 @@ function CommunitiesSwiper({
   registerRefresher: (fn: () => Promise<any>) => () => void;
 }) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
-  const communitiesQuery = useListCommunities({
+  const communitiesQuery = useListCommunitiesQuery({
     sort,
     type: listingType,
   });
@@ -275,7 +275,7 @@ function FeedSwiper({
 }) {
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
-  const feeds = useListMultiCommunityFeeds({
+  const feeds = useListMultiCommunityFeedsQuery({
     type: listingType === "ModeratorView" ? undefined : listingType,
   });
   const refetch = useEffectEvent(feeds.refetch);
@@ -385,7 +385,7 @@ export default function Communities() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const { communitySorts } = useAvailableSorts();
+  const { communitySorts } = useAvailableSortsQuery();
   const listingType = useFiltersStore((s) => s.communitiesListingType);
 
   const featuredSorts = FEATURED_SORTS?.filter(

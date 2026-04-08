@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useModlog, useCommunity } from "../queries";
+import { useModlogQuery, useCommunityQuery } from "../queries";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useParams } from "@/src/routing/index";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
@@ -24,9 +24,9 @@ export default function CommunityModlog() {
     [communityNameEncoded],
   );
 
-  const communityQuery = useCommunity({ name: communityName });
+  const communityQuery = useCommunityQuery({ name: communityName });
 
-  const modlogQuery = useModlog({ communitySlug: communityName });
+  const modlogQuery = useModlogQuery({ communitySlug: communityName });
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: modlogQuery.data?.pages,

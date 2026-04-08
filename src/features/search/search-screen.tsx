@@ -1,4 +1,8 @@
-import { useAvailableSorts, useCommunity, useSearch } from "@/src/queries";
+import {
+  useAvailableSortsQuery,
+  useCommunityQuery,
+  useSearchQuery,
+} from "@/src/queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -235,9 +239,9 @@ export default function SearchFeed({
     ),
   );
 
-  const { postSort } = useAvailableSorts();
+  const { postSort } = useAvailableSortsQuery();
 
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
@@ -258,7 +262,7 @@ export default function SearchFeed({
       break;
   }
 
-  const searchResults = useSearch({
+  const searchResults = useSearchQuery({
     q: search ?? "",
     sort: type === "communities" ? "TopAll" : postSort,
     communitySlug:

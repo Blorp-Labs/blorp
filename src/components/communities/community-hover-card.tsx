@@ -1,4 +1,4 @@
-import { useCommunity } from "@/src/queries/index";
+import { useCommunityQuery } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useCommunityFromStore } from "@/src/stores/communities";
@@ -24,7 +24,7 @@ export function CommunityHoverCard({
   children: React.ReactNode;
 }) {
   const [enabled, setEnabled] = useState(false);
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
     enabled,
   });

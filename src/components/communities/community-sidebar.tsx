@@ -1,8 +1,8 @@
 import _ from "lodash";
 import {
-  useBlockCommunity,
-  useBlockInstance,
-  useCommunity,
+  useBlockCommunityMutation,
+  useBlockInstanceMutation,
+  useCommunityQuery,
 } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
@@ -64,7 +64,7 @@ export function SmallScreenSidebar({
 }) {
   const linkCtx = useLinkContext();
 
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
@@ -229,8 +229,10 @@ export function useCommunityActions({
   communityView?: Schemas.Community;
 }): SubAction[] {
   const getConfirmation = useConfirmationAlert();
-  const blockCommunity = useBlockCommunity({ communitySlug: communityName });
-  const blockInstance = useBlockInstance();
+  const blockCommunity = useBlockCommunityMutation({
+    communitySlug: communityName,
+  });
+  const blockInstance = useBlockInstanceMutation();
   const isBlocked = useIsCommunityBlocked(communityName);
   const communityInstanceId = communityView?.instanceId;
   const communityApId = communityView?.apId;
@@ -320,7 +322,7 @@ function CommunitySidebarInner({
   asPage?: boolean;
   postApId?: string;
 }) {
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
   });
 

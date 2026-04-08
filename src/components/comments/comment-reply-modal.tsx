@@ -1,5 +1,8 @@
 import { createContext, useContext, useId, useState } from "react";
-import { useCreateComment, useEditComment } from "@/src/queries/index";
+import {
+  useCreateCommentMutation,
+  useEditCommentMutation,
+} from "@/src/queries/index";
 import _ from "lodash";
 import { useMedia } from "@/src/hooks/index";
 import { MarkdownEditor } from "../markdown/editor";
@@ -140,8 +143,8 @@ export function CommentReplyProvider({
 
   const { queryKeyParentId, comment, postApId, parent } = state ?? {};
 
-  const createComment = useCreateComment();
-  const editComment = useEditComment();
+  const createComment = useCreateCommentMutation();
+  const editComment = useEditCommentMutation();
 
   const lastResortId = useId();
   const commentKey = comment?.id ?? parent?.id ?? postApId ?? lastResortId;

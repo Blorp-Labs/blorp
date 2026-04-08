@@ -1,4 +1,4 @@
-import { usePersonDetails } from "@/src/queries/index";
+import { usePersonDetailsQuery } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { LuCakeSlice } from "react-icons/lu";
@@ -30,7 +30,7 @@ export function PersonHoverCard({
 }) {
   const [enabled, setEnabled] = useState(false);
 
-  usePersonDetails({ actorId, enabled });
+  usePersonDetailsQuery({ actorId, enabled });
   const personView = useProfileFromStore(actorId);
   const createdAt = personView ? dayjs(personView.createdAt) : null;
 

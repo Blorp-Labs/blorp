@@ -1,6 +1,6 @@
 import { SmallScreenSidebar } from "@/src/components/communities/community-sidebar";
 import { useMemo } from "react";
-import { useCommunity } from "../queries";
+import { useCommunityQuery } from "../queries";
 import {
   IonContent,
   IonHeader,
@@ -35,7 +35,7 @@ export default function CommunityFeed() {
     [communityNameEncoded],
   );
 
-  const communityQuery = useCommunity({
+  const communityQuery = useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName)?.communityView;

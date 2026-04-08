@@ -16,9 +16,9 @@ import { useProfileFromStore } from "@/src/stores/profiles";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { VirtualList } from "@/src/components/virtual-list";
 import {
-  useBlockPerson,
-  useBlockCommunity,
-  useBlockInstance,
+  useBlockPersonMutation,
+  useBlockCommunityMutation,
+  useBlockInstanceMutation,
 } from "@/src/queries";
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
@@ -39,7 +39,7 @@ function BlockedPersonItem({
   apId: string;
   account: Parameters<typeof useProfileFromStore>[1];
   alrt: ReturnType<typeof useIonAlert>[0];
-  blockPerson: ReturnType<typeof useBlockPerson>;
+  blockPerson: ReturnType<typeof useBlockPersonMutation>;
 }) {
   const person = useProfileFromStore(apId, account);
   if (!person) {
@@ -95,7 +95,7 @@ function BlockedCommunityItem({
   slug: string;
   account: Parameters<typeof useCommunityFromStore>[1];
   alrt: ReturnType<typeof useIonAlert>[0];
-  blockCommunity: ReturnType<typeof useBlockCommunity>;
+  blockCommunity: ReturnType<typeof useBlockCommunityMutation>;
 }) {
   const community = useCommunityFromStore(slug, account);
   if (!community) {
@@ -193,9 +193,9 @@ export default function SettingsPage() {
 
   const [alrt] = useIonAlert();
 
-  const blockPerson = useBlockPerson({ account });
-  const blockCommunity = useBlockCommunity({ account });
-  const blockInstance = useBlockInstance({ account });
+  const blockPerson = useBlockPersonMutation({ account });
+  const blockCommunity = useBlockCommunityMutation({ account });
+  const blockInstance = useBlockInstanceMutation({ account });
 
   return (
     <Page notFound={!account}>

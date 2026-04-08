@@ -1,6 +1,6 @@
 import { Deferred } from "@/src/lib/deferred";
 import { LoadingButton } from "../ui/button";
-import { useFollowCommunity } from "@/src/queries/index";
+import { useFollowCommunityMutation } from "@/src/queries/index";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useIonAlert } from "@ionic/react";
 import { useAuth } from "@/src/stores/auth";
@@ -14,7 +14,7 @@ export function CommunityJoinButton({ communityName, ...props }: Props) {
   const [alrt] = useIonAlert();
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const follow = useFollowCommunity();
+  const follow = useFollowCommunityMutation();
 
   const data = useCommunityFromStore(communityName);
   const subscribed =

@@ -1,5 +1,9 @@
 import { ContentGutters } from "../components/gutters";
-import { useAvailableSorts, usePersonDetails, usePersonFeed } from "../queries";
+import {
+  useAvailableSortsQuery,
+  usePersonDetailsQuery,
+  usePersonFeedQuery,
+} from "../queries";
 import {
   PostCard,
   PostCardSkeleton,
@@ -130,9 +134,9 @@ export default function User() {
   const type = typeParam.value;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
-  const { postSort } = useAvailableSorts();
-  const personQuery = usePersonDetails({ actorId });
-  const query = usePersonFeed({ apIdOrUsername: actorId, type });
+  const { postSort } = useAvailableSortsQuery();
+  const personQuery = usePersonDetailsQuery({ actorId });
+  const query = usePersonFeedQuery({ apIdOrUsername: actorId, type });
 
   const history = useHistory();
   useEffect(() => {

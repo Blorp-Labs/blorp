@@ -4,7 +4,7 @@ import { ContentGutters } from "../components/gutters";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { MenuButton, UserDropdown } from "../components/nav";
-import { useInstances } from "../queries";
+import { useInstancesQuery } from "../queries";
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { cn } from "../lib/utils";
 import { apiClient } from "../apis/client";
@@ -94,7 +94,7 @@ function Instance({
 }
 
 export default function DebugPage() {
-  const instances = useInstances();
+  const instances = useInstancesQuery();
   const [run, setRun] = useState(false);
   const [status, setStatus] = useState<Record<string, "success" | "error">>({});
   const data = useMemo(() => {
