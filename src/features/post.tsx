@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
@@ -51,6 +52,7 @@ import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
 import { useQueryToast } from "../hooks/use-query-toast";
 import { useRequireAuth } from "../components/auth-context";
+import { Button } from "../components/ui/button";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -245,6 +247,8 @@ export default function Post() {
   const decodedApId = apId ? decodeURIComponent(apId) : undefined;
 
   const parentComment = useResolveComment(commentPath);
+  const singleCommentThread = !!commentPath;
+  const showJumpButton = !singleCommentThread;
 
   const myUserApId = useAuth((s) => getAccountSite(s.getSelectedAccount()))?.me
     ?.apId;
@@ -408,6 +412,27 @@ export default function Post() {
               keepMounted={[replyingToItem]}
               fullscreen
               scrollHost
+              jumpMinItemHeight={50}
+              paddingEnd={showJumpButton ? 70 : 0}
+              scrollToIndexOffset={showJumpButton && media.maxMd ? 55 : 0}
+              renderJumpButton={(onClick) =>
+                showJumpButton && (
+                  <ContentGutters>
+                    <div className="flex justify-end">
+                      <Button
+                        size="fab"
+                        variant="outline"
+                        onClick={onClick}
+                        className="absolute bottom-4 max-md:bottom-[calc(var(--ion-safe-area-bottom)+75px)] z-10"
+                        aria-label="Jump to next item"
+                      >
+                        <ChevronDown className="size-6" />
+                      </Button>
+                    </div>
+                    <></>
+                  </ContentGutters>
+                )
+              }
               className={cn(
                 showMobileReply &&
                   "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
@@ -452,7 +477,7 @@ export default function Post() {
                     postCreatorId={postCreatorId}
                     communityName={communityName}
                     modApIds={modApIds}
-                    singleCommentThread={!!commentPath}
+                    singleCommentThread={singleCommentThread}
                     canMod={canMod}
                   />
                   {commentPath && <SafeAreaBottom />}
