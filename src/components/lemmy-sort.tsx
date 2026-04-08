@@ -20,6 +20,7 @@ import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
+// eslint-disable-next-line local/no-query-hooks-in-components -- available sorts depend on the current instance's capabilities. Every feature that renders a sort picker uses this component, so threading the data down would require every feature to fetch and pass it.
 import { useAvailableSortsQuery } from "../queries";
 import { POST_CARD_STYLE_OPTIONS, useSettingsStore } from "../stores/settings";
 

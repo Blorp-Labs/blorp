@@ -20,7 +20,9 @@ import { IonMenuButton, IonMenuToggle } from "@ionic/react";
 import { IoPerson, IoSettingsOutline } from "react-icons/io5";
 import {
   useLogoutMutation,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- the nav bar is persistent app chrome shown on every route. No feature owns it, so badge counts can't be fetched upstream and passed down.
   useNotificationCountQuery,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   usePrivateMessagesCountQuery,
 } from "../queries";
 import { LuMenu } from "react-icons/lu";

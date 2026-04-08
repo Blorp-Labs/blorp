@@ -1,3 +1,4 @@
+// eslint-disable-next-line local/no-query-hooks-in-components -- hover card fetches lazily on hover; the parent can't predict which person cards will be opened and can't pre-fetch this data.
 import { usePersonDetailsQuery } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";

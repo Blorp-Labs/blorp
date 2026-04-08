@@ -10,11 +10,15 @@ import {
 } from "react";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import {
+  // eslint-disable-next-line local/no-query-hooks-in-components -- auth-context is a session bootstrapper, not a UI component. It owns the auth lifecycle (login, register, captcha, site config) and is the only appropriate place to fetch these.
   useCaptchaQuery,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useInstancesQuery,
   useLoginMutation,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useRefreshAuthQuery,
   useRegisterMutation,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useSiteQuery,
 } from "../queries";
 import fuzzysort from "fuzzysort";

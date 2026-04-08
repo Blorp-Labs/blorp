@@ -5,7 +5,9 @@ import { ToolbarBackButton } from "../toolbar/toolbar-back-button";
 import { ToolbarTitle } from "../toolbar/toolbar-title";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import {
+  // eslint-disable-next-line local/no-query-hooks-in-components -- not-found actively resolves an unknown URL to redirect the user; the fetch IS the purpose of this component, not a side effect of displaying data the parent has.
   useResolveObjectQuery,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useResolveObjectAcrossAccountsQuery,
 } from "../../queries";
 import { getAccountSite, parseAccountInfo, useAuth } from "../../stores/auth";

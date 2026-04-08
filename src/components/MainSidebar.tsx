@@ -7,7 +7,9 @@ import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import {
   useModeratingCommunities,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- The sidebar is persistent app chrome, always visible regardless of route. No feature owns it, so notification and message counts can't be fetched upstream and passed down.
   useNotificationCountQuery,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   usePrivateMessagesCountQuery,
   useSubscribedCommunities,
 } from "@/src/queries";
