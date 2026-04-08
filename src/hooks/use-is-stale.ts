@@ -9,7 +9,7 @@ export function useIsStale(
   // WARNING: do not spread or destructure the query object at the call site —
   // TanStack Query warns against it. We destructure only dataUpdatedAt here,
   // which is safe because useIsStale owns that read.
-  query: { dataUpdatedAt: number } | undefined,
+  query: { dataUpdatedAt: number },
   staleMs: number,
 ): boolean {
   const dataUpdatedAt = query?.dataUpdatedAt ?? 0;
