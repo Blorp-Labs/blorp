@@ -13,10 +13,10 @@ import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
-  useAvailableSorts,
-  useCommunity,
-  useMostRecentPost,
-  usePosts,
+  useAvailableSortsQuery,
+  useCommunityQuery,
+  useMostRecentPostQuery,
+  usePostsQuery,
 } from "../queries";
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
@@ -75,16 +75,20 @@ export default function CommunityPosts() {
   );
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
-  const { postSort, suggestedPostSort } = useAvailableSorts();
-  const posts = usePosts({
+  const { postSort, suggestedPostSort } = useAvailableSortsQuery();
+  const posts = usePostsQuery({
     communitySlug: communityName,
   });
 
-  const mostRecentPost = useMostRecentPost("community", {
-    communitySlug: communityName,
-  });
+  const mostRecentPost = useMostRecentPostQuery(
+    "community",
+    {
+      communitySlug: communityName,
+    },
+    posts,
+  );
 
-  const communityQuery = useCommunity({
+  const communityQuery = useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
@@ -130,7 +134,7 @@ export default function CommunityPosts() {
 
   const refresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), mostRecentPost.refetch()]);
+    await refetch();
     setRefreshing(false);
   };
 

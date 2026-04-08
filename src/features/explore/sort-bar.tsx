@@ -1,4 +1,4 @@
-import { useAvailableSorts } from "@/src/queries/index";
+import { useAvailableSortsQuery } from "@/src/queries/index";
 import { ContentGutters } from "@/src/components/gutters";
 import { useIonRouter } from "@ionic/react";
 import { Link } from "@/src/routing/index";
@@ -15,7 +15,7 @@ export function SortControlBarContent({
   selectedSort?: string;
 }) {
   const router = useIonRouter();
-  const { communitySorts } = useAvailableSorts();
+  const { communitySorts } = useAvailableSortsQuery();
   const sorts = _.uniqBy(
     _.compact(
       communitySorts?.map((sort) => {

@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostFromStore } from "@/src/stores/posts";
-import { useRemoveComment } from "@/src/queries";
+import { useRemoveCommentMutation } from "@/src/queries";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,
@@ -15,7 +15,7 @@ import { Button } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
-import { useRemovePost } from "@/src/queries/post-mutations";
+import { useRemovePostMutation } from "@/src/queries/post-mutations";
 
 const Context = createContext<{
   apId?: string;
@@ -36,8 +36,8 @@ export function PostRemoveProvider({
   const [apId, setApId] = useState<string | undefined>();
   const [commentPath, setCommentPath] = useState<string | undefined>();
 
-  const removePost = useRemovePost();
-  const removeComment = useRemoveComment();
+  const removePost = useRemovePostMutation();
+  const removeComment = useRemoveCommentMutation();
 
   const post = usePostFromStore(apId ?? undefined);
   const [comment] = useCommentsByPaths(commentPath ? [commentPath] : []);

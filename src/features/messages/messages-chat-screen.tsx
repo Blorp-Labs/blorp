@@ -2,9 +2,9 @@ import { ContentGutters } from "@/src/components/gutters";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { UserDropdown } from "@/src/components/nav";
 import {
-  useCreatePrivateMessage,
-  useMarkPriavteMessageRead,
-  usePrivateMessages,
+  useCreatePrivateMessageMutation,
+  useMarkPrivateMessageReadMutation,
+  usePrivateMessagesQuery,
 } from "@/src/queries";
 import { decodeApId } from "@/src/apis/utils";
 import { cn } from "@/src/lib/utils";
@@ -44,13 +44,13 @@ dayjs.extend(localizedFormat);
 export default function Messages() {
   const media = useMedia();
 
-  const { mutateAsync: markMessageRead } = useMarkPriavteMessageRead();
+  const { mutateAsync: markMessageRead } = useMarkPrivateMessageReadMutation();
   const encodedOtherActorId = useParams("/messages/chat/:userId").userId;
   const otherActorId = decodeApId(encodedOtherActorId);
 
   const person = useProfileFromStore(otherActorId);
   const [signal, setSignal] = useState(0);
-  const chat = usePrivateMessages({});
+  const chat = usePrivateMessagesQuery({});
 
   const data = useMemo(() => {
     let prevDate: dayjs.Dayjs;
@@ -248,7 +248,7 @@ function ComposeMessage({
   recipient: Schemas.Person;
   onSubmit: () => void;
 }) {
-  const createPrivateMessage = useCreatePrivateMessage(recipient);
+  const createPrivateMessage = useCreatePrivateMessageMutation(recipient);
   const [body, setBody] = useState("");
   return (
     <ContentGutters>

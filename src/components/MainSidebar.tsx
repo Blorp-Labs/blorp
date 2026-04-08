@@ -7,8 +7,10 @@ import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import {
   useModeratingCommunities,
-  useNotificationCount,
-  usePrivateMessagesCount,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- The sidebar is persistent app chrome, always visible regardless of route. No feature owns it, so notification and message counts can't be fetched upstream and passed down.
+  useNotificationCountQuery,
+  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
+  usePrivateMessagesCountQuery,
   useSubscribedCommunities,
 } from "@/src/queries";
 import { CommunityCard } from "@/src/components/communities/community-card";
@@ -48,8 +50,8 @@ function useMainSidebarCollapsed() {
 function SidebarTabs() {
   const mainSidebarCollapsed = useMainSidebarCollapsed();
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
-  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
-  const inboxCount = useNotificationCount()[selectedAccountUuid];
+  const messageCount = usePrivateMessagesCountQuery()[selectedAccountUuid];
+  const inboxCount = useNotificationCountQuery()[selectedAccountUuid];
   const pathname = useIonRouter().routeInfo.pathname;
 
   return (

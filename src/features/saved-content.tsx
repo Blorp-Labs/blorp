@@ -8,7 +8,11 @@ import { memo, useMemo } from "react";
 import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
-import { useAvailableSorts, useComments, usePosts } from "../queries";
+import {
+  useAvailableSortsQuery,
+  useCommentsQuery,
+  usePostsQuery,
+} from "../queries";
 import { PostReportProvider } from "../components/posts/post-report";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import _ from "lodash";
@@ -81,14 +85,14 @@ export default function SavedContent() {
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
 
-  const comments = useComments({
+  const comments = useCommentsQuery({
     savedOnly: true,
     maxDepth: undefined,
     sort: "New",
   });
 
-  const { postSort } = useAvailableSorts();
-  const posts = usePosts({
+  const { postSort } = useAvailableSortsQuery();
+  const posts = usePostsQuery({
     savedOnly: true,
     type: "All",
   });

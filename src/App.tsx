@@ -9,7 +9,7 @@ import { applyCapacitorFixes } from "./lib/capacitor";
 import "remove-focus-outline";
 import { InstanceFavicon } from "./components/instance-favicon";
 import { runTauriSecurityFix } from "./lib/create-storage";
-import { useNotificationCount } from "./queries";
+import { useNotificationCountQuery } from "./queries";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isDev, isTauri } from "./lib/device";
 import { updateTauri } from "./lib/tauri";
@@ -33,7 +33,7 @@ setupIonicReact({
 });
 
 function RefreshNotificationCount() {
-  const counts = useNotificationCount() ?? {};
+  const counts = useNotificationCountQuery() ?? {};
   const count = _.sum(_.values(counts));
   if (isTauri()) {
     getCurrentWindow().setBadgeCount(count === 0 ? undefined : count);

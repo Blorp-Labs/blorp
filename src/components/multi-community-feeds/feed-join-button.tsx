@@ -1,5 +1,5 @@
 import { LoadingButton } from "../ui/button";
-import { useFollowFeed } from "@/src/queries/index";
+import { useFollowFeedMutation } from "@/src/queries/index";
 import { useAuth } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
 import { getFeedSubscribed } from "@/src/apis/utils";
@@ -14,7 +14,7 @@ export function FeedJoinButton({ feedApId, ...props }: Props) {
   const getConfirmation = useConfirmationAlert();
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const follow = useFollowFeed();
+  const follow = useFollowFeedMutation();
 
   const feed = useMultiCommunityFeedFromStore(feedApId)?.feedView;
 

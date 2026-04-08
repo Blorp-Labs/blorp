@@ -9,10 +9,10 @@ import { usePagination } from "../components/pagination/use-pagination";
 import { useSettingsStore } from "../stores/settings";
 import { VirtualList } from "../components/virtual-list";
 import {
-  useAvailableSorts,
-  useMostRecentPost,
-  useMultiCommunityFeed,
-  usePosts,
+  useAvailableSortsQuery,
+  useMostRecentPostQuery,
+  useMultiCommunityFeedQuery,
+  usePostsQuery,
   useSoftware,
 } from "../queries";
 import { supportsFeeds } from "../apis/support";
@@ -59,7 +59,6 @@ export default function MultiCommunityFeedPosts() {
 
   const linkCtx = useLinkContext();
   const router = useIonRouter();
-  const [search, setSearch] = useState("");
 
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
@@ -68,23 +67,24 @@ export default function MultiCommunityFeedPosts() {
   // subscription state. The UI reads from the store directly via
   // useMultiCommunityFeedFromStore; feedQuery is only used for its error state.
   const software = useSoftware();
-  const feedQuery = useMultiCommunityFeed({
+  const feedQuery = useMultiCommunityFeedQuery({
     apId,
   });
   const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
-  const { postSort, suggestedPostSort } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSortsQuery();
   const setPostSort = useFiltersStore((s) => s.setPostSort);
-  const posts = usePosts({
+  const posts = usePostsQuery({
     multiCommunityFeedApId: apId,
     multiCommunityFeedId: feed?.id,
   });
 
-  const mostRecentPost = useMostRecentPost("feed", {
-    multiCommunityFeedApId: apId,
-    multiCommunityFeedId: feed?.id,
-  });
+  const mostRecentPost = useMostRecentPostQuery(
+    "feed",
+    { multiCommunityFeedApId: apId, multiCommunityFeedId: feed?.id },
+    posts,
+  );
 
   const isBlocked = useIsCommunityBlocked(apId);
 
@@ -120,7 +120,7 @@ export default function MultiCommunityFeedPosts() {
 
   const refresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), mostRecentPost.refetch()]);
+    await refetch();
     setRefreshing(false);
   };
 

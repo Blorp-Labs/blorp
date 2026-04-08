@@ -20,7 +20,7 @@ function createPostMutation<
   invalidateSavedPosts?: boolean;
 }) {
   const { apiFn, key, optimisticKey, formatError } = config;
-  return () => {
+  return function usePostMutation() {
     const { api } = useApiClients();
     const patchPost = usePostsStore((s) => s.patchPost);
     const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -61,21 +61,21 @@ function createPostMutation<
   };
 }
 
-export const useLockPost = createPostMutation({
+export const useLockPostMutation = createPostMutation({
   apiFn: "lockPost",
   key: "locked",
   optimisticKey: "optimisticLocked",
   formatError: ({ locked }) => `Couldn't ${locked ? "lock" : "unlock"} post`,
 });
 
-export const useFeaturePost = createPostMutation({
+export const useFeaturePostMutation = createPostMutation({
   apiFn: "featurePost",
   key: "featured",
   optimisticKey: "optimisticFeaturedCommunity",
   formatError: ({ featured }) => `Couldn't ${featured ? "pin" : "unpin"} post`,
 });
 
-export const useRemovePost = createPostMutation({
+export const useRemovePostMutation = createPostMutation({
   apiFn: "removePost",
   key: "removed",
   optimisticKey: "optimisticRemoved",
@@ -90,7 +90,7 @@ export const useRemovePost = createPostMutation({
 //   formatError: ({ read }) => `Couldn't mark post ${read ? "read" : "unread"}`,
 // });
 
-export const useDeletePost = createPostMutation({
+export const useDeletePostMutation = createPostMutation({
   apiFn: "deletePost",
   key: "deleted",
   optimisticKey: "optimisticDeleted",
@@ -98,7 +98,7 @@ export const useDeletePost = createPostMutation({
     `Couldn't ${deleted ? "deleted" : "restore"} post`,
 });
 
-export const useSavePost = createPostMutation({
+export const useSavePostMutation = createPostMutation({
   apiFn: "savePost",
   key: "save",
   optimisticKey: "optimisticSaved",
@@ -106,7 +106,7 @@ export const useSavePost = createPostMutation({
   invalidateSavedPosts: true,
 });
 
-export const useLikePost = createPostMutation({
+export const useLikePostMutation = createPostMutation({
   apiFn: "likePost",
   key: "score",
   optimisticKey: "optimisticMyVote",
@@ -127,7 +127,7 @@ export const useLikePost = createPostMutation({
   },
 });
 
-export function useAddPostReactionEmoji() {
+export function useAddPostReactionEmojiMutation() {
   const { api } = useApiClients();
   const patchPost = usePostsStore((s) => s.patchPost);
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
@@ -156,7 +156,7 @@ export function useAddPostReactionEmoji() {
   });
 }
 
-export function useVotePostPoll(apId: string) {
+export function useVotePostPollMutation(apId: string) {
   const { api } = useApiClients();
   const post = usePostFromStore(apId);
   const patchPost = usePostsStore((s) => s.patchPost);

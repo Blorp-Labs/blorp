@@ -11,15 +11,15 @@ import {
 import { VirtualList } from "@/src/components/virtual-list";
 import { CommunityCard } from "../components/communities/community-card";
 import {
-  useCommunity,
-  useCreatePost,
-  useEditPost,
-  useInstanceSoftware,
-  useLinkMetadata,
-  useListCommunities,
-  useSearch,
+  useCommunityQuery,
+  useCreatePostMutation,
+  useEditPostMutation,
+  useInstanceSoftwareQuery,
+  useLinkMetadataMutation,
+  useListCommunitiesQuery,
+  useSearchQuery,
   useSoftware,
-  useUploadImage,
+  useUploadImageMutation,
 } from "../queries";
 import { supportsPollCreation } from "../apis/support";
 import { Forms } from "../apis/api-blueprint";
@@ -310,7 +310,7 @@ export function CreatePost() {
 
   useLoadRecentCommunity(draftId, draft);
 
-  useCommunity({
+  useCommunityQuery({
     name: draft.communitySlug,
   });
   const community = useCommunityFromStore(draft.communitySlug);
@@ -322,7 +322,7 @@ export function CreatePost() {
   const canEdit = isEdit && post?.creatorApId && myUserId === post.creatorApId;
   const postOwner = post?.creatorSlug;
 
-  const communitySoftware = useInstanceSoftware({
+  const communitySoftware = useInstanceSoftwareQuery({
     instance: parseSlug(draft.communitySlug).host,
   }).data;
 
@@ -367,7 +367,7 @@ export function CreatePost() {
     patchDraft(draftId, { poll: { ...draft.poll, choices } });
   };
 
-  const uploadImage = useUploadImage();
+  const uploadImage = useUploadImageMutation();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       "image/*": [],
@@ -388,8 +388,8 @@ export function CreatePost() {
 
   const [chooseCommunity, setChooseCommunity] = useState(false);
 
-  const createPost = useCreatePost();
-  const editPost = useEditPost(draftId);
+  const createPost = useCreatePostMutation();
+  const editPost = useEditPostMutation(draftId);
   const resetCreatePost = createPost.reset;
   const resetEditPost = editPost.reset;
   useEffect(() => {
@@ -399,7 +399,7 @@ export function CreatePost() {
 
   const [editingBody, setEditingBody] = useState(false);
 
-  const linkMetadata = useLinkMetadata();
+  const linkMetadata = useLinkMetadataMutation();
 
   const parseUrl = (url: string) => {
     if (url) {
@@ -846,7 +846,7 @@ function ChooseCommunity({
   const draft = useCreatePostStore((s) => s.drafts[createPostId]) ?? NEW_DRAFT;
   const patchDraft = useCreatePostStore((s) => s.updateDraft);
 
-  const subscribedCommunitiesRes = useListCommunities({
+  const subscribedCommunitiesRes = useListCommunitiesQuery({
     type: "Subscribed",
   });
   const subscribedCommunities = useCommunitiesFromStore(
@@ -855,7 +855,7 @@ function ChooseCommunity({
       .sort((a, b) => a.localeCompare(b)) ?? EMPTY_ARR,
   );
 
-  const searchResultsRes = useSearch({
+  const searchResultsRes = useSearchQuery({
     q: search,
     type: "Communities",
     sort: "TopAll",

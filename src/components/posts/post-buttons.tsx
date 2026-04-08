@@ -35,8 +35,8 @@ import { Schemas } from "@/src/apis/api-blueprint";
 import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
 import { useMedia } from "@/src/hooks";
 import {
-  useAddPostReactionEmoji,
-  useLikePost,
+  useAddPostReactionEmojiMutation,
+  useLikePostMutation,
 } from "@/src/queries/post-mutations";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
@@ -50,7 +50,7 @@ export function usePostVoting(apId?: string) {
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
   const scoreDisplay = useScoreDisplay();
 
-  const { mutate: mutateVote } = useLikePost();
+  const { mutate: mutateVote } = useLikePostMutation();
 
   const requireAuth = useRequireAuth();
 
@@ -112,7 +112,7 @@ export function PostEmojiReactions({
   className?: string;
 }) {
   const post = usePostFromStore(apId);
-  const addReactionEmoji = useAddPostReactionEmoji();
+  const addReactionEmoji = useAddPostReactionEmojiMutation();
   const requireAuth = useRequireAuth();
 
   const allReactions = post ? getPostEmojiReactions(post) : [];

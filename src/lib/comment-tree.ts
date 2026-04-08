@@ -24,7 +24,7 @@ export interface CommentTreeTopLevel {
  * build this tree. This function transforms the array into a tree.
  *
  * @example
- *   cosnt comments = useComments();
+ *   cosnt comments = useCommentsQuery();
  *
  *   const tree = buildCommentTree(comments);
  *

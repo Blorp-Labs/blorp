@@ -6,7 +6,11 @@ import {
 import { ContentGutters } from "../components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFiltersStore } from "../stores/filters";
-import { useAvailableSorts, useMostRecentPost, usePosts } from "../queries";
+import {
+  useAvailableSortsQuery,
+  useMostRecentPostQuery,
+  usePostsQuery,
+} from "../queries";
 import _ from "lodash";
 import { LocalSererSidebar } from "../components/local-server/local-server-sidebar";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
@@ -175,21 +179,22 @@ export default function HomePosts() {
   const [search, setSearch] = useState("");
 
   const media = useMedia();
-  const { postSort, suggestedPostSort } = useAvailableSorts();
+  const { postSort, suggestedPostSort } = useAvailableSortsQuery();
   const listingType = useFiltersStore((s) => s.listingType);
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
 
-  const posts = usePosts({
+  const posts = usePostsQuery({
     sort: postSort,
     type: listingType,
   });
 
-  const mostRecentPost = useMostRecentPost("local", {
-    sort: postSort,
-    type: listingType,
-  });
+  const mostRecentPost = useMostRecentPostQuery(
+    "local",
+    { sort: postSort, type: listingType },
+    posts,
+  );
 
   const {
     hasNextPage,
@@ -230,8 +235,6 @@ export default function HomePosts() {
     scrollRef.current,
     focused && media.maxMd && !reducedMotion,
   );
-
-  const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
   return (
     <Page className="home-page">
@@ -274,7 +277,7 @@ export default function HomePosts() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refreshFeed();
+                  refetch();
                   // This is a hack to send you to the top of the feed
                   dispatchScrollEvent("/home/");
                 }}
@@ -321,7 +324,7 @@ export default function HomePosts() {
             fullscreen
             onEndReached={onEndReached}
             onScroll={scrollAnimation.scrollHandler}
-            refresh={refreshFeed}
+            refresh={refetch}
           />
         </PostReportProvider>
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0">

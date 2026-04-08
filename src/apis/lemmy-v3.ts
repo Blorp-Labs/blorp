@@ -847,7 +847,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           type_: form.type,
           page_cursor:
             form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-          limit: this.limit,
+          limit: form.limit ?? this.limit,
           community_name: form.communitySlug,
           saved_only: form.savedOnly,
           show_nsfw: form.showNsfw,

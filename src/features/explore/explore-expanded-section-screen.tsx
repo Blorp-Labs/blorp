@@ -1,9 +1,9 @@
 import {
-  useListCommunities,
+  useListCommunitiesQuery,
   useModeratingCommunities,
   useSubscribedCommunities,
 } from "@/src/queries/index";
-import { useListMultiCommunityFeeds } from "@/src/queries/index";
+import { useListMultiCommunityFeedsQuery } from "@/src/queries/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -34,7 +34,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
   const moderatesCommunities = useModeratingCommunities();
   const subscribedCommunities = useSubscribedCommunities();
 
-  const feeds = useListMultiCommunityFeeds(
+  const feeds = useListMultiCommunityFeedsQuery(
     {
       type: listingType === "ModeratorView" ? undefined : listingType,
     },
@@ -48,7 +48,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
     [feeds.data?.pages],
   );
 
-  const communitiesQuery = useListCommunities(
+  const communitiesQuery = useListCommunitiesQuery(
     {
       type: listingType,
       sort,

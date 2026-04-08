@@ -1,4 +1,4 @@
-import { useLikeComment } from "@/src/queries/index";
+import { useLikeCommentMutation } from "@/src/queries/index";
 import { resolveVoteCounts } from "@/src/lib/voting";
 import { useVoteHaptics } from "@/src/hooks/use-vote-haptics";
 import { useRequireAuth } from "../auth-context";
@@ -38,7 +38,7 @@ type Vote = {
 
 function useVoteComment() {
   const requireAuth = useRequireAuth();
-  const vote = useLikeComment();
+  const vote = useLikeCommentMutation();
   const voteHaptics = useVoteHaptics();
   return (config: Vote) => {
     requireAuth().then(() => {

@@ -7,6 +7,11 @@ import importX from "eslint-plugin-import-x";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import { restrictions } from "./eslint/restricted-syntax.js";
 import { importRestrictions } from "./eslint/restricted-imports.js";
+import {
+  queryHookNaming,
+  mutationHookNaming,
+  noQueryHooksInComponents,
+} from "./eslint/rules.js";
 
 const SRC_FOLDERS = [
   "apis",
@@ -37,6 +42,14 @@ function buildRestrictedSrcZone(target, from) {
     ),
   };
 }
+
+const local = {
+  rules: {
+    "query-hook-naming": queryHookNaming,
+    "mutation-hook-naming": mutationHookNaming,
+    "no-query-hooks-in-components": noQueryHooksInComponents,
+  },
+};
 
 export default tseslint.config(
   {
@@ -83,6 +96,7 @@ export default tseslint.config(
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
+    plugins: { local },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-namespace": "off",
@@ -92,12 +106,29 @@ export default tseslint.config(
       curly: ["warn", "all"],
       "no-restricted-syntax": ["error", ...restrictions],
       "no-restricted-imports": ["error", importRestrictions],
+      "local/query-hook-naming": "error",
+      "local/mutation-hook-naming": "error",
+    },
+  },
+  {
+    files: ["src/components/**/*.ts", "src/components/**/*.tsx"],
+    plugins: { local },
+    rules: {
+      "local/no-query-hooks-in-components": "error",
     },
   },
   {
     files: ["src/stores/**", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "no-restricted-syntax": "off",
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    plugins: { local },
+    rules: {
+      "local/query-hook-naming": "off",
+      "local/mutation-hook-naming": "off",
     },
   },
   {

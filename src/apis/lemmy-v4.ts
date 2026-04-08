@@ -862,14 +862,13 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
             }),
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: this.limit,
+        limit: form.limit ?? this.limit,
         community_name: form.communitySlug,
         multi_community_id,
         show_nsfw: form.showNsfw,
       },
       options,
     );
-
     return {
       nextCursor: posts.next_page ?? null,
       posts: posts.items.map((p) => ({

@@ -15,7 +15,10 @@ import { Route as RRRoute } from "react-router-dom";
 import { IonReactRouter } from "@ionic/react-router";
 import { Redirect } from "@/src/routing/index";
 import { useMedia } from "@/src/hooks/index";
-import { useNotificationCount, usePrivateMessagesCount } from "@/src/queries";
+import {
+  useNotificationCountQuery,
+  usePrivateMessagesCountQuery,
+} from "@/src/queries";
 import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
 import { isAndroid } from "@/src/lib/device";
@@ -444,8 +447,8 @@ function Tabs() {
   const fromLeftSwipeEnabled = useMenuSwipeEnabled("from-left");
   const fromRightSwipeEnabled = useMenuSwipeEnabled("from-right");
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
-  const inboxCount = useNotificationCount()[selectedAccountUuid];
-  const messageCount = usePrivateMessagesCount()[selectedAccountUuid];
+  const inboxCount = useNotificationCountQuery()[selectedAccountUuid];
+  const messageCount = usePrivateMessagesCountQuery()[selectedAccountUuid];
   const media = useMedia();
   const pathname = useIonRouter().routeInfo.pathname;
 

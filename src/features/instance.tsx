@@ -3,7 +3,7 @@ import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { PageTitle } from "../components/page-title";
 import z from "zod";
 import { useConfirmationAlert, useUrlSearchState } from "../hooks";
-import { useSite } from "../queries";
+import { useSiteQuery } from "../queries";
 import { useEffect, useRef } from "react";
 import { useAuth } from "../stores/auth";
 import { useHistory } from "react-router";
@@ -25,7 +25,7 @@ export default function Instance() {
   const { replace } = useHistory();
 
   const { value: instance } = useUrlSearchState("q", "", z.string());
-  const site = useSite({
+  const site = useSiteQuery({
     instance,
   });
 

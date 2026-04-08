@@ -1,4 +1,5 @@
-import { useCommunity } from "@/src/queries/index";
+// eslint-disable-next-line local/no-query-hooks-in-components -- hover card fetches lazily on hover; the parent can't predict which community cards will be opened and can't pre-fetch this data.
+import { useCommunityQuery } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useCommunityFromStore } from "@/src/stores/communities";
@@ -24,7 +25,7 @@ export function CommunityHoverCard({
   children: React.ReactNode;
 }) {
   const [enabled, setEnabled] = useState(false);
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
     enabled,
   });

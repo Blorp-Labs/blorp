@@ -824,7 +824,7 @@ export class PieFedApi
     try {
       const { posts, next_page } = await this.client.getApiAlphaPostList(
         {
-          limit: this.limit,
+          limit: form.limit ?? this.limit,
           page:
             form.pageCursor === INIT_PAGE_TOKEN
               ? undefined
@@ -834,6 +834,7 @@ export class PieFedApi
           type_: form.type,
           saved_only: form.savedOnly,
           feed_id,
+          ignore_sticky: form.ignoreSticky,
           ...(form.showNsfw ? { nsfw: "Include" } : {}),
         },
         options,

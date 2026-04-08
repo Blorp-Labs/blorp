@@ -2,10 +2,10 @@ import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
 import { useEffect } from "react";
 import {
-  usePost,
-  useComments,
-  useCommunity,
-  useResolveObject,
+  usePostQuery,
+  useCommentsQuery,
+  useCommunityQuery,
+  useResolveObjectQuery,
 } from "@/src/queries/index";
 import {
   StickyPostHeader,
@@ -196,7 +196,7 @@ function useResolveComment(pathOrApId: string | undefined): {
     return noResult;
   }, [decoded]);
 
-  const object = useResolveObject({ q: apId });
+  const object = useResolveObjectQuery({ q: apId });
   useQueryToast(object, {
     error: "Couldn't resolve comment",
   });
@@ -251,14 +251,14 @@ export default function Post() {
 
   const amIAdmin = useAmIAdmin();
 
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);
   const modApIds = community?.mods?.map((m) => m.apId);
   const canMod =
     (myUserApId ? modApIds?.includes(myUserApId) : false) || !!amIAdmin;
-  const postQuery = usePost({
+  const postQuery = usePostQuery({
     ap_id: decodedApId,
   });
 
@@ -270,7 +270,7 @@ export default function Post() {
     ? +parentComment.commentId
     : undefined;
 
-  const comments = useComments(
+  const comments = useCommentsQuery(
     {
       postApId: decodedApId ?? "",
       parentId: parentId,

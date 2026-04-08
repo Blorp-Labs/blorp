@@ -6,7 +6,7 @@ import { RelativeTime } from "@/src/components/relative-time";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
 import { Separator } from "@/src/components/ui/separator";
 import { VirtualList } from "@/src/components/virtual-list";
-import { usePrivateMessages } from "@/src/queries";
+import { usePrivateMessagesQuery } from "@/src/queries";
 import { encodeApId } from "@/src/apis/utils";
 import { cn, isNotNil } from "@/src/lib/utils";
 import { Link } from "@/src/routing";
@@ -47,7 +47,7 @@ type ChatItem = Schemas.PrivateMessage & {
 };
 
 function useChats() {
-  const query = usePrivateMessages({});
+  const query = usePrivateMessagesQuery({});
   const account = useAuth((s) => s.getSelectedAccount());
   const { person: me } = parseAccountInfo(account);
 

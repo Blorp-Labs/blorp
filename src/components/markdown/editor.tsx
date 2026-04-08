@@ -33,7 +33,7 @@ import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { CodeBlockEditor, lowlight } from "./code-block";
 import { useSettingsStore } from "@/src/stores/settings";
 import { IoLogoMarkdown, IoDocumentText, IoLink } from "react-icons/io5";
-import { useUploadImage } from "@/src/queries";
+import { useUploadImageMutation } from "@/src/queries";
 import { LuImageUp } from "react-icons/lu";
 import { useIonAlert } from "@ionic/react";
 import { Deferred } from "@/src/lib/deferred";
@@ -360,7 +360,7 @@ function TipTapEditor({
   id?: string;
   hideMenu?: boolean;
 }) {
-  const uploadImage = useUploadImage();
+  const uploadImage = useUploadImageMutation();
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {

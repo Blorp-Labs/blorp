@@ -6,7 +6,7 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/src/components/ui/command";
-import { useSearch } from "@/src/queries";
+import { useSearchQuery } from "@/src/queries";
 import { cn } from "@/src/lib/utils";
 import { usePostFromStore } from "@/src/stores/posts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -141,7 +141,7 @@ export function SearchBar({
 
   const search = useDebouncedState(props.value, 500);
 
-  const searchResults = useSearch({
+  const searchResults = useSearchQuery({
     q: search.value ?? "",
     type: type ?? "All",
     limit: type ? 10 : 3,

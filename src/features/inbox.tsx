@@ -5,13 +5,13 @@ import { MarkdownRenderer } from "../components/markdown/renderer";
 import { RelativeTime } from "@/src/components/relative-time";
 import {
   useCommentReportsQuery,
-  useMarkAllRead,
-  useMarkPersonMentionRead,
-  useMarkReplyRead,
-  useNotificationCount,
-  usePersonMentions,
+  useMarkAllReadMutation,
+  useMarkPersonMentionReadMutation,
+  useMarkReplyReadMutation,
+  useNotificationCountQuery,
+  usePersonMentionsQuery,
   usePostReportsQuery,
-  useReplies,
+  useRepliesQuery,
   useResolvePostReportMutation,
   useResolveCommentReportMutation,
 } from "@/src/queries/index";
@@ -281,7 +281,7 @@ function Mention({
   const actions = useCommentActions({
     commentView,
   });
-  const markRead = useMarkPersonMentionRead();
+  const markRead = useMarkPersonMentionReadMutation();
   return (
     <ContentGutters noMobilePadding>
       <div
@@ -375,7 +375,7 @@ function Reply({
   replyView: Schemas.Reply;
   noBorder?: boolean;
 }) {
-  const markRead = useMarkReplyRead();
+  const markRead = useMarkReplyReadMutation();
   const path = replyView.path.split(".");
   const parent = path.at(-2);
   const hasParent = parent && parent !== "0";
@@ -485,10 +485,10 @@ export default function Inbox() {
 
   const isMergedTab = type === "all" || type === "unread";
 
-  const replies = useReplies({
+  const replies = useRepliesQuery({
     unreadOnly: type === "unread",
   });
-  const mentions = usePersonMentions({
+  const mentions = usePersonMentionsQuery({
     unreadOnly: type === "unread",
   });
   const postReports = usePostReportsQuery();
@@ -558,9 +558,9 @@ export default function Inbox() {
   // but calling it here ensures the
   // count is updated when the user visits
   // the inbox page.
-  useNotificationCount();
+  useNotificationCountQuery();
 
-  const markAllRead = useMarkAllRead();
+  const markAllRead = useMarkAllReadMutation();
 
   const { mergedData, isFetching } = useMemo(() => {
     const mergedData: (

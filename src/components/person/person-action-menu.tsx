@@ -5,7 +5,7 @@ import { encodeApId } from "@/src/apis/utils";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { useRequireAuth } from "../auth-context";
-import { useBlockPerson } from "@/src/queries";
+import { useBlockPersonMutation } from "@/src/queries";
 import {
   getAccountActorId,
   useAuth,
@@ -40,7 +40,7 @@ export function usePersonActions({
 
   const slug = person ? person.slug : undefined;
 
-  const blockPerson = useBlockPerson({
+  const blockPerson = useBlockPersonMutation({
     apId: person?.apId,
   });
 

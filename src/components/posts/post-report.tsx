@@ -1,7 +1,10 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import _ from "lodash";
 import { usePostFromStore } from "@/src/stores/posts";
-import { useCreatePostReport, useCreateCommentReport } from "@/src/queries";
+import {
+  useCreatePostReportMutation,
+  useCreateCommentReportMutation,
+} from "@/src/queries";
 import { useCommentsByPaths } from "@/src/stores/comments";
 import {
   IonButton,
@@ -35,8 +38,8 @@ export function PostReportProvider({
   const [apId, setApId] = useState<string | undefined>();
   const [commentPath, setCommentPath] = useState<string | undefined>();
 
-  const createPostReport = useCreatePostReport();
-  const createCommentReport = useCreateCommentReport();
+  const createPostReport = useCreatePostReportMutation();
+  const createCommentReport = useCreateCommentReportMutation();
 
   const post = usePostFromStore(apId ?? undefined);
   const [comment] = useCommentsByPaths(commentPath ? [commentPath] : []);

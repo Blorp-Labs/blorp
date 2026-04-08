@@ -1,6 +1,6 @@
 import { ContentGutters } from "@/src/components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCommunity, usePost, usePosts } from "@/src/queries";
+import { useCommunityQuery, usePostQuery, usePostsQuery } from "@/src/queries";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { useUpdateRecentCommunity } from "@/src/hooks/use-update-recent-communities";
@@ -178,7 +178,7 @@ function useLightboxPostsData({
   listingType: Forms.GetPosts["type"];
   activePostApId?: string | null;
 }) {
-  const postsQuery = usePosts(
+  const postsQuery = usePostsQuery(
     communityName
       ? {
           communitySlug: communityName,
@@ -199,7 +199,7 @@ function useLightboxPostsData({
     return !!initPostApId && !posts.includes(initPostApId);
   }, [posts, initPostApId]);
 
-  const initPostQuery = usePost({
+  const initPostQuery = usePostQuery({
     ap_id: initPostApId,
     enabled: missingPost,
   });
@@ -280,7 +280,7 @@ export default function LightBoxPosts() {
   const postApId = data[activeIndex];
   const post = usePostFromStore(postApId);
 
-  useCommunity({
+  useCommunityQuery({
     name: communityName,
   });
   const community = useCommunityFromStore(communityName);

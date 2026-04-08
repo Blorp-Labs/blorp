@@ -11,7 +11,7 @@ import {
   VoteDisplaySetting,
   useSettingsStore,
 } from "@/src/stores/settings";
-import { useLogout, useSoftware } from "@/src/queries/index";
+import { useLogoutMutation, useSoftware } from "@/src/queries/index";
 import {
   Account,
   getAccountSite,
@@ -72,7 +72,7 @@ function AccountCard({
 
   const getConfirmation = useConfirmationAlert();
   const requireAuth = useRequireAuth();
-  const logout = useLogout();
+  const logout = useLogoutMutation();
   const logoutZustand = useAuth((s) => s.logout);
   const { person, instance } = parseAccountInfo(account);
   const isLoggedIn = Boolean(account.jwt);
