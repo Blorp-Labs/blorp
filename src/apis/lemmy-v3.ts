@@ -854,9 +854,18 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         },
         options,
       );
+      const filteredPosts = posts.posts.filter((p) => {
+        if (
+          (form.ignoreSticky && p.post.featured_local) ||
+          p.post.featured_community
+        ) {
+          return false;
+        }
+        return true;
+      });
       return {
         nextCursor: posts.next_page ?? null,
-        posts: posts.posts.map((p) => ({
+        posts: filteredPosts.map((p) => ({
           post: convertPost(p),
           creator: convertPerson({ person: p.creator }),
           community: convertCommunity({ community: p.community }),

@@ -15,6 +15,7 @@ import {
 // eslint-disable-next-line no-restricted-imports -- intentional: useRefreshAuth iterates multiple accounts and must scope each cache write to a specific account explicitly
 import { getCachePrefixer } from "../stores/auth";
 import { useEffect, useMemo, useState } from "react";
+import { useIsStale } from "../hooks/use-is-stale";
 import _ from "lodash";
 import { usePostFromStore, usePostsStore } from "../stores/posts";
 import { useSettingsStore } from "../stores/settings";
@@ -404,8 +405,14 @@ export function usePostsKey(config?: Forms.GetPosts) {
 export function useMostRecentPost(
   featuredContext: "local" | "community" | "feed",
   form: Forms.GetPosts,
+  // WARNING: do not destructure this at the call site — TanStack Query warns
+  // against spreading query results. We read only .dataUpdatedAt and
+  // .isFetching here, which is safe.
+  postsQuery?: { dataUpdatedAt: number; isFetching: boolean },
 ) {
   const { api, queryKeyPrefix } = useApiClients();
+
+  const postsIsStale = useIsStale(postsQuery, 60_000);
 
   const { postSort } = useAvailableSorts();
   const sort = form.sort ?? postSort;
@@ -422,14 +429,16 @@ export function useMostRecentPost(
 
   return useQuery({
     queryKey: [...queryKeyPrefix, "mostRecentPost", featuredContext, form],
+    enabled: postsIsStale && !postsQuery?.isFetching,
     queryFn: async ({ signal }) => {
       const { posts } = await (
         await api
       ).getPosts(
         {
           ...form,
-          sort: form.sort as any,
+          sort: form.sort,
           type: form.type,
+          ignoreSticky: true,
         },
         { signal },
       );

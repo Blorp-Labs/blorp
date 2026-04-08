@@ -59,7 +59,6 @@ export default function MultiCommunityFeedPosts() {
 
   const linkCtx = useLinkContext();
   const router = useIonRouter();
-  const [search, setSearch] = useState("");
 
   const { apId: apIdEncoded } = useParams(`${linkCtx.root}f/:apId`);
   const apId = useMemo(() => decodeApId(apIdEncoded), [apIdEncoded]);
@@ -81,10 +80,11 @@ export default function MultiCommunityFeedPosts() {
     multiCommunityFeedId: feed?.id,
   });
 
-  const mostRecentPost = useMostRecentPost("feed", {
-    multiCommunityFeedApId: apId,
-    multiCommunityFeedId: feed?.id,
-  });
+  const mostRecentPost = useMostRecentPost(
+    "feed",
+    { multiCommunityFeedApId: apId, multiCommunityFeedId: feed?.id },
+    posts,
+  );
 
   const isBlocked = useIsCommunityBlocked(apId);
 
@@ -120,7 +120,7 @@ export default function MultiCommunityFeedPosts() {
 
   const refresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), mostRecentPost.refetch()]);
+    await refetch();
     setRefreshing(false);
   };
 

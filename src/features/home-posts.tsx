@@ -186,10 +186,11 @@ export default function HomePosts() {
     type: listingType,
   });
 
-  const mostRecentPost = useMostRecentPost("local", {
-    sort: postSort,
-    type: listingType,
-  });
+  const mostRecentPost = useMostRecentPost(
+    "local",
+    { sort: postSort, type: listingType },
+    posts,
+  );
 
   const {
     hasNextPage,
@@ -230,8 +231,6 @@ export default function HomePosts() {
     scrollRef.current,
     focused && media.maxMd && !reducedMotion,
   );
-
-  const refreshFeed = () => Promise.all([refetch(), mostRecentPost.refetch()]);
 
   return (
     <Page className="home-page">
@@ -274,7 +273,7 @@ export default function HomePosts() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refreshFeed();
+                  refetch();
                   // This is a hack to send you to the top of the feed
                   dispatchScrollEvent("/home/");
                 }}
@@ -321,7 +320,7 @@ export default function HomePosts() {
             fullscreen
             onEndReached={onEndReached}
             onScroll={scrollAnimation.scrollHandler}
-            refresh={refreshFeed}
+            refresh={refetch}
           />
         </PostReportProvider>
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0">

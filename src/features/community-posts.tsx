@@ -80,9 +80,13 @@ export default function CommunityPosts() {
     communitySlug: communityName,
   });
 
-  const mostRecentPost = useMostRecentPost("community", {
-    communitySlug: communityName,
-  });
+  const mostRecentPost = useMostRecentPost(
+    "community",
+    {
+      communitySlug: communityName,
+    },
+    posts,
+  );
 
   const communityQuery = useCommunity({
     name: communityName,
@@ -130,7 +134,7 @@ export default function CommunityPosts() {
 
   const refresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), mostRecentPost.refetch()]);
+    await refetch();
     setRefreshing(false);
   };
 

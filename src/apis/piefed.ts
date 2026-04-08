@@ -834,6 +834,7 @@ export class PieFedApi
           type_: form.type,
           saved_only: form.savedOnly,
           feed_id,
+          ignore_sticky: form.ignoreSticky,
           ...(form.showNsfw ? { nsfw: "Include" } : {}),
         },
         options,

@@ -484,6 +484,7 @@ export namespace Forms {
     multiCommunityFeedApId?: string;
     multiCommunityFeedId?: number;
     savedOnly?: boolean;
+    ignoreSticky?: boolean;
   };
 
   export type GetPostReports = {
