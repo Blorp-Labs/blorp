@@ -4,7 +4,6 @@ import { EllipsisActionMenu, SubAction } from "../adaptable/action-menu";
 import { encodeApId } from "@/src/apis/utils";
 import { Deferred } from "@/src/lib/deferred";
 import { useIonAlert, useIonRouter } from "@ionic/react";
-import { useRequireAuth } from "../auth-context";
 import { useBlockPersonMutation } from "@/src/queries";
 import {
   getAccountActorId,
@@ -15,7 +14,7 @@ import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 import { resolveRoute } from "../../routing/index";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { useTagUserStore } from "@/src/stores/user-tags";
-import { useTagUser } from "@/src/hooks/use-tag-user";
+import { useTagUser, useRequireAuth } from "@/src/hooks";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 
 dayjs.extend(localizedFormat);

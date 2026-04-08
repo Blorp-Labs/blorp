@@ -6,14 +6,13 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { useRequireAuth } from "../auth-context";
 import { ContentGutters } from "../gutters";
 import { Button } from "../ui/button";
 import { MenuButton, UserDropdown } from "../nav";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { ToolbarTitle } from "../toolbar/toolbar-title";
 import { ToolbarBackButton } from "../toolbar/toolbar-back-button";
-import { usePathname } from "@/src/hooks/use-pathname";
+import { usePathname, useRequireAuth } from "@/src/hooks";
 import { STACK_ROOT_PATHS } from "../../routing/routes";
 import { NotFoundPageContent } from "./not-found";
 import { ErrorBoundary } from "react-error-boundary";

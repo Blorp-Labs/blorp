@@ -48,6 +48,8 @@
     "@panzoom/panzoom": "4.6.1",
     "@radix-ui/react-collapsible": "1.1.12",
     "@radix-ui/react-hover-card": "1.1.15",
+    "@radix-ui/react-label": "2.1.8",
+    "@radix-ui/react-separator": "1.1.8",
     "@radix-ui/react-slot": "1.2.4",
     "@tailwindcss/vite": "4.2.1",
     "@tanstack/pacer": "0.14.0",

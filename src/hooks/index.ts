@@ -15,6 +15,10 @@ import { useMedia } from "./use-media";
 import _ from "lodash";
 import { useIsActiveRoute } from "./navigation-hooks";
 
+export * from "./use-tag-user";
+export * from "./nsfw";
+export * from "./use-pathname";
+export * from "./use-require-auth";
 export { useMedia } from "./use-media";
 export { useTheme } from "./use-theme";
 export { useUrlSearchState } from "./use-url-search-state";

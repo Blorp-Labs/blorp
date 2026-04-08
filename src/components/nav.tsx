@@ -15,7 +15,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { useRequireAuth } from "./auth-context";
 import { IonMenuButton, IonMenuToggle } from "@ionic/react";
 import { IoPerson, IoSettingsOutline } from "react-icons/io5";
 import {
@@ -26,7 +25,7 @@ import {
   usePrivateMessagesCountQuery,
 } from "../queries";
 import { LuMenu } from "react-icons/lu";
-import { useConfirmationAlert, useMedia } from "../hooks";
+import { useConfirmationAlert, useMedia, useRequireAuth } from "../hooks";
 import {
   IoPersonOutline,
   IoBookmarksOutline,

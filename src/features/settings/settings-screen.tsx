@@ -19,7 +19,6 @@ import {
   useAuth,
 } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
-import { useRequireAuth } from "@/src/components/auth-context";
 import { ContentGutters } from "@/src/components/gutters";
 import _ from "lodash";
 import { Logo } from "@/src/components/logo";
@@ -32,7 +31,11 @@ import { PersonCard } from "@/src/components/person/person-card";
 import { openUrl } from "@/src/lib/linking";
 import { resolveRoute } from "@/src/routing";
 import { SectionItem, Section } from "./shared-components";
-import { useConfirmationAlert, useIsActiveRoute } from "@/src/hooks/index";
+import {
+  useConfirmationAlert,
+  useIsActiveRoute,
+  useRequireAuth,
+} from "@/src/hooks/index";
 import { DebouncedInput } from "@/src/components/debounced-input";
 import { FiChevronRight } from "react-icons/fi";
 import { ToolbarTitle } from "@/src/components/toolbar/toolbar-title";
