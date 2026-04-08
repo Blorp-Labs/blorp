@@ -174,7 +174,7 @@ export default tseslint.config(
               "stores",
               "tanstack-query",
               "hooks",
-              // "queries",
+              "queries",
               "routing",
             ]),
             buildRestrictedSrcZone("features", [
