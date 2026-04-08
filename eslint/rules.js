@@ -110,6 +110,9 @@ export const mutationHookNaming = {
       badName:
         'useMutation can only be called inside a hook ending in "Mutation" (e.g. useLikeCommentMutation). ' +
         "Rename this hook or extract a dedicated mutation hook.",
+      badFactoryName:
+        '"{{name}}" is assigned from a mutation factory but does not end in "Mutation". ' +
+        'Rename it to "{{name}}Mutation" so callers can see it is a mutation hook.',
     },
   },
   create(context) {
@@ -124,6 +127,21 @@ export const mutationHookNaming = {
         const name = getEnclosingFunctionName(node);
         if (name === null || !name.endsWith("Mutation")) {
           context.report({ node, messageId: "badName" });
+        }
+      },
+      VariableDeclarator(node) {
+        if (
+          node.init?.type === "CallExpression" &&
+          node.init.callee.type === "Identifier" &&
+          /^create.+Mutation$/.test(node.init.callee.name) &&
+          node.id?.type === "Identifier" &&
+          !node.id.name.endsWith("Mutation")
+        ) {
+          context.report({
+            node,
+            messageId: "badFactoryName",
+            data: { name: node.id.name },
+          });
         }
       },
     };
