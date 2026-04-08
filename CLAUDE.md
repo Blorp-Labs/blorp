@@ -16,6 +16,11 @@ pnpm test
 pnpm lint
 ```
 
+## ESLint
+
+- Do not add `eslint-disable` comments without explicit developer approval. Many of our lint rules exist specifically to require a human decision — disabling them silently defeats the purpose.
+- In particular, `local/no-query-hooks-in-components` exists to force a conscious choice when a query hook is used in a component. If you encounter a violation, ask the developer whether it should be fixed or suppressed, and if suppressed, ask them what justification note to put in the comment.
+
 ## TypeScript
 
-* Prefer satisfies over as when writing TypeScript
+- Prefer satisfies over as when writing TypeScript
