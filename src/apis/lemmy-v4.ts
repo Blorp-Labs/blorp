@@ -872,8 +872,8 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     const filteredPosts = posts.items.filter((p) => {
       if (
-        (form.ignoreSticky && p.post.featured_local) ||
-        p.post.featured_community
+        form.ignoreSticky &&
+        (p.post.featured_local || p.post.featured_community)
       ) {
         return false;
       }

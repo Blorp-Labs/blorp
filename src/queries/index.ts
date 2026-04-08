@@ -408,7 +408,7 @@ export function useMostRecentPost(
   // WARNING: do not destructure this at the call site — TanStack Query warns
   // against spreading query results. We read only .dataUpdatedAt and
   // .isFetching here, which is safe.
-  postsQuery?: { dataUpdatedAt: number; isFetching: boolean },
+  postsQuery: { dataUpdatedAt: number; isFetching: boolean },
 ) {
   const { api, queryKeyPrefix } = useApiClients();
 
