@@ -32,10 +32,10 @@ import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
 import { Bookmark, Lock } from "../icons";
 import {
-  useDeletePost,
-  useFeaturePost,
-  useLockPost,
-  useSavePost,
+  useDeletePostMutation,
+  useFeaturePostMutation,
+  useLockPostMutation,
+  useSavePostMutation,
   useAddPostReactionEmojiMutation,
 } from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
@@ -55,11 +55,11 @@ export function usePostActions({
 }): ActionMenuProps["actions"] {
   const showReportModal = useShowPostReportModal();
   const requireAuth = useRequireAuth();
-  const deletePost = useDeletePost();
-  const featurePost = useFeaturePost();
-  const lockPost = useLockPost();
+  const deletePost = useDeletePostMutation();
+  const featurePost = useFeaturePostMutation();
+  const lockPost = useLockPostMutation();
   const showPostRemoveModal = useShowPostRemoveModal();
-  const savePost = useSavePost();
+  const savePost = useSavePostMutation();
   const addReactionEmoji = useAddPostReactionEmojiMutation();
   const inputAlert = useInputAlert();
   const { software } = useSoftware();

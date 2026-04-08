@@ -36,7 +36,7 @@ import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
 import { useMedia } from "@/src/hooks";
 import {
   useAddPostReactionEmojiMutation,
-  useLikePost,
+  useLikePostMutation,
 } from "@/src/queries/post-mutations";
 import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
@@ -50,7 +50,7 @@ export function usePostVoting(apId?: string) {
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
   const scoreDisplay = useScoreDisplay();
 
-  const { mutate: mutateVote } = useLikePost();
+  const { mutate: mutateVote } = useLikePostMutation();
 
   const requireAuth = useRequireAuth();
 

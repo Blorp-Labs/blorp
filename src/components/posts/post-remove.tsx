@@ -15,7 +15,7 @@ import { Button } from "../ui/button";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { Textarea } from "../ui/textarea";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
-import { useRemovePost } from "@/src/queries/post-mutations";
+import { useRemovePostMutation } from "@/src/queries/post-mutations";
 
 const Context = createContext<{
   apId?: string;
@@ -36,7 +36,7 @@ export function PostRemoveProvider({
   const [apId, setApId] = useState<string | undefined>();
   const [commentPath, setCommentPath] = useState<string | undefined>();
 
-  const removePost = useRemovePost();
+  const removePost = useRemovePostMutation();
   const removeComment = useRemoveCommentMutation();
 
   const post = usePostFromStore(apId ?? undefined);
