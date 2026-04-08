@@ -862,27 +862,16 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
             }),
         page_cursor:
           form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: this.limit,
+        limit: form.limit ?? this.limit,
         community_name: form.communitySlug,
         multi_community_id,
         show_nsfw: form.showNsfw,
       },
       options,
     );
-
-    const filteredPosts = posts.items.filter((p) => {
-      if (
-        form.ignoreSticky &&
-        (p.post.featured_local || p.post.featured_community)
-      ) {
-        return false;
-      }
-      return true;
-    });
-
     return {
       nextCursor: posts.next_page ?? null,
-      posts: filteredPosts.map((p) => ({
+      posts: posts.items.map((p) => ({
         post: convertPost(p),
         creator: convertPerson({ person: p.creator }),
         community: convertCommunity({

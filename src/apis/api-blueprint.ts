@@ -484,7 +484,15 @@ export namespace Forms {
     multiCommunityFeedApId?: string;
     multiCommunityFeedId?: number;
     savedOnly?: boolean;
+    /**
+     * Ignore sticky doesn't hide the sticky posts, it just
+     * prevents them from sorting to the top.
+     * Note: this is only effective on platforms that support it server-side
+     * (e.g. PieFed). On Lemmy, this flag has no effect - sticky posts will
+     * still sort to the top
+     */
     ignoreSticky?: boolean;
+    limit?: number;
   };
 
   export type GetPostReports = {

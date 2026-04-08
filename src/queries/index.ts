@@ -429,7 +429,7 @@ export function useMostRecentPost(
 
   return useQuery({
     queryKey: [...queryKeyPrefix, "mostRecentPost", featuredContext, form],
-    enabled: postsIsStale && !postsQuery?.isFetching,
+    enabled: postsIsStale && !postsQuery.isFetching,
     queryFn: async ({ signal }) => {
       const { posts } = await (
         await api
@@ -439,6 +439,7 @@ export function useMostRecentPost(
           sort: form.sort,
           type: form.type,
           ignoreSticky: true,
+          limit: 10,
         },
         { signal },
       );

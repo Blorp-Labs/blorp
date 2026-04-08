@@ -824,7 +824,7 @@ export class PieFedApi
     try {
       const { posts, next_page } = await this.client.getApiAlphaPostList(
         {
-          limit: this.limit,
+          limit: form.limit ?? this.limit,
           page:
             form.pageCursor === INIT_PAGE_TOKEN
               ? undefined
