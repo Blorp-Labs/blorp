@@ -542,7 +542,7 @@ export function usePosts(form: Forms.GetPosts) {
     };
   };
 
-  const query = useThrottledInfiniteQuery({
+  return useThrottledInfiniteQuery({
     queryKey,
     queryFn,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -550,21 +550,6 @@ export function usePosts(form: Forms.GetPosts) {
     enabled: form.type === "Subscribed" ? isLoggedIn : true,
     reduceAutomaticRefetch: true,
   });
-
-  const queryClient = useQueryClient();
-  const prefetch = () =>
-    queryClient.prefetchInfiniteQuery({
-      queryKey,
-      queryFn,
-      initialPageParam: "init",
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      pages: 1,
-    });
-
-  return {
-    ...query,
-    prefetch,
-  };
 }
 
 export function useListCommunities(
