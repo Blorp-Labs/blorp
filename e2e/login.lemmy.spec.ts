@@ -74,6 +74,7 @@ test("login", async ({ page }, testInfo) => {
   }
 
   const authModal = page.getByTestId("auth-modal");
+  await authModal.getByTestId("auth-change-instance").click();
   await page.getByTestId("auth-filter-lemmy").click();
   await authModal.getByText("lemmy.world").click();
   await authModal.getByPlaceholder("Username").fill("jondoe");
