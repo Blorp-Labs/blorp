@@ -1,5 +1,5 @@
-import { describe, test, expect } from "vitest";
-import { abbriviateNumber } from "./format";
+import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+import { abbriviateNumber, getPreferedTimeFormat } from "./format";
 
 describe("abbriviateNumber", () => {
   test.each([
@@ -12,4 +12,45 @@ describe("abbriviateNumber", () => {
   ])("abbriviateNumber(%s) == %s", (input, abr) => {
     expect(abbriviateNumber(input)).toBe(abr);
   });
+});
+
+describe("getPreferedTimeFormat", () => {
+  beforeEach(() => {
+    getPreferedTimeFormat.cache.clear!();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function mockHourCycle(
+    hourCycle: Intl.ResolvedDateTimeFormatOptions["hourCycle"],
+  ) {
+    return vi.spyOn(Intl, "DateTimeFormat").mockImplementation(
+      () =>
+        ({
+          resolvedOptions: () =>
+            ({ hourCycle }) satisfies Pick<
+              Intl.ResolvedDateTimeFormatOptions,
+              "hourCycle"
+            >,
+        }) as Intl.DateTimeFormat,
+    );
+  }
+
+  test.each(["h23", "h24"] as const)(
+    "returns HH:mm for %s hour cycle",
+    (cycle) => {
+      mockHourCycle(cycle);
+      expect(getPreferedTimeFormat()).toBe("HH:mm");
+    },
+  );
+
+  test.each(["h11", "h12"] as const)(
+    "returns LT for %s hour cycle",
+    (cycle) => {
+      mockHourCycle(cycle);
+      expect(getPreferedTimeFormat()).toBe("LT");
+    },
+  );
 });
