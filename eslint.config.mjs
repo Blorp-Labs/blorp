@@ -108,6 +108,7 @@ export default tseslint.config(
       "no-restricted-imports": ["error", importRestrictions],
       "local/query-hook-naming": "error",
       "local/mutation-hook-naming": "error",
+      eqeqeq: "error",
     },
   },
   {
@@ -145,6 +146,12 @@ export default tseslint.config(
       ],
     },
     rules: {
+      "import-x/first": "warn",
+      "import-x/no-extraneous-dependencies": "error",
+      "import-x/no-named-as-default": "error",
+      "import-x/no-named-as-default-member": "error",
+      "import-x/no-duplicates": "warn",
+      "import-x/no-deprecated": "error",
       "import-x/no-restricted-paths": [
         "error",
         {

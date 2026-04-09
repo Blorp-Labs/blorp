@@ -32,7 +32,7 @@ export function resolveRoute(to: RoutePath, a?: any, b?: any): string {
   let pathStr: string;
   let searchStr: string = "";
 
-  if (a != null && typeof a === "object") {
+  if (a !== null && typeof a === "object") {
     // `a` is params
     pathStr = compile(to, { encode: false })(a);
     searchStr = b ?? "";
