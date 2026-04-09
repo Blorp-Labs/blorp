@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useShallow } from "zustand/shallow";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { env } from "../env";
@@ -13,6 +14,7 @@ export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
 const MAX_LOGGED_OUT_UUIDS = 20;
+const MAX_KNOWN_ACCOUNTS = 20;
 
 export function getCachePrefixer(account: Account | undefined): CachePrefixer {
   let prefix = "";
@@ -51,10 +53,18 @@ const accountSchema = z.union([
 
 export type Account = z.infer<typeof accountSchema>;
 
+const knownAccountSchema = z.object({
+  instance: z.string(),
+  username: z.string(),
+});
+
+export type KnownAccount = z.infer<typeof knownAccountSchema>;
+
 const storeSchema = z.object({
   accounts: z.array(accountSchema),
   selectedUuid: z.string().optional(),
   loggedOutUuids: z.array(z.string()).optional(),
+  knownAccounts: z.array(knownAccountSchema).optional(),
   /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
   accountIndex: z.number().optional(),
 });
@@ -119,6 +129,7 @@ function getNewAccount(): Account {
 
 const INIT_STATE = {
   accounts: [getNewAccount()],
+  knownAccounts: [] satisfies KnownAccount[],
   /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
   accountIndex: 0,
 };
@@ -244,19 +255,26 @@ export const useAuth = create<AuthStore>()(
       },
       updateAccountSite: (selectedUuid, site) => {
         const state = get();
-        let { accounts } = state;
+        let { accounts, knownAccounts = [] } = state;
         accounts = accounts.map((a) =>
           a.uuid === selectedUuid
-            ? {
-                ...a,
-                site,
-                siteUpdatedAt: Date.now(),
-              }
+            ? { ...a, site, siteUpdatedAt: Date.now() }
             : a,
         );
-        set({
-          accounts,
-        });
+        if (site.me) {
+          const account = accounts.find((a) => a.uuid === selectedUuid);
+          const instance = account
+            ? new URL(normalizeInstance(account.instance)).host
+            : null;
+          const username = site.me.slug;
+          if (instance && username) {
+            knownAccounts = _.uniqBy(
+              [{ instance, username }, ...knownAccounts],
+              (ka) => `${ka.instance}:${ka.username}`,
+            ).slice(0, MAX_KNOWN_ACCOUNTS);
+          }
+        }
+        set({ accounts, knownAccounts });
       },
       updateSelectedAccount: (patch) => {
         const state = get();
@@ -444,4 +462,44 @@ export function useAmIAdmin() {
     const site = getAccountSite(account);
     return site?.me?.apId && site?.admins?.includes(site.me?.apId);
   });
+}
+
+export function useLoginSuggestions(instance: string) {
+  return useAuth(
+    useShallow((state) => {
+      if (instance.trim().length === 0) {
+        return [];
+      }
+
+      const { knownAccounts = [], accounts } = state;
+
+      let host: string;
+      try {
+        host = new URL(normalizeInstance(instance)).host;
+      } catch {
+        return [];
+      }
+
+      const loggedInSlugs = new Set(
+        _.compact(
+          accounts
+            .filter((a) => {
+              if (!a.jwt) {
+                return false;
+              }
+              try {
+                return new URL(normalizeInstance(a.instance)).host === host;
+              } catch {
+                return false;
+              }
+            })
+            .map((a) => getAccountSite(a)?.me?.slug),
+        ),
+      );
+
+      return knownAccounts.filter(
+        (ka) => ka.instance === host && !loggedInSlugs.has(ka.username),
+      );
+    }),
+  );
 }

@@ -6,7 +6,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
+import {
+  getAccountSite,
+  useAuth,
+  useLoginSuggestions,
+} from "@/src/stores/auth";
 import {
   useCaptchaQuery,
   useInstancesQuery,
@@ -57,6 +61,7 @@ import { AuthContext } from "../hooks/use-require-auth";
 import { Field, FieldLabel } from "../components/ui/field";
 import { useQueryToast } from "../hooks/use-query-toast";
 import { getFirstZodIssue } from "../lib/zod";
+import { Badge } from "../components/ui/badge";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
@@ -241,6 +246,11 @@ function InstanceSelectionPage({
   }, [search]);
 
   const instances = useInstancesQuery();
+  const suggestions = useLoginSuggestions(instance.url);
+  const keyedSuggestions = useMemo(
+    () => _.keyBy(suggestions, "instance"),
+    [suggestions],
+  );
 
   const site = useSiteQuery(
     {
@@ -349,11 +359,14 @@ function InstanceSelectionPage({
             <AvatarImage src={i.icon} />
             <AvatarFallback>{i.host[0]}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1.5 leading-tight">
             <span>{i.host}</span>
             <span className="text-sm text-muted-foreground">
               {i.description}
             </span>
+            {keyedSuggestions[i.host] && (
+              <Badge variant="brand">Previously used</Badge>
+            )}
           </div>
         </button>
       ))}
@@ -379,7 +392,12 @@ function LoginForm({
   const updateSelectedAccount = useAuth((a) => a.updateSelectedAccount);
   const addAccountFn = useAuth((a) => a.addAccount);
 
-  const [userName, setUsername] = useState("");
+  const suggestions = useLoginSuggestions(instance.url);
+  const suggestedUsername =
+    suggestions.length === 1 ? suggestions[0]?.username.split("@")[0] : null;
+
+  const [_username, setUsername] = useState<string | null>();
+  const username = _username ?? suggestedUsername ?? "";
   const [password, setPassword] = useState("");
   const [mfaToken, setMfaToken] = useState<string>();
 
@@ -401,7 +419,7 @@ function LoginForm({
   const mutateLogin = (newMfaToken = mfaToken) => {
     login
       .mutateAsync({
-        username: userName,
+        username: username,
         password: password,
         mfaCode: newMfaToken,
       })
@@ -437,7 +455,7 @@ function LoginForm({
             <Input
               placeholder="Username"
               id="username"
-              defaultValue={userName}
+              defaultValue={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
               autoCapitalize="none"
