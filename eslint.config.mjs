@@ -147,6 +147,7 @@ export default tseslint.config(
     },
     rules: {
       "import-x/first": "warn",
+      "import-x/no-extraneous-dependencies": "error",
       "import-x/no-named-as-default": "error",
       "import-x/no-named-as-default-member": "error",
       "import-x/no-duplicates": "warn",
