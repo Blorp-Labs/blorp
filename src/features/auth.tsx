@@ -813,6 +813,9 @@ function AuthModal({
     setStep(INIT_STEP);
   };
 
+  const canGoBack =
+    step !== "instance-selection" && !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE;
+
   return (
     <IonModal
       isOpen={open}
@@ -825,11 +828,7 @@ function AuthModal({
           <ToolbarButtons side="left">
             <IonButton
               className="size-5"
-              data-testid={
-                step !== "instance-selection"
-                  ? "auth-change-instance"
-                  : "auth-close"
-              }
+              data-testid={canGoBack ? "auth-change-instance" : "auth-close"}
               onClick={() => {
                 if (
                   step !== "instance-selection" &&
@@ -841,8 +840,7 @@ function AuthModal({
                 }
               }}
             >
-              {step !== "instance-selection" &&
-              !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ? (
+              {canGoBack ? (
                 <ChevronLeft
                   className="-ml-1"
                   aria-label="Back to instance selection"
