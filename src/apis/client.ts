@@ -7,7 +7,7 @@ import { PieFedApi } from "./piefed";
 
 const nodeInfoSchema = z.object({
   software: z.object({
-    name: z.enum(["lemmy", "piefed"]),
+    name: z.enum(["lemmy", "piefed"], { message: "Unsupported software" }),
     version: z.string(),
   }),
 });

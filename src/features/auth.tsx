@@ -55,6 +55,8 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 import { AuthContext } from "../hooks/use-require-auth";
 import { Field, FieldLabel } from "../components/ui/field";
+import { useQueryToast } from "../hooks/use-query-toast";
+import z from "zod";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
@@ -250,6 +252,23 @@ function InstanceSelectionPage({
       retry: false,
     },
   );
+
+  const error = (() => {
+    if (site.error instanceof z.ZodError) {
+      const issue = site.error.issues[0];
+      if (issue) {
+        return _.compact([
+          issue.message,
+          "received" in issue ? `"${issue.received}"` : null,
+        ]).join(": ");
+      }
+    }
+    return undefined;
+  })();
+
+  useQueryToast(site, {
+    error,
+  });
 
   const data = useMemo(() => {
     const output = [...(instances.data ?? [])];
@@ -799,7 +818,6 @@ function AuthModal({
   );
 
   const [instance, setInstance] = useInstanceState();
-  console.log(step, instance);
   const modal = useRef<HTMLIonModalElement>(null);
 
   const [software, setSoftware] = useState<Software>(
