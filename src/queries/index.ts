@@ -2095,17 +2095,15 @@ export function useInstancesQuery() {
           )
           .parse(json);
 
-        return _.shuffle(
-          _.uniqBy(
-            lemmy.map((item) => ({
-              host: new URL(item.url).host,
-              url: normalizeInstance(item.url),
-              software: item.software as typeof item.software | undefined,
-              description: item.description,
-              icon: item.icon,
-            })),
-            ({ url }) => url,
-          ),
+        return _.uniqBy(
+          lemmy.map((item) => ({
+            host: new URL(item.url).host.replace(/^www\./, ""),
+            url: normalizeInstance(item.url),
+            software: item.software as typeof item.software | undefined,
+            description: item.description,
+            icon: item.icon,
+          })),
+          ({ url }) => url,
         );
       } catch {
         return undefined;

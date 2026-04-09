@@ -225,14 +225,12 @@ function useAuthSite({
 function InstanceSelectionPage({
   instance,
   setInstance,
-  software,
-  setSoftware,
 }: {
   instance: SelectedInstance;
   setInstance: (newInstance: string) => void;
-  software: Software;
-  setSoftware: (software: Software) => void;
 }) {
+  const [software, setSoftware] = useState<Software | "all">("all");
+
   const [search, setSearch] = useState("");
   const searchUrl = useMemo(() => {
     try {
@@ -273,7 +271,8 @@ function InstanceSelectionPage({
       } catch {}
     }
     return _.uniqBy(output, ({ host }) => host).filter(
-      (item) => !item.software || item.software === software,
+      (item) =>
+        software === "all" || !item.software || item.software === software,
     );
   }, [instances.data, site.data, software]);
 
@@ -286,7 +285,7 @@ function InstanceSelectionPage({
       (acc, crnt) => acc + (crnt.software === "piefed" ? 1 : 0),
       0,
     );
-    return { lemmy, piefed };
+    return { lemmy, piefed, all: _.sum(_.compact([lemmy, piefed])) };
   }, [instances.data]);
 
   const sortedInstances =
@@ -320,9 +319,12 @@ function InstanceSelectionPage({
           type="single"
           variant="outline"
           size="sm"
-          value={software}
+          value={software ?? "all"}
           onValueChange={(val) => val && setSoftware(val as Software)}
         >
+          <ToggleGroupItem value="all" data-testid="auth-filter-lemmy">
+            All ({counts.all})
+          </ToggleGroupItem>
           <ToggleGroupItem value="lemmy" data-testid="auth-filter-lemmy">
             Lemmy ({counts.lemmy})
           </ToggleGroupItem>
@@ -807,10 +809,6 @@ function AuthModal({
   const [instance, setInstance] = useInstanceState();
   const modal = useRef<HTMLIonModalElement>(null);
 
-  const [software, setSoftware] = useState<Software>(
-    _.sample([Software.LEMMY, Software.PIEFED]),
-  );
-
   const resetForm = () => {
     setStep(INIT_STEP);
   };
@@ -876,8 +874,6 @@ function AuthModal({
               setInstance(val);
               setStep("login");
             }}
-            software={software}
-            setSoftware={setSoftware}
           />
         )}
 
