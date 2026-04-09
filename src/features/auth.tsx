@@ -578,7 +578,7 @@ function SignupForm({
   const applicationQuestion = site.data?.site.applicationQuestion;
 
   return (
-    <div className="p-4 overflow-y-auto ion-content-scroll-host h-full">
+    <div className="p-6 overflow-y-auto ion-content-scroll-host h-full">
       {site.data?.site.software === "piefed" && (
         <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           PieFed doesn't yet support registrations through 3rd party clients
@@ -594,11 +594,22 @@ function SignupForm({
 
       <form
         onSubmit={submitLogin}
-        className="gap-4 flex flex-col"
+        className="gap-5 flex flex-col"
         data-testid="signup-form"
       >
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm">Email</label>
+        <span className="text-2xl font-bold">
+          Let's get you set up on {instance.baseurl}.
+        </span>
+
+        <p>
+          With an account on this server, you'll be able to follow any other
+          person on the fediverse, regardless of where their account is hosted.
+        </p>
+
+        <Field>
+          <FieldLabel required htmlFor="email">
+            Email
+          </FieldLabel>
           <Input
             placeholder="Email"
             id="email"
@@ -609,12 +620,12 @@ function SignupForm({
             autoCorrect="off"
             spellCheck={false}
           />
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm" htmlFor="username">
+        <Field>
+          <FieldLabel required htmlFor="username">
             Username
-          </label>
+          </FieldLabel>
           <div className="flex gap-2">
             <Input
               placeholder="Username"
@@ -629,12 +640,12 @@ function SignupForm({
             />
             <InstanceSelect instance={instance} setInstance={setInstance} />
           </div>
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm" htmlFor="password">
+        <Field>
+          <FieldLabel required htmlFor="password">
             Password
-          </label>
+          </FieldLabel>
           <Input
             placeholder="Enter password"
             type="password"
@@ -647,14 +658,9 @@ function SignupForm({
             spellCheck={false}
             required
           />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm">
-            Verify Password
-          </label>
           <Input
-            placeholder="Verify password"
+            wrapperClassName="mt-1"
+            placeholder="Confirm password"
             type="password"
             id="password"
             defaultValue={verifyPassword}
@@ -665,44 +671,56 @@ function SignupForm({
             spellCheck={false}
             required
           />
-        </div>
+        </Field>
 
         {captcha.isPending && <LuLoaderCircle className="animate-spin" />}
 
         {captcha.data && (
-          <div className="flex flex-row gap-4">
-            <div className="flex flex-col justify-around items-center p-2">
-              <button onClick={() => captcha.refetch()} type="button">
-                <MdOutlineRefresh size={24} />
-              </button>
+          <Field className="bg-secondary p-3 rounded-md">
+            <FieldLabel required>Captcha</FieldLabel>
+            <div className="flex flex-row gap-4">
+              <Input
+                wrapperClassName="bg-background"
+                className="self-center"
+                placeholder="Captcha answer"
+                value={captchaAnswer}
+                onChange={(e) => setCaptchaAnswer(e.target.value)}
+              />
 
-              <AudioPlayButton src={captcha.data?.audioUrl} />
+              <div className="flex flex-col justify-around items-center p-2">
+                <button onClick={() => captcha.refetch()} type="button">
+                  <MdOutlineRefresh size={24} />
+                </button>
+
+                <AudioPlayButton src={captcha.data?.audioUrl} />
+              </div>
+
+              <img
+                src={`data:image/png;base64,${captcha.data?.imgUrl}`}
+                className="h-28 aspect-video object-contain"
+              />
             </div>
-
-            <img
-              src={`data:image/png;base64,${captcha.data?.imgUrl}`}
-              className="h-28 aspect-video object-contain"
-            />
-
-            <Input
-              className="self-center"
-              value={captchaAnswer}
-              onChange={(e) => setCaptchaAnswer(e.target.value)}
-            />
-          </div>
+          </Field>
         )}
 
         {applicationQuestion && (
-          <MarkdownRenderer markdown={applicationQuestion} />
+          <>
+            <div className="bg-amber-100 text-amber-800 border-amber-800 border p-2 rounded-md">
+              To join this server, you need to fill out the application below,
+              and wait to be accepted.
+            </div>
+            <MarkdownRenderer markdown={applicationQuestion} />
+          </>
         )}
 
         <Textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           required
+          placeholder="Application answer"
         />
 
-        <Button type="submit" className="mx-auto">
+        <Button type="submit">
           Sign up
           {register.isPending && <LuLoaderCircle className="animate-spin" />}
         </Button>
