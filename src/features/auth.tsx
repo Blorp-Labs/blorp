@@ -322,7 +322,7 @@ function InstanceSelectionPage({
           value={software ?? "all"}
           onValueChange={(val) => val && setSoftware(val as Software)}
         >
-          <ToggleGroupItem value="all" data-testid="auth-filter-lemmy">
+          <ToggleGroupItem value="all" data-testid="auth-filter-all">
             All ({counts.all})
           </ToggleGroupItem>
           <ToggleGroupItem value="lemmy" data-testid="auth-filter-lemmy">
@@ -825,6 +825,11 @@ function AuthModal({
           <ToolbarButtons side="left">
             <IonButton
               className="size-5"
+              data-testid={
+                step !== "instance-selection"
+                  ? "auth-change-instance"
+                  : "auth-close"
+              }
               onClick={() => {
                 if (
                   step !== "instance-selection" &&
