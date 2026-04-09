@@ -56,7 +56,7 @@ import { ChevronLeft, Spinner, X } from "@/src/components/icons";
 import { AuthContext } from "../hooks/use-require-auth";
 import { Field, FieldLabel } from "../components/ui/field";
 import { useQueryToast } from "../hooks/use-query-toast";
-import { getFirstZodIssue } from "../lib/utils";
+import { getFirstZodIssue } from "../lib/zod";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
