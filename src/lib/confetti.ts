@@ -1,4 +1,4 @@
-import { isProd } from "@/src/lib/device";
+import { isTest } from "@/src/lib/device";
 import canvasConfetti, { Shape } from "canvas-confetti";
 import _ from "lodash";
 
@@ -24,7 +24,7 @@ const CONFIG = {
 };
 
 export function confetti(text: string) {
-  if (!isProd()) {
+  if (isTest()) {
     return;
   }
   const shapes = getShapes();

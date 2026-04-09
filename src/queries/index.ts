@@ -1236,6 +1236,7 @@ export function useCreateCommentMutation() {
       queryKeyParentId: _2,
       ...form
     }: CreateComment) => {
+      confetti(form.body);
       const newComment = await (await api).createComment(form);
       return {
         newComment,
