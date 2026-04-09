@@ -10,10 +10,14 @@ import {
   Software,
 } from "./api-blueprint";
 import z from "zod";
-import { createSlug, getFlairLookup } from "./utils";
+import {
+  createSlug,
+  getFlairLookup,
+  shrinkBlockedCommunity,
+  shrinkBlockedPerson,
+} from "./utils";
 import { isNotNil } from "../lib/utils";
 import { parseOgData } from "../lib/html-parsing";
-import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 import {
   Comment,
   CommentReplyView,
@@ -906,7 +910,7 @@ export class PieFedApi
       // didn't include them (e.g. include_communities=false). Return undefined so
       // callers can distinguish "not loaded" from "genuinely empty".
       communitySlugs:
-        feed.communities != null &&
+        feed.communities !== null &&
         (feed.communities.length > 0 || feed.communities_count === 0)
           ? feed.communities.map(
               (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
