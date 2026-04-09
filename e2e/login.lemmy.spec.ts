@@ -103,4 +103,21 @@ test.describe("login", () => {
     await openAuthModal(page, isMobile);
     await completeLogin(page, isMobile);
   });
+
+  test("hides back button when locked to default instance", async ({
+    page,
+  }, testInfo) => {
+    await page.addInitScript(() => {
+      (window as any).REACT_APP_LOCK_TO_DEFAULT_INSTANCE = "1";
+    });
+
+    const isMobile = testInfo.project.name.includes("Mobile");
+    await openAuthModal(page, isMobile);
+
+    const authModal = page.getByTestId("auth-modal");
+    await expect(
+      authModal.getByTestId("auth-change-instance"),
+    ).not.toBeVisible();
+    await expect(authModal.getByTestId("auth-close")).toBeVisible();
+  });
 });
