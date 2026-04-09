@@ -109,19 +109,26 @@ const AudioPlayButton = ({ src }: { src: string }) => {
   const audioRef = useRef(new Audio(`data:audio/wav;base64,${src}`));
 
   useEffect(() => {
+    audioRef.current.pause();
+    audioRef.current.src = `data:audio/wav;base64,${src}`;
+    audioRef.current.load();
+    setPlaying(false);
+  }, [src]);
+
+  useEffect(() => {
     const start = () => setPlaying(true);
     const stop = () => setPlaying(false);
 
-    const current = audioRef.current;
+    const audio = audioRef.current;
 
-    current.addEventListener("play", start);
-    current.addEventListener("ended", stop);
-    current.addEventListener("pause", stop);
+    audio.addEventListener("play", start);
+    audio.addEventListener("ended", stop);
+    audio.addEventListener("pause", stop);
 
     return () => {
-      current.removeEventListener("play", start);
-      current.removeEventListener("ended", stop);
-      current.removeEventListener("pause", stop);
+      audio.removeEventListener("play", start);
+      audio.removeEventListener("ended", stop);
+      audio.removeEventListener("pause", stop);
     };
   }, []);
 
@@ -135,9 +142,9 @@ const AudioPlayButton = ({ src }: { src: string }) => {
   };
 
   return (
-    <button type="button" onClick={handlePlay}>
+    <Button size="icon" variant="outline" type="button" onClick={handlePlay}>
       {playing ? <FaPause /> : <FaPlay />}
-    </button>
+    </Button>
   );
 };
 
@@ -676,30 +683,38 @@ function SignupForm({
         {captcha.isPending && <LuLoaderCircle className="animate-spin" />}
 
         {captcha.data && (
-          <Field className="bg-secondary p-3 rounded-md">
-            <FieldLabel required>Captcha</FieldLabel>
-            <div className="flex flex-row gap-4">
+          <Field className="bg-secondary p-3 rounded-md flex flex-row gap-4 justify-between">
+            <div className="flex flex-col justify-between">
+              <FieldLabel required htmlFor="captcha">
+                Captcha
+              </FieldLabel>
               <Input
+                id="captcha"
                 wrapperClassName="bg-background"
                 className="self-center"
                 placeholder="Captcha answer"
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
               />
-
-              <div className="flex flex-col justify-around items-center p-2">
-                <button onClick={() => captcha.refetch()} type="button">
-                  <MdOutlineRefresh size={24} />
-                </button>
-
-                <AudioPlayButton src={captcha.data?.audioUrl} />
-              </div>
-
-              <img
-                src={`data:image/png;base64,${captcha.data?.imgUrl}`}
-                className="h-28 aspect-video object-contain"
-              />
             </div>
+
+            <div className="flex flex-col justify-around items-center p-2">
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => captcha.refetch()}
+                type="button"
+              >
+                <MdOutlineRefresh size={24} />
+              </Button>
+
+              <AudioPlayButton src={captcha.data?.audioUrl} />
+            </div>
+
+            <img
+              src={`data:image/png;base64,${captcha.data?.imgUrl}`}
+              className="h-28 aspect-video object-contain"
+            />
           </Field>
         )}
 
