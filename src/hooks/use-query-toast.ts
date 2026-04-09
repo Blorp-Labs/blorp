@@ -22,6 +22,7 @@ export function useQueryToast(
         if (errorMsg) {
           toastId.current = toast.error(errorMsg, {
             id: toastId.current,
+            duration: 5_000,
           });
         } else {
           toast.dismiss(toastId.current);
@@ -32,6 +33,7 @@ export function useQueryToast(
         if (successMsg) {
           toastId.current = toast.success(successMsg, {
             id: toastId.current,
+            duration: 5_000,
           });
         } else {
           toast.dismiss(toastId.current);
@@ -42,6 +44,7 @@ export function useQueryToast(
         if (pendingMsg) {
           toastId.current = toast.loading(pendingMsg, {
             id: toastId.current,
+            duration: 5_000,
           });
         } else {
           toast.dismiss(toastId.current);

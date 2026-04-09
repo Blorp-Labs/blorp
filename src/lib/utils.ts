@@ -101,6 +101,10 @@ export const assert = import.meta.env.DEV
     }
   : () => {};
 
+export function getFirstZodIssue(error: Error | null | undefined) {
+  return error instanceof z.ZodError ? error.issues[0] : undefined;
+}
+
 export function ensureValue<T>(
   options: T[] | readonly T[] | null | undefined,
   value: T,
