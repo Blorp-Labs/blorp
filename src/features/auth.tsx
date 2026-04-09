@@ -66,7 +66,7 @@ import { Badge } from "../components/ui/badge";
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
     <span className="mx-auto text-muted-foreground text-sm text-center">
-      By signing up you agree to {instance.baseurl} and{" "}
+      By signing up you agree to {instance.host} and{" "}
       <a
         className="underline"
         href="https://blorpblorp.xyz/terms"
@@ -87,6 +87,22 @@ function InstanceSelect({
   instance: SelectedInstance;
   setInstance: (val: string) => void;
 }) {
+  const options = useMemo(() => {
+    return env.defaultInstances.map((i) => {
+      let label = i;
+
+      try {
+        const url = new URL(i);
+        label = `@${url.host}`;
+      } catch {}
+
+      return {
+        value: i,
+        label,
+      };
+    });
+  }, []);
+
   if (
     !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
     env.defaultInstances.length <= 1
@@ -97,13 +113,13 @@ function InstanceSelect({
   return (
     <Select value={instance.url} onValueChange={(val) => setInstance(val)}>
       <SelectTrigger className="w-64">
-        <SelectValue>@{instance.baseurl}</SelectValue>
+        <SelectValue>@{instance.host}</SelectValue>
       </SelectTrigger>
       <SelectContent align="end">
         {/* TODO: Render @instance instead of full url */}
-        {env.defaultInstances.map((i) => (
-          <SelectItem key={i} value={i}>
-            {i}
+        {options.map(({ value, label }) => (
+          <SelectItem key={value} value={value}>
+            {label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -223,7 +239,7 @@ function useAuthSite({
   instance: SelectedInstance;
 }) {
   return useSiteQuery({
-    instance: search || instance.baseurl || env.defaultInstance,
+    instance: search || instance.host || env.defaultInstance,
   });
 }
 
@@ -254,7 +270,7 @@ function InstanceSelectionPage({
 
   const site = useSiteQuery(
     {
-      instance: searchUrl ?? instance.baseurl,
+      instance: searchUrl ?? instance.host,
     },
     {
       retry: false,
@@ -441,12 +457,12 @@ function LoginForm({
       data-testid="login-form"
     >
       <div className="flex flex-col gap-5">
-        <span className="text-2xl font-bold">Login to {instance.baseurl}</span>
+        <span className="text-2xl font-bold">Login to {instance.host}</span>
 
         <p>
-          Login with your <b>{instance.baseurl}</b> credentials. If your account
-          is hosted on a different server, you must change instance before
-          loggin in.
+          Login with your <b>{instance.host}</b> credentials. If your account is
+          hosted on a different server, you must change instance before loggin
+          in.
         </p>
 
         <Field>
@@ -455,7 +471,7 @@ function LoginForm({
             <Input
               placeholder="Username"
               id="username"
-              defaultValue={username}
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
               autoCapitalize="none"
@@ -473,7 +489,7 @@ function LoginForm({
             placeholder="Enter password"
             type="password"
             id="password"
-            defaultValue={password}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             autoCapitalize="none"
@@ -487,7 +503,7 @@ function LoginForm({
           <InputOTP
             data-testid="otp-input"
             maxLength={6}
-            defaultValue={mfaToken}
+            value={mfaToken}
             onChange={(newMfa) => {
               setMfaToken(newMfa);
               if (newMfa.length === 6) {
@@ -631,7 +647,7 @@ function SignupForm({
         data-testid="signup-form"
       >
         <span className="text-2xl font-bold">
-          Let's get you set up on {instance.baseurl}.
+          Let's get you set up on {instance.host}.
         </span>
 
         <p>
@@ -774,12 +790,12 @@ function SignupForm({
 
 const DEFAULT_INSTACE = {
   url: env.defaultInstance,
-  baseurl: new URL(env.defaultInstance).host,
+  host: new URL(env.defaultInstance).host,
 };
 
 type SelectedInstance = {
   url: string;
-  baseurl: string;
+  host: string;
 };
 
 function useInstanceState() {
@@ -790,13 +806,13 @@ function useInstanceState() {
       _setInstanceLocal(DEFAULT_INSTACE);
       return;
     }
-    let baseurl: string | undefined = undefined;
+    let host: string | undefined = undefined;
     try {
-      baseurl = new URL(url).host;
+      host = new URL(url).host;
     } catch {}
     _setInstanceLocal({
       url,
-      baseurl: baseurl ?? url,
+      host: host ?? url,
     });
   };
 
