@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
+import { normalizeInstance } from "../src/normalize-instance";
 import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 
 const TEST_JWT = "test-inbox-jwt";
@@ -29,7 +30,7 @@ async function mockInboxApis(page: Page) {
 
 test("inbox loads when logged in", async ({ page }) => {
   await seedAuth(page, {
-    instance: "lemmy.world",
+    instance: normalizeInstance("lemmy.world"),
     jwt: TEST_JWT,
     uuid: TEST_UUID,
   });

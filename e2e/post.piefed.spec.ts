@@ -6,6 +6,7 @@ import {
   RESOLVE_POST_RES,
 } from "../test-utils/piefed-api-fixtures";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
+import { normalizeInstance } from "../src/normalize-instance";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -73,7 +74,7 @@ for (const { name, base } of tabs) {
 
 test("upvoting a post hits the vote endpoint", async ({ page }) => {
   await seedAuth(page, {
-    instance: "piefed.social",
+    instance: normalizeInstance("piefed.social"),
     jwt: "test-piefed-post-jwt",
     uuid: "test-piefed-post-uuid",
   });

@@ -1,4 +1,8 @@
-export function normalizeInstance(instance: string) {
+export type NormalizedInstance = string & {
+  readonly __brand: "NormalizedInstance";
+};
+
+export function normalizeInstance(instance: string): NormalizedInstance {
   const parts = instance.split(".");
 
   if (parts.length < 2 || !parts[1]?.length) {
@@ -17,7 +21,7 @@ export function normalizeInstance(instance: string) {
   try {
     const urlObj = new URL(url);
     // toString() will include protocol, host, pathname, search, and hash
-    return `${urlObj.protocol}//${urlObj.host}`;
+    return `${urlObj.protocol}//${urlObj.host}` as NormalizedInstance;
   } catch {
     throw new Error(`Invalid URL: "${instance}"`);
   }

@@ -24,3 +24,4 @@ pnpm lint
 ## TypeScript
 
 - Prefer satisfies over as when writing TypeScript
+- Do not silently change `||` to `??` when fixing type errors — they are not the same. If you are certain it should be ?? you can ask the developer to confirm.

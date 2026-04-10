@@ -765,17 +765,12 @@ export function useRegisterMutation(config: {
       if (res.jwt && config.instance) {
         const payload = {
           jwt: res.jwt,
+          instance: config.instance,
         };
         if (config?.addAccount) {
-          addAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          addAccount(payload);
         } else {
-          updateSelectedAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          updateSelectedAccount(payload);
         }
       }
       return res;
@@ -831,17 +826,12 @@ export function useLoginMutation(config: {
       if (res.jwt && config.instance) {
         const payload = {
           jwt: res.jwt,
+          instance: config.instance,
         };
         if (config?.addAccount) {
-          addAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          addAccount(payload);
         } else {
-          updateSelectedAccount({
-            ...payload,
-            instance: config?.instance,
-          });
+          updateSelectedAccount(payload);
         }
       }
       return res;

@@ -1,4 +1,5 @@
 import { describe, test, expect, afterEach, vi } from "vitest";
+import { normalizeInstance } from "../normalize-instance";
 
 vi.mock("uuid", async (importOriginal) => {
   const actual = await importOriginal<typeof import("uuid")>();
@@ -7,17 +8,27 @@ vi.mock("uuid", async (importOriginal) => {
 import {
   useAuth,
   type Account,
-  AuthStoreData,
+  type AuthStoreData,
   getSelectedAccount,
   type KnownAccount,
   getAccountSite,
   useLoginSuggestions,
+  type UpdateAccount,
 } from "./auth";
 import { getSite, getPerson } from "@/test-utils/api";
 import { renderHook, act } from "@testing-library/react";
 import { faker } from "@faker-js/faker";
 import { env } from "../env";
 import z from "zod";
+
+function makeAccount(overrides?: Partial<UpdateAccount>): Account {
+  return {
+    jwt: faker.string.uuid(),
+    uuid: faker.string.uuid(),
+    ...overrides,
+    instance: normalizeInstance(overrides?.instance ?? faker.internet.url()),
+  };
+}
 
 afterEach(() => {
   const { result } = renderHook(() => useAuth());
@@ -29,23 +40,11 @@ afterEach(() => {
 describe("useAuthStore", () => {
   const { result } = renderHook(() => useAuth());
 
-  const account1 = {
-    instance: faker.internet.url().replace(/\/$/, ""),
-    jwt: faker.string.uuid(),
-    uuid: faker.string.uuid(),
-  };
+  const account1 = makeAccount();
 
-  const account2 = {
-    instance: faker.internet.url().replace(/\/$/, ""),
-    jwt: faker.string.uuid(),
-    uuid: faker.string.uuid(),
-  };
+  const account2 = makeAccount();
 
-  const account3 = {
-    instance: faker.internet.url().replace(/\/$/, ""),
-    jwt: faker.string.uuid(),
-    uuid: faker.string.uuid(),
-  };
+  const account3 = makeAccount();
 
   test("default instance", () => {
     expect(result.current.getSelectedAccount().instance).toBe(
@@ -156,7 +155,9 @@ describe("useAuthStore", () => {
       result.current.logout();
     });
     expect(result.current.accounts).toHaveLength(1);
-    expect(result.current.getSelectedAccount()).toMatchObject({
+    expect(result.current.getSelectedAccount()).toMatchObject<
+      Partial<KnownAccount>
+    >({
       instance: env.defaultInstance,
     });
   });
@@ -167,8 +168,10 @@ describe("useAuthStore", () => {
         instance: "https://fakelemmyinstance.com/",
       });
     });
-    expect(result.current.getSelectedAccount()).toMatchObject({
-      instance: "https://fakelemmyinstance.com",
+    expect(result.current.getSelectedAccount()).toMatchObject<
+      Partial<KnownAccount>
+    >({
+      instance: normalizeInstance("https://fakelemmyinstance.com"),
     });
   });
 });
@@ -199,15 +202,6 @@ describe("persisted state snapshot", () => {
 
 describe("useAuthStore merge", () => {
   const merge = useAuth.persist.getOptions().merge!;
-
-  function makeAccount(overrides?: Partial<Account>): Account {
-    return {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-      ...overrides,
-    };
-  }
 
   function makeCurrent(accounts: Account[]) {
     return {
@@ -708,7 +702,7 @@ describe("useAuthStore merge", () => {
       const guest = makeGuest();
       const guestWithUpdatedInstance = {
         ...guest,
-        instance: faker.internet.url().replace(/\/$/, ""),
+        instance: normalizeInstance(faker.internet.url()),
       };
       const persisted = {
         accounts: [guest],
@@ -842,21 +836,9 @@ describe("logoutMultiple", () => {
   test("removes multiple accounts and keeps the rest", () => {
     const { result } = renderHook(() => useAuth());
 
-    const account1 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account3 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+    const account3 = makeAccount();
 
     act(() => {
       result.current.updateSelectedAccount(account1);
@@ -876,16 +858,8 @@ describe("logoutMultiple", () => {
   test("falls back to guest when all accounts are logged out", () => {
     const { result } = renderHook(() => useAuth());
 
-    const account1 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    const account1 = makeAccount();
+    const account2 = makeAccount();
 
     act(() => {
       result.current.updateSelectedAccount(account1);
@@ -897,7 +871,9 @@ describe("logoutMultiple", () => {
     });
 
     expect(result.current.accounts).toHaveLength(1);
-    expect(result.current.getSelectedAccount()).toMatchObject({
+    expect(result.current.getSelectedAccount()).toMatchObject<
+      Partial<KnownAccount>
+    >({
       instance: env.defaultInstance,
     });
     expect(result.current.isLoggedIn()).toBe(false);
@@ -906,21 +882,9 @@ describe("logoutMultiple", () => {
   test("tracks loggedOutUuids", () => {
     const { result } = renderHook(() => useAuth());
 
-    const account1 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account3 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    const account1 = makeAccount();
+    const account2 = makeAccount();
+    const account3 = makeAccount();
 
     act(() => {
       result.current.updateSelectedAccount(account1);
@@ -939,16 +903,8 @@ describe("logoutMultiple", () => {
   test("selected account falls back when current selection is logged out", () => {
     const { result } = renderHook(() => useAuth());
 
-    const account1 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    const account1 = makeAccount();
+    const account2 = makeAccount();
 
     act(() => {
       result.current.updateSelectedAccount(account1);
@@ -976,11 +932,7 @@ describe("updateAccountSite", () => {
   test("sets site and siteUpdatedAt on the matching account", () => {
     const { result } = renderHook(() => useAuth());
 
-    const account = {
-      instance: faker.internet.url().replace(/\/$/, ""),
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    const account = makeAccount();
 
     act(() => {
       result.current.updateSelectedAccount(account);
@@ -1024,7 +976,7 @@ describe("updateAccountSite", () => {
 
       expect(result.current.knownAccounts).toHaveLength(1);
       expect(result.current.knownAccounts![0]).toMatchObject<KnownAccount>({
-        instance: "lemmy.world",
+        instance: normalizeInstance("https://lemmy.world"),
         username: "123user@lemmy.world",
       });
     });
@@ -1098,11 +1050,9 @@ describe("useLoginSuggestions", () => {
     const auth = renderHook(() => useAuth());
     const suggestions = renderHook(() => useLoginSuggestions(INSTANCE));
 
-    const account = {
+    const account = makeAccount({
       instance: INSTANCE,
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    });
     const person = getPerson({ apId: `${INSTANCE}/u/alice` });
     const siteWithMe = getSite({ instance: INSTANCE, me: person });
 
@@ -1118,8 +1068,8 @@ describe("useLoginSuggestions", () => {
 
     suggestions.rerender();
     expect(suggestions.result.current).toHaveLength(1);
-    expect(suggestions.result.current[0]).toMatchObject({
-      instance: "lemmy.world",
+    expect(suggestions.result.current[0]).toMatchObject<Partial<KnownAccount>>({
+      instance: normalizeInstance("https://lemmy.world"),
     });
   });
 
@@ -1150,16 +1100,12 @@ describe("useLoginSuggestions", () => {
   test("returns multiple suggestions when several accounts are logged out", () => {
     const { auth, suggestions } = setup();
 
-    const account1 = {
+    const account1 = makeAccount({
       instance: INSTANCE,
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
+    });
+    const account2 = makeAccount({
       instance: INSTANCE,
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    });
     const person1 = getPerson({ id: 1 });
     const person2 = getPerson({ id: 2 });
 
@@ -1190,16 +1136,12 @@ describe("useLoginSuggestions", () => {
   test("only suggests logged-out accounts when some are still logged in", () => {
     const { auth, suggestions } = setup();
 
-    const account1 = {
+    const account1 = makeAccount({
       instance: INSTANCE,
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
-    const account2 = {
+    });
+    const account2 = makeAccount({
       instance: INSTANCE,
-      jwt: faker.string.uuid(),
-      uuid: faker.string.uuid(),
-    };
+    });
     const person1 = getPerson({ id: 1 });
     const person2 = getPerson({ id: 2 });
 

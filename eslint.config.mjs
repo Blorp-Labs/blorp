@@ -125,14 +125,6 @@ export default tseslint.config(
     },
   },
   {
-    files: ["**/*.test.ts", "**/*.test.tsx"],
-    plugins: { local },
-    rules: {
-      "local/query-hook-naming": "off",
-      "local/mutation-hook-naming": "off",
-    },
-  },
-  {
     files: ["scripts/**"],
     languageOptions: {
       globals: { process: "readonly" },
@@ -207,6 +199,15 @@ export default tseslint.config(
           ],
         },
       ],
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    plugins: { local },
+    rules: {
+      "local/query-hook-naming": "off",
+      "local/mutation-hook-naming": "off",
+      "import-x/first": "off",
     },
   },
 );

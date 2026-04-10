@@ -9,6 +9,7 @@ import { Schemas, siteSchema } from "../apis/api-blueprint";
 import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../normalize-instance";
+import { DistributedOmit } from "type-fest";
 
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
@@ -37,14 +38,14 @@ export function getCachePrefixer(account: Account | undefined): CachePrefixer {
 
 const accountSchema = z.union([
   z.object({
-    instance: z.string(),
+    instance: z.string().transform(normalizeInstance),
     jwt: z.string().optional(),
     site: siteSchema,
     uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
   }),
   z.object({
-    instance: z.string(),
+    instance: z.string().transform(normalizeInstance),
     jwt: z.string().optional(),
     uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
@@ -53,8 +54,12 @@ const accountSchema = z.union([
 
 export type Account = z.infer<typeof accountSchema>;
 
+export type UpdateAccount = DistributedOmit<Account, "instance"> & {
+  instance: string;
+};
+
 const knownAccountSchema = z.object({
-  instance: z.string(),
+  instance: z.string().transform(normalizeInstance),
   username: z.string(),
 });
 
@@ -76,9 +81,9 @@ type Uuid = string;
 type AuthStore = {
   getSelectedAccount: () => Account;
   isLoggedIn: () => boolean;
-  updateSelectedAccount: (patch: Partial<Account>) => any;
+  updateSelectedAccount: (patch: Partial<UpdateAccount>) => any;
   updateAccountSite: (uuid: Uuid, site: Schemas.Site) => any;
-  addAccount: (patch?: Partial<Account>) => any;
+  addAccount: (patch?: Partial<UpdateAccount>) => any;
   selectAccount: (uuid: Uuid) => Account | null;
   logout: (uuid?: Uuid) => any;
   logoutMultiple: (uuids: Uuid[]) => any;
@@ -263,13 +268,10 @@ export const useAuth = create<AuthStore>()(
         );
         if (site.me) {
           const account = accounts.find((a) => a.uuid === selectedUuid);
-          const instance = account
-            ? new URL(normalizeInstance(account.instance)).host
-            : null;
           const username = site.me.slug;
-          if (instance && username) {
+          if (account?.instance && username) {
             knownAccounts = _.uniqBy(
-              [{ instance, username }, ...knownAccounts],
+              [{ instance: account.instance, username }, ...knownAccounts],
               (ka) => `${ka.instance}:${ka.username}`,
             ).slice(0, MAX_KNOWN_ACCOUNTS);
           }
@@ -285,6 +287,7 @@ export const useAuth = create<AuthStore>()(
             ? {
                 ...a,
                 ...patch,
+                instance: normalizeInstance(patch.instance ?? a.instance),
                 ...("site" in patch && patch.site
                   ? { siteUpdatedAt: Date.now() }
                   : null),
@@ -473,12 +476,7 @@ export function useLoginSuggestions(instance: string) {
 
       const { knownAccounts = [], accounts } = state;
 
-      let host: string;
-      try {
-        host = new URL(normalizeInstance(instance)).host;
-      } catch {
-        return [];
-      }
+      const normalizedInstance = normalizeInstance(instance);
 
       const loggedInSlugs = new Set(
         _.compact(
@@ -487,18 +485,15 @@ export function useLoginSuggestions(instance: string) {
               if (!a.jwt) {
                 return false;
               }
-              try {
-                return new URL(normalizeInstance(a.instance)).host === host;
-              } catch {
-                return false;
-              }
+              return a.instance === normalizedInstance;
             })
             .map((a) => getAccountSite(a)?.me?.slug),
         ),
       );
 
       return knownAccounts.filter(
-        (ka) => ka.instance === host && !loggedInSlugs.has(ka.username),
+        (ka) =>
+          ka.instance === normalizedInstance && !loggedInSlugs.has(ka.username),
       );
     }),
   );

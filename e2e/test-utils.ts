@@ -1,5 +1,5 @@
 import type { Page, Route } from "@playwright/test";
-import type { AuthStoreData } from "@/src/stores/auth";
+import type { Account, AuthStoreData } from "@/src/stores/auth";
 import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
 
 // The zustand persist middleware stores keys as `${rowName}_${persistName}`.
@@ -34,10 +34,7 @@ export async function mockNodeinfo(page: Page, software: "lemmy" | "piefed") {
   );
 }
 
-export async function seedAuth(
-  page: Page,
-  account: AuthStoreData["accounts"][number],
-) {
+export async function seedAuth(page: Page, account: Account) {
   const authState = {
     state: {
       accounts: [account],
