@@ -1,8 +1,7 @@
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { useRequireAuth } from "../auth-context";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
-import { useShouldBlurNsfw } from "@/src/hooks/nsfw";
+import { useShouldBlurNsfw, useRequireAuth } from "@/src/hooks";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "@/src/components/communities/utils";
 import { Link, resolveRoute } from "@/src/routing/index";

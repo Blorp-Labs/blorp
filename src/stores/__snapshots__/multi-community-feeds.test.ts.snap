@@ -2,7 +2,7 @@
 
 exports[`persisted state snapshot > feeds store shape 1`] = `
 {
-  "test_123_https://blorpblorp.xyz/feed/1": {
+  "test_https://lemmy.world_https://blorpblorp.xyz/feed/1": {
     "data": {
       "feedView": {
         "apId": "https://blorpblorp.xyz/feed/1",
@@ -29,7 +29,7 @@ exports[`persisted state snapshot > feeds store shape 1`] = `
 exports[`persisted state snapshot > feeds store shape 2`] = `
 {
   "feeds": {
-    "test_123_https://blorpblorp.xyz/feed/1": {
+    "test_https://lemmy.world_https://blorpblorp.xyz/feed/1": {
       "data": {
         "feedView": {
           "apId": "https://blorpblorp.xyz/feed/1",

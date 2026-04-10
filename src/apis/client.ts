@@ -3,11 +3,15 @@ import { LemmyV4Api } from "./lemmy-v4";
 import { ApiBlueprint } from "./api-blueprint";
 import z from "zod";
 import _ from "lodash";
+import { zodEnumMessage } from "../lib/zod";
 import { PieFedApi } from "./piefed";
 
 const nodeInfoSchema = z.object({
   software: z.object({
-    name: z.enum(["lemmy", "piefed"]),
+    name: z.enum(
+      ["lemmy", "piefed"],
+      zodEnumMessage`Unsupported software: ${(i) => i.received}`,
+    ),
     version: z.string(),
   }),
 });

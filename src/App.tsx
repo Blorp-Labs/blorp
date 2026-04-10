@@ -16,7 +16,7 @@ import { updateTauri } from "./lib/tauri";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 import { TanstackQueryProvider } from "./tanstack-query/index";
-import { AuthProvider } from "./components/auth-context";
+import { AuthProvider } from "./features/auth";
 import { PostRemoveProvider } from "./components/posts/post-remove";
 import { Toaster } from "./components/ui/sonner";
 

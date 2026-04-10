@@ -151,7 +151,8 @@ export const defaultInstances = (() => {
   }
 })();
 
-const defaultInstance = defaultInstances[0] || FALLBACK_INSTANCE;
+const defaultInstance =
+  defaultInstances[0] || normalizeInstance(FALLBACK_INSTANCE);
 
 export const env = {
   ...config,

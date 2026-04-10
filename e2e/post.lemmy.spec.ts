@@ -6,6 +6,7 @@ import {
   SITE_WITH_USER,
 } from "../test-utils/lemmy-api-fixtures";
 import { seedAuth, jsonRoute, mockNodeinfo } from "./test-utils";
+import { normalizeInstance } from "../src/normalize-instance";
 
 const tabs = [
   { name: "home", base: "/home/" },
@@ -64,7 +65,7 @@ for (const { name, base } of tabs) {
 
 test("upvoting a post hits the vote endpoint", async ({ page }) => {
   await seedAuth(page, {
-    instance: "lemmy.world",
+    instance: normalizeInstance("lemmy.world"),
     jwt: "test-post-jwt",
     uuid: "test-post-uuid",
   });

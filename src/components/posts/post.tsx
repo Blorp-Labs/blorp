@@ -32,7 +32,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldShowNsfw } from "@/src/hooks/nsfw";
+import { useShouldShowNsfw, useRequireAuth } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -62,7 +62,6 @@ import {
   buildErrorReport,
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
-import { useRequireAuth } from "../auth-context";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 
