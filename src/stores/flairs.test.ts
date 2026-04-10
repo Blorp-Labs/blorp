@@ -3,9 +3,13 @@ import { describe, test, expect, beforeAll, afterAll, vi } from "vitest";
 import * as api from "@/test-utils/api";
 import { useFlairsStore } from "./flairs";
 import { getCachePrefixer } from "./auth";
+import { normalizeInstance } from "../normalize-instance";
 import _ from "lodash";
 
-const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
+const prefix = getCachePrefixer({
+  instance: normalizeInstance("lemmy.world"),
+  uuid: "test",
+});
 
 describe("merge (cross-tab version skew protection)", () => {
   test("accepts valid persisted flairs", () => {

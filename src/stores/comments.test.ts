@@ -11,9 +11,13 @@ import {
 import * as api from "@/test-utils/api";
 import { useCommentsStore } from "./comments";
 import { getCachePrefixer } from "./auth";
+import { normalizeInstance } from "../normalize-instance";
 import _ from "lodash";
 
-const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
+const prefix = getCachePrefixer({
+  instance: normalizeInstance("lemmy.world"),
+  uuid: "test",
+});
 
 afterEach(() => {
   useCommentsStore.getState().reset();

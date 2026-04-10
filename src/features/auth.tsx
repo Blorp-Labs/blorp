@@ -89,7 +89,7 @@ function InstanceSelect({
 }) {
   const options = useMemo(() => {
     return env.defaultInstances.map((i) => {
-      let label = i;
+      let label: string = i;
 
       try {
         const url = new URL(i);
@@ -262,7 +262,7 @@ function InstanceSelectionPage({
   }, [search]);
 
   const instances = useInstancesQuery();
-  const suggestions = useLoginSuggestions(instance.url);
+  const suggestions = useAuth((s) => s.knownAccounts);
   const keyedSuggestions = useMemo(
     () => _.keyBy(suggestions, "instance"),
     [suggestions],
@@ -380,7 +380,7 @@ function InstanceSelectionPage({
             <span className="text-sm text-muted-foreground">
               {i.description}
             </span>
-            {keyedSuggestions[i.host] && (
+            {keyedSuggestions[i.url] && (
               <Badge variant="brand">Previously used</Badge>
             )}
           </div>
