@@ -834,9 +834,12 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       );
       return {
         post: convertPost(fullPost.post_view, fullPost.cross_posts),
-        // TODO: also return mods here
-        creator: convertPerson({ person: fullPost.post_view.creator }),
+        profiles: [
+          ...fullPost.moderators.map((m) => m.moderator),
+          fullPost.post_view.creator,
+        ].map((person) => convertPerson({ person })),
         community: convertCommunity(fullPost.community_view),
+        flairs: undefined,
       };
     });
   }

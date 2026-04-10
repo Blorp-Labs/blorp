@@ -271,7 +271,7 @@ export function usePostQuery({
         throw new Error("ap_id undefined");
       }
 
-      const { post, creator, community, flairs } = await (
+      const { post, profiles, community, flairs } = await (
         await api
       ).getPost({ apId }, { signal });
 
@@ -289,8 +289,8 @@ export function usePostQuery({
       if (community) {
         cacheCommunities(getCachePrefixer(), [{ communityView: community }]);
       }
-      if (creator) {
-        cacheProfiles(getCachePrefixer(), [creator]);
+      if (profiles) {
+        cacheProfiles(getCachePrefixer(), profiles);
       }
       if (flairs) {
         cacheFlairs(getCachePrefixer(), flairs);

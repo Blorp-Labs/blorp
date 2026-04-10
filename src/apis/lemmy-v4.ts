@@ -736,8 +736,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     );
     return {
       post: convertPost(fullPost.post_view),
-      creator: convertPerson({ person: fullPost.post_view.creator }),
+      profiles: [fullPost.post_view.creator].map((person) =>
+        convertPerson({ person }),
+      ),
       community: convertCommunity(fullPost.community_view),
+      flairs: undefined,
     };
   }
 
