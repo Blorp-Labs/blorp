@@ -1,4 +1,7 @@
 import z from "zod";
+import { Handle } from "../lib/handle";
+
+export type { Handle };
 
 export const Errors = {
   MFA_REQUIRED: new Error("MFA_REQUIRED"),
@@ -12,8 +15,6 @@ export enum Software {
   LEMMY = "lemmy",
   PIEFED = "piefed",
 }
-
-export type Handle = `${string}@${string}`;
 
 export const handleSchema = z
   .string()

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { createHandle, parseHandle } from "../apis/utils";
+import { createHandle, parseHandle } from "../lib/handle";
 
 describe("createHandle", () => {
   test.each([
