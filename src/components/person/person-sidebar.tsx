@@ -44,7 +44,7 @@ export function SmallScreenSidebar({ person }: { person?: Schemas.Person }) {
             className="object-cover"
           />
           <AvatarFallback className="text-xl">
-            {person?.slug?.substring(0, 1).toUpperCase()}
+            {person?.handle?.substring(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
@@ -103,10 +103,10 @@ function PersonSidebarInner({ person }: { person?: Schemas.Person }) {
   const setOpen = useSidebarStore((s) => s.setPersonBioExpanded);
 
   const tag = useTagUserStore((s) =>
-    person ? s.userTags[person.slug] : undefined,
+    person ? s.userTags[person.handle] : undefined,
   );
 
-  const [name, host] = person ? person.slug.split("@") : [];
+  const [name, host] = person ? person.handle.split("@") : [];
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 
@@ -120,7 +120,7 @@ function PersonSidebarInner({ person }: { person?: Schemas.Person }) {
               className="object-cover"
             />
             <AvatarFallback className="text-xl">
-              {person?.slug?.substring(0, 1).toUpperCase()}
+              {person?.handle?.substring(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 

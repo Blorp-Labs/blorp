@@ -38,20 +38,20 @@ function CommunitySearchResult({ apId }: { apId: string }) {
 
   const onSelect = () =>
     router.push(
-      resolveRoute(`${linkCtx.root}c/:communityName`, {
-        communityName: community.communityView.slug,
+      resolveRoute(`${linkCtx.root}c/:communityHandle`, {
+        communityHandle: community.communityView.handle,
       }),
     );
 
   return (
     <CommandItem
       value={apId}
-      keywords={[community.communityView.slug]}
+      keywords={[community.communityView.handle]}
       onSelect={onSelect}
       onClick={onSelect}
     >
       <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-        {community.communityView.slug}
+        {community.communityView.handle}
       </span>
     </CommandItem>
   );
@@ -108,12 +108,12 @@ function UserSearchResult({ apId }: { apId: string }) {
   return (
     <CommandItem
       value={apId}
-      keywords={[person.slug]}
+      keywords={[person.handle]}
       onSelect={onSelect}
       onClick={onSelect}
     >
       <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-        {person.slug}
+        {person.handle}
       </span>
     </CommandItem>
   );
@@ -121,7 +121,7 @@ function UserSearchResult({ apId }: { apId: string }) {
 
 export function SearchBar({
   type,
-  communitySlug,
+  communityHandle,
   preventOpen = false,
   className,
   autoFocus,
@@ -130,7 +130,7 @@ export function SearchBar({
   onSubmit?: (value?: string) => any;
 } & {
   type?: Forms.Search["type"];
-  communitySlug?: Forms.Search["communitySlug"];
+  communityHandle?: Forms.Search["communityHandle"];
   preventOpen?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -144,7 +144,7 @@ export function SearchBar({
     q: search.value ?? "",
     type: type ?? "All",
     limit: type ? 10 : 3,
-    communitySlug,
+    communityHandle,
   });
 
   useKeyboardShortcut(

@@ -68,7 +68,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Schemas } from "@/src/apis/api-blueprint";
+import { Handle, Schemas } from "@/src/apis/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
@@ -139,9 +139,9 @@ export function useCommentActions({
 
   const route = commentView
     ? resolveRoute(`${linkCtx.root}posts/:post/comments/:comment`, {
-        post: encodeApId(commentView.postApId),
-        comment: encodeApId(commentView.apId),
-      })
+      post: encodeApId(commentView.postApId),
+      comment: encodeApId(commentView.apId),
+    })
     : null;
 
   const saved = commentView ? getCommentSaved(commentView) : undefined;
@@ -153,13 +153,13 @@ export function useCommentActions({
     "comment",
     commentView
       ? {
-          type: "comment",
-          apId: commentView.apId,
-          postId: commentView.postId,
-          commentId: commentView.id,
-          communitySlug: commentView.communitySlug,
-          route: route!,
-        }
+        type: "comment",
+        apId: commentView.apId,
+        postId: commentView.postId,
+        commentId: commentView.id,
+        communityHandle: commentView.communityHandle,
+        route: route!,
+      }
       : null,
   );
 
@@ -178,83 +178,83 @@ export function useCommentActions({
   return [
     ...(canMod
       ? [
-          {
-            text: "Moderation",
-            actions: [
-              {
-                text: commentView.removed
-                  ? "Restore comment"
-                  : "Remove comment",
-                onClick: () => showCommentRemoveModal(commentView.path),
-              },
-              ...(software === "piefed"
-                ? [
-                    {
-                      text: locked ? "Unlock comment" : "Lock comment",
-                      onClick: () =>
-                        lockComment.mutate({
-                          path: commentView.path,
-                          commentId: commentView.id,
-                          locked: !locked,
-                        }),
-                    },
-                  ]
-                : []),
-            ],
-          },
-        ]
+        {
+          text: "Moderation",
+          actions: [
+            {
+              text: commentView.removed
+                ? "Restore comment"
+                : "Remove comment",
+              onClick: () => showCommentRemoveModal(commentView.path),
+            },
+            ...(software === "piefed"
+              ? [
+                {
+                  text: locked ? "Unlock comment" : "Lock comment",
+                  onClick: () =>
+                    lockComment.mutate({
+                      path: commentView.path,
+                      commentId: commentView.id,
+                      locked: !locked,
+                    }),
+                },
+              ]
+              : []),
+          ],
+        },
+      ]
       : []),
     ...(isMyComment && !commentView.deleted
       ? [
-          {
-            text: "Edit",
-            onClick: () => {
-              loadCommentIntoEditor({
-                postApId: commentView.postApId,
-                queryKeyParentId: queryKeyParentId,
-                comment: commentView,
-              });
-            },
-          } as const,
-        ]
+        {
+          text: "Edit",
+          onClick: () => {
+            loadCommentIntoEditor({
+              postApId: commentView.postApId,
+              queryKeyParentId: queryKeyParentId,
+              comment: commentView,
+            });
+          },
+        } as const,
+      ]
       : []),
     ...(software === "piefed" && commentView
       ? [
-          {
-            text: "React",
-            actions: [
-              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
-                text: emoji,
-                onClick: () =>
-                  requireAuth().then(() =>
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                      score: getCommentMyVote(commentView) ?? undefined,
-                    }),
-                  ),
-              })),
-              {
-                text: "Other...",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const emoji = await inputAlert({
-                      header: "React with emoji",
-                      placeholder: "Enter an emoji",
-                    });
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                    });
-                  } catch {}
-                },
+        {
+          text: "React",
+          actions: [
+            ...QUICK_REACTION_EMOJIS.map((emoji) => ({
+              text: emoji,
+              onClick: () =>
+                requireAuth().then(() =>
+                  addReactionEmoji.mutate({
+                    path: commentView.path,
+                    commentId: commentView.id,
+                    emoji,
+                    score: getCommentMyVote(commentView) ?? undefined,
+                  }),
+                ),
+            })),
+            {
+              text: "Other...",
+              onClick: async () => {
+                try {
+                  await requireAuth();
+                  const emoji = await inputAlert({
+                    header: "React with emoji",
+                    placeholder: "Enter an emoji",
+                  });
+                  addReactionEmoji.mutate({
+                    path: commentView.path,
+                    commentId: commentView.id,
+                    emoji,
+                  });
+                } catch { }
               },
-            ],
-          },
-        ]
+            },
+          ],
+        },
+      ]
       : []),
     {
       text: saved ? "Unsave comment" : "Save comment",
@@ -269,50 +269,50 @@ export function useCommentActions({
     ...(route ? shareActions : []),
     ...((isPostAuthor || canMod) && commentView && software === "piefed"
       ? [
-          {
-            text: answer ? "Unmark as answer" : "Mark as answer",
-            onClick: () =>
-              markCommentAsAnswer.mutate({
-                path: commentView.path,
-                commentId: commentView.id,
-                answer: !answer,
-              }),
-          },
-        ]
+        {
+          text: answer ? "Unmark as answer" : "Mark as answer",
+          onClick: () =>
+            markCommentAsAnswer.mutate({
+              path: commentView.path,
+              commentId: commentView.id,
+              answer: !answer,
+            }),
+        },
+      ]
       : []),
     ...(isMyComment
       ? [
-          {
-            text: commentView.deleted ? "Restore" : "Delete",
-            onClick: () => {
-              deleteComment.mutate({
-                id: commentView.id,
-                path: commentView.path,
-                deleted: !commentView.deleted,
-              });
-            },
-            danger: true,
-          } as const,
-        ]
+        {
+          text: commentView.deleted ? "Restore" : "Delete",
+          onClick: () => {
+            deleteComment.mutate({
+              id: commentView.id,
+              path: commentView.path,
+              deleted: !commentView.deleted,
+            });
+          },
+          danger: true,
+        } as const,
+      ]
       : []),
     ...(!isMyComment && !canMod
       ? [
-          {
-            text: "Report comment",
-            onClick: () =>
-              requireAuth().then(() => showReportModal(commentView.path)),
-            danger: true,
-          } as const,
-        ]
+        {
+          text: "Report comment",
+          onClick: () =>
+            requireAuth().then(() => showReportModal(commentView.path)),
+          danger: true,
+        } as const,
+      ]
       : []),
     "DIVIDER",
     ...(!isMyComment
       ? [
-          {
-            text: "Commenter",
-            actions: commenterActions,
-          },
-        ]
+        {
+          text: "Commenter",
+          actions: commenterActions,
+        },
+      ]
       : []),
   ];
 }
@@ -343,7 +343,7 @@ function Byline({
 
   const isAdmin = useIsAdmin(comment.creatorApId);
 
-  const [name, host] = profileView?.slug.split("@") ?? [];
+  const [name, host] = profileView?.handle.split("@") ?? [];
 
   return (
     <CollapsibleTrigger
@@ -360,7 +360,7 @@ function Byline({
         <Avatar className="w-6 h-6">
           <AvatarImage src={profileView?.avatar ?? undefined} />
           <AvatarFallback className="text-xs">
-            {profileView?.slug?.substring(0, 1).toUpperCase()}{" "}
+            {profileView?.handle?.substring(0, 1).toUpperCase()}{" "}
           </AvatarFallback>
         </Avatar>
       )}
@@ -440,7 +440,7 @@ function PostCommentErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY as Handle,
       title: "[Crash] Comment rendering error",
       body,
     });
@@ -518,11 +518,11 @@ function PostCommentInner({
   const doubleTapLike = useDoubleTapLike(
     commentView
       ? {
-          postId: commentView.postId,
-          id: commentView.id,
-          score: 1,
-          path: commentView.path,
-        }
+        postId: commentView.postId,
+        id: commentView.id,
+        score: 1,
+        path: commentView.path,
+      }
       : undefined,
   );
 
@@ -713,10 +713,10 @@ function PostCommentInner({
               open && "pb-1.5",
               level && level > 0 && !open && "pb-3",
               !bgOnParent &&
-                getCommentBgClass({ commentView, highlightComment }),
+              getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
-            actorSlug={commentView.creatorSlug}
+            actorSlug={commentView.creatorHandle}
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}
@@ -752,7 +752,7 @@ function PostCommentInner({
                 "flex flex-row items-center text-sm text-muted-foreground justify-end gap-1 pt-1",
                 leftHandedMode && "flex-row-reverse",
                 !bgOnParent &&
-                  getCommentBgClass({ commentView, highlightComment }),
+                getCommentBgClass({ commentView, highlightComment }),
               )}
             >
               {saved && (
@@ -810,45 +810,45 @@ function PostCommentInner({
           {(sorted.length > 0 ||
             rest.imediateChildren > 0 ||
             (replyState && media.md)) && (
-            <div
-              className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-xl mb-2"
-              style={{ borderColor: color }}
-            >
-              {replyState && (
-                <InlineCommentReply state={replyState} autoFocus />
-              )}
+              <div
+                className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-xl mb-2"
+                style={{ borderColor: color }}
+              >
+                {replyState && (
+                  <InlineCommentReply state={replyState} autoFocus />
+                )}
 
-              {sorted.map(([id, map]) => (
-                <PostComment
-                  postApId={postApId}
-                  postLocked={postLocked}
-                  queryKeyParentId={queryKeyParentId}
-                  key={id}
-                  commentTree={map}
-                  level={_.isNumber(level) ? level + 1 : level}
-                  postCreatorId={postCreatorId}
-                  highlightCommentId={highlightCommentId}
-                  modApIds={modApIds}
-                  canMod={canMod}
-                />
-              ))}
+                {sorted.map(([id, map]) => (
+                  <PostComment
+                    postApId={postApId}
+                    postLocked={postLocked}
+                    queryKeyParentId={queryKeyParentId}
+                    key={id}
+                    commentTree={map}
+                    level={_.isNumber(level) ? level + 1 : level}
+                    postCreatorId={postCreatorId}
+                    highlightCommentId={highlightCommentId}
+                    modApIds={modApIds}
+                    canMod={canMod}
+                  />
+                ))}
 
-              {commentView && sorted.length < rest.imediateChildren ? (
-                <Link
-                  to={`${linkCtx.root}posts/:post/comments/:comment`}
-                  params={{
-                    post: encodeApId(commentView.postApId),
-                    comment: encodeApId(commentView?.apId),
-                  }}
-                  className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
-                >
-                  View more
-                </Link>
-              ) : (
-                <div className="h-2 -mt-2 w-full bg-background translate-y-1" />
-              )}
-            </div>
-          )}
+                {commentView && sorted.length < rest.imediateChildren ? (
+                  <Link
+                    to={`${linkCtx.root}posts/:post/comments/:comment`}
+                    params={{
+                      post: encodeApId(commentView.postApId),
+                      comment: encodeApId(commentView?.apId),
+                    }}
+                    className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
+                  >
+                    View more
+                  </Link>
+                ) : (
+                  <div className="h-2 -mt-2 w-full bg-background translate-y-1" />
+                )}
+              </div>
+            )}
         </CollapsibleContent>
       </Collapsible>
     </div>

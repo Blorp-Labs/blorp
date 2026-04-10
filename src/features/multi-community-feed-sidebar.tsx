@@ -56,9 +56,9 @@ export default function MultiCommunitySidebar() {
           </ToolbarButtons>
           <ToolbarButtons side="right">
             <Link
-              to={`${linkCtx.root}c/:communityName/s`}
+              to={`${linkCtx.root}c/:communityHandle/s`}
               params={{
-                communityName: apId,
+                communityHandle: apId,
               }}
               className="text-2xl contents md:hidden"
             >

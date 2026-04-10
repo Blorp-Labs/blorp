@@ -26,7 +26,7 @@ afterEach(() => {
 describe("useCommunitiesStore", () => {
   describe("cacheCommunity", () => {
     const communityView = api.getCommunity();
-    const slug = communityView.slug;
+    const slug = communityView.handle;
 
     test("load post into store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
@@ -76,7 +76,7 @@ describe("useCommunitiesStore", () => {
 
   describe("patchCommunity", () => {
     const communityView = api.getCommunity();
-    const slug = communityView.slug;
+    const slug = communityView.handle;
 
     test("does not patch post that is not already in the store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
@@ -131,9 +131,9 @@ describe("useCommunitiesStore", () => {
 
   describe("cacheCommunities", () => {
     const communityView1 = api.getCommunity({ id: 1 });
-    const slug1 = communityView1.slug;
+    const slug1 = communityView1.handle;
     const communityView2 = api.getCommunity({ id: 2 });
-    const slug2 = communityView2.slug;
+    const slug2 = communityView2.handle;
 
     test("load communities into store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
@@ -198,7 +198,7 @@ describe("useCommunitiesStore", () => {
 describe("merge (cross-tab version skew protection)", () => {
   test("accepts valid persisted communities", () => {
     const communityView = api.getCommunity({ id: 1 });
-    const key = prefix(communityView.slug);
+    const key = prefix(communityView.handle);
 
     const merge = useCommunitiesStore.persist.getOptions().merge!;
     const result = merge(

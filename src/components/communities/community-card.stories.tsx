@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { CommunityCard } from "./community-card";
-import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { useAuth } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
@@ -38,7 +37,7 @@ type Story = StoryObj<typeof CommunityCard>;
 
 export const Card: Story = {
   args: {
-    communitySlug: COMMUNITY.slug,
+    communityHandle: COMMUNITY.handle,
     size: "md",
   },
 };

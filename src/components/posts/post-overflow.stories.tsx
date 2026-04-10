@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { handleSchema } from "@/src/apis/api-blueprint";
 
 import { PostCard } from "./post";
 import * as api from "@/test-utils/api";
@@ -33,8 +34,9 @@ const longCreatorNamePost = api.getPost({
   variant: "text",
   post: {
     id: api.randomDbId(),
-    creatorSlug:
+    creatorHandle: handleSchema.parse(
       "averylongcreatornamewithnospacesatall@averylonghostname.example.com",
+    ),
   },
 });
 
@@ -43,8 +45,9 @@ const longCommunityNamePost = api.getPost({
   variant: "text",
   post: {
     id: api.randomDbId(),
-    communitySlug:
+    communityHandle: handleSchema.parse(
       "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
+    ),
   },
 });
 
@@ -88,8 +91,9 @@ const longCrossPostCommunityPost = api.getPost({
     crossPosts: [
       {
         apId: "https://blorpblorp.xyz/post/2001",
-        communitySlug:
+        communityHandle: handleSchema.parse(
           "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
+        ),
       },
     ],
   },
@@ -103,7 +107,9 @@ const manyCrossPostsPost = api.getPost({
     body: "Short post body",
     crossPosts: Array.from({ length: 10 }, (_, i) => ({
       apId: `https://blorpblorp.xyz/post/${3000 + i}`,
-      communitySlug: `community${i + 1}@example${i + 1}.com`,
+      communityHandle: handleSchema.parse(
+        `community${i + 1}@example${i + 1}.com`,
+      ),
     })),
   },
 });

@@ -27,7 +27,7 @@ import { X } from "@/src/components/icons";
 type ListItem =
   | { kind: "header"; label: string }
   | { kind: "person"; apId: string }
-  | { kind: "community"; slug: string }
+  | { kind: "community"; handle: string }
   | { kind: "instance"; domain: string; id: number };
 
 function BlockedPersonItem({
@@ -62,7 +62,7 @@ function BlockedPersonItem({
           size="icon"
           onClick={() =>
             alrt({
-              message: `Unblock ${person.slug}`,
+              message: `Unblock ${person.handle}`,
               buttons: [
                 { text: "Cancel", role: "cancel" },
                 {
@@ -87,17 +87,17 @@ function BlockedPersonItem({
 }
 
 function BlockedCommunityItem({
-  slug,
+  handle,
   account,
   alrt,
   blockCommunity,
 }: {
-  slug: string;
+  handle: string;
   account: Parameters<typeof useCommunityFromStore>[1];
   alrt: ReturnType<typeof useIonAlert>[0];
   blockCommunity: ReturnType<typeof useBlockCommunityMutation>;
 }) {
-  const community = useCommunityFromStore(slug, account);
+  const community = useCommunityFromStore(handle, account);
   if (!community) {
     return null;
   }
@@ -107,7 +107,7 @@ function BlockedCommunityItem({
         <div className="flex-1 min-w-0">
           <CommunityCard
             size="sm"
-            communitySlug={community.communityView.slug}
+            communityHandle={community.communityView.handle}
             disableLink
             account={account}
           />
@@ -117,7 +117,7 @@ function BlockedCommunityItem({
           size="icon"
           onClick={() =>
             alrt({
-              message: `Unblock ${community.communityView.slug}`,
+              message: `Unblock ${community.communityView.handle}`,
               buttons: [
                 { text: "Cancel", role: "cancel" },
                 {
@@ -150,7 +150,7 @@ export default function SettingsPage() {
   const site = account ? getAccountSite(account) : null;
 
   const blockedPersonApIds = site?.personBlocks ?? [];
-  const blockedCommunitySlugIds = site?.communityBlocks ?? [];
+  const blockedCommunityHandles = site?.communityBlocks ?? [];
   const instanceBlocks = site?.instanceBlocks ?? [];
 
   const listData = useMemo(() => {
@@ -163,11 +163,11 @@ export default function SettingsPage() {
         ),
       );
     }
-    if (blockedCommunitySlugIds.length > 0) {
+    if (blockedCommunityHandles.length > 0) {
       items.push(
         { kind: "header", label: "BLOCKED COMMUNITIES" },
-        ...blockedCommunitySlugIds.map(
-          (slug): ListItem => ({ kind: "community", slug }),
+        ...blockedCommunityHandles.map(
+          (handle): ListItem => ({ kind: "community", handle }),
         ),
       );
     }
@@ -184,12 +184,12 @@ export default function SettingsPage() {
       );
     }
     return items;
-  }, [blockedPersonApIds, blockedCommunitySlugIds, instanceBlocks]);
+  }, [blockedPersonApIds, blockedCommunityHandles, instanceBlocks]);
 
   const { person } = account
     ? parseAccountInfo(account)
     : { person: undefined };
-  const slug = person?.slug;
+  const slug = person?.handle;
 
   const [alrt] = useIonAlert();
 
@@ -241,7 +241,7 @@ export default function SettingsPage() {
             if (item.kind === "community") {
               return (
                 <BlockedCommunityItem
-                  slug={item.slug}
+                  handle={item.handle}
                   account={account}
                   alrt={alrt}
                   blockCommunity={blockCommunity}

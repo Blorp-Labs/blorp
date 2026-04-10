@@ -27,27 +27,27 @@ export default function CommunityFeed() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
-  const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName/sidebar`,
+  const { communityHandle: communityHandleEncoded } = useParams(
+    `${linkCtx.root}c/:communityHandle/sidebar`,
   );
-  const communityName = useMemo(
-    () => decodeURIComponent(communityNameEncoded),
-    [communityNameEncoded],
+  const communityHandle = useMemo(
+    () => decodeURIComponent(communityHandleEncoded),
+    [communityHandleEncoded],
   );
 
   const communityQuery = useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
   });
-  const community = useCommunityFromStore(communityName)?.communityView;
+  const community = useCommunityFromStore(communityHandle)?.communityView;
 
   useUpdateRecentCommunity(community);
 
   return (
     <Page
       notFound={communityQuery.isError && !community}
-      notFoundCommunitySlug={communityName}
+      notFoundCommunitySlug={communityHandle}
     >
-      <PageTitle>{communityName}</PageTitle>
+      <PageTitle>{communityHandle}</PageTitle>
       <IonHeader>
         <IonToolbar
           data-tauri-drag-region
@@ -62,14 +62,14 @@ export default function CommunityFeed() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" numRightIcons={2}>
-              {communityName}
+              {communityHandle}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
             <Link
-              to={`${linkCtx.root}c/:communityName/s`}
+              to={`${linkCtx.root}c/:communityHandle/s`}
               params={{
-                communityName,
+                communityHandle,
               }}
               className="text-2xl contents md:hidden"
             >
@@ -90,7 +90,7 @@ export default function CommunityFeed() {
         </IonRefresher>
         <ContentGutters className="px-0">
           <SmallScreenSidebar
-            communityName={communityName}
+            communityHandle={communityHandle}
             actorId={community?.apId}
             expanded
           />

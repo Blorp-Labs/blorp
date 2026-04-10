@@ -50,7 +50,7 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
               params={{ userId: encodeApId(item.modApId) }}
               className="text-brand truncate block"
             >
-              {item.modSlug?.split("@")[0] ?? item.modSlug}
+              {item.modHandle?.split("@")[0] ?? item.modHandle}
             </Link>
           </PersonHoverCard>
         ) : (
@@ -73,7 +73,7 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
                   params={{ userId: encodeApId(item.userApId) }}
                   className="text-brand"
                 >
-                  {item.userSlug?.split("@")[0] ?? item.userSlug}
+                  {item.userHandle?.split("@")[0] ?? item.userHandle}
                 </Link>
               </PersonHoverCard>
             </>

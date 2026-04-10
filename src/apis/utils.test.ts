@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
-import { createSlug, parseSlug } from "../apis/utils";
+import { createHandle, parseHandle } from "../apis/utils";
 
-describe("createSlug", () => {
+describe("createHandle", () => {
   test.each([
     ["https://lemmy.world/c/brexit", "brexit", "brexit@lemmy.world"],
     [
@@ -17,8 +17,8 @@ describe("createSlug", () => {
       "onehundredninetysix@lemmy.blahaj.zone",
     ],
     ["https://lemdro.id/c/meta", "meta", "meta@lemdro.id"],
-  ])('createSlug("%s").slug == %s', (apId, name, slug) => {
-    expect(createSlug({ apId, name })?.slug).toBe(slug);
+  ])('createHandle("%s") == %s', (apId, name, slug) => {
+    expect(createHandle({ apId, name })).toBe(slug);
   });
 
   //test.each([
@@ -26,12 +26,12 @@ describe("createSlug", () => {
   //  ["https://google.com"],
   //  ["https://youtube.com"],
   //  ["https://www.youtube.com"],
-  //])('createSlug("%s").slug == ""', (actor_id) => {
-  //  expect(createSlug({ actor_id })?.slug).toBe(undefined);
+  //])('createHandle("%s").handle == ""', (actor_id) => {
+  //  expect(createHandle({ actor_id })?.handle).toBe(undefined);
   //});
 });
 
-describe("parseSlug", () => {
+describe("parseHandle", () => {
   test.each([
     ["brexit@lemmy.world", "brexit", "lemmy.world"],
     ["finance_greece@lemmy.world", "finance_greece", "lemmy.world"],
@@ -41,11 +41,14 @@ describe("parseSlug", () => {
       "onehundredninetysix",
       "lemmy.blahaj.zone",
     ],
-  ])('parseSlug("%s")', (slug, name, host) => {
-    expect(parseSlug(slug)).toEqual({ name, host });
+  ])('parseHandle("%s")', (slug, name, host) => {
+    expect(parseHandle(slug)).toEqual({ name, host });
   });
 
   test("undefined input returns undefined fields", () => {
-    expect(parseSlug(undefined)).toEqual({ name: undefined, host: undefined });
+    expect(parseHandle(undefined)).toEqual({
+      name: undefined,
+      host: undefined,
+    });
   });
 });

@@ -16,14 +16,14 @@ import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 
 export function CommunityCard({
-  communitySlug,
+  communityHandle,
   disableLink,
   className,
   hideText,
   size = "md",
   account,
 }: {
-  communitySlug: string;
+  communityHandle: string;
   disableLink?: boolean;
   className?: string;
   hideText?: boolean;
@@ -31,9 +31,9 @@ export function CommunityCard({
   account?: Account;
 }) {
   const fromRecent = useRecentCommunitiesStore((s) => {
-    return s.recentlyVisited.find((r) => r.slug === communitySlug);
+    return s.recentlyVisited.find((r) => r.handle === communityHandle);
   });
-  const fromCommunityCache = useCommunityFromStore(communitySlug, account);
+  const fromCommunityCache = useCommunityFromStore(communityHandle, account);
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 
   const blurNsfw = useShouldBlurNsfw();
@@ -45,7 +45,7 @@ export function CommunityCard({
     return <CommunityCardSkeleton size={size} />;
   }
 
-  const [name, host] = communityView.slug.split("@");
+  const [name, host] = communityView.handle.split("@");
 
   const content = (
     <>
@@ -57,7 +57,7 @@ export function CommunityCard({
             communityView.nsfw && blurNsfw && COMMUNITY_NSFW_ICON_BLUR_CLASS,
           )}
         />
-        <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{communityView.handle.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
       <div
@@ -102,9 +102,9 @@ export function CommunityCard({
   return (
     <Link
       data-testid="community-card"
-      to={`${linkCtx.root}c/:communityName`}
+      to={`${linkCtx.root}c/:communityHandle`}
       params={{
-        communityName: communityView.slug,
+        communityHandle: communityView.handle,
       }}
       className={cn(
         "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",

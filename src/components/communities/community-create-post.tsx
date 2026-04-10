@@ -8,9 +8,9 @@ import { useCommunityFromStore } from "@/src/stores/communities";
 import { resolveRoute } from "@/src/routing";
 
 export function useCommunityCreatePost({
-  communityName,
+  communityHandle,
 }: {
-  communityName?: string;
+  communityHandle?: string;
 }) {
   const [alrt] = useIonAlert();
 
@@ -18,21 +18,21 @@ export function useCommunityCreatePost({
   const drafts = useCreatePostStore((s) => s.drafts);
   const updateDraft = useCreatePostStore((s) => s.updateDraft);
 
-  const community = useCommunityFromStore(communityName)?.communityView;
+  const community = useCommunityFromStore(communityHandle)?.communityView;
 
   return async () => {
     if (!community) {
       return;
     }
     let createPostId = _.entries(drafts).find(
-      ([_id, { communitySlug }]) => communitySlug === community.slug,
+      ([_id, { communityHandle }]) => communityHandle === community.handle,
     )?.[0];
 
     if (createPostId) {
       try {
         const deferred = new Deferred();
         alrt({
-          message: `You have a draft post saved for ${communityName}. Would you like to continue where you left off?`,
+          message: `You have a draft post saved for ${communityHandle}. Would you like to continue where you left off?`,
           buttons: [
             {
               text: "New post",
@@ -54,24 +54,24 @@ export function useCommunityCreatePost({
     createPostId ??= uuid();
 
     updateDraft(createPostId, {
-      communitySlug: community.slug,
+      communityHandle: community.handle,
     });
     router.push(resolveRoute("/create_post", `?id=${createPostId}`));
   };
 }
 
 export function CommunityCreatePost({
-  communityName,
+  communityHandle,
   renderButton,
 }: {
-  communityName?: string;
+  communityHandle?: string;
   renderButton: (props: { onClick: () => void }) => void;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
 
-  const createPost = useCommunityCreatePost({ communityName });
+  const createPost = useCommunityCreatePost({ communityHandle });
 
-  if (!isLoggedIn || !communityName) {
+  if (!isLoggedIn || !communityHandle) {
     return null;
   }
 

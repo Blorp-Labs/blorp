@@ -10,24 +10,25 @@ import { type Schemas } from "../apis/api-blueprint";
 
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 
-export function mergeCacheObject<T>(
-  a: Record<string, T> | undefined,
-  b: Record<string, T> | undefined,
-  schema: z.ZodType<T>,
-): Record<string, T> {
+export function mergeCacheObject<TSchema extends z.ZodType>(
+  a: Record<string, unknown> | undefined,
+  b: Record<string, unknown> | undefined,
+  schema: TSchema,
+): Record<string, z.infer<TSchema>> {
+  type T = z.infer<TSchema>;
   let result: Record<string, T> = {};
 
   try {
     const firstKey = Object.keys(a ?? {})[0];
     if (firstKey && schema.safeParse(a?.[firstKey]).success) {
-      result = { ...result, ...a };
+      result = { ...result, ...(a as Record<string, T>) };
     }
   } catch {}
 
   try {
     const firstKey = Object.keys(b ?? {})[0];
     if (firstKey && schema.safeParse(b?.[firstKey]).success) {
-      result = { ...result, ...b };
+      result = { ...result, ...(b as Record<string, T>) };
     }
   } catch {}
 

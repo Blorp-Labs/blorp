@@ -2,7 +2,15 @@ import { ContentGutters } from "@/src/components/gutters";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommunityQuery, usePostQuery, usePostsQuery } from "@/src/queries";
 import _ from "lodash";
-import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonModal,
+  IonTitle,
+} from "@ionic/react";
 import { useUpdateRecentCommunity } from "@/src/hooks/use-update-recent-communities";
 import { BiHelpCircle } from "react-icons/bi";
 import { UserDropdown } from "@/src/components/nav";
@@ -34,7 +42,6 @@ import { useParams } from "@/src/routing";
 import { Forms } from "@/src/apis/api-blueprint";
 import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { Button } from "@/src/components/ui/button";
-import { IonButtons, IonButton, IonModal, IonTitle } from "@ionic/react";
 import { MarkdownRenderer } from "@/src/components/markdown/renderer";
 import { Spinner, NoImage } from "@/src/components/icons";
 import { getPostEmbed } from "@/src/apis/post-embed";
@@ -170,18 +177,18 @@ const Post = memo(
 );
 
 function useLightboxPostsData({
-  communityName,
+  communityHandle,
   listingType,
   activePostApId,
 }: {
-  communityName?: string;
+  communityHandle?: string;
   listingType: Forms.GetPosts["type"];
   activePostApId?: string | null;
 }) {
   const postsQuery = usePostsQuery(
-    communityName
+    communityHandle
       ? {
-          communitySlug: communityName,
+          communityHandle: communityHandle,
         }
       : {
           type: listingType,
@@ -231,15 +238,15 @@ export default function LightBoxPosts() {
   useHideTabBarOnMount();
 
   const linkCtx = useLinkContext();
-  const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName/lightbox`,
+  const { communityHandle: communityHandleEncoded } = useParams(
+    `${linkCtx.root}c/:communityHandle/lightbox`,
   );
-  const communityName = useMemo(
+  const communityHandle = useMemo(
     () =>
-      communityNameEncoded
-        ? decodeURIComponent(communityNameEncoded)
+      communityHandleEncoded
+        ? decodeURIComponent(communityHandleEncoded)
         : undefined,
-    [communityNameEncoded],
+    [communityHandleEncoded],
   );
 
   const apIdParam = useUrlSearchState("apId", "", z.string());
@@ -258,7 +265,7 @@ export default function LightBoxPosts() {
   const listingType = useFiltersStore((s) => s.listingType);
 
   const { data, dataKey, initPostQuery, postsQuery } = useLightboxPostsData({
-    communityName,
+    communityHandle,
     listingType,
     activePostApId: decodedApId,
   });
@@ -281,9 +288,9 @@ export default function LightBoxPosts() {
   const post = usePostFromStore(postApId);
 
   useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
   });
-  const community = useCommunityFromStore(communityName);
+  const community = useCommunityFromStore(communityHandle);
 
   useUpdateRecentCommunity(community?.communityView);
 

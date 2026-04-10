@@ -229,7 +229,7 @@ export default function SettingsPage() {
   const { person } = account
     ? parseAccountInfo(account)
     : { person: undefined };
-  const slug = person?.slug;
+  const slug = person?.handle;
   const isLemmy = site?.software === "lemmy";
 
   const handleSubmit = () => {

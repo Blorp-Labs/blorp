@@ -322,7 +322,7 @@ function Mention({
               <div className="flex flex-row flex-wrap">
                 {mention.read ? null : <div />}
                 <span>
-                  <span className="font-bold">{mention.creatorSlug}</span>
+                  <span className="font-bold">{mention.creatorHandle}</span>
                   <span> mentioned you in the post </span>
                   <span className="font-bold">{mention.postName}</span>
                 </span>
@@ -422,7 +422,7 @@ function Reply({
               <div className="flex flex-row flex-wrap">
                 {replyView.read ? null : <div />}
                 <span>
-                  <span className="font-bold">{replyView.creatorSlug}</span>
+                  <span className="font-bold">{replyView.creatorHandle}</span>
                   <span>
                     {" "}
                     replied to your {hasParent ? "comment" : "post"} in{" "}
@@ -818,13 +818,13 @@ export default function Inbox() {
           onEndReached={
             isMergedTab
               ? () => {
-                  if (!replies.isFetchingNextPage && replies.hasNextPage) {
-                    replies.fetchNextPage();
-                  }
-                  if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
-                    mentions.fetchNextPage();
-                  }
+                if (!replies.isFetchingNextPage && replies.hasNextPage) {
+                  replies.fetchNextPage();
                 }
+                if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
+                  mentions.fetchNextPage();
+                }
+              }
               : activePagination.onEndReached
           }
           estimatedItemSize={375}

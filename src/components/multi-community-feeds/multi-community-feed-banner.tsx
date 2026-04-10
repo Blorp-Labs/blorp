@@ -16,7 +16,7 @@ export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
 
   const hideBanner = !banner || isBlocked;
 
-  const [name, host] = feed?.slug.split("@") ?? [];
+  const [name, host] = feed?.handle.split("@") ?? [];
 
   return (
     <div className="flex-1">
@@ -55,7 +55,7 @@ export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
           !hideBanner && "pb-3",
         )}
       >
-        {feed?.slug ? (
+        {feed?.handle ? (
           <span className="font-bold text-lg h-7">
             {name}
             <span className="italic">@{host}</span>

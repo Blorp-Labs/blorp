@@ -83,7 +83,7 @@ export const useCommunitiesStore = create<CommunityStore>()(
       },
       cacheCommunity: (prefix, view) => {
         const prev = get();
-        const slug = view.communityView.slug;
+        const slug = view.communityView.handle;
         if (slug) {
           const cacheKey = prefix(slug);
           const prevCommunityData = prev.communities[cacheKey]?.data;
@@ -115,7 +115,7 @@ export const useCommunitiesStore = create<CommunityStore>()(
         const newCommunities: Record<string, CachedCommunity> = {};
 
         for (const view of views) {
-          const slug = view.communityView.slug;
+          const slug = view.communityView.handle;
           if (slug) {
             const cacheKey = prefix(slug);
             const prevCommunityData = prev[cacheKey]?.data;
@@ -197,22 +197,22 @@ export const useCommunitiesStore = create<CommunityStore>()(
 sync(useCommunitiesStore);
 
 export function useCommunityFromStore(
-  communitySlug?: string,
+  communityHandle?: string,
   account?: Account,
 ) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
   return useCommunitiesStore((s) =>
-    communitySlug
-      ? s.communities[cachePrefixer(account)(communitySlug)]?.data
+    communityHandle
+      ? s.communities[cachePrefixer(account)(communityHandle)]?.data
       : undefined,
   );
 }
 
-export function useCommunitiesFromStore(communitySlug?: string[]) {
+export function useCommunitiesFromStore(communityHandle?: string[]) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
   return useCommunitiesStore(
     useShallow((s) =>
-      communitySlug
+      communityHandle
         ?.map((slug) => s.communities[cachePrefixer()(slug)]?.data)
         .filter(isNotNil),
     ),

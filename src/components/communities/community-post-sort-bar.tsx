@@ -5,9 +5,9 @@ import { CommunityCreatePost } from "./community-create-post";
 import { StickyFilterBar } from "../sticky-filter-bar";
 
 export function CommunityPostSortBar({
-  communityName,
+  communityHandle,
 }: {
-  communityName: string | undefined;
+  communityHandle: string | undefined;
 }) {
   return (
     <StickyFilterBar className="max-md:hidden">
@@ -15,14 +15,14 @@ export function CommunityPostSortBar({
       <PostCardStyleButton align="start" variant="button" />
       <div className="flex-1" />
       <CommunityCreatePost
-        communityName={communityName}
+        communityHandle={communityHandle}
         renderButton={(props) => (
           <Button size="sm" variant="outline" {...props}>
             Create post
           </Button>
         )}
       />
-      <CommunityJoinButton communityName={communityName} />
+      <CommunityJoinButton communityHandle={communityHandle} />
     </StickyFilterBar>
   );
 }

@@ -34,7 +34,7 @@ import {
 } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
-import { Schemas } from "@/src/apis/api-blueprint";
+import { Handle, Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
 import { SpotifyEmbed } from "./embeds/post-spotify-embed";
 import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
@@ -243,8 +243,8 @@ export function StickyPostHeader({
       </div>
       {showThumbnail && (
         <Link
-          to={`${linkCtx.root}c/:communityName/lightbox`}
-          params={{ communityName: postView.communitySlug }}
+          to={`${linkCtx.root}c/:communityHandle/lightbox`}
+          params={{ communityHandle: postView.communityHandle }}
           searchParams={`?apId=${encodeApId(apId)}`}
           className="cursor-zoom-in"
         >
@@ -266,7 +266,7 @@ function CrossPosts({
   const linkCtx = useLinkContext();
   return (
     <span className="text-brand text-sm flex flex-row items-center gap-x-2 gap-y-1 flex-wrap">
-      {crossPosts?.map(({ apId, communitySlug }, index) => (
+      {crossPosts?.map(({ apId, communityHandle }, index) => (
         <Link
           key={apId}
           to={`${linkCtx.root}posts/:post`}
@@ -276,7 +276,7 @@ function CrossPosts({
           className="hover:underline truncate max-w-full"
         >
           {index === 0 && <LuRepeat2 className="inline mr-1" />}
-          {communitySlug}
+          {communityHandle}
         </Link>
       ))}
     </span>
@@ -448,10 +448,10 @@ function LargePostCard({
             to={
               featuredContext === "home"
                 ? "/home/lightbox"
-                : `${linkCtx.root}c/:communityName/lightbox`
+                : `${linkCtx.root}c/:communityHandle/lightbox`
             }
             params={{
-              communityName: post.communitySlug,
+              communityHandle: post.communityHandle,
             }}
             searchParams={`?apId=${encodeApId(apId)}`}
             className="max-md:-mx-3.5 flex flex-col relative overflow-hidden md:rounded-lg cursor-zoom-in"
@@ -689,10 +689,10 @@ export function SmallPostCard({
           to={
             featuredContext === "home"
               ? "/home/lightbox"
-              : `${linkCtx.root}c/:communityName/lightbox`
+              : `${linkCtx.root}c/:communityHandle/lightbox`
           }
           params={{
-            communityName: post.communitySlug,
+            communityHandle: post.communityHandle,
           }}
           searchParams={`?apId=${encodeApId(apId)}`}
           className="relative"
@@ -970,7 +970,7 @@ function PostCardErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY as Handle,
       title: "[Crash] Post rendering error",
       body,
     });

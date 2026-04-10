@@ -5,12 +5,12 @@ const feedApIdSchema = z.object({
   apId: z.string(),
 });
 
-const communityNameSchema = z.object({
-  communityName: z.string(),
+const communityHandleSchema = z.object({
+  communityHandle: z.string(),
 });
 
 const postCommentSchema = z.object({
-  communityName: z.string(),
+  communityHandle: z.string(),
   post: z.string(),
   comment: z.string().optional(),
 });
@@ -24,7 +24,7 @@ const userSchema = z.object({
   userId: z.string(),
 });
 const searchSchema = z.object({
-  communityName: z.string().optional(),
+  communityHandle: z.string().optional(),
 });
 const manageAccountSchema = z.object({
   index: z.string(),
@@ -37,7 +37,7 @@ const lightBoxSchema = z.object({
 });
 
 const lightBoxFeedSchema = z.object({
-  communityName: z.string().optional(),
+  communityHandle: z.string().optional(),
 });
 
 export const routeDefs = {
@@ -54,18 +54,18 @@ export const routeDefs = {
   ...buildRoute("/home/sidebar"),
   ...buildRoute("/home/f/:apId", feedApIdSchema),
   ...buildRoute("/home/f/:apId/sidebar", feedApIdSchema),
-  ...buildRoute("/home/c/:communityName", communityNameSchema),
-  ...buildRoute("/home/c/:communityName/s", searchSchema),
-  ...buildRoute("/home/c/:communityName/sidebar", communityNameSchema),
-  ...buildRoute("/home/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/home/c/:communityHandle", communityHandleSchema),
+  ...buildRoute("/home/c/:communityHandle/s", searchSchema),
+  ...buildRoute("/home/c/:communityHandle/sidebar", communityHandleSchema),
+  ...buildRoute("/home/c/:communityHandle/modlog", communityHandleSchema),
   ...buildRoute("/home/modlog"),
-  ...buildRoute("/home/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute("/home/c/:communityHandle/posts/:post", postCommentSchema),
   ...buildRoute("/home/posts/:post", postSchema),
   ...buildRoute("/home/lightbox", lightBoxFeedSchema),
-  ...buildRoute("/home/c/:communityName/lightbox", lightBoxFeedSchema),
+  ...buildRoute("/home/c/:communityHandle/lightbox", lightBoxFeedSchema),
   ...buildRoute("/home/lightbox/:imgUrl", lightBoxSchema),
   ...buildRoute(
-    "/home/c/:communityName/posts/:post/comments/:comment",
+    "/home/c/:communityHandle/posts/:post/comments/:comment",
     postCommentSchema,
   ),
   ...buildRoute("/home/posts/:post/comments/:comment", postSchema),
@@ -79,21 +79,30 @@ export const routeDefs = {
   ...buildRoute("/communities/sidebar"),
   ...buildRoute("/communities/f/:apId", feedApIdSchema),
   ...buildRoute("/communities/f/:apId/sidebar", feedApIdSchema),
-  ...buildRoute("/communities/c/:communityName", communityNameSchema),
-  ...buildRoute("/communities/c/:communityName/s", searchSchema),
-  ...buildRoute("/communities/c/:communityName/sidebar", communityNameSchema),
-  ...buildRoute("/communities/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/communities/c/:communityHandle", communityHandleSchema),
+  ...buildRoute("/communities/c/:communityHandle/s", searchSchema),
+  ...buildRoute(
+    "/communities/c/:communityHandle/sidebar",
+    communityHandleSchema,
+  ),
+  ...buildRoute(
+    "/communities/c/:communityHandle/modlog",
+    communityHandleSchema,
+  ),
   ...buildRoute("/communities/modlog"),
-  ...buildRoute("/communities/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute(
+    "/communities/c/:communityHandle/posts/:post",
+    postCommentSchema,
+  ),
   ...buildRoute("/communities/posts/:post", postSchema),
   ...buildRoute(
-    "/communities/c/:communityName/posts/:post/comments/:comment",
+    "/communities/c/:communityHandle/posts/:post/comments/:comment",
     postCommentSchema,
   ),
   ...buildRoute("/communities/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/communities/u/:userId", userSchema),
   ...buildRoute("/communities/saved"),
-  ...buildRoute("/communities/c/:communityName/lightbox", lightBoxFeedSchema),
+  ...buildRoute("/communities/c/:communityHandle/lightbox", lightBoxFeedSchema),
   ...buildRoute("/communities/lightbox/:imgUrl", lightBoxSchema),
   // Messages
   ...buildRoute("/messages/*"),
@@ -106,21 +115,21 @@ export const routeDefs = {
   ...buildRoute("/inbox/sidebar"),
   ...buildRoute("/inbox/f/:apId", feedApIdSchema),
   ...buildRoute("/inbox/f/:apId/sidebar", feedApIdSchema),
-  ...buildRoute("/inbox/c/:communityName", communityNameSchema),
-  ...buildRoute("/inbox/c/:communityName/s", searchSchema),
-  ...buildRoute("/inbox/c/:communityName/sidebar", communityNameSchema),
-  ...buildRoute("/inbox/c/:communityName/modlog", communityNameSchema),
+  ...buildRoute("/inbox/c/:communityHandle", communityHandleSchema),
+  ...buildRoute("/inbox/c/:communityHandle/s", searchSchema),
+  ...buildRoute("/inbox/c/:communityHandle/sidebar", communityHandleSchema),
+  ...buildRoute("/inbox/c/:communityHandle/modlog", communityHandleSchema),
   ...buildRoute("/inbox/modlog"),
-  ...buildRoute("/inbox/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute("/inbox/c/:communityHandle/posts/:post", postCommentSchema),
   ...buildRoute("/inbox/posts/:post", postSchema),
   ...buildRoute(
-    "/inbox/c/:communityName/posts/:post/comments/:comment",
+    "/inbox/c/:communityHandle/posts/:post/comments/:comment",
     postCommentSchema,
   ),
   ...buildRoute("/inbox/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/inbox/u/:userId", userSchema),
   ...buildRoute("/inbox/saved"),
-  ...buildRoute("/inbox/c/:communityName/lightbox", lightBoxFeedSchema),
+  ...buildRoute("/inbox/c/:communityHandle/lightbox", lightBoxFeedSchema),
   ...buildRoute("/inbox/lightbox/:imgUrl", lightBoxSchema),
   // Create
   ...buildRoute("/create_post"),
