@@ -13,7 +13,6 @@ import { renderHook, act } from "@testing-library/react";
 import { getCachePrefixer } from "./auth";
 import { normalizeInstance } from "../normalize-instance";
 import { getFeedSubscribed } from "../apis/utils";
-import { handleSchema } from "../apis/api-blueprint";
 import _ from "lodash";
 
 const prefix = getCachePrefixer({
@@ -65,9 +64,10 @@ describe("useMultiCommunityFeedStore", () => {
 
     test("preserves cached communityHandles when incoming view omits them", () => {
       const { result } = renderHook(() => useMultiCommunityFeedStore());
-      const communityHandles = ["a@example.com", "b@example.com"].map((h) =>
-        handleSchema.parse(h),
-      );
+      const communityHandles = [
+        "a@example.com",
+        "b@example.com",
+      ] satisfies `${string}@${string}`[];
       const feedView = api.getFeed({ communityHandles });
 
       // Prime the cache with communityHandles
@@ -91,7 +91,7 @@ describe("useMultiCommunityFeedStore", () => {
     test("respects explicit empty communityHandles as genuinely empty", () => {
       const { result } = renderHook(() => useMultiCommunityFeedStore());
       const feedView = api.getFeed({
-        communityHandles: [handleSchema.parse("a@example.com")],
+        communityHandles: ["a@example.com"],
       });
 
       act(() => {

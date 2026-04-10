@@ -13,14 +13,13 @@ export enum Software {
   PIEFED = "piefed",
 }
 
+export type Handle = `${string}@${string}`;
+
 export const handleSchema = z
   .string()
   .refine((val) => /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val), {
     message: "Must be a valid federated handle (name@instance.com)",
-  })
-  .brand<"Handle">();
-
-export type Handle = z.infer<typeof handleSchema>;
+  }) as z.ZodType<Handle>;
 
 const communityHandle = handleSchema;
 

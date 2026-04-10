@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import utcPlugin from "dayjs/plugin/utc";
-import { Schemas, Software, handleSchema } from "@/src/apis/api-blueprint";
+import { Schemas, Software } from "@/src/apis/api-blueprint";
 import { createHandle } from "@/src/apis/utils";
 import _ from "lodash";
 
@@ -292,7 +292,7 @@ export function getFeed(
   return {
     id,
     apId: `${API_ROOT}/feed/${id}`,
-    handle: handleSchema.parse(`feed-${id}@${HOST}`),
+    handle: `feed-${id}@${HOST}`,
     name: `Feed ${id}`,
     createdAt: absoluteTime(),
     icon: null,
@@ -314,7 +314,7 @@ export function getCommunity(
     createdAt: absoluteTime(),
     id: communityId,
     apId: `${API_ROOT}/c/${communityId}`,
-    handle: handleSchema.parse(`${communityId}@${HOST}`),
+    handle: `${communityId}@${HOST}`,
     subscriberCount: 562,
     subscribersLocalCount: 432,
     postCount: 753,
