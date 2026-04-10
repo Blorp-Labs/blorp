@@ -450,7 +450,6 @@ export default function Post() {
                     commentTree={item[1]}
                     level={0}
                     postCreatorId={postCreatorId}
-                    communityName={communityName}
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}

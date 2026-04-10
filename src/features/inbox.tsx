@@ -220,7 +220,6 @@ function CommentReport({
             {commentView && (
               <div className="border px-2 rounded-lg">
                 <PostComment
-                  communityName={commentView.communitySlug}
                   postApId={commentView.postApId}
                   postLocked={false}
                   commentTree={{

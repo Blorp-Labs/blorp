@@ -487,7 +487,6 @@ function PostCommentInner({
   commentTree,
   level,
   postCreatorId,
-  communityName,
   modApIds,
   singleCommentThread,
   highlightCommentId,
@@ -500,7 +499,6 @@ function PostCommentInner({
   commentTree: CommentTree;
   level?: number;
   postCreatorId?: number;
-  communityName?: string;
   modApIds?: string[];
   singleCommentThread?: boolean;
   highlightCommentId?: string;
@@ -829,7 +827,6 @@ function PostCommentInner({
                   commentTree={map}
                   level={_.isNumber(level) ? level + 1 : level}
                   postCreatorId={postCreatorId}
-                  communityName={communityName}
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
                   canMod={canMod}
