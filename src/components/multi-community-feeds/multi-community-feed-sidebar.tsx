@@ -137,9 +137,9 @@ export function SmallScreenSidebar({
 
           <section className="p-3 flex flex-col gap-2">
             <h2>Communities</h2>
-            {feed?.communitySlugs?.length
-              ? feed.communitySlugs.map((slug) => (
-                  <CommunityCard key={slug} communitySlug={slug} size="sm" />
+            {feed?.communityHandles?.length
+              ? feed.communityHandles.map((slug) => (
+                  <CommunityCard key={slug} communityHandle={slug} size="sm" />
                 ))
               : Array.from({ length: feed?.communityCount ?? 0 }).map(
                   (_, i) => <CommunityCardSkeleton key={i} size="sm" />,
@@ -226,7 +226,7 @@ export function FeedSidebar({
               />
             </div>
 
-            <span className="font-bold line-clamp-1">{feed.slug}</span>
+            <span className="font-bold line-clamp-1">{feed.handle}</span>
 
             <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
               <LuCakeSlice />
@@ -279,11 +279,11 @@ export function FeedSidebar({
               </CollapsibleTrigger>
 
               <CollapsibleContent className="flex flex-col gap-2 pt-3">
-                {feed.communitySlugs?.length
-                  ? feed.communitySlugs.map((slug) => (
+                {feed.communityHandles?.length
+                  ? feed.communityHandles.map((slug) => (
                       <CommunityCard
                         key={slug}
-                        communitySlug={slug}
+                        communityHandle={slug}
                         size="sm"
                       />
                     ))

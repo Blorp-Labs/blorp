@@ -1,34 +1,26 @@
-import { Schemas } from "./api-blueprint";
+import { Handle, handleSchema, Schemas } from "./api-blueprint";
 import _ from "lodash";
 import z from "zod";
 
-export type Slug = {
-  name: string;
-  host: string;
-  slug: string;
-};
+export type { Handle };
 
-export function createSlug({
+export function createHandle({
   apId,
   name,
 }: {
   apId: string;
   name: string;
-}): Slug {
+}): Handle {
   const url = new URL(apId);
   if (!name) {
-    throw new Error("invalid url for slug, apId=" + apId);
+    throw new Error("invalid url for handle, apId=" + apId);
   }
   const host = url.host;
-  return {
-    name,
-    host,
-    slug: `${name}@${host}`,
-  } satisfies Slug;
+  return handleSchema.parse(`${name}@${host}`);
 }
 
-export function parseSlug(slug?: string) {
-  const parsed = slug?.split("@");
+export function parseHandle(handle?: string) {
+  const parsed = handle?.split("@");
   return {
     name: parsed?.[0],
     host: parsed?.[1],
@@ -65,7 +57,7 @@ export function shrinkBlockedPerson(person: Schemas.Person): Schemas.Person {
     "createdAt",
     "id",
     "apId",
-    "slug",
+    "handle",
     "deleted",
     "isBot",
     "isBanned",
@@ -80,7 +72,14 @@ export function shrinkBlockedPerson(person: Schemas.Person): Schemas.Person {
 export function shrinkBlockedCommunity(
   community: Schemas.Community,
 ): Schemas.Community {
-  return _.pick(community, ["createdAt", "id", "apId", "slug", "icon", "nsfw"]);
+  return _.pick(community, [
+    "createdAt",
+    "id",
+    "apId",
+    "handle",
+    "icon",
+    "nsfw",
+  ]);
 }
 
 export function commentIsAnswer(comment: Schemas.Comment | undefined) {
@@ -90,8 +89,8 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
   return comment.optimisticAnswer ?? comment.answer;
 }
 
-export function apIdFromCommunitySlug(slug: string): string | undefined {
-  const parts = slug.split("@");
+export function apIdFromCommunityHandle(handle: string): string | undefined {
+  const parts = handle.split("@");
   if (parts.length !== 2) {
     return undefined;
   }

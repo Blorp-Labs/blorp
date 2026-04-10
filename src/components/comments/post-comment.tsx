@@ -62,7 +62,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Schemas } from "@/src/apis/api-blueprint";
+import { Handle, Schemas } from "@/src/apis/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
@@ -144,7 +144,7 @@ export function useCommentActions({
           apId: commentView.apId,
           postId: commentView.postId,
           commentId: commentView.id,
-          communitySlug: commentView.communitySlug,
+          communityHandle: commentView.communityHandle,
           route: route!,
         }
       : null,
@@ -330,7 +330,7 @@ function Byline({
 
   const isAdmin = useIsAdmin(comment.creatorApId);
 
-  const [name, host] = profileView?.slug.split("@") ?? [];
+  const [name, host] = profileView?.handle.split("@") ?? [];
 
   return (
     <CollapsibleTrigger
@@ -347,7 +347,7 @@ function Byline({
         <Avatar className="w-6 h-6">
           <AvatarImage src={profileView?.avatar ?? undefined} />
           <AvatarFallback className="text-xs">
-            {profileView?.slug?.substring(0, 1).toUpperCase()}{" "}
+            {profileView?.handle?.substring(0, 1).toUpperCase()}{" "}
           </AvatarFallback>
         </Avatar>
       )}
@@ -680,7 +680,7 @@ function PostCommentInner({
                 getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
-            actorSlug={commentView.creatorSlug}
+            actorSlug={commentView.creatorHandle}
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}

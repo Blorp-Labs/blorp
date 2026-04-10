@@ -2,8 +2,8 @@ import {
   useListCommunitiesQuery,
   useModeratingCommunities,
   useSubscribedCommunities,
+  useListMultiCommunityFeedsQuery,
 } from "@/src/queries/index";
-import { useListMultiCommunityFeedsQuery } from "@/src/queries/index";
 import {
   CommunityCard,
   CommunityCardSkeleton,
@@ -123,7 +123,7 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
 
         return (
           <ContentGutters className="md:contents">
-            <CommunityCard communitySlug={item} className="mt-1" />
+            <CommunityCard communityHandle={item} className="mt-1" />
           </ContentGutters>
         );
       }}

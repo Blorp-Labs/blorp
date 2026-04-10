@@ -25,7 +25,7 @@ export function FeedCard({
 }) {
   const ctx = useLinkContext();
   const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
-  const host = feed?.slug?.split("@")?.[1];
+  const host = feed?.handle?.split("@")?.[1];
 
   return (
     <Link

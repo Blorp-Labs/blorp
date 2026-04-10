@@ -27,7 +27,7 @@ type Story = StoryObj<typeof CommunityCard>;
 
 export const Card: Story = {
   args: {
-    communitySlug: COMMUNITY.slug,
+    communityHandle: COMMUNITY.handle,
     size: "md",
   },
 };

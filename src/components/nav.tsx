@@ -16,7 +16,13 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { IonMenuButton, IonMenuToggle } from "@ionic/react";
-import { IoPerson, IoSettingsOutline } from "react-icons/io5";
+import {
+  IoPerson,
+  IoSettingsOutline,
+  IoPersonOutline,
+  IoBookmarksOutline,
+  IoPersonAddOutline,
+} from "react-icons/io5";
 import {
   useLogoutMutation,
   // eslint-disable-next-line local/no-query-hooks-in-components -- the nav bar is persistent app chrome shown on every route. No feature owns it, so badge counts can't be fetched upstream and passed down.
@@ -26,11 +32,6 @@ import {
 } from "../queries";
 import { LuMenu } from "react-icons/lu";
 import { useConfirmationAlert, useMedia, useRequireAuth } from "../hooks";
-import {
-  IoPersonOutline,
-  IoBookmarksOutline,
-  IoPersonAddOutline,
-} from "react-icons/io5";
 import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID } from "../routing/config";
 import { LogOut } from "./icons";
 import { BadgeCount } from "./badge-count";
@@ -93,7 +94,7 @@ export function UserDropdown() {
           />
         )}
         <AvatarFallback>
-          {person && person.slug?.substring(0, 1).toUpperCase()}
+          {person && person.handle?.substring(0, 1).toUpperCase()}
           {!person && <IoPerson />}
         </AvatarFallback>
       </Avatar>
@@ -112,7 +113,7 @@ export function UserDropdown() {
     );
   }
 
-  const [name] = person?.slug.split("@") ?? [];
+  const [name] = person?.handle.split("@") ?? [];
 
   return (
     <DropdownMenu>
@@ -131,7 +132,7 @@ export function UserDropdown() {
           <Avatar className="h-12 w-12" key={person?.id}>
             <AvatarImage src={person?.avatar ?? undefined} />
             <AvatarFallback className="text-xl">
-              {person && person.slug?.substring(0, 1).toUpperCase()}
+              {person && person.handle?.substring(0, 1).toUpperCase()}
               {!person && <IoPerson />}
             </AvatarFallback>
           </Avatar>
@@ -169,7 +170,7 @@ export function UserDropdown() {
             <DropdownMenuItem
               onClick={() =>
                 getConfirmation({
-                  message: `Are you sure you want to logout of ${person.slug ?? "this account"}`,
+                  message: `Are you sure you want to logout of ${person.handle ?? "this account"}`,
                 }).then(() => logout.mutate(selectedAccount))
               }
             >
@@ -199,7 +200,7 @@ export function UserDropdown() {
               return null;
             }
             const { person, instance } = parseAccountInfo(a);
-            const [name] = person?.slug.split("@") ?? [];
+            const [name] = person?.handle.split("@") ?? [];
 
             return (
               <DropdownMenuItem
@@ -213,7 +214,7 @@ export function UserDropdown() {
                   <Avatar key={person?.id} className="h-7 w-7">
                     <AvatarImage src={person?.avatar ?? undefined} />
                     <AvatarFallback>
-                      {person && person.slug?.substring(0, 1).toUpperCase()}
+                      {person && person.handle?.substring(0, 1).toUpperCase()}
                       {!person && <IoPerson />}
                     </AvatarFallback>
                   </Avatar>
@@ -258,7 +259,7 @@ export function UserSidebar() {
   const pmCounts = usePrivateMessagesCountQuery();
 
   const { person, instance } = parseAccountInfo(selectedAccount);
-  const userName = person?.slug.split("@")[0];
+  const userName = person?.handle.split("@")[0];
 
   return (
     <div
@@ -269,7 +270,7 @@ export function UserSidebar() {
         <Avatar className="h-12 w-12" key={person?.id}>
           {person && <AvatarImage src={person.avatar ?? undefined} />}
           <AvatarFallback className="text-xl">
-            {person && person.slug?.substring(0, 1).toUpperCase()}
+            {person && person.handle?.substring(0, 1).toUpperCase()}
             {!person && <IoPerson />}
           </AvatarFallback>
         </Avatar>
@@ -313,7 +314,7 @@ export function UserSidebar() {
             <button
               onClick={() =>
                 getConfirmation({
-                  message: `Are you sure you want to logout of ${person.slug ?? "this account"}`,
+                  message: `Are you sure you want to logout of ${person.handle ?? "this account"}`,
                 }).then(() => logout.mutate(selectedAccount))
               }
               className="flex w-full flex-row items-center gap-2 text-lg"
@@ -346,7 +347,7 @@ export function UserSidebar() {
           return null;
         }
         const { person, instance } = parseAccountInfo(a);
-        const [name] = person?.slug.split("@") ?? [];
+        const [name] = person?.handle.split("@") ?? [];
         return (
           <IonMenuToggle key={a.uuid}>
             <button
@@ -361,7 +362,7 @@ export function UserSidebar() {
                 <Avatar key={person?.id}>
                   {person && <AvatarImage src={person.avatar ?? undefined} />}
                   <AvatarFallback>
-                    {person && person.slug?.substring(0, 1).toUpperCase()}
+                    {person && person.handle?.substring(0, 1).toUpperCase()}
                     {!person && <IoPerson />}
                   </AvatarFallback>
                 </Avatar>

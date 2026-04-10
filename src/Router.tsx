@@ -170,10 +170,14 @@ const HOME_STACK = [
   <Route key="/home/f/:apId/sidebar" exact path="/home/f/:apId/sidebar">
     <MultiCommunityFeedSidebar />
   </Route>,
-  <Route key="/home/c/:communityName" exact path="/home/c/:communityName">
+  <Route key="/home/c/:communityHandle" exact path="/home/c/:communityHandle">
     <CommunityFeed />
   </Route>,
-  <Route key="/home/c/:communityName/s" exact path="/home/c/:communityName/s">
+  <Route
+    key="/home/c/:communityHandle/s"
+    exact
+    path="/home/c/:communityHandle/s"
+  >
     <Search scope="community" />
   </Route>,
   <Route
@@ -183,16 +187,16 @@ const HOME_STACK = [
     component={InstanceSidebar}
   />,
   <Route
-    key="/home/c/:communityName/sidebar"
+    key="/home/c/:communityHandle/sidebar"
     exact
-    path="/home/c/:communityName/sidebar"
+    path="/home/c/:communityHandle/sidebar"
   >
     <CommunitySidebar />
   </Route>,
   <Route
-    key="/home/c/:communityName/modlog"
+    key="/home/c/:communityHandle/modlog"
     exact
-    path="/home/c/:communityName/modlog"
+    path="/home/c/:communityHandle/modlog"
   >
     <CommunityModlog />
   </Route>,
@@ -210,16 +214,16 @@ const HOME_STACK = [
     <Post />
   </Route>,
   <Route
-    key="/home/c/:communityName/posts/:post"
+    key="/home/c/:communityHandle/posts/:post"
     exact
-    path="/home/c/:communityName/posts/:post"
+    path="/home/c/:communityHandle/posts/:post"
   >
     <RedirectPost />
   </Route>,
   <Route
-    key="/home/c/:communityName/posts/:post/comments/:comment"
+    key="/home/c/:communityHandle/posts/:post/comments/:comment"
     exact
-    path="/home/c/:communityName/posts/:post/comments/:comment"
+    path="/home/c/:communityHandle/posts/:post/comments/:comment"
   >
     <RedirectPost />
   </Route>,
@@ -233,9 +237,9 @@ const HOME_STACK = [
     <LightBoxPostFeed />
   </Route>,
   <Route
-    key="/home/lightbox/c/:communityName"
+    key="/home/lightbox/c/:communityHandle"
     exact
-    path="/home/c/:communityName/lightbox"
+    path="/home/c/:communityHandle/lightbox"
   >
     <LightBoxPostFeed />
   </Route>,
@@ -281,30 +285,30 @@ const COMMUNITIES_STACK = [
     <MultiCommunityFeedSidebar />
   </Route>,
   <Route
-    key="/communities/c/:communityName"
+    key="/communities/c/:communityHandle"
     exact
-    path="/communities/c/:communityName"
+    path="/communities/c/:communityHandle"
   >
     <CommunityFeed />
   </Route>,
   <Route
-    key="/communities/c/:communityName/s"
+    key="/communities/c/:communityHandle/s"
     exact
-    path="/communities/c/:communityName/s"
+    path="/communities/c/:communityHandle/s"
   >
     <Search scope="community" />
   </Route>,
   <Route
-    key="/communities/c/:communityName/sidebar"
+    key="/communities/c/:communityHandle/sidebar"
     exact
-    path="/communities/c/:communityName/sidebar"
+    path="/communities/c/:communityHandle/sidebar"
   >
     <CommunitySidebar />
   </Route>,
   <Route
-    key="/communities/c/:communityName/modlog"
+    key="/communities/c/:communityHandle/modlog"
     exact
-    path="/communities/c/:communityName/modlog"
+    path="/communities/c/:communityHandle/modlog"
   >
     <CommunityModlog />
   </Route>,
@@ -322,16 +326,16 @@ const COMMUNITIES_STACK = [
     <Post />
   </Route>,
   <Route
-    key="/communities/c/:communityName/posts/:post"
+    key="/communities/c/:communityHandle/posts/:post"
     exact
-    path="/communities/c/:communityName/posts/:post"
+    path="/communities/c/:communityHandle/posts/:post"
   >
     <RedirectPost />
   </Route>,
   <Route
-    key="/communities/c/:communityName/posts/:post/comments/:comment"
+    key="/communities/c/:communityHandle/posts/:post/comments/:comment"
     exact
-    path="/communities/c/:communityName/posts/:post/comments/:comment"
+    path="/communities/c/:communityHandle/posts/:post/comments/:comment"
   >
     <RedirectPost />
   </Route>,
@@ -339,9 +343,9 @@ const COMMUNITIES_STACK = [
     <User />
   </Route>,
   <Route
-    key="/communities/lightbox/c/:communityName"
+    key="/communities/lightbox/c/:communityHandle"
     exact
-    path="/communities/c/:communityName/lightbox"
+    path="/communities/c/:communityHandle/lightbox"
   >
     <LightBoxPostFeed />
   </Route>,
@@ -370,10 +374,14 @@ const INBOX_STACK = [
   <Route key="/inbox/f/:apId/sidebar" exact path="/inbox/f/:apId/sidebar">
     <MultiCommunityFeedSidebar />
   </Route>,
-  <Route key="/inbox/c/:communityName" exact path="/inbox/c/:communityName">
+  <Route key="/inbox/c/:communityHandle" exact path="/inbox/c/:communityHandle">
     <CommunityFeed />
   </Route>,
-  <Route key="/inbox/c/:communityName/s" exact path="/inbox/c/:communityName/s">
+  <Route
+    key="/inbox/c/:communityHandle/s"
+    exact
+    path="/inbox/c/:communityHandle/s"
+  >
     <Search scope="community" />
   </Route>,
   <Route
@@ -383,16 +391,16 @@ const INBOX_STACK = [
     component={InstanceSidebar}
   />,
   <Route
-    key="/inbox/c/:communityName/sidebar"
+    key="/inbox/c/:communityHandle/sidebar"
     exact
-    path="/inbox/c/:communityName/sidebar"
+    path="/inbox/c/:communityHandle/sidebar"
   >
     <CommunitySidebar />
   </Route>,
   <Route
-    key="/inbox/c/:communityName/modlog"
+    key="/inbox/c/:communityHandle/modlog"
     exact
-    path="/inbox/c/:communityName/modlog"
+    path="/inbox/c/:communityHandle/modlog"
   >
     <CommunityModlog />
   </Route>,
@@ -410,16 +418,16 @@ const INBOX_STACK = [
     <Post />
   </Route>,
   <Route
-    key="/inbox/c/:communityName/posts/:post"
+    key="/inbox/c/:communityHandle/posts/:post"
     exact
-    path="/inbox/c/:communityName/posts/:post"
+    path="/inbox/c/:communityHandle/posts/:post"
   >
     <RedirectPost />
   </Route>,
   <Route
-    key="/inbox/c/:communityName/posts/:post/comments/:comment"
+    key="/inbox/c/:communityHandle/posts/:post/comments/:comment"
     exact
-    path="/inbox/c/:communityName/posts/:post/comments/:comment"
+    path="/inbox/c/:communityHandle/posts/:post/comments/:comment"
   >
     <RedirectPost />
   </Route>,
@@ -427,9 +435,9 @@ const INBOX_STACK = [
     <User />
   </Route>,
   <Route
-    key="/inbox/lightbox/c/:communityName"
+    key="/inbox/lightbox/c/:communityHandle"
     exact
-    path="/inbox/c/:communityName/lightbox"
+    path="/inbox/c/:communityHandle/lightbox"
   >
     <LightBoxPostFeed />
   </Route>,
@@ -536,10 +544,10 @@ function Tabs() {
               {...MESSAGES_STACK}
               {...SETTINGS}
               <Redirect
-                key="/c/:communityName"
+                key="/c/:communityHandle"
                 exact
-                path="/c/:communityName"
-                to="/home/c/:communityName"
+                path="/c/:communityHandle"
+                to="/home/c/:communityHandle"
               />
               <Redirect
                 key="/u/:userId"

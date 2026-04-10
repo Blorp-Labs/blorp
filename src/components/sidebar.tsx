@@ -1,4 +1,5 @@
 import { cn } from "../lib/utils";
+import type { Handle } from "@/src/apis/api-blueprint";
 import { ErrorBoundary } from "react-error-boundary";
 import { useAuth, parseAccountInfo } from "@/src/stores/auth";
 import { useCreatePostStore } from "@/src/stores/create-post";
@@ -45,7 +46,7 @@ function SidebarErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY as Handle,
       title: "[Crash] Sidebar rendering error",
       body,
     });

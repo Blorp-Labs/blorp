@@ -6,7 +6,7 @@ import { useLinkContext } from "@/src/hooks/navigation-hooks";
 export default function RedirectPost() {
   const linkCtx = useLinkContext();
   const { post, comment } = useParams(
-    `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
+    `${linkCtx.root}c/:communityHandle/posts/:post/comments/:comment`,
   );
   const { replace } = useHistory();
 

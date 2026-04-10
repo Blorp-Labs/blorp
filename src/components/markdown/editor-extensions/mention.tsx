@@ -122,7 +122,7 @@ export function useMentionSuggestions() {
             },
           );
           return results.communities.map((c) => ({
-            label: c.slug,
+            label: c.handle,
             id: c.apId,
           }));
         } catch {
@@ -149,7 +149,7 @@ export function useMentionSuggestions() {
               signal: signalRef.current.signal,
             },
           );
-          return results.users.map((c) => ({ label: c.slug, id: c.apId }));
+          return results.users.map((c) => ({ label: c.handle, id: c.apId }));
         } catch {
           return [];
         }

@@ -13,7 +13,16 @@ export enum Software {
   PIEFED = "piefed",
 }
 
-const communitySlug = z.string();
+export const handleSchema = z
+  .string()
+  .refine((val) => /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val), {
+    message: "Must be a valid federated handle (name@instance.com)",
+  })
+  .brand<"Handle">();
+
+export type Handle = z.infer<typeof handleSchema>;
+
+const communityHandle = handleSchema;
 
 export const flairSchema = z.object({
   apId: z.string().optional().nullable(),
@@ -28,7 +37,7 @@ export const personSchema = z.object({
   id: z.number(),
   apId: z.string(),
   avatar: z.string().nullable(),
-  slug: z.string(),
+  handle: handleSchema,
   matrixUserId: z.string().nullable(),
   deleted: z.boolean(),
   isBot: z.boolean(),
@@ -61,11 +70,11 @@ export const postSchema = z.object({
   id: z.number(),
   apId: z.string(),
   nsfw: z.boolean().nullable(),
-  communitySlug,
+  communityHandle,
   communityApId: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   isBannedFromCommunity: z.boolean(),
   communityInstanceId: z.number().nullable().optional(),
   title: z.string(),
@@ -87,7 +96,7 @@ export const postSchema = z.object({
     .array(
       z.object({
         apId: z.string(),
-        communitySlug,
+        communityHandle,
       }),
     )
     .nullable(),
@@ -123,7 +132,7 @@ export const communitySchema = z.object({
   id: z.number(),
   apId: z.string(),
   instanceId: z.number().nullable().optional(),
-  slug: communitySlug,
+  handle: communityHandle,
   icon: z.string().nullable(),
   description: z.string().nullable().optional(),
   banner: z.string().nullable().optional(),
@@ -152,7 +161,7 @@ export const multiCommunityFeedSchema = z.object({
   createdAt: z.string(),
   id: z.number(),
   apId: z.string(),
-  slug: z.string(),
+  handle: handleSchema,
   name: z.string(),
   icon: z.string().nullable(),
   banner: z.string().nullable(),
@@ -160,14 +169,14 @@ export const multiCommunityFeedSchema = z.object({
   communityCount: z.number(),
   subscriberCount: z.number(),
   description: z.string().nullable(),
-  communitySlugs: z.array(z.string()).optional(),
+  communityHandles: z.array(handleSchema).optional(),
   subscribed: z.boolean().nullish(),
   optimisticSubscribed: z
     .enum(["Subscribed", "NotSubscribed", "Pending"])
     .optional(),
   ownerId: z.number().nullable().optional(),
   ownerApId: z.string().nullable().optional(),
-  ownerSlug: z.string().nullable().optional(),
+  ownerHandle: handleSchema.nullable().optional(),
 });
 export const siteSchema = z.object({
   privateInstance: z.boolean(),
@@ -218,14 +227,14 @@ export const commentSchema = z.object({
   body: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   isBannedFromCommunity: z.boolean(),
   postId: z.number(),
   postApId: z.string(),
   downvotes: z.number(),
   upvotes: z.number(),
   myVote: z.number().nullable(),
-  communitySlug,
+  communityHandle,
   communityApId: z.string(),
   optimisticMyVote: z.number().optional(),
   removed: z.boolean(),
@@ -252,10 +261,10 @@ export const privateMessageSchema = z.object({
   id: z.number(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   recipientId: z.number(),
   recipientApId: z.string(),
-  recipientSlug: z.string(),
+  recipientHandle: handleSchema,
   read: z.boolean(),
   body: z.string(),
 });
@@ -268,12 +277,12 @@ export const replySchema = z.object({
   path: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   read: z.boolean(),
   postId: z.number(),
   postApId: z.string(),
   postName: z.string(),
-  communitySlug,
+  communityHandle,
   communityApId: z.string(),
   deleted: z.boolean(),
   removed: z.boolean(),
@@ -287,12 +296,12 @@ export const mentionSchema = z.object({
   path: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   read: z.boolean(),
   postId: z.number(),
   postApId: z.string(),
   postName: z.string(),
-  communitySlug,
+  communityHandle,
   communityApId: z.string(),
   deleted: z.boolean(),
   removed: z.boolean(),
@@ -326,10 +335,10 @@ export const postReportSchema = z.object({
   postApId: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   resolverId: z.number().nullable(),
   resolverApId: z.string().nullable(),
-  resolverSlug: z.string().nullable(),
+  resolverHandle: handleSchema.nullable(),
   resolved: z.boolean(),
   originalPostName: z.string(),
   originalPostBody: z.string().nullable(),
@@ -345,10 +354,10 @@ export const commentReportSchema = z.object({
   commentPath: z.string(),
   creatorId: z.number(),
   creatorApId: z.string(),
-  creatorSlug: z.string(),
+  creatorHandle: handleSchema,
   resolverId: z.number().nullable(),
   resolverApId: z.string().nullable(),
-  resolverSlug: z.string().nullable(),
+  resolverHandle: handleSchema.nullable(),
   resolved: z.boolean(),
   reason: z.string(),
 });
@@ -362,15 +371,15 @@ export const modlogItemSchema = z.object({
 
   modId: z.number().nullable(),
   modApId: z.string().nullable(),
-  modSlug: z.string().nullable(),
+  modHandle: handleSchema.nullable(),
 
   userId: z.number().nullable(),
   userApId: z.string().nullable(),
-  userSlug: z.string().nullable(),
+  userHandle: handleSchema.nullable(),
 
   communityId: z.number().nullable(),
   communityApId: z.string().nullable(),
-  communitySlug: z.string().nullable(),
+  communityHandle: handleSchema.nullable(),
 
   postId: z.number().nullable(),
   postApId: z.string().nullable(),
@@ -381,20 +390,16 @@ export const modlogItemSchema = z.object({
   commentContent: z.string().nullable(),
 });
 
-export const slugSchema = z.custom<`${string}@${string}`>((val) => {
-  return /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val);
-});
-
 export const resolveObjectResponseSchema = z.object({
   post: postSchema
     .pick({
       apId: true,
-      communitySlug: true,
+      communityHandle: true,
     })
     .nullable(),
   community: communitySchema
     .pick({
-      slug: true,
+      handle: true,
     })
     .nullable(),
   user: personSchema
@@ -480,7 +485,7 @@ export namespace Forms {
     sort?: string;
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
-    communitySlug?: string;
+    communityHandle?: string;
     multiCommunityFeedApId?: string;
     multiCommunityFeedId?: number;
     savedOnly?: boolean;
@@ -548,7 +553,7 @@ export namespace Forms {
 
   export type Search = {
     q: string;
-    communitySlug?: string;
+    communityHandle?: string;
     type: "Posts" | "Communities" | "Users" | "Comments" | "All";
     sort?: string;
     pageCursor?: string;
@@ -556,7 +561,7 @@ export namespace Forms {
   };
 
   export type GetCommunity = {
-    slug?: string;
+    handle?: string;
   };
 
   export type GetCommunities = {
@@ -690,7 +695,7 @@ export namespace Forms {
       | "body"
       | "altText"
       | "thumbnailUrl"
-      | "communitySlug"
+      | "communityHandle"
       | "nsfw"
     > {
     flairs?: Pick<Schemas.Flair, "title" | "apId">[];
@@ -795,7 +800,7 @@ export namespace Forms {
   };
 
   export type GetModlog = {
-    communitySlug?: string;
+    communityHandle?: string;
     pageCursor?: string;
     actionType?: string;
     modPersonId?: number;

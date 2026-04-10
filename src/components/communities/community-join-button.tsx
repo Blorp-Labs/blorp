@@ -6,17 +6,17 @@ import { useIonAlert } from "@ionic/react";
 import { useAuth } from "@/src/stores/auth";
 
 interface Props {
-  communityName: string | undefined;
+  communityHandle: string | undefined;
   className?: string;
 }
 
-export function CommunityJoinButton({ communityName, ...props }: Props) {
+export function CommunityJoinButton({ communityHandle, ...props }: Props) {
   const [alrt] = useIonAlert();
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const follow = useFollowCommunityMutation();
 
-  const data = useCommunityFromStore(communityName);
+  const data = useCommunityFromStore(communityHandle);
   const subscribed =
     data?.communityView.optimisticSubscribed ?? data?.communityView.subscribed;
 
@@ -49,7 +49,7 @@ export function CommunityJoinButton({ communityName, ...props }: Props) {
           if (!shouldFollow) {
             const deferred = new Deferred();
             alrt({
-              message: `Are you sure you want to leave ${communityName}`,
+              message: `Are you sure you want to leave ${communityHandle}`,
               buttons: [
                 {
                   text: "Cancel",

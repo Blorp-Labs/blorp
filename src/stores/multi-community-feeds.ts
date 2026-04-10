@@ -92,14 +92,14 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
                 ...view.feedView,
                 // Clear any stuck optimistic state when fresh server data arrives
                 optimisticSubscribed: undefined,
-                // communitySlugs is undefined when the API omitted communities
+                // communityHandles is undefined when the API omitted communities
                 // (e.g. list endpoint with include_communities=false). In that
                 // case, preserve whatever was previously cached. An explicit []
                 // means the feed genuinely has no communities and should clear.
-                communitySlugs:
-                  view.feedView.communitySlugs !== undefined
-                    ? view.feedView.communitySlugs
-                    : prevData?.feedView.communitySlugs,
+                communityHandles:
+                  view.feedView.communityHandles !== undefined
+                    ? view.feedView.communityHandles
+                    : prevData?.feedView.communityHandles,
               },
             };
             newFeeds[cacheKey] = {

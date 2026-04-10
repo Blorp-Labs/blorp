@@ -9,12 +9,16 @@ import {
   COMMUNITY_NSFW_ICON_BLUR_CLASS,
 } from "./utils";
 
-export function CommunityBanner({ communityName }: { communityName?: string }) {
+export function CommunityBanner({
+  communityHandle,
+}: {
+  communityHandle?: string;
+}) {
   const [bannerReady, setBannerReady] = useState(false);
   const [iconReady, setIconReady] = useState(false);
 
-  const data = useCommunityFromStore(communityName);
-  const isBlocked = useIsCommunityBlocked(communityName);
+  const data = useCommunityFromStore(communityHandle);
+  const isBlocked = useIsCommunityBlocked(communityHandle);
   const blurNsfw = useShouldBlurNsfw();
 
   const communityView = data?.communityView;
@@ -22,7 +26,7 @@ export function CommunityBanner({ communityName }: { communityName?: string }) {
 
   const hideBanner = !banner || isBlocked;
 
-  const [name, host] = communityView?.slug.split("@") ?? [];
+  const [name, host] = communityView?.handle.split("@") ?? [];
 
   return (
     <div className="flex-1">
@@ -71,7 +75,7 @@ export function CommunityBanner({ communityName }: { communityName?: string }) {
           !hideBanner && "pb-3",
         )}
       >
-        {communityView?.slug ? (
+        {communityView?.handle ? (
           <span className="font-bold text-lg h-7">
             {name}
             <span className="italic">@{host}</span>

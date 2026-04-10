@@ -2,8 +2,8 @@ import {
   useAvailableSortsQuery,
   useListCommunitiesQuery,
   useSoftware,
+  useListMultiCommunityFeedsQuery,
 } from "@/src/queries/index";
-import { useListMultiCommunityFeedsQuery } from "@/src/queries/index";
 import { CommunityCard } from "../../components/communities/community-card";
 import {
   useCallback,
@@ -154,16 +154,16 @@ function SectionSkeleton() {
   );
 }
 
-function CommunityItem({ communitySlug }: { communitySlug: string }) {
-  const community = useCommunityFromStore(communitySlug);
+function CommunityItem({ communityHandle }: { communityHandle: string }) {
+  const community = useCommunityFromStore(communityHandle);
   const description = community?.communityView.description;
   return (
     <Link
       className="border py-1 px-2 rounded-lg h-24 hover:bg-accent/75"
-      to="/communities/c/:communityName"
-      params={{ communityName: communitySlug }}
+      to="/communities/c/:communityHandle"
+      params={{ communityHandle: communityHandle }}
     >
-      <CommunityCard communitySlug={communitySlug} disableLink />
+      <CommunityCard communityHandle={communityHandle} disableLink />
       {description && (
         <p className="text-xs line-clamp-2 text-muted-foreground">
           {removeMd(description)}
@@ -256,7 +256,10 @@ function CommunitiesSwiper({
               {grouped?.map((group) => (
                 <SwiperSlide key={group[0]} className="flex! flex-col gap-2">
                   {group.map((community) => (
-                    <CommunityItem key={community} communitySlug={community} />
+                    <CommunityItem
+                      key={community}
+                      communityHandle={community}
+                    />
                   ))}
                 </SwiperSlide>
               ))}

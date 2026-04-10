@@ -43,7 +43,7 @@ function PersonCardInner({
     return <PersonSkeletonCard size={size} className={className} />;
   }
 
-  const [name, host] = p?.slug.split("@") ?? [];
+  const [name, host] = p?.handle.split("@") ?? [];
 
   const content = (
     <>
@@ -55,7 +55,7 @@ function PersonCardInner({
         )}
       >
         <AvatarImage src={p?.avatar ?? undefined} className="object-cover" />
-        <AvatarFallback>{p?.slug?.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{p?.handle?.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
       <div className="flex flex-col min-w-0">

@@ -86,7 +86,8 @@ const Comment = memo(function Comment({ path }: { path: string }) {
           )}
         >
           <span>
-            Replied to <b>{postTitle}</b> in <b>{commentView.communitySlug}</b>
+            Replied to <b>{postTitle}</b> in{" "}
+            <b>{commentView.communityHandle}</b>
           </span>
 
           {!commentView.deleted && !commentView.removed && (
@@ -186,7 +187,7 @@ export default function User() {
 
   return (
     <Page notFound={personQuery.isError && !person} notFoundApId={actorId}>
-      <PageTitle>{person?.slug ?? "Person"}</PageTitle>
+      <PageTitle>{person?.handle ?? "Person"}</PageTitle>
       <IonHeader>
         <IonToolbar
           data-tauri-drag-region
@@ -201,7 +202,7 @@ export default function User() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle numRightIcons={1} size="sm">
-              {person?.slug ?? "Person"}
+              {person?.handle ?? "Person"}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
@@ -241,7 +242,7 @@ export default function User() {
             noItemsComponent={
               <NoPersonPostsMessage
                 isBlocked={isBlocked}
-                blockedName={person?.slug}
+                blockedName={person?.handle}
               />
             }
             paginationControls={activePagination.paginationControls}

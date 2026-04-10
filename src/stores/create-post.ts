@@ -44,7 +44,7 @@ export function isEmptyDraft(draft: Draft) {
     "type",
     "apId",
     "createdAt",
-    "communitySlug",
+    "communityHandle",
     "communityApId",
     "poll",
   ]);
@@ -74,7 +74,7 @@ export function postToDraft(
   return {
     title: post.title,
     body: post.body ?? "",
-    communitySlug: post.communitySlug,
+    communityHandle: post.communityHandle,
     createdAt: dayjs(post.createdAt).toDate().valueOf(),
     type: post.url
       ? "link"
@@ -105,14 +105,14 @@ export function postToDraft(
 }
 
 export function draftToEditPostData(draft: Draft): Forms.EditPost {
-  const { title, apId, communitySlug } = draft;
+  const { title, apId, communityHandle } = draft;
   if (!title) {
     throw new Error("post name is required");
   }
   if (!apId) {
     throw new Error("apId name is required");
   }
-  if (!communitySlug) {
+  if (!communityHandle) {
     throw new Error("community is required");
   }
   const post: Forms.EditPost = {
@@ -161,17 +161,17 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
 }
 
 export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
-  const { title, communitySlug } = draft;
+  const { title, communityHandle } = draft;
   if (!title) {
     throw new Error("post name is required");
   }
-  if (!communitySlug) {
+  if (!communityHandle) {
     throw new Error("community is required");
   }
   const post: Forms.CreatePost = {
     ...draft,
     title,
-    communitySlug,
+    communityHandle,
     body: draft.body ?? null,
     url: draft.url ?? null,
     nsfw: draft.nsfw ?? null,
@@ -231,9 +231,9 @@ export const useCreatePostStore = create<CreatePostStore>()(
           };
           // Clear flairs on community change
           if (
-            isNotNil(patch.communitySlug) &&
+            isNotNil(patch.communityHandle) &&
             _.isNil(patch.flairs) &&
-            prevDraft.communitySlug !== patch.communitySlug
+            prevDraft.communityHandle !== patch.communityHandle
           ) {
             drafts[key].flairs = [];
           } else {

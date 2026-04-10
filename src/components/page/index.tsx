@@ -1,4 +1,5 @@
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
+import type { Handle } from "@/src/apis/api-blueprint";
 import {
   IonPage as DefaultIonPage,
   IonContent,
@@ -63,7 +64,7 @@ function PageErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY as Handle,
       title: `[Crash] Page rendering error`,
       body,
     });
@@ -184,7 +185,7 @@ export function Page({
         ) : notFound ? (
           <NotFoundPageContent
             apId={notFoundApId}
-            communitySlug={notFoundCommunitySlug}
+            communityHandle={notFoundCommunitySlug}
           />
         ) : (
           children

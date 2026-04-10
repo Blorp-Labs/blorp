@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { handleSchema } from "@/src/apis/api-blueprint";
 
 import { PostByline } from "./post-byline";
 import * as api from "@/test-utils/api";
@@ -7,8 +8,9 @@ import * as api from "@/test-utils/api";
 const longCreatorNamePost = api.getPost({
   post: {
     id: api.randomDbId(),
-    creatorSlug:
+    creatorHandle: handleSchema.parse(
       "averylongcreatornamewithnospacesatall@averylonghostname.example.com",
+    ),
   },
 });
 
@@ -16,8 +18,9 @@ const longCreatorNamePost = api.getPost({
 const longCommunityNamePost = api.getPost({
   post: {
     id: api.randomDbId(),
-    communitySlug:
+    communityHandle: handleSchema.parse(
       "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
+    ),
   },
 });
 
