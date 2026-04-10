@@ -25,7 +25,13 @@ import { CommentTree } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useRequireAuth } from "../auth-context";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { encodeApId } from "@/src/apis/utils";
+import {
+  encodeApId,
+  commentIsAnswer,
+  getCommentEmojiReactions,
+  getCommentMyVote,
+  getCommentSaved,
+} from "@/src/apis/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {
   Avatar,
@@ -35,7 +41,12 @@ import {
 import { cn } from "@/src/lib/utils";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import { PersonHoverCard } from "../person/person-hover-card";
-import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
+import {
+  getAccountSite,
+  useAuth,
+  useIsAdmin,
+  parseAccountInfo,
+} from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
@@ -62,18 +73,11 @@ import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
-import {
-  commentIsAnswer,
-  getCommentEmojiReactions,
-  getCommentMyVote,
-  getCommentSaved,
-} from "@/src/apis/utils";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";
 import { useCreatePostStore } from "@/src/stores/create-post";
 import { v4 as uuid } from "uuid";
-import { parseAccountInfo } from "@/src/stores/auth";
 import {
   BLORP_COMMUNITY,
   buildErrorReport,
@@ -134,14 +138,10 @@ export function useCommentActions({
   const linkCtx = useLinkContext();
 
   const route = commentView
-    ? resolveRoute(
-        `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
-        {
-          communityName: commentView.communitySlug,
-          post: encodeApId(commentView.postApId),
-          comment: encodeApId(commentView.apId),
-        },
-      )
+    ? resolveRoute(`${linkCtx.root}posts/:post/comments/:comment`, {
+        post: encodeApId(commentView.postApId),
+        comment: encodeApId(commentView.apId),
+      })
     : null;
 
   const saved = commentView ? getCommentSaved(commentView) : undefined;
@@ -500,7 +500,7 @@ function PostCommentInner({
   commentTree: CommentTree;
   level?: number;
   postCreatorId?: number;
-  communityName: string;
+  communityName?: string;
   modApIds?: string[];
   singleCommentThread?: boolean;
   highlightCommentId?: string;
@@ -662,9 +662,8 @@ function PostCommentInner({
               asChild
             >
               <Link
-                to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
+                to={`${linkCtx.root}posts/:post/comments/:comment`}
                 params={{
-                  communityName,
                   post: encodeApId(postApId),
                   comment: encodeApId(commentView.apId),
                 }}
@@ -682,9 +681,8 @@ function PostCommentInner({
             asChild
           >
             <Link
-              to={`${linkCtx.root}c/:communityName/posts/:post`}
+              to={`${linkCtx.root}posts/:post`}
               params={{
-                communityName,
                 post: encodeApId(postApId),
               }}
               replace
@@ -733,11 +731,10 @@ function PostCommentInner({
             commentView &&
             (standalone ? (
               <Link
-                to="/inbox/c/:communityName/posts/:post/comments/:comment"
+                to="/inbox/posts/:post/comments/:comment"
                 params={{
                   post: encodeApId(commentView.postApId),
                   comment: encodeApId(commentView.apId),
-                  communityName: commentView.communitySlug,
                 }}
               >
                 {bodyRenderer}
@@ -841,9 +838,8 @@ function PostCommentInner({
 
               {commentView && sorted.length < rest.imediateChildren ? (
                 <Link
-                  to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
+                  to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{
-                    communityName: commentView.communitySlug,
                     post: encodeApId(commentView.postApId),
                     comment: encodeApId(commentView?.apId),
                   }}

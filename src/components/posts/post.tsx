@@ -3,7 +3,7 @@ import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/apis/post-embed";
 import { encodeApId } from "@/src/apis/utils";
-import { Link } from "@/src/routing/index";
+import { Link, resolveRoute } from "@/src/routing/index";
 import {
   PostArticleEmbed,
   PostArticleMiniEmbed,
@@ -54,7 +54,6 @@ import { useProfileFromStore } from "@/src/stores/profiles";
 import { ErrorBoundary } from "react-error-boundary";
 import { useIonRouter } from "@ionic/react";
 import { useCreatePostStore } from "@/src/stores/create-post";
-import { resolveRoute } from "@/src/routing";
 import { v4 as uuid } from "uuid";
 import { Button } from "../ui/button";
 import {
@@ -270,10 +269,9 @@ function CrossPosts({
       {crossPosts?.map(({ apId, communitySlug }, index) => (
         <Link
           key={apId}
-          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          to={`${linkCtx.root}posts/:post`}
           params={{
             post: encodeApId(apId),
-            communityName: communitySlug,
           }}
           className="hover:underline truncate max-w-full"
         >
@@ -408,9 +406,8 @@ function LargePostCard({
       )}
 
       <Link
-        to={`${linkCtx.root}c/:communityName/posts/:post`}
+        to={`${linkCtx.root}posts/:post`}
         params={{
-          communityName: post.communitySlug,
           post: encodedApId,
         }}
         className="gap-2 flex flex-col after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]"
@@ -774,9 +771,8 @@ export function SmallPostCard({
 
         <Link
           id={titleId}
-          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          to={`${linkCtx.root}posts/:post`}
           params={{
-            communityName: post.communitySlug,
             post: encodedApId,
           }}
           className={cn(
@@ -877,9 +873,8 @@ function ExtraSmallPostCard({
       >
         <Link
           id={titleId}
-          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          to={`${linkCtx.root}posts/:post`}
           params={{
-            communityName: post.communitySlug,
             post: encodedApId,
           }}
           className={cn(

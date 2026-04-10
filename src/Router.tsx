@@ -56,6 +56,7 @@ const Terms = lazy(() => import("@/src/features/terms"));
 const Support = lazy(() => import("@/src/features/support"));
 const HomeFeed = lazy(() => import("@/src/features/home-posts"));
 const Post = lazy(() => import("@/src/features/post"));
+const RedirectPost = lazy(() => import("@/src/features/redirect-post"));
 const SettingsPage = lazy(
   () => import("@/src/features/settings/settings-screen"),
 );
@@ -198,19 +199,29 @@ const HOME_STACK = [
   <Route key="/home/modlog" exact path="/home/modlog">
     <SiteModlog />
   </Route>,
+  <Route key="/home/posts/:post" exact path="/home/posts/:post">
+    <Post />
+  </Route>,
+  <Route
+    key="/home/posts/:post/comments/:comment"
+    exact
+    path="/home/posts/:post/comments/:comment"
+  >
+    <Post />
+  </Route>,
   <Route
     key="/home/c/:communityName/posts/:post"
     exact
     path="/home/c/:communityName/posts/:post"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route
     key="/home/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/home/c/:communityName/posts/:post/comments/:comment"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route key="/home/u/:userId" exact path="/home/u/:userId">
     <User />
@@ -300,19 +311,29 @@ const COMMUNITIES_STACK = [
   <Route key="/communities/modlog" exact path="/communities/modlog">
     <SiteModlog />
   </Route>,
+  <Route key="/communities/posts/:post" exact path="/communities/posts/:post">
+    <Post />
+  </Route>,
+  <Route
+    key="/communities/posts/:post/comments/:comment"
+    exact
+    path="/communities/posts/:post/comments/:comment"
+  >
+    <Post />
+  </Route>,
   <Route
     key="/communities/c/:communityName/posts/:post"
     exact
     path="/communities/c/:communityName/posts/:post"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route
     key="/communities/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/communities/c/:communityName/posts/:post/comments/:comment"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route key="/communities/u/:userId" exact path="/communities/u/:userId">
     <User />
@@ -378,19 +399,29 @@ const INBOX_STACK = [
   <Route key="/inbox/modlog" exact path="/inbox/modlog">
     <SiteModlog />
   </Route>,
+  <Route key="/inbox/posts/:post" exact path="/inbox/posts/:post">
+    <Post />
+  </Route>,
+  <Route
+    key="/inbox/posts/:post/comments/:comment"
+    exact
+    path="/inbox/posts/:post/comments/:comment"
+  >
+    <Post />
+  </Route>,
   <Route
     key="/inbox/c/:communityName/posts/:post"
     exact
     path="/inbox/c/:communityName/posts/:post"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route
     key="/inbox/c/:communityName/posts/:post/comments/:comment"
     exact
     path="/inbox/c/:communityName/posts/:post/comments/:comment"
   >
-    <Post />
+    <RedirectPost />
   </Route>,
   <Route key="/inbox/u/:userId" exact path="/inbox/u/:userId">
     <User />

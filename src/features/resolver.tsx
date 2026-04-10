@@ -29,9 +29,8 @@ export default function ApResolver() {
 
     if (post) {
       replace(
-        resolveRoute("/home/c/:communityName/posts/:post", {
+        resolveRoute("/home/posts/:post", {
           post: encodeApId(post.apId),
-          communityName: post.communitySlug,
         }),
       );
     } else if (community) {

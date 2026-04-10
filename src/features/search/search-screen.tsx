@@ -44,14 +44,13 @@ import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useCommentsByPaths } from "@/src/stores/comments";
-import { encodeApId } from "@/src/apis/utils";
+import { encodeApId, getCommentSaved } from "@/src/apis/utils";
 import {
   CommentButtonBar,
   CommentVoting,
 } from "@/src/components/comments/comment-buttons";
 import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
-import { getCommentSaved } from "@/src/apis/utils";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
 
@@ -126,9 +125,8 @@ function Comment({ commentPath }: { commentPath: string }) {
           </BadgeIcon>
           <div className="flex-1 text-sm leading-6 block min-w-0">
             <Link
-              to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
+              to={`${linkCtx.root}posts/:post/comments/:comment`}
               params={{
-                communityName: comment.communitySlug,
                 post: encodeApId(comment.postApId),
                 comment: encodeApId(comment.apId),
               }}

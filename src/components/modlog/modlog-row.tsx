@@ -80,9 +80,8 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
           )}
           {item.postApId && item.postTitle && (
             <Link
-              to={`${linkCtx.root}c/:communityName/posts/:post`}
+              to={`${linkCtx.root}posts/:post`}
               params={{
-                communityName: item.communitySlug ?? "",
                 post: encodeURIComponent(item.postApId),
               }}
               className="text-brand truncate max-w-xs"
@@ -90,11 +89,10 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
               {item.postTitle}
             </Link>
           )}
-          {item.commentId && item.postApId && item.communitySlug && (
+          {item.commentId && item.postApId && (
             <Link
-              to={`${linkCtx.root}c/:communityName/posts/:post`}
+              to={`${linkCtx.root}posts/:post`}
               params={{
-                communityName: item.communitySlug,
                 post: encodeURIComponent(item.postApId),
               }}
               className="text-brand"

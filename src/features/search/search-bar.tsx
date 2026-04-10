@@ -69,8 +69,7 @@ function PostSearchResult({ apId }: { apId: string }) {
 
   const onSelect = () =>
     router.push(
-      resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
-        communityName: post.communitySlug,
+      resolveRoute(`${linkCtx.root}posts/:post`, {
         post: encodeApId(apId),
       }),
     );

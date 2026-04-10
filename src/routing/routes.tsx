@@ -15,6 +15,11 @@ const postCommentSchema = z.object({
   comment: z.string().optional(),
 });
 
+const postSchema = z.object({
+  post: z.string(),
+  comment: z.string().optional(),
+});
+
 const userSchema = z.object({
   userId: z.string(),
 });
@@ -55,6 +60,7 @@ export const routeDefs = {
   ...buildRoute("/home/c/:communityName/modlog", communityNameSchema),
   ...buildRoute("/home/modlog"),
   ...buildRoute("/home/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute("/home/posts/:post", postSchema),
   ...buildRoute("/home/lightbox", lightBoxFeedSchema),
   ...buildRoute("/home/c/:communityName/lightbox", lightBoxFeedSchema),
   ...buildRoute("/home/lightbox/:imgUrl", lightBoxSchema),
@@ -62,6 +68,7 @@ export const routeDefs = {
     "/home/c/:communityName/posts/:post/comments/:comment",
     postCommentSchema,
   ),
+  ...buildRoute("/home/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/home/u/:userId", userSchema),
   ...buildRoute("/home/saved"),
   // Communities
@@ -78,10 +85,12 @@ export const routeDefs = {
   ...buildRoute("/communities/c/:communityName/modlog", communityNameSchema),
   ...buildRoute("/communities/modlog"),
   ...buildRoute("/communities/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute("/communities/posts/:post", postSchema),
   ...buildRoute(
     "/communities/c/:communityName/posts/:post/comments/:comment",
     postCommentSchema,
   ),
+  ...buildRoute("/communities/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/communities/u/:userId", userSchema),
   ...buildRoute("/communities/saved"),
   ...buildRoute("/communities/c/:communityName/lightbox", lightBoxFeedSchema),
@@ -103,10 +112,12 @@ export const routeDefs = {
   ...buildRoute("/inbox/c/:communityName/modlog", communityNameSchema),
   ...buildRoute("/inbox/modlog"),
   ...buildRoute("/inbox/c/:communityName/posts/:post", postCommentSchema),
+  ...buildRoute("/inbox/posts/:post", postSchema),
   ...buildRoute(
     "/inbox/c/:communityName/posts/:post/comments/:comment",
     postCommentSchema,
   ),
+  ...buildRoute("/inbox/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/inbox/u/:userId", userSchema),
   ...buildRoute("/inbox/saved"),
   ...buildRoute("/inbox/c/:communityName/lightbox", lightBoxFeedSchema),
