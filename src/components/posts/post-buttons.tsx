@@ -22,7 +22,11 @@ import {
   useImageShareActions,
 } from "@/src/components/adaptable/action-menu/hooks";
 import { ActionMenu, ActionMenuProps } from "../adaptable/action-menu";
-import { encodeApId } from "@/src/apis/utils";
+import {
+  encodeApId,
+  getPostMyVote,
+  getPostEmojiReactions,
+} from "@/src/apis/utils";
 import { getPostEmbed } from "@/src/apis/post-embed";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import {
@@ -32,7 +36,6 @@ import {
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
 import { Schemas } from "@/src/apis/api-blueprint";
-import { getPostMyVote, getPostEmojiReactions } from "@/src/apis/utils";
 import { useMedia } from "@/src/hooks";
 import {
   useAddPostReactionEmojiMutation,
@@ -409,9 +412,8 @@ export function PostCommentsButton({
         asChild
       >
         <Link
-          to={`${linkCtx.root}c/:communityName/posts/:post`}
+          to={`${linkCtx.root}posts/:post`}
           params={{
-            communityName: postView.communitySlug,
             post: encodeApId(postApId),
           }}
         >
@@ -455,9 +457,7 @@ function usePostShareActions({
           type: "post",
           id: post.id,
           apId: post.apId,
-          communitySlug: post.communitySlug,
-          route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
-            communityName: post.communitySlug,
+          route: resolveRoute(`${linkCtx.root}posts/:post`, {
             post: encodeApId(post.apId),
           }),
         }

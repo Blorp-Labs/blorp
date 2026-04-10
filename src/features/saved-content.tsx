@@ -61,9 +61,8 @@ function Comment({ path }: { path: string }) {
   return (
     <Link
       className="border-b pb-4 mt-4"
-      to={`${linkCtx.root}c/:communityName/posts/:post/comments/:comment`}
+      to={`${linkCtx.root}posts/:post/comments/:comment`}
       params={{
-        communityName: commentView.communitySlug,
         post: encodeApId(commentView.postApId),
         comment: encodeApId(commentView.apId),
       }}

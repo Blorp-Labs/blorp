@@ -15,7 +15,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId } from "@/src/apis/utils";
+import { encodeApId, getPostMyVote, getPostSaved } from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
@@ -40,7 +40,6 @@ import {
 } from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/queries/index";
-import { getPostMyVote, getPostSaved } from "@/src/apis/utils";
 import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
@@ -90,9 +89,7 @@ export function usePostActions({
           type: "post",
           id: post.id,
           apId: post.apId,
-          communitySlug: post.communitySlug,
-          route: resolveRoute(`${linkCtx.root}c/:communityName/posts/:post`, {
-            communityName: post.communitySlug,
+          route: resolveRoute(`${linkCtx.root}posts/:post`, {
             post: encodeApId(post.apId),
           }),
         }

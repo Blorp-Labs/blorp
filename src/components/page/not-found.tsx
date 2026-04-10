@@ -17,17 +17,15 @@ import { Button } from "../ui/button";
 import { LuLoaderCircle } from "react-icons/lu";
 import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
-import { encodeApId } from "../../apis/utils";
+import { encodeApId, apIdFromCommunitySlug } from "../../apis/utils";
 import { Schemas } from "../../apis/api-blueprint";
 import { useRequireAuth } from "../auth-context";
-import { apIdFromCommunitySlug } from "../../apis/utils";
 import { env } from "../../env";
 
 function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
   if (data.post) {
-    return resolveRoute("/home/c/:communityName/posts/:post", {
+    return resolveRoute("/home/posts/:post", {
       post: encodeApId(data.post.apId),
-      communityName: data.post.communitySlug,
     });
   }
   if (data.community) {
@@ -41,14 +39,10 @@ function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
     });
   }
   if (data.comment) {
-    return resolveRoute(
-      "/home/c/:communityName/posts/:post/comments/:comment",
-      {
-        communityName: "_",
-        post: "_",
-        comment: encodeApId(data.comment.apId),
-      },
-    );
+    return resolveRoute("/home/posts/:post/comments/:comment", {
+      post: "_",
+      comment: encodeApId(data.comment.apId),
+    });
   }
   if (data.feed) {
     return resolveRoute("/home/f/:apId", {

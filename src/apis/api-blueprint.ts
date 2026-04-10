@@ -829,9 +829,9 @@ export abstract class ApiBlueprint<C> {
     options: RequestOptions,
   ): Promise<{
     post: Schemas.Post;
-    community?: Schemas.Community;
-    creator?: Schemas.Person;
-    flairs?: Schemas.Flair[];
+    community: Schemas.Community | undefined;
+    profiles: Schemas.Person[] | undefined;
+    flairs: Schemas.Flair[] | undefined;
   }>;
   abstract getPosts(
     form: Forms.GetPosts,

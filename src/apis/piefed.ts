@@ -1046,7 +1046,7 @@ export class PieFedApi
     });
 
     try {
-      const { post_view, community_view, cross_posts } =
+      const { post_view, community_view, cross_posts, moderators } =
         await this.client.getApiAlphaPost({ id: post_id }, options);
 
       return {
@@ -1054,10 +1054,13 @@ export class PieFedApi
           postView: post_view,
           crossPosts: cross_posts ?? [],
         }),
-        community_view: community_view
+        community: community_view
           ? convertCommunity(community_view, "partial")
           : undefined,
-        creator: convertPerson({ person: post_view.creator }, "partial"),
+        profiles: [
+          ...(moderators?.map((m) => m.moderator) ?? []),
+          post_view.creator,
+        ].map((person) => convertPerson({ person }, "partial")),
         flairs: post_view.flair_list?.map(convertFlair),
       };
     } catch (err) {

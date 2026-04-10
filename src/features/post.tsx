@@ -1,6 +1,6 @@
 import { PostComment } from "@/src/components/comments/post-comment";
 import { buildCommentTree } from "../lib/comment-tree";
-import { useEffect } from "react";
+import { useEffect, memo, useMemo, useState } from "react";
 import {
   usePostQuery,
   useCommentsQuery,
@@ -15,9 +15,7 @@ import {
 } from "@/src/components/posts/post";
 import { CommunitySidebar } from "@/src/components/communities/community-sidebar";
 import { ContentGutters } from "../components/gutters";
-import { memo, useMemo } from "react";
 import _ from "lodash";
-import { useState } from "react";
 import {
   CommentReplyProvider,
   InlineCommentReply,
@@ -233,12 +231,8 @@ export default function Post() {
   const theme = useTheme();
   const media = useMedia();
   const linkCtx = useLinkContext();
-  const {
-    communityName,
-    post: apId,
-    comment: commentPath,
-  } = useParams(
-    `${linkCtx.root}c/:communityName/posts/:post/comments/:comment`,
+  const { post: apId, comment: commentPath } = useParams(
+    `${linkCtx.root}posts/:post/comments/:comment`,
   );
   const [search, setSearch] = useState("");
 
@@ -251,6 +245,14 @@ export default function Post() {
 
   const amIAdmin = useAmIAdmin();
 
+  const postQuery = usePostQuery({
+    ap_id: decodedApId,
+  });
+
+  const post = usePostFromStore(decodedApId ?? undefined);
+
+  const communityName = post?.communitySlug;
+
   useCommunityQuery({
     name: communityName,
   });
@@ -258,11 +260,6 @@ export default function Post() {
   const modApIds = community?.mods?.map((m) => m.apId);
   const canMod =
     (myUserApId ? modApIds?.includes(myUserApId) : false) || !!amIAdmin;
-  const postQuery = usePostQuery({
-    ap_id: decodedApId,
-  });
-
-  const post = usePostFromStore(decodedApId ?? undefined);
 
   const locked = post?.optimisticLocked ?? post?.locked ?? false;
 
@@ -369,14 +366,17 @@ export default function Post() {
           <ToolbarButtons side="left">
             <ToolbarBackButton className="max-md:text-white max-md:dark:text-muted-foreground" />
             <ToolbarTitle className="md:hidden" size="sm" numRightIcons={2}>
-              {communityName}
+              {communityName ?? "Loading..."}
             </ToolbarTitle>
           </ToolbarButtons>
           <SearchBar
-            placeholder={`Search ${communityName}`}
+            placeholder={communityName ? `Search ${communityName}` : "Search"}
             value={search}
             onValueChange={setSearch}
             onSubmit={(newVal) => {
+              if (!communityName) {
+                return;
+              }
               router.push(
                 resolveRoute(
                   `${linkCtx.root}c/:communityName/s`,
@@ -450,7 +450,6 @@ export default function Post() {
                     commentTree={item[1]}
                     level={0}
                     postCreatorId={postCreatorId}
-                    communityName={communityName}
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}

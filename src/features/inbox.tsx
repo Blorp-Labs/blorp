@@ -46,8 +46,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../components/ui/tooltip";
-import { encodeApId } from "../apis/utils";
-import { getCommentSaved } from "../apis/utils";
+import { encodeApId, getCommentSaved } from "../apis/utils";
 import {
   CommentButtonBar,
   CommentVoting,
@@ -221,7 +220,6 @@ function CommentReport({
             {commentView && (
               <div className="border px-2 rounded-lg">
                 <PostComment
-                  communityName={commentView.communitySlug}
                   postApId={commentView.postApId}
                   postLocked={false}
                   commentTree={{
@@ -309,9 +307,8 @@ function Mention({
             )}
           >
             <Link
-              to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
+              to={`/inbox/posts/:post/comments/:comment`}
               params={{
-                communityName: mention.communitySlug,
                 post: encodeApId(mention.postApId),
                 comment: encodeApId(mention.commentApId),
               }}
@@ -410,9 +407,8 @@ function Reply({
             )}
           >
             <Link
-              to={`/inbox/c/:communityName/posts/:post/comments/:comment`}
+              to={`/inbox/posts/:post/comments/:comment`}
               params={{
-                communityName: replyView.communitySlug,
                 post: encodeApId(replyView.postApId),
                 comment: encodeApId(replyView.commentApId),
               }}

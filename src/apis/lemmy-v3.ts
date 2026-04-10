@@ -10,12 +10,15 @@ import {
   Software,
   resolveObjectResponseSchema,
 } from "./api-blueprint";
-import { createSlug } from "./utils";
+import {
+  createSlug,
+  shrinkBlockedCommunity,
+  shrinkBlockedPerson,
+} from "./utils";
 import _ from "lodash";
 import z from "zod";
 import { ErrorLike, exhaustiveList, isErrorLike } from "../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
-import { shrinkBlockedCommunity, shrinkBlockedPerson } from "./utils";
 
 function translateError(err: ErrorLike): Error {
   const name = err.name.trim().toLowerCase();
@@ -831,7 +834,12 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       );
       return {
         post: convertPost(fullPost.post_view, fullPost.cross_posts),
-        creator: convertPerson({ person: fullPost.post_view.creator }),
+        profiles: [
+          ...fullPost.moderators.map((m) => m.moderator),
+          fullPost.post_view.creator,
+        ].map((person) => convertPerson({ person })),
+        community: convertCommunity(fullPost.community_view),
+        flairs: undefined,
       };
     });
   }

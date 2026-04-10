@@ -277,7 +277,6 @@ export type ShareEntityContext =
       type: "post";
       id: number;
       apId: string;
-      communitySlug: string;
       route: string;
     }
   | {

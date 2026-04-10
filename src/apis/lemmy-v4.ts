@@ -736,7 +736,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     );
     return {
       post: convertPost(fullPost.post_view),
-      creator: convertPerson({ person: fullPost.post_view.creator }),
+      // TODO: does lemmy v4 give us community moderators?
+      profiles: [fullPost.post_view.creator].map((person) =>
+        convertPerson({ person }),
+      ),
+      community: convertCommunity(fullPost.community_view),
+      flairs: undefined,
     };
   }
 
