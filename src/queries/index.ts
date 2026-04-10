@@ -1261,11 +1261,13 @@ export function useCreateCommentMutation() {
         body,
         creatorId: myProfile?.id ?? -1,
         creatorApId: myProfile?.apId ?? "",
-        creatorHandle: (myProfile ? (myProfile.handle ?? "") : "") as Handle,
+        creatorHandle: (myProfile
+          ? (myProfile.handle ?? "")
+          : "") as unknown as Handle,
         isBannedFromCommunity: false,
         postId: -1,
         postApId,
-        communityHandle: "" as Handle,
+        communityHandle: "" as unknown as Handle,
         communityApId: "",
         postTitle: "",
         myVote: 1,

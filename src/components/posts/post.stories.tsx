@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Handle } from "@/src/apis/api-blueprint";
 
 import { PostCard } from "./post";
 import * as api from "@/test-utils/api";
@@ -128,15 +127,15 @@ const postWithCrossPosts = api.getPost({
     crossPosts: [
       {
         apId: "https://blorpblorp.xyz/post/1001",
-        communityHandle: "news@lemmy.world" as Handle,
+        communityHandle: "news@lemmy.world",
       },
       {
         apId: "https://blorpblorp.xyz/post/1002",
-        communityHandle: "technology@beehaw.org" as Handle,
+        communityHandle: "technology@beehaw.org",
       },
       {
         apId: "https://blorpblorp.xyz/post/1003",
-        communityHandle: "worldnews@feddit.de" as Handle,
+        communityHandle: "worldnews@feddit.de",
       },
     ],
   },

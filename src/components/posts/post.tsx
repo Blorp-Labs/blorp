@@ -34,7 +34,7 @@ import {
 } from "@/src/stores/auth";
 import { useShouldShowNsfw } from "@/src/hooks/nsfw";
 import { LuRepeat2 } from "react-icons/lu";
-import { Handle, Schemas } from "@/src/apis/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
 import { SpotifyEmbed } from "./embeds/post-spotify-embed";
 import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
@@ -970,7 +970,7 @@ function PostCardErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communityHandle: BLORP_COMMUNITY as Handle,
+      communityHandle: BLORP_COMMUNITY,
       title: "[Crash] Post rendering error",
       body,
     });

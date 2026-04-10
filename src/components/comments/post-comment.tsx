@@ -68,7 +68,7 @@ import {
   useCommentCollapseThreshold,
   useCommentHideThreshold,
 } from "@/src/stores/utils";
-import { Handle, Schemas } from "@/src/apis/api-blueprint";
+import { Schemas } from "@/src/apis/api-blueprint";
 import { useShowCommentRemoveModal } from "../posts/post-remove";
 import { CommentCreatorBadge } from "./comment-creator-badge";
 import { Bookmark, Check, Lock } from "../icons";
@@ -440,7 +440,7 @@ function PostCommentErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communityHandle: BLORP_COMMUNITY as Handle,
+      communityHandle: BLORP_COMMUNITY,
       title: "[Crash] Comment rendering error",
       body,
     });

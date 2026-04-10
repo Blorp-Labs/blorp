@@ -17,7 +17,6 @@ import {
   Draft,
 } from "./create-post";
 import * as api from "@/test-utils/api";
-import { handleSchema } from "../apis/api-blueprint";
 
 afterEach(() => {
   useCreatePostStore.getState().reset();
@@ -78,7 +77,7 @@ describe("empty choice filtering", () => {
     type: "poll",
     createdAt: Date.now(),
     title: "Test poll",
-    communityHandle: handleSchema.parse("test@example.com"),
+    communityHandle: "test@example.com",
     apId: "https://example.com/post/1",
     poll: {
       endAmount: 7,
