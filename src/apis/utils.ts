@@ -1,30 +1,12 @@
-import { Handle, handleSchema, Schemas } from "./api-blueprint";
+import { Schemas } from "./api-blueprint";
 import _ from "lodash";
 
-export type { Handle };
-
-export function createHandle({
-  apId,
-  name,
-}: {
-  apId: string;
-  name: string;
-}): Handle {
-  const url = new URL(apId);
-  if (!name) {
-    throw new Error("invalid url for handle, apId=" + apId);
-  }
-  const host = url.host;
-  return handleSchema.parse(`${name}@${host}`);
-}
-
-export function parseHandle(handle?: string) {
-  const parsed = handle?.split("@");
-  return {
-    name: parsed?.[0],
-    host: parsed?.[1],
-  };
-}
+export {
+  createHandle,
+  parseHandle,
+  apIdFromCommunityHandle,
+} from "../lib/handle";
+export type { Handle } from "../lib/handle";
 
 export function encodeApId(id: string) {
   return encodeURIComponent(id);
@@ -79,18 +61,6 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
     return false;
   }
   return comment.optimisticAnswer ?? comment.answer;
-}
-
-export function apIdFromCommunityHandle(handle: string): string | undefined {
-  const parts = handle.split("@");
-  if (parts.length !== 2) {
-    return undefined;
-  }
-  const [name, host] = parts;
-  if (!name || !host) {
-    return undefined;
-  }
-  return `https://${host}/c/${name}`;
 }
 
 export function getPostEmojiReactions(post: Schemas.Post) {

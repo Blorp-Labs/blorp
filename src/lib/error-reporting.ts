@@ -1,7 +1,8 @@
 import { env } from "@/src/env";
 import pkgJson from "@/package.json";
+import { type Handle } from "./handle";
 
-export const BLORP_COMMUNITY: `${string}@${string}` = "blorp@lemmy.zip";
+export const BLORP_COMMUNITY: Handle = "blorp@lemmy.zip";
 
 export function buildErrorReport(
   contextFields: Record<string, string>,
