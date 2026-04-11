@@ -28,7 +28,7 @@ const loremTitlePost = api.getPost({
   },
 });
 
-// Long unbroken creator slug — stress-tests byline truncation
+// Long unbroken creator handle — stress-tests byline truncation
 const longCreatorNamePost = api.getPost({
   variant: "text",
   post: {
@@ -38,7 +38,7 @@ const longCreatorNamePost = api.getPost({
   },
 });
 
-// Long unbroken community slug — stress-tests byline truncation
+// Long unbroken community handle — stress-tests byline truncation
 const longCommunityNamePost = api.getPost({
   variant: "text",
   post: {
@@ -79,7 +79,7 @@ const manyFlairsPost = api.getPost({
   },
 });
 
-// Cross post with a very long community slug — stress-tests cross post row overflow
+// Cross post with a very long community handle — stress-tests cross post row overflow
 const longCrossPostCommunityPost = api.getPost({
   variant: "text",
   post: {

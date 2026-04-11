@@ -189,7 +189,7 @@ export default function SettingsPage() {
   const { person } = account
     ? parseAccountInfo(account)
     : { person: undefined };
-  const slug = person?.handle;
+  const handle = person?.handle;
 
   const [alrt] = useIonAlert();
 
@@ -199,13 +199,13 @@ export default function SettingsPage() {
 
   return (
     <Page notFound={!account}>
-      <PageTitle>{slug ?? "Person"}</PageTitle>
+      <PageTitle>{handle ?? "Person"}</PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" numRightIcons={1}>
-              {slug ?? "Person"}
+              {handle ?? "Person"}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">

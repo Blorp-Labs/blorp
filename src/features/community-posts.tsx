@@ -140,7 +140,7 @@ export default function CommunityPosts() {
   return (
     <Page
       notFound={communityQuery.isError && !community}
-      notFoundCommunitySlug={communityHandle}
+      notFoundCommunityHandle={communityHandle}
     >
       <PageTitle>{communityHandle}</PageTitle>
       <IonHeader>

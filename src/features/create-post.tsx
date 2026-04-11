@@ -116,7 +116,7 @@ function DraftsSidebar({
       {_.entries(drafts)
         .sort(([_a, a], [_b, b]) => b.createdAt - a.createdAt)
         .map(([key, draft]) => {
-          const slug = draft.communityHandle;
+          const handle = draft.communityHandle;
           return (
             <div key={key} className="relative">
               <Link
@@ -131,11 +131,11 @@ function DraftsSidebar({
               >
                 <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
                   <RelativeTime time={draft.createdAt} />
-                  {slug && (
+                  {handle && (
                     <>
                       <span>•</span>
                       <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
-                        {slug}
+                        {handle}
                       </span>
                     </>
                   )}

@@ -17,8 +17,8 @@ describe("createHandle", () => {
       "onehundredninetysix@lemmy.blahaj.zone",
     ],
     ["https://lemdro.id/c/meta", "meta", "meta@lemdro.id"],
-  ])('createHandle("%s") == %s', (apId, name, slug) => {
-    expect(createHandle({ apId, name })).toBe(slug);
+  ])('createHandle("%s") == %s', (apId, name, handle) => {
+    expect(createHandle({ apId, name })).toBe(handle);
   });
 
   //test.each([
@@ -41,8 +41,8 @@ describe("parseHandle", () => {
       "onehundredninetysix",
       "lemmy.blahaj.zone",
     ],
-  ])('parseHandle("%s")', (slug, name, host) => {
-    expect(parseHandle(slug)).toEqual({ name, host });
+  ])('parseHandle("%s")', (handle, name, host) => {
+    expect(parseHandle(handle)).toEqual({ name, host });
   });
 
   test("undefined input returns undefined fields", () => {
