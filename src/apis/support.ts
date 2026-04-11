@@ -16,6 +16,7 @@ function compareVersions(a: string, b: string) {
 
 export function supportsFeeds({ software, softwareVersion }: Software) {
   return (
+    software === "mastodon" ||
     software === "piefed" ||
     (software === "lemmy" && softwareVersion?.startsWith("nightly")) ||
     (software === "lemmy" &&

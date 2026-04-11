@@ -70,6 +70,19 @@ interface MastodonSearchResult {
   accounts: MastodonAccount[];
 }
 
+interface MastodonTagHistory {
+  day: string;
+  accounts: string;
+  uses: string;
+}
+
+interface MastodonTag {
+  name: string;
+  url: string;
+  history: MastodonTagHistory[];
+  following?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -86,6 +99,15 @@ function stripHtml(html: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ")
     .trim();
+}
+
+/** Stable numeric hash for non-Snowflake strings (e.g. hashtag names). */
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
 }
 
 /** Convert a Mastodon Snowflake string ID to a safe integer by taking the low bits. */
@@ -196,6 +218,36 @@ function accountToPerson(
     postCount: account.statuses_count,
     commentCount: null,
   } satisfies Schemas.Person;
+}
+
+function tagToFeed(
+  tag: MastodonTag,
+  instance: string,
+): Schemas.MultiCommunityFeed {
+  const domain = instanceDomain(instance);
+  // Sum recent account usage across history days as a proxy for subscriber count
+  const recentAccounts = tag.history
+    .slice(0, 7)
+    .reduce((sum, h) => sum + parseInt(h.accounts, 10), 0);
+
+  return {
+    id: hashStr(tag.name),
+    apId: `${instance}/tags/${tag.name}`,
+    slug: `${tag.name}@${domain}`,
+    name: `#${tag.name}`,
+    icon: null,
+    banner: null,
+    nsfw: false,
+    communityCount: 0,
+    subscriberCount: recentAccounts,
+    description: null,
+    communitySlugs: [],
+    subscribed: tag.following ?? null,
+    createdAt: new Date(0).toISOString(),
+    ownerId: null,
+    ownerApId: null,
+    ownerSlug: null,
+  } satisfies Schemas.MultiCommunityFeed;
 }
 
 function statusToComment(
@@ -439,6 +491,30 @@ export class MastodonApi implements ApiBlueprint<null> {
     }[];
   }> {
     const limit = form.limit ?? this.limit;
+
+    // Hashtag timeline — multiCommunityFeedApId encodes the tag as
+    // ${instance}/tags/${name}
+    if (form.multiCommunityFeedApId) {
+      const tagName = form.multiCommunityFeedApId.match(/\/tags\/(.+)$/)?.[1];
+      if (tagName) {
+        const cursor =
+          form.pageCursor && form.pageCursor !== INIT_PAGE_TOKEN
+            ? `&max_id=${encodeURIComponent(form.pageCursor)}`
+            : "";
+        const statuses = await this.apiFetch<MastodonStatus[]>(
+          `/api/v1/timelines/tag/${encodeURIComponent(tagName)}?limit=${limit}${cursor}`,
+          options,
+        );
+        const posts = statuses.map((status) => ({
+          post: statusToPost(status, this.instance),
+          creator: accountToPerson(
+            status.reblog ? status.reblog.account : status.account,
+            this.instance,
+          ),
+        }));
+        return { posts, nextCursor: statuses.at(-1)?.id ?? null };
+      }
+    }
 
     // Trending fallback: some instances (e.g. mastodon.social) require auth for
     // public/local timelines. We detect this on first attempt and remember it.
@@ -709,23 +785,42 @@ export class MastodonApi implements ApiBlueprint<null> {
 
   async getMultiCommunityFeeds(
     _form: Forms.GetMultiCommunityFeeds,
-    _options?: RequestOptions,
+    options?: RequestOptions,
   ): Promise<{
     multiCommunityFeeds: Schemas.MultiCommunityFeed[];
     nextCursor: null;
   }> {
-    throw Errors.NOT_IMPLEMENTED;
+    const tags = await this.apiFetch<MastodonTag[]>(
+      "/api/v1/trends/tags?limit=20",
+      options,
+    );
+    return {
+      multiCommunityFeeds: tags.map((t) => tagToFeed(t, this.instance)),
+      nextCursor: null,
+    };
   }
 
   async getMultiCommunityFeed(
-    _form: Forms.GetMultiCommunityFeed,
-    _options?: RequestOptions,
+    form: Forms.GetMultiCommunityFeed,
+    options?: RequestOptions,
   ): Promise<{
     feed: Schemas.MultiCommunityFeed;
     communities: Schemas.Community[];
     owner: Schemas.Person | null;
   }> {
-    throw Errors.NOT_IMPLEMENTED;
+    const tagName = form.apId.match(/\/tags\/(.+)$/)?.[1];
+    if (!tagName) {
+      throw Errors.OBJECT_NOT_FOUND;
+    }
+    const tag = await this.apiFetch<MastodonTag>(
+      `/api/v1/tags/${encodeURIComponent(tagName)}`,
+      options,
+    );
+    return {
+      feed: tagToFeed(tag, this.instance),
+      communities: [],
+      owner: null,
+    };
   }
 
   async followCommunity(
