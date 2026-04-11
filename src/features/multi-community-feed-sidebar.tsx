@@ -21,13 +21,14 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useMedia } from "../hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { decodeApId } from "../apis/utils";
 
 export default function MultiCommunitySidebar() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
   const { apId: encodedApId } = useParams(`${linkCtx.root}f/:apId/sidebar`);
-  const apId = useMemo(() => decodeURIComponent(encodedApId), [encodedApId]);
+  const apId = useMemo(() => decodeApId(encodedApId), [encodedApId]);
 
   const software = useSoftware();
 
