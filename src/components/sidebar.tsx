@@ -46,7 +46,7 @@ function SidebarErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY,
       title: "[Crash] Sidebar rendering error",
       body,
     });

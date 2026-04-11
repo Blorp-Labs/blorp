@@ -28,7 +28,7 @@ export function usePersonActions({
   personLabel?: string;
 }): SubAction[] {
   const tag = useTagUserStore((s) =>
-    person ? s.userTags[person.slug] : undefined,
+    person ? s.userTags[person.handle] : undefined,
   );
 
   const [alrt] = useIonAlert();
@@ -38,7 +38,7 @@ export function usePersonActions({
 
   const requireAuth = useRequireAuth();
 
-  const slug = person ? person.slug : undefined;
+  const handle = person ? person.handle : undefined;
 
   const blockPerson = useBlockPersonMutation({
     apId: person?.apId,
@@ -53,7 +53,7 @@ export function usePersonActions({
       ? {
           type: "person",
           apId: person.apId,
-          slug: person.slug,
+          handle: person.handle,
           route: resolveRoute(`${linkCtx.root}u/:userId`, {
             userId: encodeApId(person.apId),
           }),
@@ -78,7 +78,7 @@ export function usePersonActions({
           {
             text: `Tag ${personLabel}`,
             onClick: async () => {
-              tagUser(person.slug, tag);
+              tagUser(person.handle, tag);
             },
           },
           ...shareActions,
@@ -93,7 +93,7 @@ export function usePersonActions({
                 await requireAuth();
                 const deferred = new Deferred();
                 alrt({
-                  message: `${isBlocked ? "Unblock" : "Block"} ${slug ?? "person"}`,
+                  message: `${isBlocked ? "Unblock" : "Block"} ${handle ?? "person"}`,
                   buttons: [
                     {
                       text: "Cancel",

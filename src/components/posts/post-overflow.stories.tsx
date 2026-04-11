@@ -28,22 +28,22 @@ const loremTitlePost = api.getPost({
   },
 });
 
-// Long unbroken creator slug — stress-tests byline truncation
+// Long unbroken creator handle — stress-tests byline truncation
 const longCreatorNamePost = api.getPost({
   variant: "text",
   post: {
     id: api.randomDbId(),
-    creatorSlug:
+    creatorHandle:
       "averylongcreatornamewithnospacesatall@averylonghostname.example.com",
   },
 });
 
-// Long unbroken community slug — stress-tests byline truncation
+// Long unbroken community handle — stress-tests byline truncation
 const longCommunityNamePost = api.getPost({
   variant: "text",
   post: {
     id: api.randomDbId(),
-    communitySlug:
+    communityHandle:
       "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
   },
 });
@@ -79,7 +79,7 @@ const manyFlairsPost = api.getPost({
   },
 });
 
-// Cross post with a very long community slug — stress-tests cross post row overflow
+// Cross post with a very long community handle — stress-tests cross post row overflow
 const longCrossPostCommunityPost = api.getPost({
   variant: "text",
   post: {
@@ -88,7 +88,7 @@ const longCrossPostCommunityPost = api.getPost({
     crossPosts: [
       {
         apId: "https://blorpblorp.xyz/post/2001",
-        communitySlug:
+        communityHandle:
           "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
       },
     ],
@@ -103,7 +103,7 @@ const manyCrossPostsPost = api.getPost({
     body: "Short post body",
     crossPosts: Array.from({ length: 10 }, (_, i) => ({
       apId: `https://blorpblorp.xyz/post/${3000 + i}`,
-      communitySlug: `community${i + 1}@example${i + 1}.com`,
+      communityHandle: `community${i + 1}@example${i + 1}.com`,
     })),
   },
 });

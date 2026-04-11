@@ -3,7 +3,6 @@ import _ from "lodash";
 export interface CommentTree {
   comment?: {
     id: number;
-    communitySlug: string;
     postApId: string;
     childCount: number;
     path: string;
@@ -33,7 +32,6 @@ export interface CommentTreeTopLevel {
 export function buildCommentTree(
   commentViews: {
     id: number;
-    communitySlug: string;
     postApId: string;
     childCount: number;
     path: string;

@@ -11,7 +11,7 @@ import {
   resolveObjectResponseSchema,
 } from "./api-blueprint";
 import {
-  createSlug,
+  createHandle,
   shrinkBlockedCommunity,
   shrinkBlockedPerson,
 } from "./utils";
@@ -138,7 +138,7 @@ function convertCommunity(
     createdAt: community.published,
     id: community.id,
     apId: community.actor_id,
-    slug: createSlug({ apId: community.actor_id, name: community.name }).slug,
+    handle: createHandle({ apId: community.actor_id, name: community.name }),
     instanceId: community.instance_id,
     icon: community.icon ?? null,
     banner: community.banner ?? null,
@@ -176,7 +176,7 @@ function convertPerson({
     avatar: person.avatar ?? null,
     bio: person.bio ?? null,
     matrixUserId: person.matrix_user_id ?? null,
-    slug: createSlug({ apId: person.actor_id, name: person.name }).slug,
+    handle: createHandle({ apId: person.actor_id, name: person.name }),
     deleted: person.deleted,
     createdAt: person.published,
     isBot: person.bot_account,
@@ -200,8 +200,7 @@ function convertPost(
     : null;
   return {
     locked: post.locked,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
-      .slug,
+    creatorHandle: createHandle({ apId: creator.actor_id, name: creator.name }),
     url: post.url ?? null,
     urlContentType: post.url_content_type ?? null,
     creatorId: post.creator_id,
@@ -221,19 +220,19 @@ function convertPost(
     deleted: post.deleted,
     removed: post.removed,
     thumbnailAspectRatio: ar,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     communityApId: community.actor_id,
     creatorApId: creator.actor_id,
     crossPosts:
       crossPosts?.map((cp) => ({
         apId: cp.post.ap_id,
-        communitySlug: createSlug({
+        communityHandle: createHandle({
           apId: cp.community.actor_id,
           name: cp.community.name,
-        }).slug,
+        }),
       })) ?? null,
     featuredCommunity: post.featured_community,
     featuredLocal: post.featured_local,
@@ -255,8 +254,7 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     body: comment.content,
     creatorId: creator.id,
     creatorApId: creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
-      .slug,
+    creatorHandle: createHandle({ apId: creator.actor_id, name: creator.name }),
     isBannedFromCommunity: commentView.creator_banned_from_community,
     path: comment.path,
     downvotes: counts.downvotes,
@@ -265,10 +263,10 @@ function convertComment(commentView: lemmyV3.CommentView): Schemas.Comment {
     postApId: post.ap_id,
     removed: comment.removed,
     deleted: comment.deleted,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     communityApId: community.actor_id,
     postTitle: post.name,
     myVote: commentView.my_vote ?? null,
@@ -287,14 +285,13 @@ function convertPrivateMessage(
     id: pmView.private_message.id,
     creatorApId: creator.actor_id,
     creatorId: creator.id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
-      .slug,
+    creatorHandle: createHandle({ apId: creator.actor_id, name: creator.name }),
     recipientApId: recipient.actor_id,
     recipientId: recipient.id,
-    recipientSlug: createSlug({
+    recipientHandle: createHandle({
       apId: recipient.actor_id,
       name: recipient.name,
-    }).slug,
+    }),
     body: pmView.private_message.content,
     read: pmView.private_message.read,
   };
@@ -307,16 +304,15 @@ function convertReply(replyView: lemmyV3.CommentReplyView): Schemas.Reply {
     commentId: replyView.comment.id,
     commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     body: replyView.comment.content,
     path: replyView.comment.path,
     creatorId: replyView.creator.id,
     creatorApId: replyView.creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
-      .slug,
+    creatorHandle: createHandle({ apId: creator.actor_id, name: creator.name }),
     read: replyView.comment_reply.read,
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
@@ -334,16 +330,15 @@ function convertMention(replyView: lemmyV3.PersonMentionView): Schemas.Reply {
     commentId: replyView.comment.id,
     commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     body: replyView.comment.content,
     path: replyView.comment.path,
     creatorId: replyView.creator.id,
     creatorApId: replyView.creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.name })
-      .slug,
+    creatorHandle: createHandle({ apId: creator.actor_id, name: creator.name }),
     read: replyView.person_mention.read,
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
@@ -362,17 +357,17 @@ function convertPostReport(report: lemmyV3.PostReportView) {
     postApId: report.post.ap_id,
     creatorId: report.creator.id,
     creatorApId: report.creator.actor_id,
-    creatorSlug: createSlug({
+    creatorHandle: createHandle({
       apId: report.creator.actor_id,
       name: report.creator.name,
-    }).slug,
+    }),
     resolverId: report.resolver?.id ?? null,
     resolverApId: report.resolver?.actor_id ?? null,
-    resolverSlug: report.resolver
-      ? createSlug({
+    resolverHandle: report.resolver
+      ? createHandle({
           apId: report.resolver.actor_id,
           name: report.resolver.name,
-        }).slug
+        })
       : null,
     originalPostName: report.post_report.original_post_name,
     originalPostBody: report.post_report.original_post_body ?? null,
@@ -393,17 +388,17 @@ function convertCommentReport(
     commentPath: report.comment.path,
     creatorId: report.creator.id,
     creatorApId: report.creator.actor_id,
-    creatorSlug: createSlug({
+    creatorHandle: createHandle({
       apId: report.creator.actor_id,
       name: report.creator.name,
-    }).slug,
+    }),
     resolverId: report.resolver?.id ?? null,
     resolverApId: report.resolver?.actor_id ?? null,
-    resolverSlug: report.resolver
-      ? createSlug({
+    resolverHandle: report.resolver
+      ? createHandle({
           apId: report.resolver.actor_id,
           name: report.resolver.name,
-        }).slug
+        })
       : null,
     reason: report.comment_report.reason,
   };
@@ -415,10 +410,10 @@ function convertModlogResponseV3(
   const baseItem = {
     userId: null,
     userApId: null,
-    userSlug: null,
+    userHandle: null,
     communityId: null,
     communityApId: null,
-    communitySlug: null,
+    communityHandle: null,
     postId: null,
     postApId: null,
     postTitle: null,
@@ -430,22 +425,26 @@ function convertModlogResponseV3(
   const emptyObject = {
     id: null,
     apId: null,
-    slug: null,
+    handle: null,
   };
 
   function modFields(person: lemmyV3.Person | undefined) {
     const p = person ? convertPerson({ person }) : emptyObject;
-    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+    return { modId: p.id, modApId: p.apId, modHandle: p.handle };
   }
 
   function userFields(person: lemmyV3.Person | undefined) {
     const p = person ? convertPerson({ person }) : emptyObject;
-    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+    return { userId: p.id, userApId: p.apId, userHandle: p.handle };
   }
 
   function communityFields(community: lemmyV3.Community | null | undefined) {
     const c = community ? convertCommunity({ community }) : emptyObject;
-    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+    return {
+      communityId: c.id,
+      communityApId: c.apId,
+      communityHandle: c.handle,
+    };
   }
 
   function postFields(post: lemmyV3.Post) {
@@ -784,10 +783,10 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         sidebar: lemmySite.site_view.site.sidebar ?? null,
         icon: lemmySite.site_view.site.icon ?? null,
         title: lemmySite.site_view.site.name,
-        moderates: moderates?.map((c) => c.slug) ?? null,
-        follows: follows?.map((c) => c.slug) ?? null,
+        moderates: moderates?.map((c) => c.handle) ?? null,
+        follows: follows?.map((c) => c.handle) ?? null,
         personBlocks: personBlocks?.map((p) => p.apId) ?? null,
-        communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
+        communityBlocks: communityBlocks?.map((c) => c.handle) ?? null,
         instanceBlocks: instanceBlocks ?? null,
         applicationQuestion:
           lemmySite.site_view.local_site.application_question ?? null,
@@ -856,7 +855,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           page_cursor:
             form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
           limit: form.limit ?? this.limit,
-          community_name: form.communitySlug,
+          community_name: form.communityHandle,
           saved_only: form.savedOnly,
           show_nsfw: form.showNsfw,
         },
@@ -1005,7 +1004,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
       const { posts, communities, users, comments } = await this.client.search(
         {
           q: form.q,
-          community_name: form.communitySlug,
+          community_name: form.communityHandle,
           page: cursor,
           type_: form.type,
           limit: form.limit ?? this.limit,
@@ -1051,7 +1050,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     return translateErrors(async () => {
       const { community_view, moderators } = await this.client.getCommunity(
         {
-          name: form.slug,
+          name: form.handle,
         },
         options,
       );
@@ -1446,7 +1445,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   async createPost(form: Forms.CreatePost) {
     return translateErrors(async () => {
       const community = await this.getCommunity({
-        slug: form.communitySlug,
+        handle: form.communityHandle,
       });
 
       const { post_view } = await this.client.createPost({
@@ -1788,9 +1787,9 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
   async getModlog(form: Forms.GetModlog, options: RequestOptions) {
     return translateErrors(async () => {
       let community_id: number | undefined;
-      if (form.communitySlug) {
+      if (form.communityHandle) {
         const { community } = await this.getCommunity(
-          { slug: form.communitySlug },
+          { handle: form.communityHandle },
           options,
         );
         community_id = community.id;

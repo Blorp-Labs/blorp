@@ -14,12 +14,12 @@ const tabs = [
 ] as const;
 
 // Canonical community + post identifiers used throughout this file.
-const COMMUNITY_SLUG = "asklemmy@lemmy.ml";
+const COMMUNITY_HANDLE = "asklemmy@lemmy.ml";
 const POST_AP_ID = "https://lemmy.world/post/23863920";
 const ENCODED_POST_AP_ID = encodeURIComponent(POST_AP_ID);
 
 function postUrl(base: string) {
-  return `${base}c/${COMMUNITY_SLUG}/posts/${ENCODED_POST_AP_ID}`;
+  return `${base}c/${COMMUNITY_HANDLE}/posts/${ENCODED_POST_AP_ID}`;
 }
 
 async function mockPostApis(page: Page) {

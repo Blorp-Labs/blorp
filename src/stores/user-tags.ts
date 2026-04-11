@@ -7,7 +7,7 @@ import { mergeCacheObject } from "./utils";
 
 type InboxStore = {
   userTags: Record<string, string>;
-  setUserTag: (userSlug: string, tag: string) => any;
+  setUserTag: (userHandle: string, tag: string) => any;
   reset: () => void;
 };
 
@@ -19,17 +19,17 @@ export const useTagUserStore = create<InboxStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
-      setUserTag: (userSlug, tag) => {
+      setUserTag: (userHandle, tag) => {
         const prev = get().userTags;
         if (!tag.trim()) {
           const clone = { ...prev };
-          delete clone[userSlug];
+          delete clone[userHandle];
           set({ userTags: clone });
         } else {
           set({
             userTags: {
               ...prev,
-              [userSlug]: tag.trim(),
+              [userHandle]: tag.trim(),
             },
           });
         }

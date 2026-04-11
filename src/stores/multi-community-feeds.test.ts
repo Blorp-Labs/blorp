@@ -58,33 +58,36 @@ describe("useMultiCommunityFeedStore", () => {
       ).toBeUndefined();
     });
 
-    test("preserves cached communitySlugs when incoming view omits them", () => {
+    test("preserves cached communityHandles when incoming view omits them", () => {
       const { result } = renderHook(() => useMultiCommunityFeedStore());
-      const communitySlugs = ["a@example.com", "b@example.com"];
-      const feedView = api.getFeed({ communitySlugs });
+      const communityHandles = [
+        "a@example.com",
+        "b@example.com",
+      ] satisfies `${string}@${string}`[];
+      const feedView = api.getFeed({ communityHandles });
 
-      // Prime the cache with communitySlugs
+      // Prime the cache with communityHandles
       act(() => {
         result.current.cacheFeeds(prefix, [{ feedView }]);
       });
 
-      // Simulate a list-endpoint response that omits communitySlugs
+      // Simulate a list-endpoint response that omits communityHandles
       act(() => {
         result.current.cacheFeeds(prefix, [
-          { feedView: { ...feedView, communitySlugs: undefined } },
+          { feedView: { ...feedView, communityHandles: undefined } },
         ]);
       });
 
       expect(
         result.current.feeds[prefix(feedView.apId)]?.data.feedView
-          .communitySlugs,
-      ).toEqual(communitySlugs);
+          .communityHandles,
+      ).toEqual(communityHandles);
     });
 
-    test("respects explicit empty communitySlugs as genuinely empty", () => {
+    test("respects explicit empty communityHandles as genuinely empty", () => {
       const { result } = renderHook(() => useMultiCommunityFeedStore());
       const feedView = api.getFeed({
-        communitySlugs: ["a@example.com"],
+        communityHandles: ["a@example.com"],
       });
 
       act(() => {
@@ -93,19 +96,19 @@ describe("useMultiCommunityFeedStore", () => {
 
       act(() => {
         result.current.cacheFeeds(prefix, [
-          { feedView: { ...feedView, communitySlugs: [] } },
+          { feedView: { ...feedView, communityHandles: [] } },
         ]);
       });
 
       expect(
         result.current.feeds[prefix(feedView.apId)]?.data.feedView
-          .communitySlugs,
+          .communityHandles,
       ).toEqual([]);
     });
 
-    test("communitySlugs remains undefined on cold cache when incoming view omits them", () => {
+    test("communityHandles remains undefined on cold cache when incoming view omits them", () => {
       const { result } = renderHook(() => useMultiCommunityFeedStore());
-      const feedView = api.getFeed({ communitySlugs: undefined });
+      const feedView = api.getFeed({ communityHandles: undefined });
 
       act(() => {
         result.current.cacheFeeds(prefix, [{ feedView }]);
@@ -113,7 +116,7 @@ describe("useMultiCommunityFeedStore", () => {
 
       expect(
         result.current.feeds[prefix(feedView.apId)]?.data.feedView
-          .communitySlugs,
+          .communityHandles,
       ).toBeUndefined();
     });
   });

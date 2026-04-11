@@ -22,7 +22,7 @@ import {
   useUploadImageMutation,
 } from "../queries";
 import { supportsPollCreation } from "../apis/support";
-import { Forms } from "../apis/api-blueprint";
+import { Forms, Handle } from "../apis/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -37,13 +37,12 @@ import {
 import { MarkdownEditor } from "../components/markdown/editor";
 import { Button, LoadingButton } from "../components/ui/button";
 import { close } from "ionicons/icons";
-import { FaCheck, FaChevronDown } from "react-icons/fa6";
+import { FaCheck, FaChevronDown, FaRegImage } from "react-icons/fa6";
 import { Input } from "../components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { useDropzone } from "react-dropzone";
 import { UserDropdown } from "../components/nav";
 import { Skeleton } from "../components/ui/skeleton";
-import { FaRegImage } from "react-icons/fa6";
 import { Label } from "@/src/components/ui/label";
 import { cn, isNotNil } from "../lib/utils";
 import dayjs from "dayjs";
@@ -72,7 +71,7 @@ import { Page } from "../components/page";
 import { SimpleSelect } from "../components/ui/simple-select";
 import { Trash } from "../components/icons";
 import { Separator } from "../components/ui/separator";
-import { parseSlug } from "../apis/utils";
+import { parseHandle } from "../apis/utils";
 
 dayjs.extend(localizedFormat);
 
@@ -117,7 +116,7 @@ function DraftsSidebar({
       {_.entries(drafts)
         .sort(([_a, a], [_b, b]) => b.createdAt - a.createdAt)
         .map(([key, draft]) => {
-          const slug = draft.communitySlug;
+          const handle = draft.communityHandle;
           return (
             <div key={key} className="relative">
               <Link
@@ -132,11 +131,11 @@ function DraftsSidebar({
               >
                 <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
                   <RelativeTime time={draft.createdAt} />
-                  {slug && (
+                  {handle && (
                     <>
                       <span>•</span>
                       <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
-                        {slug}
+                        {handle}
                       </span>
                     </>
                   )}
@@ -195,7 +194,7 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
   useEffect(() => {
     if (isActive && isEmpty && mostRecentCommunity) {
       patchDraft(draftId, {
-        communitySlug: mostRecentCommunity.slug,
+        communityHandle: mostRecentCommunity.handle,
       });
     }
   }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
@@ -311,19 +310,19 @@ export function CreatePost() {
   useLoadRecentCommunity(draftId, draft);
 
   useCommunityQuery({
-    name: draft.communitySlug,
+    name: draft.communityHandle,
   });
-  const community = useCommunityFromStore(draft.communitySlug);
+  const community = useCommunityFromStore(draft.communityHandle);
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const flairLookup = useFlairLookup(flairs);
 
   const post = usePostFromStore(draft.apId ?? undefined);
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const canEdit = isEdit && post?.creatorApId && myUserId === post.creatorApId;
-  const postOwner = post?.creatorSlug;
+  const postOwner = post?.creatorHandle;
 
   const communitySoftware = useInstanceSoftwareQuery({
-    instance: parseSlug(draft.communitySlug).host,
+    instance: parseHandle(draft.communityHandle).host,
   }).data;
 
   const softwareInfo = useSoftware();
@@ -426,7 +425,7 @@ export function CreatePost() {
       className={className}
       onClick={() => {
         try {
-          if (draft.communitySlug) {
+          if (draft.communityHandle) {
             const cleanup = () => {
               deleteDraft(draftId);
               setDefaultUuid(uuid());
@@ -442,7 +441,7 @@ export function CreatePost() {
         }
       }}
       disabled={
-        !draft.communitySlug ||
+        !draft.communityHandle ||
         (isEdit && !canEdit) ||
         (draft.type === "poll" &&
           (software === "lemmy" || communitySoftware === "lemmy"))
@@ -510,9 +509,9 @@ export function CreatePost() {
                 className="flex flex-row items-center gap-2 h-9 self-start"
                 disabled={isEdit}
               >
-                {draft.communitySlug ? (
+                {draft.communityHandle ? (
                   <CommunityCard
-                    communitySlug={draft.communitySlug}
+                    communityHandle={draft.communityHandle}
                     disableLink
                   />
                 ) : (
@@ -862,17 +861,17 @@ function ChooseCommunity({
   });
 
   const selectedCommunityData = useCommunityFromStore(
-    draft.communitySlug ?? undefined,
+    draft.communityHandle ?? undefined,
   );
   const selectedCommunity = selectedCommunityData?.communityView ?? null;
 
   const searchResultsCommunities =
     searchResultsRes.data?.pages.flatMap((p) =>
-      p.communities.map((slug) => ({ slug })),
+      p.communities.map((handle) => ({ handle })),
     ) ?? EMPTY_ARR;
 
   let data: (
-    | { slug: string }
+    | { handle: Handle }
     | "Selected"
     | "Recent"
     | "Subscribed"
@@ -886,7 +885,7 @@ function ChooseCommunity({
   if (subscribedCommunities && recentCommunities.recentlyVisited.length > 0) {
     data.push(
       "Subscribed",
-      ...subscribedCommunities.map((c) => ({ slug: c.communityView.slug })),
+      ...subscribedCommunities.map((c) => ({ handle: c.communityView.handle })),
     );
   }
 
@@ -905,7 +904,7 @@ function ChooseCommunity({
     if (typeof item === "string") {
       return item;
     }
-    return item.slug;
+    return item.handle;
   });
 
   return (
@@ -953,17 +952,18 @@ function ChooseCommunity({
                 <button
                   onClick={() => {
                     patchDraft(createPostId, {
-                      communitySlug: item.slug,
+                      communityHandle: item.handle,
                     });
                     closeModal();
                   }}
                   className="flex flex-row items-center gap-2"
                   disabled={!!draft.apId}
                 >
-                  <CommunityCard communitySlug={item.slug} disableLink />
-                  {draft.communitySlug && item.slug === draft.communitySlug && (
-                    <FaCheck className="text-brand" />
-                  )}
+                  <CommunityCard communityHandle={item.handle} disableLink />
+                  {draft.communityHandle &&
+                    item.handle === draft.communityHandle && (
+                      <FaCheck className="text-brand" />
+                    )}
                 </button>
               </ContentGutters>
             );

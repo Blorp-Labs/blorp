@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import utcPlugin from "dayjs/plugin/utc";
 import { Schemas, Software } from "@/src/apis/api-blueprint";
-import { createSlug } from "@/src/apis/utils";
+import { createHandle } from "@/src/apis/utils";
 import _ from "lodash";
 
 dayjs.extend(utcPlugin);
@@ -48,7 +48,7 @@ export function getPerson(overrides?: Partial<Schemas.Person>): Schemas.Person {
     id,
     apId,
     avatar: null,
-    slug: createSlug({ apId, name: String(id) }).slug,
+    handle: createHandle({ apId, name: String(id) }),
     matrixUserId: null,
     bio: "This is me",
     deleted: false,
@@ -83,7 +83,7 @@ export function getPost(config?: {
   creator: Schemas.Person;
 } {
   const creator = getPerson();
-  const creatorSlug = creator.slug;
+  const creatorHandle = creator.handle;
 
   const postId = config?.post?.id ?? POST_ID;
 
@@ -102,11 +102,11 @@ export function getPost(config?: {
     commentsCount: 4,
     deleted: false,
     saved: false,
-    creatorSlug,
+    creatorHandle,
     creatorId: creator.id,
     creatorApId: creator.apId,
     isBannedFromCommunity: false,
-    communitySlug: community.slug,
+    communityHandle: community.handle,
     communityApId: community.apId,
     thumbnailUrl: null,
     thumbnailAspectRatio: null,
@@ -233,14 +233,14 @@ export function getComment(
     body: "This is a test comment.",
     creatorId: creator.id,
     creatorApId: creator.apId,
-    creatorSlug: creator.slug,
+    creatorHandle: creator.handle,
     isBannedFromCommunity: false,
     postId,
     postApId: `${API_ROOT}/post/${postId}`,
     downvotes: 0,
     upvotes: 3,
     myVote: null,
-    communitySlug: community.slug,
+    communityHandle: community.handle,
     communityApId: community.apId,
     removed: false,
     deleted: false,
@@ -294,7 +294,7 @@ export function getFeed(
   return {
     id,
     apId: `${API_ROOT}/feed/${id}`,
-    slug: `feed-${id}@${HOST}`,
+    handle: `feed-${id}@${HOST}`,
     name: `Feed ${id}`,
     createdAt: absoluteTime(),
     icon: null,
@@ -316,7 +316,7 @@ export function getCommunity(
     createdAt: absoluteTime(),
     id: communityId,
     apId: `${API_ROOT}/c/${communityId}`,
-    slug: `${communityId}@${HOST}`,
+    handle: `${communityId}@${HOST}`,
     subscriberCount: 562,
     subscribersLocalCount: 432,
     postCount: 753,

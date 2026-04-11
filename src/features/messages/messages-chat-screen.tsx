@@ -126,14 +126,14 @@ export default function Messages() {
 
   return (
     <Page requireLogin>
-      <PageTitle>{person ? person.slug : null}</PageTitle>
+      <PageTitle>{person ? person.handle : null}</PageTitle>
       <IonHeader>
         <IonToolbar>
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <Link to="/home/u/:userId" params={{ userId: encodedOtherActorId }}>
               <ToolbarTitle size="sm" numRightIcons={1}>
-                {(person ? person.slug : null) ?? "Loading..."}
+                {(person ? person.handle : null) ?? "Loading..."}
               </ToolbarTitle>
             </Link>
           </ToolbarButtons>

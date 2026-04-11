@@ -11,7 +11,7 @@ import {
 } from "./api-blueprint";
 import z from "zod";
 import {
-  createSlug,
+  createHandle,
   getFlairLookup,
   shrinkBlockedCommunity,
   shrinkBlockedPerson,
@@ -167,8 +167,10 @@ function convertPost({
   const { post, counts, community, creator } = postView;
   return {
     locked: post.locked ?? false,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
-      .slug,
+    creatorHandle: createHandle({
+      apId: creator.actor_id,
+      name: creator.user_name,
+    }),
     url: post.url ?? null,
     // TODO: see if this exists
     urlContentType: null,
@@ -190,19 +192,19 @@ function convertPost({
     deleted: post.deleted,
     removed: post.removed,
     thumbnailAspectRatio: null,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     communityApId: community.actor_id,
     creatorApId: creator.actor_id,
     crossPosts:
       crossPosts?.map((cp) => ({
         apId: cp.post.ap_id,
-        communitySlug: createSlug({
+        communityHandle: createHandle({
           apId: cp.community.actor_id,
           name: cp.community.name,
-        }).slug,
+        }),
       })) ?? null,
     featuredCommunity: postView.post.sticky ?? false,
     featuredLocal: postView.post.instance_sticky ?? false,
@@ -228,10 +230,10 @@ function convertCommunity(
     id: communityView.community.id,
     apId: communityView.community.actor_id,
     instanceId: communityView.community.instance_id ?? null,
-    slug: createSlug({
+    handle: createHandle({
       apId: communityView.community.actor_id,
       name: communityView.community.name,
-    }).slug,
+    }),
     icon: communityView.community.icon ?? null,
     nsfw: communityView.community.nsfw,
     ...(counts
@@ -283,7 +285,7 @@ function convertPerson(
     id: person.id,
     avatar: person.avatar ?? null,
     matrixUserId: null,
-    slug: createSlug({ apId: person.actor_id, name: person.user_name }).slug,
+    handle: createHandle({ apId: person.actor_id, name: person.user_name }),
     deleted: person.deleted,
     createdAt: person.published ?? "",
     isBot: person.bot,
@@ -319,8 +321,10 @@ function convertComment(
     body: comment.body,
     creatorId: creator.id,
     creatorApId: creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
-      .slug,
+    creatorHandle: createHandle({
+      apId: creator.actor_id,
+      name: creator.user_name,
+    }),
     isBannedFromCommunity: commentView.creator_banned_from_community ?? false,
     path: comment.path,
     downvotes: counts.downvotes,
@@ -329,10 +333,10 @@ function convertComment(
     postApId: post.ap_id,
     removed: comment.removed,
     deleted: comment.deleted,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     communityApId: community.actor_id,
     postTitle: post.title,
     myVote: commentView.my_vote ?? null,
@@ -351,16 +355,18 @@ function convertReply(replyView: CommentReplyView): Schemas.Reply {
     commentId: replyView.comment.id,
     commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     body: replyView.comment.body,
     path: replyView.comment.path,
     creatorId: replyView.creator.id,
     creatorApId: replyView.creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
-      .slug,
+    creatorHandle: createHandle({
+      apId: creator.actor_id,
+      name: creator.user_name,
+    }),
     read: replyView.comment_reply.read,
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
@@ -379,16 +385,16 @@ function convertPrivateMessage(
     id: pmView.private_message.id,
     creatorApId: creator.actor_id,
     creatorId: creator.id,
-    creatorSlug: createSlug({
+    creatorHandle: createHandle({
       apId: creator.actor_id,
       name: creator.user_name,
-    }).slug,
+    }),
     recipientApId: recipient.actor_id,
     recipientId: recipient.id,
-    recipientSlug: createSlug({
+    recipientHandle: createHandle({
       apId: recipient.actor_id,
       name: recipient.user_name,
-    }).slug,
+    }),
     body: pmView.private_message.content,
     read: pmView.private_message.read,
   };
@@ -402,16 +408,18 @@ function convertMention(replyView: CommentReplyView): Schemas.Reply {
     commentId: replyView.comment.id,
     commentApId: replyView.comment.ap_id,
     communityApId: community.actor_id,
-    communitySlug: createSlug({
+    communityHandle: createHandle({
       apId: community.actor_id,
       name: community.name,
-    }).slug,
+    }),
     body: replyView.comment.body,
     path: replyView.comment.path,
     creatorId: replyView.creator.id,
     creatorApId: replyView.creator.actor_id,
-    creatorSlug: createSlug({ apId: creator.actor_id, name: creator.user_name })
-      .slug,
+    creatorHandle: createHandle({
+      apId: creator.actor_id,
+      name: creator.user_name,
+    }),
     read: replyView.comment_reply.read,
     postId: replyView.post.id,
     postApId: replyView.post.ap_id,
@@ -450,10 +458,10 @@ function convertModlogResponsePieFed(
   const baseItem = {
     userId: null,
     userApId: null,
-    userSlug: null,
+    userHandle: null,
     communityId: null,
     communityApId: null,
-    communitySlug: null,
+    communityHandle: null,
     postId: null,
     postApId: null,
     postTitle: null,
@@ -465,24 +473,28 @@ function convertModlogResponsePieFed(
   const emptyObject = {
     id: null,
     apId: null,
-    slug: null,
+    handle: null,
   };
 
   function modFields(person: Person | null | undefined) {
     const p = person ? convertPerson({ person }, "partial") : emptyObject;
-    return { modId: p.id, modApId: p.apId, modSlug: p.slug };
+    return { modId: p.id, modApId: p.apId, modHandle: p.handle };
   }
 
   function userFields(person: Person | null | undefined) {
     const p = person ? convertPerson({ person }, "partial") : emptyObject;
-    return { userId: p.id, userApId: p.apId, userSlug: p.slug };
+    return { userId: p.id, userApId: p.apId, userHandle: p.handle };
   }
 
   function communityFields(community: Community | null | undefined) {
     const c = community
       ? convertCommunity({ community }, "partial")
       : emptyObject;
-    return { communityId: c.id, communityApId: c.apId, communitySlug: c.slug };
+    return {
+      communityId: c.id,
+      communityApId: c.apId,
+      communityHandle: c.handle,
+    };
   }
 
   function postFields(post: Post | null | undefined) {
@@ -777,10 +789,10 @@ export class PieFedApi
         sidebar: pieFedSite.site.sidebar ?? null,
         icon: pieFedSite.site.icon ?? null,
         title: pieFedSite.site.name,
-        moderates: moderates?.map((c) => c.slug) ?? null,
-        follows: follows?.map((c) => c.slug) ?? null,
+        moderates: moderates?.map((c) => c.handle) ?? null,
+        follows: follows?.map((c) => c.handle) ?? null,
         personBlocks: personBlocks?.map((p) => p.apId) ?? null,
-        communityBlocks: communityBlocks?.map((c) => c.slug) ?? null,
+        communityBlocks: communityBlocks?.map((c) => c.handle) ?? null,
         instanceBlocks: instanceBlocks ?? null,
         applicationQuestion: null,
         registrationMode: pieFedSite.site.registration_mode ?? "Closed",
@@ -833,7 +845,7 @@ export class PieFedApi
             form.pageCursor === INIT_PAGE_TOKEN
               ? undefined
               : pageCursorToInt(form.pageCursor),
-          community_name: form.communitySlug,
+          community_name: form.communityHandle,
           sort,
           type_: form.type,
           saved_only: form.savedOnly,
@@ -897,7 +909,7 @@ export class PieFedApi
       createdAt: feed.published,
       id: feed.id,
       apId: feed.actor_id,
-      slug: createSlug({ apId: feed.actor_id, name: feed.name }).slug,
+      handle: createHandle({ apId: feed.actor_id, name: feed.name }),
       name: feed.name,
       icon: feed.icon ?? null,
       banner: feed.banner ?? null,
@@ -909,16 +921,16 @@ export class PieFedApi
       // If communities is absent or empty despite a non-zero count, the endpoint
       // didn't include them (e.g. include_communities=false). Return undefined so
       // callers can distinguish "not loaded" from "genuinely empty".
-      communitySlugs:
+      communityHandles:
         feed.communities !== null &&
         (feed.communities.length > 0 || feed.communities_count === 0)
-          ? feed.communities.map(
-              (c) => createSlug({ apId: c.actor_id, name: c.name }).slug,
+          ? feed.communities.map((c) =>
+              createHandle({ apId: c.actor_id, name: c.name }),
             )
           : undefined,
       ownerId: owner?.id ?? null,
       ownerApId: owner?.apId ?? null,
-      ownerSlug: owner?.slug ?? null,
+      ownerHandle: owner?.handle ?? null,
     };
   }
 
@@ -987,12 +999,12 @@ export class PieFedApi
   }
 
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
-    if (!form.slug) {
-      throw new Error("community slug required");
+    if (!form.handle) {
+      throw new Error("community handle required");
     }
 
     const { community_view, moderators } =
-      await this.client.getApiAlphaCommunity({ name: form.slug }, options);
+      await this.client.getApiAlphaCommunity({ name: form.handle }, options);
 
     try {
       return {
@@ -1295,7 +1307,7 @@ export class PieFedApi
         await this.client.getApiAlphaSearch(
           {
             q: form.q,
-            community_name: form.communitySlug,
+            community_name: form.communityHandle,
             page,
             type_: form.type === "All" ? "Posts" : form.type,
             limit: form.limit ?? this.limit,
@@ -1499,7 +1511,7 @@ export class PieFedApi
       });
       if (form.flairs) {
         const { flairs } = await this.getCommunity({
-          slug: convertPost({ postView: data.post_view }).communitySlug,
+          handle: convertPost({ postView: data.post_view }).communityHandle,
         });
         const flairLookup = getFlairLookup(flairs);
         const selectedFlairs = form.flairs?.map(flairLookup).filter(isNotNil);
@@ -1523,7 +1535,7 @@ export class PieFedApi
 
   async createPost(form: Forms.CreatePost) {
     const { community, flairs } = await this.getCommunity({
-      slug: form.communitySlug,
+      handle: form.communityHandle,
     });
     try {
       const data = await this.client.postApiAlphaPost({
@@ -1963,9 +1975,9 @@ export class PieFedApi
 
   async getModlog(form: Forms.GetModlog, options: RequestOptions) {
     let community_id: number | undefined;
-    if (form.communitySlug) {
+    if (form.communityHandle) {
       const { community } = await this.getCommunity(
-        { slug: form.communitySlug },
+        { handle: form.communityHandle },
         options,
       );
       community_id = community.id;

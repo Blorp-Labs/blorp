@@ -21,6 +21,8 @@ import {
   ScrollTextOutline,
   Shield,
   SidebarOutline,
+  ChevronLeft,
+  ChevronRight,
 } from "./icons";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { RoutePath } from "../routing/routes";
@@ -36,7 +38,6 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { isTauri } from "../lib/device";
-import { ChevronLeft, ChevronRight } from "./icons";
 import { useMedia } from "../hooks";
 import { usePathname } from "@/src/hooks/use-pathname";
 import { Skeleton } from "./ui/skeleton";
@@ -274,7 +275,7 @@ export function MainSidebar() {
                           autoHide={false}
                         >
                           <CommunityCard
-                            communitySlug={c.slug}
+                            communityHandle={c.handle}
                             size="sm"
                             className={cn(
                               "hover:bg-secondary h-10 px-3 md:rounded-xl",
@@ -286,7 +287,7 @@ export function MainSidebar() {
                       </div>
                     </TooltipTrigger>
                     {mainSidebarCollapsed && (
-                      <TooltipContent side="right">{c.slug}</TooltipContent>
+                      <TooltipContent side="right">{c.handle}</TooltipContent>
                     )}
                   </Tooltip>
                 ))}
@@ -329,7 +330,7 @@ export function MainSidebar() {
                           autoHide={false}
                         >
                           <CommunityCard
-                            communitySlug={c}
+                            communityHandle={c}
                             size="sm"
                             className={cn(
                               "hover:bg-secondary h-10 px-3 md:rounded-xl",
@@ -384,7 +385,7 @@ export function MainSidebar() {
                           autoHide={false}
                         >
                           <CommunityCard
-                            communitySlug={c}
+                            communityHandle={c}
                             size="sm"
                             className={cn(
                               "hover:bg-secondary h-10 px-3 md:rounded-xl",

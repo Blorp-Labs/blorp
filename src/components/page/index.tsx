@@ -28,6 +28,7 @@ import {
 import { useSettingsStore } from "@/src/stores/settings";
 import { useIsContentWarningActive } from "@/src/hooks/nsfw";
 import { ContentWarningPageContent } from "./content-warning";
+import { Handle } from "@/src/lib/handle";
 
 function PageErrorFallback({
   error,
@@ -64,7 +65,7 @@ function PageErrorFallback({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY,
       title: `[Crash] Page rendering error`,
       body,
     });
@@ -155,7 +156,7 @@ export function Page({
   requireLogin,
   notFound,
   notFoundApId,
-  notFoundCommunitySlug,
+  notFoundCommunityHandle,
   ref,
   ...props
 }: {
@@ -164,7 +165,7 @@ export function Page({
   requireLogin?: boolean;
   notFound?: boolean;
   notFoundApId?: string;
-  notFoundCommunitySlug?: string;
+  notFoundCommunityHandle?: Handle;
   ref?: React.Ref<HTMLElement | undefined | null>;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -185,7 +186,7 @@ export function Page({
         ) : notFound ? (
           <NotFoundPageContent
             apId={notFoundApId}
-            communitySlug={notFoundCommunitySlug}
+            communityHandle={notFoundCommunityHandle}
           />
         ) : (
           children

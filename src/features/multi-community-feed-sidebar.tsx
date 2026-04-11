@@ -21,13 +21,14 @@ import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { useMedia } from "../hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
+import { decodeApId } from "../apis/utils";
 
 export default function MultiCommunitySidebar() {
   const media = useMedia();
 
   const linkCtx = useLinkContext();
   const { apId: encodedApId } = useParams(`${linkCtx.root}f/:apId/sidebar`);
-  const apId = useMemo(() => decodeURIComponent(encodedApId), [encodedApId]);
+  const apId = useMemo(() => decodeApId(encodedApId), [encodedApId]);
 
   const software = useSoftware();
 
@@ -56,9 +57,9 @@ export default function MultiCommunitySidebar() {
           </ToolbarButtons>
           <ToolbarButtons side="right">
             <Link
-              to={`${linkCtx.root}c/:communityName/s`}
+              to={`${linkCtx.root}c/:communityHandle/s`}
               params={{
-                communityName: apId,
+                communityHandle: apId,
               }}
               className="text-2xl contents md:hidden"
             >

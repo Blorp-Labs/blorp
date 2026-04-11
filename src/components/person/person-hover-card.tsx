@@ -43,7 +43,7 @@ export function PersonHoverCard({
         className="flex flex-col gap-3 py-4 flex-1 w-72"
       >
         <div className="font-bold text-sm h-5">
-          {personView?.slug ?? <Skeleton className="w-2/3 h-full" />}
+          {personView?.handle ?? <Skeleton className="w-2/3 h-full" />}
         </div>
 
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

@@ -2,7 +2,7 @@ import { Schemas } from "@/src/apis/api-blueprint";
 import { PersonHoverCard } from "@/src/components/person/person-hover-card";
 import { Link } from "@/src/routing/index";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { encodeApId } from "@/src/apis/utils";
+import { encodeApId, parseHandle } from "@/src/apis/utils";
 import { RelativeTime } from "../relative-time";
 import { ContentGutters } from "../gutters";
 import { cn } from "@/src/lib/utils";
@@ -50,7 +50,7 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
               params={{ userId: encodeApId(item.modApId) }}
               className="text-brand truncate block"
             >
-              {item.modSlug?.split("@")[0] ?? item.modSlug}
+              {parseHandle(item.modHandle).name ?? item.modHandle}
             </Link>
           </PersonHoverCard>
         ) : (
@@ -73,7 +73,7 @@ export function ModlogRow({ item }: { item: Schemas.ModlogItem }) {
                   params={{ userId: encodeApId(item.userApId) }}
                   className="text-brand"
                 >
-                  {item.userSlug?.split("@")[0] ?? item.userSlug}
+                  {parseHandle(item.userHandle).name ?? item.userHandle}
                 </Link>
               </PersonHoverCard>
             </>

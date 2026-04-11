@@ -35,7 +35,13 @@ import {
   useThrottledInfiniteQuery,
 } from "../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
-import { Errors, Forms, INIT_PAGE_TOKEN, Schemas } from "../apis/api-blueprint";
+import {
+  Errors,
+  Forms,
+  Handle,
+  INIT_PAGE_TOKEN,
+  Schemas,
+} from "../apis/api-blueprint";
 import { apiClient } from "../apis/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
@@ -386,14 +392,14 @@ export function useCommentsQuery(
 
 export function usePostsKey(config?: Forms.GetPosts) {
   const { queryKeyPrefix } = useApiClients();
-  const { communitySlug, ...form } = config ?? {};
+  const { communityHandle, ...form } = config ?? {};
 
   const { postSort } = useAvailableSortsQuery();
   const sort = form?.sort ?? postSort;
 
   const queryKey = [...queryKeyPrefix, sort];
-  if (communitySlug) {
-    queryKey.push(communitySlug);
+  if (communityHandle) {
+    queryKey.push(communityHandle);
   }
   if (Object.keys(form).length > 0) {
     queryKey.push(form);
@@ -591,7 +597,7 @@ export function useListCommunitiesQuery(
         communities.map((communityView) => ({ communityView })),
       );
       return {
-        communities: communities.map((c) => c.slug),
+        communities: communities.map((c) => c.handle),
         nextPage: nextCursor,
       };
     },
@@ -664,7 +670,7 @@ export function useCommunityQuery({
   ...form
 }: {
   enabled?: boolean;
-  name?: string;
+  name?: Handle;
   instance?: string;
 }) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -687,7 +693,7 @@ export function useCommunityQuery({
         await api
       ).getCommunity(
         {
-          slug: form.name,
+          handle: form.name,
         },
         {
           signal,
@@ -1248,6 +1254,10 @@ export function useCreateCommentMutation() {
       const date = new Date();
       const isoDate = date.toISOString();
       const commentId = _.random(1, 1000000) * -1;
+      if (!myProfile) {
+        return undefined;
+      }
+
       const newComment: Schemas.Comment = {
         locked: false,
         apId: "",
@@ -1259,14 +1269,14 @@ export function useCreateCommentMutation() {
         deleted: false,
         removed: false,
         body,
-        creatorId: myProfile?.id ?? -1,
-        creatorApId: myProfile?.apId ?? "",
-        creatorSlug: myProfile ? (myProfile.slug ?? "") : "",
+        creatorId: myProfile?.id,
+        creatorApId: myProfile.apId,
+        creatorHandle: myProfile.handle,
         isBannedFromCommunity: false,
         postId: -1,
         postApId,
-        communitySlug: "",
-        communityApId: "",
+        communityHandle: null,
+        communityApId: null,
         postTitle: "",
         myVote: 1,
         childCount: 0,
@@ -1274,7 +1284,6 @@ export function useCreateCommentMutation() {
         answer: false,
         emojiReactions: [],
       };
-
       cacheComments(getCachePrefixer(), [newComment]);
 
       const newReactQueryItem = {
@@ -1299,7 +1308,11 @@ export function useCreateCommentMutation() {
 
       return newComment;
     },
-    onSuccess: ({ newComment, sorts }, { postApId, queryKeyParentId }, ctx) => {
+    onSuccess: (
+      { newComment, sorts },
+      { postApId, queryKeyParentId },
+      ctx: Schemas.Comment | undefined,
+    ) => {
       const settledComment = {
         path: newComment.path,
         creatorId: newComment.creatorId,
@@ -1307,7 +1320,9 @@ export function useCreateCommentMutation() {
         createdAt: newComment.createdAt,
       };
 
-      markCommentForRemoval(ctx.path, getCachePrefixer());
+      if (ctx) {
+        markCommentForRemoval(ctx.path, getCachePrefixer());
+      }
       cacheComments(getCachePrefixer(), [newComment]);
 
       patchReactQuery({
@@ -1315,7 +1330,7 @@ export function useCreateCommentMutation() {
         queryKeyParentId,
         sorts,
         patchFn: (comments) => {
-          if (comments) {
+          if (comments && ctx) {
             const index = comments.findIndex((p) => p === ctx.path);
             if (index >= 0) {
               const clone = [...comments];
@@ -1443,7 +1458,7 @@ export function usePrivateMessagesQuery(form: Forms.GetPrivateMessages) {
 }
 
 export function useCreatePrivateMessageMutation(
-  recipient: Pick<Schemas.Person, "apId" | "id" | "slug">,
+  recipient: Pick<Schemas.Person, "apId" | "id" | "handle">,
 ) {
   const account = useAuth((s) => s.getSelectedAccount());
   const { person: me } = parseAccountInfo(account);
@@ -1457,9 +1472,9 @@ export function useCreatePrivateMessageMutation(
       if (me && recipient.id === ctx.recipientId) {
         const pm: Schemas.PrivateMessage = {
           creatorId: me.id,
-          creatorSlug: me.slug,
+          creatorHandle: me.handle,
           creatorApId: me.apId,
-          recipientSlug: recipient.slug,
+          recipientHandle: recipient.handle,
           recipientApId: recipient.apId,
           recipientId: recipient.id,
           id: -1 * _.random(),
@@ -1779,7 +1794,7 @@ export function useResolvePostReportMutation() {
                 if (me) {
                   postReport.resolverId = me.id;
                   postReport.resolverApId = me.apId;
-                  postReport.resolverSlug = me.slug;
+                  postReport.resolverHandle = me.handle;
                 }
                 break;
               }
@@ -1833,7 +1848,7 @@ export function useResolveCommentReportMutation() {
                 if (me) {
                   commentReport.resolverId = me.id;
                   commentReport.resolverApId = me.apId;
-                  commentReport.resolverSlug = me.slug;
+                  commentReport.resolverHandle = me.handle;
                 }
                 break;
               }
@@ -1903,7 +1918,7 @@ export function useCommentReportsQuery() {
 
 export function useModlogQuery(form: Forms.GetModlog) {
   const { api } = useApiClients();
-  const queryKey = ["modlog", form.communitySlug ?? "site"];
+  const queryKey = ["modlog", form.communityHandle ?? "site"];
 
   return useThrottledInfiniteQuery({
     queryKey,
@@ -2054,7 +2069,7 @@ export function useSearchQuery(form: Forms.Search) {
       cacheComments(getCachePrefixer(), comments);
 
       return {
-        communities: communities.map((c) => c.slug),
+        communities: communities.map((c) => c.handle),
         posts: posts.map((p) => p.apId),
         comments: comments.map((c) => c.path),
         users: users.map((u) => u.apId),
@@ -2136,9 +2151,9 @@ export function useFollowCommunityMutation() {
       });
     },
     onMutate: (form) => {
-      const slug = form.community.slug;
-      if (slug) {
-        patchCommunity(slug, getCachePrefixer(), {
+      const handle = form.community.handle;
+      if (handle) {
+        patchCommunity(handle, getCachePrefixer(), {
           communityView: {
             optimisticSubscribed: "Pending",
           },
@@ -2154,9 +2169,9 @@ export function useFollowCommunityMutation() {
       });
     },
     onError: (err, form) => {
-      const slug = form.community.slug;
-      if (slug) {
-        patchCommunity(slug, getCachePrefixer(), {
+      const handle = form.community.handle;
+      if (handle) {
+        patchCommunity(handle, getCachePrefixer(), {
           communityView: {
             optimisticSubscribed: undefined,
           },
@@ -2396,7 +2411,7 @@ export function useCreatePostMutation() {
   const getPostsQueryKey = usePostsKey();
   return useMutation({
     mutationFn: async (draft: Draft) => {
-      if (!draft.communitySlug) {
+      if (!draft.communityHandle) {
         throw new Error("could not find community to create post under");
       }
 
@@ -2404,7 +2419,7 @@ export function useCreatePostMutation() {
         await api
       ).getCommunity(
         {
-          slug: draft.communitySlug,
+          handle: draft.communityHandle,
         },
         {},
       );
@@ -2418,11 +2433,11 @@ export function useCreatePostMutation() {
     onMutate: () => {
       return toast.loading("Creating post");
     },
-    onSuccess: ({ apId, communitySlug }, _, toastId) => {
+    onSuccess: ({ apId, communityHandle }, _, toastId) => {
       toast.dismiss(toastId);
-      if (communitySlug) {
+      if (communityHandle) {
         history.replace(
-          `/home/c/${communitySlug}/posts/${encodeURIComponent(apId)}`,
+          `/home/c/${communityHandle}/posts/${encodeURIComponent(apId)}`,
         );
       }
       queryClient.invalidateQueries({
@@ -2454,9 +2469,9 @@ export function useEditPostMutation(apId: string) {
     onSuccess: (postView, _, toastId) => {
       toast.dismiss(toastId);
       patchPost(apId, getCachePrefixer(), postView);
-      const slug = postView.communitySlug;
-      if (slug) {
-        history.replace(`/home/c/${slug}/posts/${encodeURIComponent(apId)}`);
+      const handle = postView.communityHandle;
+      if (handle) {
+        history.replace(`/home/c/${handle}/posts/${encodeURIComponent(apId)}`);
       }
     },
     onError: (err, _, toastId) => {
@@ -2558,10 +2573,10 @@ export function useBlockInstanceMutation(options?: { account?: Account }) {
 
 export function useBlockCommunityMutation(options?: {
   account?: Account;
-  communitySlug?: string;
+  communityHandle?: Handle;
 }) {
-  const { account, communitySlug } = options ?? {};
-  const postsQueryKey = usePostsKey({ communitySlug });
+  const { account, communityHandle } = options ?? {};
+  const postsQueryKey = usePostsKey({ communityHandle });
   const queryClient = useQueryClient();
   const { api } = useApiClients(account);
   const accountsQueryKey = useRefreshAuthKey();
@@ -2579,7 +2594,7 @@ export function useBlockCommunityMutation(options?: {
       queryClient.invalidateQueries({
         queryKey: accountsQueryKey,
       });
-      if (communitySlug) {
+      if (communityHandle) {
         queryClient.invalidateQueries({
           queryKey: postsQueryKey,
         });

@@ -17,7 +17,11 @@ import { Button } from "../ui/button";
 import { LuLoaderCircle } from "react-icons/lu";
 import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
-import { encodeApId, apIdFromCommunitySlug } from "../../apis/utils";
+import {
+  encodeApId,
+  apIdFromCommunityHandle,
+  parseHandle,
+} from "../../apis/utils";
 import { Schemas } from "../../apis/api-blueprint";
 import { useRequireAuth } from "../auth-context";
 import { env } from "../../env";
@@ -29,8 +33,8 @@ function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
     });
   }
   if (data.community) {
-    return resolveRoute("/home/c/:communityName", {
-      communityName: data.community.slug,
+    return resolveRoute("/home/c/:communityHandle", {
+      communityHandle: data.community.handle,
     });
   }
   if (data.user) {
@@ -54,10 +58,10 @@ function buildRedirectUrl(data: Schemas.ResolveObject): string | undefined {
 
 function CrossInstanceResolver({
   apId,
-  communitySlug,
+  communityHandle,
 }: {
   apId?: string;
-  communitySlug?: string;
+  communityHandle?: string;
 }) {
   const router = useIonRouter();
   const selectAccount = useAuth((s) => s.selectAccount);
@@ -72,8 +76,8 @@ function CrossInstanceResolver({
   const resolvedApId = useMemo(
     () =>
       apId ??
-      (communitySlug ? apIdFromCommunitySlug(communitySlug) : undefined),
-    [apId, communitySlug],
+      (communityHandle ? apIdFromCommunityHandle(communityHandle) : undefined),
+    [apId, communityHandle],
   );
 
   const originHost = useMemo(() => {
@@ -179,7 +183,7 @@ function CrossInstanceResolver({
         <div className="flex flex-col gap-2">
           {matches.map((match) => {
             const { person, instance } = parseAccountInfo(match.account);
-            const [name] = person?.slug.split("@") ?? [];
+            const { name } = parseHandle(person?.handle);
             return (
               <div
                 key={match.account.uuid}
@@ -189,7 +193,7 @@ function CrossInstanceResolver({
                   <AvatarImage src={person?.avatar ?? undefined} />
                   <AvatarFallback>
                     {person ? (
-                      person.slug?.substring(0, 1).toUpperCase()
+                      person.handle?.substring(0, 1).toUpperCase()
                     ) : (
                       <IoPerson />
                     )}
@@ -271,10 +275,10 @@ function CrossInstanceResolver({
 
 export function NotFoundPageContent({
   apId,
-  communitySlug,
+  communityHandle,
 }: {
   apId?: string;
-  communitySlug?: string;
+  communityHandle?: string;
 }) {
   return (
     <>
@@ -292,8 +296,11 @@ export function NotFoundPageContent({
 
       <IonContent>
         <ContentGutters className="py-6">
-          {apId || communitySlug ? (
-            <CrossInstanceResolver apId={apId} communitySlug={communitySlug} />
+          {apId || communityHandle ? (
+            <CrossInstanceResolver
+              apId={apId}
+              communityHandle={communityHandle}
+            />
           ) : (
             <h1 className="text-4xl font-bold">Not found</h1>
           )}

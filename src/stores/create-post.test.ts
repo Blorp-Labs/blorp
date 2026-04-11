@@ -77,7 +77,7 @@ describe("empty choice filtering", () => {
     type: "poll",
     createdAt: Date.now(),
     title: "Test poll",
-    communitySlug: "test@example.com",
+    communityHandle: "test@example.com",
     apId: "https://example.com/post/1",
     poll: {
       endAmount: 7,

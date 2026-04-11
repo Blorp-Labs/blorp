@@ -35,8 +35,8 @@ export default function ApResolver() {
       );
     } else if (community) {
       replace(
-        resolveRoute("/home/c/:communityName", {
-          communityName: community.slug,
+        resolveRoute("/home/c/:communityHandle", {
+          communityHandle: community.handle,
         }),
       );
     } else if (user) {

@@ -44,9 +44,9 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
-      patchFeed: (slug, prefix, patch) => {
+      patchFeed: (handle, prefix, patch) => {
         const feeds = get().feeds;
-        const cacheKey = prefix(slug);
+        const cacheKey = prefix(handle);
         const prevData = feeds[cacheKey]?.data;
         if (!prevData) {
           console.error(
@@ -77,9 +77,9 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
         const newFeeds: Record<string, CachedFeed> = {};
 
         for (const view of views) {
-          const slug = view.feedView.apId;
-          if (slug) {
-            const cacheKey = prefix(slug);
+          const handle = view.feedView.apId;
+          if (handle) {
+            const cacheKey = prefix(handle);
             const prevData = prev[cacheKey]?.data;
             const data: Data = {
               ...prevData,
@@ -89,14 +89,14 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
                 ...view.feedView,
                 // Clear any stuck optimistic state when fresh server data arrives
                 optimisticSubscribed: undefined,
-                // communitySlugs is undefined when the API omitted communities
+                // communityHandles is undefined when the API omitted communities
                 // (e.g. list endpoint with include_communities=false). In that
                 // case, preserve whatever was previously cached. An explicit []
                 // means the feed genuinely has no communities and should clear.
-                communitySlugs:
-                  view.feedView.communitySlugs !== undefined
-                    ? view.feedView.communitySlugs
-                    : prevData?.feedView.communitySlugs,
+                communityHandles:
+                  view.feedView.communityHandles !== undefined
+                    ? view.feedView.communityHandles
+                    : prevData?.feedView.communityHandles,
               },
             };
             newFeeds[cacheKey] = {
@@ -179,7 +179,7 @@ export function useMultiCommunityFeedsFromStore(apId?: string[]) {
   return useMultiCommunityFeedStore(
     useShallow((s) =>
       apId
-        ?.map((slug) => s.feeds[cachePrefixer()(slug)]?.data)
+        ?.map((handle) => s.feeds[cachePrefixer()(handle)]?.data)
         .filter(isNotNil),
     ),
   );

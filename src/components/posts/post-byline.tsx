@@ -15,7 +15,12 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId, getPostMyVote, getPostSaved } from "@/src/apis/utils";
+import {
+  encodeApId,
+  getPostMyVote,
+  getPostSaved,
+  parseHandle,
+} from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
@@ -68,10 +73,10 @@ export function usePostActions({
 
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
-  const community = useCommunityFromStore(post.communitySlug);
+  const community = useCommunityFromStore(post.communityHandle);
   const communityActions = useCommunityActions({
     actorId: community?.communityView.apId ?? null,
-    communityName: post.communitySlug,
+    communityHandle: post.communityHandle,
     communityView: community?.communityView,
   });
 
@@ -289,10 +294,10 @@ export function PostByline({
 }) {
   const linkCtx = useLinkContext();
 
-  const tag = useTagUserStore((s) => s.userTags[post.creatorSlug]);
+  const tag = useTagUserStore((s) => s.userTags[post.creatorHandle]);
 
   const creator = useProfileFromStore(post.creatorApId);
-  const community = useCommunityFromStore(post.communitySlug);
+  const community = useCommunityFromStore(post.communityHandle);
   const blurNsfw = useShouldBlurNsfw();
   const isRevealed = useNsfwRevealedPostsStore(
     (s) => !!(detailView && s.isRevealed(post.apId)),
@@ -305,8 +310,12 @@ export function PostByline({
   const saved = getPostSaved(post);
   const locked = post.optimisticLocked ?? post.locked;
 
-  const [communityName, communityHost] = post.communitySlug.split("@");
-  const [creatorName, creatorHost] = post.creatorSlug.split("@");
+  const { name: communityName, host: communityHost } = parseHandle(
+    post.communityHandle,
+  );
+  const { name: creatorName, host: creatorHost } = parseHandle(
+    post.creatorHandle,
+  );
 
   const communityPart = (
     <>
@@ -350,12 +359,12 @@ export function PostByline({
       <div className="flex flex-col text-muted-foreground min-w-0 relative">
         {showCommunity && (
           <div className="text-xs flex flex-row">
-            <CommunityHoverCard communityName={post.communitySlug}>
+            <CommunityHoverCard communityHandle={post.communityHandle}>
               {communityName ? (
                 <Link
-                  to={`${linkCtx.root}c/:communityName`}
+                  to={`${linkCtx.root}c/:communityHandle`}
                   params={{
-                    communityName: post.communitySlug,
+                    communityHandle: post.communityHandle,
                   }}
                   className={cn(
                     "hover:underline block truncate",

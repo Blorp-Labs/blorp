@@ -13,20 +13,21 @@ import { usePagination } from "../components/pagination/use-pagination";
 import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
 import { Schemas } from "../apis/api-blueprint";
 import { ContentGutters } from "../components/gutters";
+import { decodeCommunityHandle } from "../lib/handle";
 
 export default function CommunityModlog() {
   const linkCtx = useLinkContext();
-  const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName/modlog`,
+  const { communityHandle: communityHandleEncoded } = useParams(
+    `${linkCtx.root}c/:communityHandle/modlog`,
   );
-  const communityName = useMemo(
-    () => decodeURIComponent(communityNameEncoded),
-    [communityNameEncoded],
+  const communityHandle = useMemo(
+    () => decodeCommunityHandle(communityHandleEncoded),
+    [communityHandleEncoded],
   );
 
-  const communityQuery = useCommunityQuery({ name: communityName });
+  const communityQuery = useCommunityQuery({ name: communityHandle });
 
-  const modlogQuery = useModlogQuery({ communitySlug: communityName });
+  const modlogQuery = useModlogQuery({ communityHandle: communityHandle });
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: modlogQuery.data?.pages,
@@ -40,14 +41,14 @@ export default function CommunityModlog() {
   return (
     <Page
       notFound={communityQuery.isError}
-      notFoundCommunitySlug={communityName}
+      notFoundCommunityHandle={communityHandle}
     >
       <IonHeader>
         <IonToolbar>
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle numRightIcons={1} size="sm">
-              {`Modlog — ${communityName}`}
+              {`Modlog — ${communityHandle}`}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">

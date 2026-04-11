@@ -14,22 +14,23 @@ import { useState } from "react";
 import { AggregateBadges } from "../aggregates";
 import { CommunityJoinButton } from "./community-join-button";
 import { DateTime } from "../datetime";
+import { Handle } from "@/src/lib/handle";
 
 dayjs.extend(localizedFormat);
 
 export function CommunityHoverCard({
-  communityName,
+  communityHandle,
   children,
 }: {
-  communityName: string;
+  communityHandle: Handle;
   children: React.ReactNode;
 }) {
   const [enabled, setEnabled] = useState(false);
   useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
     enabled,
   });
-  const data = useCommunityFromStore(communityName);
+  const data = useCommunityFromStore(communityHandle);
 
   const community = data?.communityView;
   const createdAt = community ? dayjs(community.createdAt) : null;
@@ -41,7 +42,7 @@ export function CommunityHoverCard({
         align="start"
         className="flex flex-col gap-2.5 py-4 flex-1"
       >
-        <span className="font-semibold text-sm">{community?.slug}</span>
+        <span className="font-semibold text-sm">{community?.handle}</span>
 
         <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
           <LuCakeSlice />
@@ -60,7 +61,7 @@ export function CommunityHoverCard({
         />
         {community && (
           <CommunityJoinButton
-            communityName={communityName}
+            communityHandle={communityHandle}
             className="mt-1.5"
           />
         )}

@@ -44,7 +44,7 @@ import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
 import { useConfirmationAlert } from "@/src/hooks/index";
 import { Skeleton } from "../ui/skeleton";
-import { Schemas } from "@/src/apis/api-blueprint";
+import { Handle, Schemas } from "@/src/apis/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
 import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
@@ -53,24 +53,24 @@ import { DateTime } from "../datetime";
 dayjs.extend(localizedFormat);
 
 export function SmallScreenSidebar({
-  communityName,
+  communityHandle,
   actorId,
   expanded,
 }: {
-  communityName: string;
+  communityHandle: Handle;
   actorId?: string | null;
   expanded?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
-  const community = useCommunityFromStore(communityName);
+  const community = useCommunityFromStore(communityHandle);
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const communityView = community?.communityView;
-  const isBlocked = useIsCommunityBlocked(communityName);
+  const isBlocked = useIsCommunityBlocked(communityHandle);
   const blurNsfw = useShouldBlurNsfw();
 
   const actions = useCommunityActions({
-    communityName,
+    communityHandle,
     communityView,
     actorId,
   });
@@ -141,9 +141,9 @@ export function SmallScreenSidebar({
             createdAt
           ) : (
             <Link
-              to={`${linkCtx.root}c/:communityName/sidebar`}
+              to={`${linkCtx.root}c/:communityHandle/sidebar`}
               params={{
-                communityName,
+                communityHandle,
               }}
               className="text-brand"
             >
@@ -158,7 +158,7 @@ export function SmallScreenSidebar({
             aria-label="Community actions"
           />
 
-          <CommunityJoinButton communityName={communityName} />
+          <CommunityJoinButton communityHandle={communityHandle} />
         </div>
       </div>
 
@@ -202,8 +202,8 @@ export function SmallScreenSidebar({
               <PersonCard key={m.apId} actorId={m.apId} size="sm" />
             ))}
             <Link
-              to={`${linkCtx.root}c/:communityName/modlog`}
-              params={{ communityName }}
+              to={`${linkCtx.root}c/:communityHandle/modlog`}
+              params={{ communityHandle }}
               className="text-brand text-sm mt-1"
             >
               Modlog
@@ -217,19 +217,19 @@ export function SmallScreenSidebar({
 
 export function useCommunityActions({
   actorId,
-  communityName,
+  communityHandle,
   communityView,
 }: {
   actorId?: string | null;
-  communityName: string;
+  communityHandle: Handle;
   communityView?: Schemas.Community;
 }): SubAction[] {
   const getConfirmation = useConfirmationAlert();
   const blockCommunity = useBlockCommunityMutation({
-    communitySlug: communityName,
+    communityHandle: communityHandle,
   });
   const blockInstance = useBlockInstanceMutation();
-  const isBlocked = useIsCommunityBlocked(communityName);
+  const isBlocked = useIsCommunityBlocked(communityHandle);
   const communityInstanceId = communityView?.instanceId;
   const communityApId = communityView?.apId;
   const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
@@ -238,11 +238,11 @@ export function useCommunityActions({
   const linkCtx = useLinkContext();
 
   const createPost = useCommunityCreatePost({
-    communityName,
+    communityHandle,
   });
 
-  const route = resolveRoute(`${linkCtx.root}c/:communityName`, {
-    communityName,
+  const route = resolveRoute(`${linkCtx.root}c/:communityHandle`, {
+    communityHandle,
   });
 
   const shareActions = useShareActions(
@@ -251,7 +251,7 @@ export function useCommunityActions({
       ? {
           type: "community",
           apId: actorId,
-          slug: communityName,
+          handle: communityHandle,
           route,
         }
       : null,
@@ -274,7 +274,7 @@ export function useCommunityActions({
             danger: true,
             onClick: () =>
               getConfirmation({
-                message: `${isBlocked ? "Unblock" : "Block"} ${communityName}`,
+                message: `${isBlocked ? "Unblock" : "Block"} ${communityHandle}`,
               }).then(() =>
                 blockCommunity.mutate({
                   communityId: communityView?.id,
@@ -307,20 +307,20 @@ export function useCommunityActions({
 }
 
 function CommunitySidebarInner({
-  communityName,
+  communityHandle,
   actorId,
   hideDescription = false,
   postApId,
 }: {
-  communityName: string;
+  communityHandle: Handle;
   actorId: string | undefined;
   hideDescription?: boolean;
   asPage?: boolean;
   postApId?: string;
 }) {
   const linkCtx = useLinkContext();
-  const data = useCommunityFromStore(communityName);
-  const isBlocked = useIsCommunityBlocked(communityName);
+  const data = useCommunityFromStore(communityHandle);
+  const isBlocked = useIsCommunityBlocked(communityHandle);
   const blurNsfw = useShouldBlurNsfw();
   const isPostRevealed = useNsfwRevealedPostsStore(
     (s) => !!(postApId && s.isRevealed(postApId)),
@@ -338,7 +338,7 @@ function CommunitySidebarInner({
   const setModsOpen = useSidebarStore((s) => s.setCommunityModsExpanded);
 
   const actions = useCommunityActions({
-    communityName,
+    communityHandle,
     communityView: data?.communityView,
     actorId,
   });
@@ -351,7 +351,7 @@ function CommunitySidebarInner({
 
   return (
     <SidebarContent className="relative">
-      <EasterEggBox seed={communityName}>
+      <EasterEggBox seed={communityHandle}>
         <div className="p-4 flex flex-col gap-3">
           <div className="flex flex-row items-start justify-between flex-1">
             <Avatar className="h-13 w-13">
@@ -366,7 +366,7 @@ function CommunitySidebarInner({
                 )}
               />
               <AvatarFallback className="text-xl">
-                {communityName.substring(0, 1).toUpperCase()}
+                {communityHandle.substring(0, 1).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
@@ -377,7 +377,7 @@ function CommunitySidebarInner({
             />
           </div>
 
-          <span className="font-bold line-clamp-1">{communityView.slug}</span>
+          <span className="font-bold line-clamp-1">{communityView.handle}</span>
 
           <div className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
             <LuCakeSlice />
@@ -465,8 +465,8 @@ function CommunitySidebarInner({
                   <PersonCard key={m.apId} actorId={m.apId} size="sm" />
                 ))}
                 <Link
-                  to={`${linkCtx.root}c/:communityName/modlog`}
-                  params={{ communityName }}
+                  to={`${linkCtx.root}c/:communityHandle/modlog`}
+                  params={{ communityHandle }}
                   className="text-brand text-sm mt-1"
                 >
                   Modlog
