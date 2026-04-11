@@ -11,6 +11,7 @@ export const INIT_PAGE_TOKEN = "INIT_PAGE_TOKEN";
 export enum Software {
   LEMMY = "lemmy",
   PIEFED = "piefed",
+  MASTODON = "mastodon",
 }
 
 const communitySlug = z.string();

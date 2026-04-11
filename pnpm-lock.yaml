@@ -279,6 +279,9 @@ importers:
       markdown-it-sup:
         specifier: 2.0.0
         version: 2.0.0
+      masto:
+        specifier: 7.10.2
+        version: 7.10.2
       p-retry:
         specifier: 6.2.1
         version: 6.2.1
@@ -6571,6 +6574,12 @@ packages:
       }
     engines: { node: ^12.17.0 || ^14.13 || >=16.0.0 }
 
+  change-case@5.4.4:
+    resolution:
+      {
+        integrity: sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w==,
+      }
+
   chardet@0.7.0:
     resolution:
       {
@@ -7859,6 +7868,12 @@ packages:
         integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==,
       }
 
+  events-to-async@2.0.2:
+    resolution:
+      {
+        integrity: sha512-WzI6m/SU+F38t2tejHh6IQuQkNZ0dMOmSEmODJb9czaeMYtQ5FVZ+b6DOHr3hC6hNKNnn9CwDUN8mJiAkWSI9Q==,
+      }
+
   events-universal@1.0.1:
     resolution:
       {
@@ -8981,6 +8996,14 @@ packages:
       }
     engines: { node: ">=18" }
 
+  isomorphic-ws@5.0.0:
+    resolution:
+      {
+        integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==,
+      }
+    peerDependencies:
+      ws: "*"
+
   istanbul-lib-coverage@3.2.2:
     resolution:
       {
@@ -9605,6 +9628,12 @@ packages:
         integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==,
       }
     hasBin: true
+
+  masto@7.10.2:
+    resolution:
+      {
+        integrity: sha512-zJr0NyKne9eljadKxS/ZJI5bBhlLQsn8WWXCGlRxIg6lb5J84O5IlWJG8CF7mMLj4avEzrN9fuEjtJVagonIXg==,
+      }
 
   math-intrinsics@1.1.0:
     resolution:
@@ -12133,6 +12162,13 @@ packages:
     engines: { node: ">=18.12" }
     peerDependencies:
       typescript: ">=4.8.4"
+
+  ts-custom-error@3.3.1:
+    resolution:
+      {
+        integrity: sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==,
+      }
+    engines: { node: ">=14.0.0" }
 
   ts-dedent@2.2.0:
     resolution:
@@ -17275,6 +17311,8 @@ snapshots:
 
   chalk@5.6.2: {}
 
+  change-case@5.4.4: {}
+
   chardet@0.7.0: {}
 
   check-error@2.1.3: {}
@@ -18084,6 +18122,8 @@ snapshots:
 
   eventemitter3@5.0.4: {}
 
+  events-to-async@2.0.2: {}
+
   events-universal@1.0.1:
     dependencies:
       bare-events: 2.8.2
@@ -18754,6 +18794,10 @@ snapshots:
 
   isexe@3.1.5: {}
 
+  isomorphic-ws@5.0.0(ws@8.19.0):
+    dependencies:
+      ws: 8.19.0
+
   istanbul-lib-coverage@3.2.2: {}
 
   istanbul-lib-report@3.0.1:
@@ -19103,6 +19147,17 @@ snapshots:
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  masto@7.10.2:
+    dependencies:
+      change-case: 5.4.4
+      events-to-async: 2.0.2
+      isomorphic-ws: 5.0.0(ws@8.19.0)
+      ts-custom-error: 3.3.1
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   math-intrinsics@1.1.0: {}
 
@@ -20716,6 +20771,8 @@ snapshots:
   ts-api-utils@2.4.0(typescript@5.9.3):
     dependencies:
       typescript: 5.9.3
+
+  ts-custom-error@3.3.1: {}
 
   ts-dedent@2.2.0: {}
 
