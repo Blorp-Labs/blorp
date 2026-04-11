@@ -2,8 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
-import { Schemas } from "../apis/api-blueprint";
+import { communitySchema, Schemas } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
+import { mergeCacheArray } from "./utils";
 
 type RecentCommunityStore = {
   recentlyVisited: Schemas.Community[];
@@ -51,12 +52,14 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
       version: 1,
       merge: (p: any, current) => {
         const persisted = p as Partial<RecentCommunityStore>;
+
         return {
           ...current,
           ...persisted,
-          recentlyVisited: mergeCommunities(
-            persisted.recentlyVisited ?? [],
+          recentlyVisited: mergeCacheArray(
+            persisted.recentlyVisited,
             current.recentlyVisited,
+            communitySchema,
           ),
         } satisfies RecentCommunityStore;
       },
