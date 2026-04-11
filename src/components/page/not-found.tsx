@@ -17,7 +17,11 @@ import { Button } from "../ui/button";
 import { LuLoaderCircle } from "react-icons/lu";
 import { IoPerson } from "react-icons/io5";
 import { resolveRoute } from "../../routing";
-import { encodeApId, apIdFromCommunityHandle } from "../../apis/utils";
+import {
+  encodeApId,
+  apIdFromCommunityHandle,
+  parseHandle,
+} from "../../apis/utils";
 import { Schemas } from "../../apis/api-blueprint";
 import { env } from "../../env";
 import { useRequireAuth } from "@/src/hooks";
@@ -179,7 +183,7 @@ function CrossInstanceResolver({
         <div className="flex flex-col gap-2">
           {matches.map((match) => {
             const { person, instance } = parseAccountInfo(match.account);
-            const [name] = person?.handle.split("@") ?? [];
+            const { name } = parseHandle(person?.handle);
             return (
               <div
                 key={match.account.uuid}

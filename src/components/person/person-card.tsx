@@ -11,7 +11,7 @@ import { cn } from "@/src/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { Account } from "@/src/stores/auth";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { encodeApId } from "@/src/apis/utils";
+import { encodeApId, parseHandle } from "@/src/apis/utils";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
@@ -43,7 +43,7 @@ function PersonCardInner({
     return <PersonSkeletonCard size={size} className={className} />;
   }
 
-  const [name, host] = p?.handle.split("@") ?? [];
+  const { name, host } = parseHandle(p.handle);
 
   const content = (
     <>

@@ -1,5 +1,5 @@
 import z from "zod";
-import { Handle } from "../lib/handle";
+import { Handle, handleSchema } from "../lib/handle";
 
 export type { Handle };
 
@@ -15,12 +15,6 @@ export enum Software {
   LEMMY = "lemmy",
   PIEFED = "piefed",
 }
-
-export const handleSchema = z
-  .string()
-  .refine((val) => /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val), {
-    message: "Must be a valid federated handle (name@instance.com)",
-  }) as z.ZodType<Handle>;
 
 const communityHandle = handleSchema;
 
@@ -185,10 +179,10 @@ export const siteSchema = z.object({
   me: personSchema.nullable(),
   myEmail: z.string().nullable(),
   admins: z.array(z.string()).nullable(),
-  moderates: z.array(z.string()).nullable(),
-  follows: z.array(z.string()).nullable(),
+  moderates: z.array(handleSchema).nullable(),
+  follows: z.array(handleSchema).nullable(),
   personBlocks: z.array(z.string()).nullable(),
-  communityBlocks: z.array(z.string()).nullable(),
+  communityBlocks: z.array(handleSchema).nullable(),
   instanceBlocks: z
     .array(z.object({ id: z.number(), domain: z.string() }))
     .nullable()
@@ -485,7 +479,7 @@ export namespace Forms {
     sort?: string;
     pageCursor?: string;
     type?: "All" | "Local" | "Subscribed" | "ModeratorView";
-    communityHandle?: string;
+    communityHandle?: Handle;
     multiCommunityFeedApId?: string;
     multiCommunityFeedId?: number;
     savedOnly?: boolean;
@@ -553,7 +547,7 @@ export namespace Forms {
 
   export type Search = {
     q: string;
-    communityHandle?: string;
+    communityHandle?: Handle;
     type: "Posts" | "Communities" | "Users" | "Comments" | "All";
     sort?: string;
     pageCursor?: string;
@@ -561,7 +555,7 @@ export namespace Forms {
   };
 
   export type GetCommunity = {
-    handle?: string;
+    handle?: Handle;
   };
 
   export type GetCommunities = {
@@ -800,7 +794,7 @@ export namespace Forms {
   };
 
   export type GetModlog = {
-    communityHandle?: string;
+    communityHandle?: Handle;
     pageCursor?: string;
     actionType?: string;
     modPersonId?: number;

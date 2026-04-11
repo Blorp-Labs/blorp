@@ -6,11 +6,12 @@ import { Deferred } from "@/src/lib/deferred";
 import { useAuth } from "@/src/stores/auth";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { resolveRoute } from "@/src/routing";
+import { Handle } from "@/src/lib/handle";
 
 export function useCommunityCreatePost({
   communityHandle,
 }: {
-  communityHandle?: string;
+  communityHandle?: Handle;
 }) {
   const [alrt] = useIonAlert();
 
@@ -64,7 +65,7 @@ export function CommunityCreatePost({
   communityHandle,
   renderButton,
 }: {
-  communityHandle?: string;
+  communityHandle?: Handle;
   renderButton: (props: { onClick: () => void }) => void;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());

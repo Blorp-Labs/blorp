@@ -17,9 +17,10 @@ import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { Handle, parseHandle } from "@/src/lib/handle";
 
 type CommunityCardProps = {
-  communityHandle: string;
+  communityHandle: Handle;
   disableLink?: boolean;
   className?: string;
   hideText?: boolean;
@@ -50,7 +51,7 @@ function CommunityCardInner({
     return <CommunityCardSkeleton size={size} />;
   }
 
-  const [name, host] = communityView.handle.split("@");
+  const { name, host } = parseHandle(communityView.handle);
 
   const content = (
     <>

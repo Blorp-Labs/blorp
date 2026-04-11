@@ -17,7 +17,7 @@ import { useIonRouter } from "@ionic/react";
 import { resolveRoute } from "@/src/routing";
 import { encodeApId } from "@/src/apis/utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
-import type { Forms } from "@/src/apis/api-blueprint";
+import type { Forms, Handle } from "@/src/apis/api-blueprint";
 import {
   useDebouncedState,
   useIsActiveRoute,
@@ -26,8 +26,8 @@ import {
 import { isIos, isMacOs } from "@/src/lib/device";
 import { useSearchStore } from "@/src/stores/search";
 
-function CommunitySearchResult({ apId }: { apId: string }) {
-  const community = useCommunityFromStore(apId);
+function CommunitySearchResult({ handle }: { handle: Handle }) {
+  const community = useCommunityFromStore(handle);
 
   const router = useIonRouter();
   const linkCtx = useLinkContext();
@@ -45,7 +45,7 @@ function CommunitySearchResult({ apId }: { apId: string }) {
 
   return (
     <CommandItem
-      value={apId}
+      value={handle}
       keywords={[community.communityView.handle]}
       onSelect={onSelect}
       onClick={onSelect}
@@ -270,8 +270,8 @@ export function SearchBar({
 
         {props.value && communities && communities.length > 0 && (
           <CommandGroup heading="Communities">
-            {communities.map((apId) => (
-              <CommunitySearchResult key={apId} apId={apId} />
+            {communities.map((handle) => (
+              <CommunitySearchResult key={handle} handle={handle} />
             ))}
           </CommandGroup>
         )}

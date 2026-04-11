@@ -33,14 +33,14 @@ describe("createHandle", () => {
 
 describe("parseHandle", () => {
   test.each([
-    ["brexit@lemmy.world", "brexit", "lemmy.world"],
-    ["finance_greece@lemmy.world", "finance_greece", "lemmy.world"],
-    ["memes@midwest.social", "memes", "midwest.social"],
+    ["brexit@lemmy.world", "brexit", "lemmy.world"] as const,
+    ["finance_greece@lemmy.world", "finance_greece", "lemmy.world"] as const,
+    ["memes@midwest.social", "memes", "midwest.social"] as const,
     [
       "onehundredninetysix@lemmy.blahaj.zone",
       "onehundredninetysix",
       "lemmy.blahaj.zone",
-    ],
+    ] as const,
   ])('parseHandle("%s")', (handle, name, host) => {
     expect(parseHandle(handle)).toEqual({ name, host });
   });

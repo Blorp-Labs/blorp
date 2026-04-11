@@ -3,11 +3,12 @@ import { Button } from "../ui/button";
 import { CommunityJoinButton } from "./community-join-button";
 import { CommunityCreatePost } from "./community-create-post";
 import { StickyFilterBar } from "../sticky-filter-bar";
+import { Handle } from "@/src/lib/handle";
 
 export function CommunityPostSortBar({
   communityHandle,
 }: {
-  communityHandle: string | undefined;
+  communityHandle: Handle | undefined;
 }) {
   return (
     <StickyFilterBar className="max-md:hidden">

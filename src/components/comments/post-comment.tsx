@@ -30,6 +30,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
   getCommentSaved,
+  parseHandle,
 } from "@/src/apis/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {
@@ -329,7 +330,7 @@ function Byline({
 
   const isAdmin = useIsAdmin(comment.creatorApId);
 
-  const [name, host] = profileView?.handle.split("@") ?? [];
+  const { name, host } = parseHandle(profileView?.handle);
 
   return (
     <CollapsibleTrigger

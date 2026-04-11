@@ -14,7 +14,12 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId, getPostMyVote, getPostSaved } from "@/src/apis/utils";
+import {
+  encodeApId,
+  getPostMyVote,
+  getPostSaved,
+  parseHandle,
+} from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
@@ -303,12 +308,16 @@ export function PostByline({
   const saved = getPostSaved(post);
   const locked = post.optimisticLocked ?? post.locked;
 
-  const [communityHandle, communityHost] = post.communityHandle.split("@");
-  const [creatorName, creatorHost] = post.creatorHandle.split("@");
+  const { name: communityName, host: communityHost } = parseHandle(
+    post.communityHandle,
+  );
+  const { name: creatorName, host: creatorHost } = parseHandle(
+    post.creatorHandle,
+  );
 
   const communityPart = (
     <>
-      <span className="font-medium text-foreground">c/{communityHandle}</span>
+      <span className="font-medium text-foreground">c/{communityName}</span>
       <i>@{communityHost}</i>
     </>
   );
@@ -340,7 +349,7 @@ export function PostByline({
             )}
           />
           <AvatarFallback>
-            {communityHandle?.substring(0, 1).toUpperCase()}
+            {communityName?.substring(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
@@ -349,7 +358,7 @@ export function PostByline({
         {showCommunity && (
           <div className="text-xs flex flex-row">
             <CommunityHoverCard communityHandle={post.communityHandle}>
-              {communityHandle ? (
+              {communityName ? (
                 <Link
                   to={`${linkCtx.root}c/:communityHandle`}
                   params={{

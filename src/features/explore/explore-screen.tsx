@@ -53,6 +53,7 @@ import { ExpandedCommunities } from "./explore-expanded-section-screen";
 import { SortControlBarContent } from "./sort-bar";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";
 import { Page } from "@/src/components/page";
+import { Handle } from "@/src/lib/handle";
 
 function SortControlBar({ className }: { className?: string }) {
   return (
@@ -154,7 +155,7 @@ function SectionSkeleton() {
   );
 }
 
-function CommunityItem({ communityHandle }: { communityHandle: string }) {
+function CommunityItem({ communityHandle }: { communityHandle: Handle }) {
   const community = useCommunityFromStore(communityHandle);
   const description = community?.communityView.description;
   return (

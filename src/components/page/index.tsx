@@ -27,6 +27,7 @@ import {
 import { useSettingsStore } from "@/src/stores/settings";
 import { useIsContentWarningActive } from "@/src/hooks/nsfw";
 import { ContentWarningPageContent } from "./content-warning";
+import { Handle } from "@/src/lib/handle";
 
 function PageErrorFallback({
   error,
@@ -163,7 +164,7 @@ export function Page({
   requireLogin?: boolean;
   notFound?: boolean;
   notFoundApId?: string;
-  notFoundCommunityHandle?: string;
+  notFoundCommunityHandle?: Handle;
   ref?: React.Ref<HTMLElement | undefined | null>;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());

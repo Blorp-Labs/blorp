@@ -4,9 +4,10 @@ import { useFollowCommunityMutation } from "@/src/queries/index";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useIonAlert } from "@ionic/react";
 import { useAuth } from "@/src/stores/auth";
+import { Handle } from "@/src/lib/handle";
 
 interface Props {
-  communityHandle: string | undefined;
+  communityHandle: Handle | undefined;
   className?: string;
 }
 
