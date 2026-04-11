@@ -39,15 +39,22 @@ export function migrateRecentCommunities(
   const communities = (state["recentlyVisited"] ?? []) as unknown[];
   const recentlyVisited = communities.map((c) => {
     if (c && typeof c === "object") {
-      const { slug, ...rest } = c as Record<string, unknown>;
+      const community = c as Record<string, unknown>;
+      const handle = community["handle"] ?? community["slug"];
       return {
-        ...rest,
-        ...(slug && !rest["handle"] ? { handle: slug } : {}),
+        ...community,
+        // Write both so an old tab (v1) still sees slug.
+        // TODO: remove slug once no old tabs are expected.
+        ...(handle ? { handle, slug: handle } : {}),
       };
     }
     return c;
   });
-  return persistedSchema.parse({ ...state, recentlyVisited });
+  // Use passthrough so deprecated fields (e.g. slug) survive validation
+  const lenientSchema = z.object({
+    recentlyVisited: z.array(communitySchema.passthrough()),
+  });
+  return lenientSchema.parse({ ...state, recentlyVisited });
 }
 
 export const useRecentCommunitiesStore = create<RecentCommunityStore>()(

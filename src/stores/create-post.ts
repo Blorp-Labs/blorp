@@ -242,16 +242,20 @@ export function migrateCreatePostStore(
   const migratedDrafts: Record<string, Record<string, unknown>> = {};
   for (const [key, draft] of Object.entries(drafts)) {
     if (draft && typeof draft === "object") {
-      const { communitySlug, ...rest } = draft;
+      const handle = draft["communityHandle"] ?? draft["communitySlug"];
       migratedDrafts[key] = {
-        ...rest,
-        ...(communitySlug && !rest["communityHandle"]
-          ? { communityHandle: communitySlug }
-          : {}),
+        ...draft,
+        // Write both so an old tab (v5) still sees communitySlug.
+        // TODO: remove communitySlug once no old tabs are expected.
+        ...(handle ? { communityHandle: handle, communitySlug: handle } : {}),
       };
     }
   }
-  return persistedSchema.parse({ ...state, drafts: migratedDrafts });
+  // Use passthrough so deprecated fields (e.g. communitySlug) survive validation
+  const lenientSchema = z.object({
+    drafts: z.record(draftSchema.passthrough()),
+  });
+  return lenientSchema.parse({ ...state, drafts: migratedDrafts });
 }
 
 export const useCreatePostStore = create<CreatePostStore>()(

@@ -157,7 +157,7 @@ describe("persisted state snapshot", () => {
 // ─── migration ──────────────────────────────────────────────────────────────
 
 describe("migrateCreatePostStore", () => {
-  test("v5 → v6: renames communitySlug to communityHandle in drafts", () => {
+  test("v5 → v6: copies communitySlug to communityHandle", () => {
     const oldData = {
       drafts: {
         "draft-1": {
@@ -172,7 +172,10 @@ describe("migrateCreatePostStore", () => {
     expect(migrated.drafts["draft-1"]?.communityHandle).toBe(
       "test@example.com",
     );
-    expect(migrated.drafts["draft-1"]).not.toHaveProperty("communitySlug");
+    // Keeps communitySlug for backward compat with old tabs
+    expect((migrated.drafts["draft-1"] as any).communitySlug).toBe(
+      "test@example.com",
+    );
   });
 
   test("idempotent when communityHandle already present", () => {
