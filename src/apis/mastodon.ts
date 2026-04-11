@@ -201,27 +201,30 @@ function accountToPerson(
 function statusToComment(
   status: MastodonStatus,
   instance: string,
+  postApId?: string,
+  path?: string,
 ): Schemas.Comment {
   const domain = instanceDomain(instance);
   const communitySlug = `all@${domain}`;
   const communityApId = instance;
 
-  // Mastodon replies don't have a clean "root post" reference without extra
-  // API calls. We construct a best-effort AP URI for the direct parent using
-  // the instance URL + in_reply_to_id. resolveStatusId will extract the ID if
-  // the post is on the same instance; cross-instance parents may not resolve.
+  // When called from getPersonContent (user's replies), postApId and path are
+  // not known without extra fetches — use best-effort values.
   const parentId = status.in_reply_to_id ?? status.id;
-  const postApId = `${instance}/statuses/${parentId}`;
-  const postId = safeId(parentId);
+  const resolvedPostApId = postApId ?? `${instance}/statuses/${parentId}`;
+  const postId = safeId(
+    resolvedPostApId.match(/\/statuses\/(\d+)$/)?.[1] ?? parentId,
+  );
+  const resolvedPath = path ?? `0.${safeId(status.id)}`;
 
   return {
     id: safeId(status.id),
     apId: status.uri,
-    path: `0.${safeId(status.id)}`,
+    path: resolvedPath,
     body: stripHtml(status.content) || "(empty)",
     createdAt: status.created_at,
     postId,
-    postApId,
+    postApId: resolvedPostApId,
     postTitle: "Mastodon post",
     communitySlug,
     communityApId,
@@ -553,18 +556,55 @@ export class MastodonApi implements ApiBlueprint<null> {
   }
 
   // -------------------------------------------------------------------------
-  // Comments — stubbed (no comments for now)
+  // Comments — Mastodon status replies mapped as comments
   // -------------------------------------------------------------------------
 
   async getComments(
-    _form: Forms.GetComments,
-    _options: RequestOptions,
+    form: Forms.GetComments,
+    options: RequestOptions,
   ): Promise<{
     comments: Schemas.Comment[];
     creators: Schemas.Person[];
     nextCursor: string | null;
   }> {
-    return { comments: [], creators: [], nextCursor: null };
+    if (!form.postApId) {
+      return { comments: [], creators: [], nextCursor: null };
+    }
+
+    const statusId = await this.resolveStatusId(form.postApId, options.signal);
+    const context = await this.apiFetch<{
+      ancestors: MastodonStatus[];
+      descendants: MastodonStatus[];
+    }>(`/api/v1/statuses/${statusId}/context`, options);
+
+    // Build a lookup from Mastodon status ID → safeId so we can construct
+    // ltree paths. The post itself is the implicit root "0".
+    const safeIdMap = new Map<string, number>();
+    for (const s of context.descendants) {
+      safeIdMap.set(s.id, safeId(s.id));
+    }
+
+    const buildPath = (status: MastodonStatus): string => {
+      const parts: number[] = [safeId(status.id)];
+      let parentId = status.in_reply_to_id;
+      // Walk up until we hit the post itself (not in descendants map = it's
+      // the post or an ancestor above the post — treat as root "0").
+      while (parentId && safeIdMap.has(parentId)) {
+        parts.unshift(safeIdMap.get(parentId)!);
+        const parent = context.descendants.find((s) => s.id === parentId);
+        parentId = parent?.in_reply_to_id ?? null;
+      }
+      return `0.${parts.join(".")}`;
+    };
+
+    const comments = context.descendants.map((s) =>
+      statusToComment(s, this.instance, form.postApId!, buildPath(s)),
+    );
+    const creators = context.descendants.map((s) =>
+      accountToPerson(s.account, this.instance),
+    );
+
+    return { comments, creators, nextCursor: null };
   }
 
   // -------------------------------------------------------------------------
