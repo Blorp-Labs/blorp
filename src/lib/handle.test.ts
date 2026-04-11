@@ -1,5 +1,36 @@
-import { describe, test, expect } from "vitest";
-import { createHandle, parseHandle } from "../lib/handle";
+import { describe, expect, test } from "vitest";
+import { handleSchema, createHandle, parseHandle } from "./handle";
+
+describe("handleSchema", () => {
+  test("accepts standard handles", () => {
+    expect(handleSchema.safeParse("username@instance.com").success).toBe(true);
+    expect(handleSchema.safeParse("my-community@lemmy.ml").success).toBe(true);
+    expect(
+      handleSchema.safeParse("user_name@some.instance.social").success,
+    ).toBe(true);
+  });
+
+  test("accepts handles with dots in the name (fediverse Misskey/Firefish usernames)", () => {
+    expect(handleSchema.safeParse("user.name@instance.com").success).toBe(true);
+    expect(handleSchema.safeParse("first.last@example.org").success).toBe(true);
+    expect(
+      handleSchema.safeParse("multi.community.feed@lemmy.ml").success,
+    ).toBe(true);
+  });
+
+  test("rejects handles without @", () => {
+    expect(handleSchema.safeParse("username").success).toBe(false);
+  });
+
+  test("rejects handles with missing name or host", () => {
+    expect(handleSchema.safeParse("@instance.com").success).toBe(false);
+    expect(handleSchema.safeParse("username@").success).toBe(false);
+  });
+
+  test("rejects hosts without a valid TLD", () => {
+    expect(handleSchema.safeParse("username@localhost").success).toBe(false);
+  });
+});
 
 describe("createHandle", () => {
   test.each([
@@ -19,16 +50,8 @@ describe("createHandle", () => {
     ["https://lemdro.id/c/meta", "meta", "meta@lemdro.id"],
   ])('createHandle("%s") == %s', (apId, name, handle) => {
     expect(createHandle({ apId, name })).toBe(handle);
+    expect(handleSchema.safeParse(handle).success).toBe(true);
   });
-
-  //test.each([
-  //  // ["https://lemmy.world/u/ajetsf"],
-  //  ["https://google.com"],
-  //  ["https://youtube.com"],
-  //  ["https://www.youtube.com"],
-  //])('createHandle("%s").handle == ""', (actor_id) => {
-  //  expect(createHandle({ actor_id })?.handle).toBe(undefined);
-  //});
 });
 
 describe("parseHandle", () => {
