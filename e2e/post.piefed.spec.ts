@@ -13,12 +13,11 @@ const tabs = [
   { name: "inbox", base: "/inbox/" },
 ] as const;
 
-const COMMUNITY_SLUG = "technology@piefed.social";
 const POST_AP_ID = "https://piefed.social/post/99001";
 const ENCODED_POST_AP_ID = encodeURIComponent(POST_AP_ID);
 
 function postUrl(base: string) {
-  return `${base}c/${COMMUNITY_SLUG}/posts/${ENCODED_POST_AP_ID}`;
+  return `${base}posts/${ENCODED_POST_AP_ID}`;
 }
 
 async function mockPostApis(page: Page) {
