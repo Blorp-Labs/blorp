@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { buildCommentTree, CommentTreeTopLevel } from "./comment-tree";
 
-const communityHandle = "memes@blorpblorp.xyz";
 const postApId = `https://blorpblorp.xyz/p/123456`;
 
 describe("buildCommentTree", () => {
@@ -9,18 +8,16 @@ describe("buildCommentTree", () => {
     [
       "top level comments",
       [
-        { path: "0.1234", childCount: 2, communityHandle, postApId, id: 1234 },
+        { path: "0.1234", childCount: 2, postApId, id: 1234 },
         {
           path: "0.1234.5678",
           childCount: 1,
-          communityHandle,
           postApId,
           id: 5678,
         },
         {
           path: "0.1234.5678.9101112",
           childCount: 0,
-          communityHandle,
           postApId,
           id: 9101112,
         },
@@ -33,7 +30,6 @@ describe("buildCommentTree", () => {
             id: 1234,
             path: "0.1234",
             childCount: 2,
-            communityHandle,
             postApId,
           },
           5678: {
@@ -43,7 +39,6 @@ describe("buildCommentTree", () => {
               id: 5678,
               path: "0.1234.5678",
               childCount: 1,
-              communityHandle,
               postApId,
             },
             9101112: {
@@ -53,7 +48,6 @@ describe("buildCommentTree", () => {
                 id: 9101112,
                 path: "0.1234.5678.9101112",
                 childCount: 0,
-                communityHandle,
                 postApId,
               },
             },
@@ -68,14 +62,12 @@ describe("buildCommentTree", () => {
         {
           path: "0.1234.5678",
           childCount: 1,
-          communityHandle,
           postApId,
           id: 5678,
         },
         {
           path: "0.1234.5678.9101112",
           childCount: 0,
-          communityHandle,
           postApId,
           id: 9101112,
         },
@@ -91,7 +83,6 @@ describe("buildCommentTree", () => {
                 id: 9101112,
                 path: "0.1234.5678.9101112",
                 childCount: 0,
-                communityHandle,
                 postApId,
               },
               sort: 1,
@@ -100,7 +91,6 @@ describe("buildCommentTree", () => {
               id: 5678,
               path: "0.1234.5678",
               childCount: 1,
-              communityHandle,
               postApId,
             },
             sort: 0,

@@ -22,7 +22,7 @@ import { useSettingsStore } from "../stores/settings";
 import { z } from "zod";
 import { useCommentsStore } from "../stores/comments";
 import { useCommunitiesStore } from "../stores/communities";
-import { extractErrorContent, lemmyTimestamp, Handle } from "../apis/utils";
+import { extractErrorContent, lemmyTimestamp } from "../apis/utils";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { toast } from "sonner";
 import {
@@ -1248,6 +1248,10 @@ export function useCreateCommentMutation() {
       const date = new Date();
       const isoDate = date.toISOString();
       const commentId = _.random(1, 1000000) * -1;
+      if (!myProfile) {
+        return undefined;
+      }
+
       const newComment: Schemas.Comment = {
         locked: false,
         apId: "",
@@ -1259,16 +1263,14 @@ export function useCreateCommentMutation() {
         deleted: false,
         removed: false,
         body,
-        creatorId: myProfile?.id ?? -1,
-        creatorApId: myProfile?.apId ?? "",
-        creatorHandle: (myProfile
-          ? (myProfile.handle ?? "")
-          : "") as unknown as Handle,
+        creatorId: myProfile?.id,
+        creatorApId: myProfile.apId,
+        creatorHandle: myProfile.handle,
         isBannedFromCommunity: false,
         postId: -1,
         postApId,
-        communityHandle: "" as unknown as Handle,
-        communityApId: "",
+        communityHandle: null,
+        communityApId: null,
         postTitle: "",
         myVote: 1,
         childCount: 0,
@@ -1276,7 +1278,6 @@ export function useCreateCommentMutation() {
         answer: false,
         emojiReactions: [],
       };
-
       cacheComments(getCachePrefixer(), [newComment]);
 
       const newReactQueryItem = {
@@ -1301,7 +1302,11 @@ export function useCreateCommentMutation() {
 
       return newComment;
     },
-    onSuccess: ({ newComment, sorts }, { postApId, queryKeyParentId }, ctx) => {
+    onSuccess: (
+      { newComment, sorts },
+      { postApId, queryKeyParentId },
+      ctx: Schemas.Comment | undefined,
+    ) => {
       const settledComment = {
         path: newComment.path,
         creatorId: newComment.creatorId,
@@ -1309,7 +1314,9 @@ export function useCreateCommentMutation() {
         createdAt: newComment.createdAt,
       };
 
-      markCommentForRemoval(ctx.path, getCachePrefixer());
+      if (ctx) {
+        markCommentForRemoval(ctx.path, getCachePrefixer());
+      }
       cacheComments(getCachePrefixer(), [newComment]);
 
       patchReactQuery({
@@ -1317,7 +1324,7 @@ export function useCreateCommentMutation() {
         queryKeyParentId,
         sorts,
         patchFn: (comments) => {
-          if (comments) {
+          if (comments && ctx) {
             const index = comments.findIndex((p) => p === ctx.path);
             if (index >= 0) {
               const clone = [...comments];

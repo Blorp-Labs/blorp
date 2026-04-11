@@ -284,7 +284,6 @@ export type ShareEntityContext =
       postId: number;
       commentId: number;
       apId: string;
-      communityHandle: string;
       route: string;
     }
   | { type: "community"; apId: string; handle: string; route: string }
