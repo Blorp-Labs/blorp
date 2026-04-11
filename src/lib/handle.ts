@@ -4,7 +4,7 @@ export type Handle = `${string}@${string}`;
 
 export const handleSchema = z
   .string()
-  .refine((val) => /^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val), {
+  .refine((val) => /^([\w.-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(val), {
     message: "Must be a valid federated handle (name@instance.com)",
   }) as z.ZodType<Handle>;
 
