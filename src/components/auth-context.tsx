@@ -330,7 +330,15 @@ function InstanceSelectionPage({
           <ToggleGroupItem value="piefed" data-testid="auth-filter-piefed">
             PieFed ({counts.piefed})
           </ToggleGroupItem>
+          <ToggleGroupItem value="mastodon" data-testid="auth-filter-mastodon">
+            Mastodon
+          </ToggleGroupItem>
         </ToggleGroup>
+        {software === Software.MASTODON && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Enter a Mastodon instance URL above to get started.
+          </p>
+        )}
       </div>
 
       {sortedInstances.map((i, index) => (
@@ -414,6 +422,33 @@ function LoginForm({
     e?.preventDefault();
     mutateLogin();
   };
+
+  const isMastodon = site.data?.site.software === Software.MASTODON;
+
+  if (isMastodon) {
+    return (
+      <div className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden items-center justify-center text-center">
+        <p className="text-muted-foreground">
+          Mastodon login is not yet supported. You can browse public content as
+          a guest.
+        </p>
+        <Button
+          type="button"
+          className="mx-auto"
+          onClick={() => {
+            if (addAccount) {
+              addAccountFn({ instance: instance.url });
+            } else {
+              updateSelectedAccount({ instance: instance.url });
+            }
+            onClose();
+          }}
+        >
+          Continue as Guest
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -822,7 +857,7 @@ function AuthModal({
                 : instance.baseurl}
             </ToolbarTitle>
           </ToolbarButtons>
-          {step !== "instance-selection" && (
+          {step !== "instance-selection" && software !== Software.MASTODON && (
             <ToolbarButtons side="right">
               <IonButton
                 onClick={() => {

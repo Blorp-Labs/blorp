@@ -1,7 +1,7 @@
 import { compare } from "compare-versions";
 
 type Software = {
-  software: "lemmy" | "piefed" | undefined;
+  software: "lemmy" | "piefed" | "mastodon" | undefined;
   softwareVersion: string | undefined;
 };
 
