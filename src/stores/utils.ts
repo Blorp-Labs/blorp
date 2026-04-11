@@ -35,6 +35,30 @@ export function mergeCacheObject<TSchema extends z.ZodType>(
   return result;
 }
 
+export function mergeCacheArray<TSchema extends z.ZodType>(
+  a: unknown[] | undefined,
+  b: unknown[] | undefined,
+  schema: TSchema,
+): z.infer<TSchema>[] {
+  type T = z.infer<TSchema>;
+  let aItems: T[] = [];
+  let bItems: T[] = [];
+
+  try {
+    if (a && a.length > 0 && schema.safeParse(a[0]).success) {
+      aItems = a as T[];
+    }
+  } catch {}
+
+  try {
+    if (b && b.length > 0 && schema.safeParse(b[0]).success) {
+      bItems = b as T[];
+    }
+  } catch {}
+
+  return [...aItems, ...bItems];
+}
+
 export function scoreDisplayFromSite(
   voteDisplaySetting: VoteDisplaySetting,
   site: Schemas.Site | undefined,
