@@ -2,12 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
+import z from "zod";
 import { communitySchema, Schemas } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import { mergeCacheArray } from "./utils";
 
-type RecentCommunityStore = {
-  recentlyVisited: Schemas.Community[];
+const persistedSchema = z.object({
+  recentlyVisited: z.array(communitySchema),
+});
+
+type RecentCommunityStore = z.infer<typeof persistedSchema> & {
   update: (c: Schemas.Community) => void;
   reset: () => void;
 };
@@ -29,6 +33,23 @@ function mergeCommunities(
   );
 }
 
+export function migrateRecentCommunities(
+  state: Record<string, unknown>,
+): z.infer<typeof persistedSchema> {
+  const communities = (state["recentlyVisited"] ?? []) as unknown[];
+  const recentlyVisited = communities.map((c) => {
+    if (c && typeof c === "object") {
+      const { slug, ...rest } = c as Record<string, unknown>;
+      return {
+        ...rest,
+        ...(slug && !rest["handle"] ? { handle: slug } : {}),
+      };
+    }
+    return c;
+  });
+  return persistedSchema.parse({ ...state, recentlyVisited });
+}
+
 export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
   // eslint-disable-next-line local/zustand-persist-migrate -- todo
   persist(
@@ -48,8 +69,14 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
     }),
     {
       name: "recent-communities",
-      storage: createStorage<RecentCommunityStore>(),
-      version: 1,
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
+      version: 2,
+      migrate: (state, version) => {
+        if (version < 2) {
+          return migrateRecentCommunities(state as Record<string, unknown>);
+        }
+        return state as z.infer<typeof persistedSchema>;
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<RecentCommunityStore>;
 
