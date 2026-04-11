@@ -429,15 +429,15 @@ export function useIsPersonBlocked(apId?: string | null) {
   });
 }
 
-export function useIsCommunityBlocked(slug?: string | null) {
+export function useIsCommunityBlocked(handle?: string | null) {
   return useAuth((s) => {
     const account = s.getSelectedAccount();
     const site = getAccountSite(account);
     const communityBlocks = site?.communityBlocks;
-    if (!slug || !communityBlocks || communityBlocks.length === 0) {
+    if (!handle || !communityBlocks || communityBlocks.length === 0) {
       return false;
     }
-    return !!communityBlocks.find((c) => c === slug);
+    return !!communityBlocks.find((c) => c === handle);
   });
 }
 

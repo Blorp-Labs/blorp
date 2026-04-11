@@ -30,7 +30,7 @@ afterEach(() => {
 describe("useCommunitiesStore", () => {
   describe("cacheCommunity", () => {
     const communityView = api.getCommunity();
-    const slug = communityView.handle;
+    const handle = communityView.handle;
 
     test("load post into store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
@@ -41,7 +41,7 @@ describe("useCommunitiesStore", () => {
         });
       });
 
-      expect(result.current.communities[prefix(slug)]?.data).toMatchObject({
+      expect(result.current.communities[prefix(handle)]?.data).toMatchObject({
         communityView,
       });
     });
@@ -70,7 +70,7 @@ describe("useCommunitiesStore", () => {
       });
 
       expect(
-        result.current.communities[prefix(slug)]?.data.communityView
+        result.current.communities[prefix(handle)]?.data.communityView
           .optimisticSubscribed,
       ).toBe(optimisticSubscribed);
     });
@@ -80,18 +80,18 @@ describe("useCommunitiesStore", () => {
 
   describe("patchCommunity", () => {
     const communityView = api.getCommunity();
-    const slug = communityView.handle;
+    const handle = communityView.handle;
 
     test("does not patch post that is not already in the store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
 
       act(() => {
-        result.current.patchCommunity(slug, prefix, {
+        result.current.patchCommunity(handle, prefix, {
           communityView,
         });
       });
 
-      expect(result.current.communities[prefix(slug)]?.data).toBeUndefined();
+      expect(result.current.communities[prefix(handle)]?.data).toBeUndefined();
     });
 
     test("does not overwrite optimistic subscribed", () => {
@@ -110,7 +110,7 @@ describe("useCommunitiesStore", () => {
       ] satisfies SubscribedType[]);
 
       act(() => {
-        result.current.patchCommunity(slug, prefix, {
+        result.current.patchCommunity(handle, prefix, {
           communityView: {
             ...communityView,
             optimisticSubscribed,
@@ -119,13 +119,13 @@ describe("useCommunitiesStore", () => {
       });
 
       act(() => {
-        result.current.patchCommunity(slug, prefix, {
+        result.current.patchCommunity(handle, prefix, {
           communityView,
         });
       });
 
       expect(
-        result.current.communities[prefix(slug)]?.data.communityView
+        result.current.communities[prefix(handle)]?.data.communityView
           .optimisticSubscribed,
       ).toBe(optimisticSubscribed);
     });
@@ -135,9 +135,9 @@ describe("useCommunitiesStore", () => {
 
   describe("cacheCommunities", () => {
     const communityView1 = api.getCommunity({ id: 1 });
-    const slug1 = communityView1.handle;
+    const handle1 = communityView1.handle;
     const communityView2 = api.getCommunity({ id: 2 });
-    const slug2 = communityView2.handle;
+    const handle2 = communityView2.handle;
 
     test("load communities into store", () => {
       const { result } = renderHook(() => useCommunitiesStore());
@@ -150,10 +150,10 @@ describe("useCommunitiesStore", () => {
       });
 
       expect(
-        result.current.communities[prefix(slug1)]?.data.communityView,
+        result.current.communities[prefix(handle1)]?.data.communityView,
       ).toMatchObject(communityView1);
       expect(
-        result.current.communities[prefix(slug2)]?.data.communityView,
+        result.current.communities[prefix(handle2)]?.data.communityView,
       ).toMatchObject(communityView2);
     });
 
@@ -186,11 +186,11 @@ describe("useCommunitiesStore", () => {
       });
 
       expect(
-        result.current.communities[prefix(slug1)]?.data.communityView
+        result.current.communities[prefix(handle1)]?.data.communityView
           .optimisticSubscribed,
       ).toBe(optimisticSubscribed);
       expect(
-        result.current.communities[prefix(slug2)]?.data.communityView
+        result.current.communities[prefix(handle2)]?.data.communityView
           .optimisticSubscribed,
       ).toBe(optimisticSubscribed);
     });

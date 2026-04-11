@@ -306,7 +306,7 @@ export function useCommentActions({
 function Byline({
   comment,
   actorId,
-  actorSlug,
+  actorHandle,
   publishedDate,
   isMod,
   className,
@@ -314,7 +314,7 @@ function Byline({
 }: {
   comment: Schemas.Comment;
   actorId: string;
-  actorSlug: string;
+  actorHandle: string;
   publishedDate: string;
   isMod?: boolean;
   className?: string;
@@ -325,7 +325,7 @@ function Byline({
 
   const locked = comment.optimisticLocked ?? comment.locked;
 
-  const tag = useTagUserStore((s) => s.userTags[actorSlug]);
+  const tag = useTagUserStore((s) => s.userTags[actorHandle]);
 
   const isAdmin = useIsAdmin(comment.creatorApId);
 
@@ -679,7 +679,7 @@ function PostCommentInner({
                 getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
-            actorSlug={commentView.creatorHandle}
+            actorHandle={commentView.creatorHandle}
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}

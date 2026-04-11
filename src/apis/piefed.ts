@@ -1000,7 +1000,7 @@ export class PieFedApi
 
   async getCommunity(form: Forms.GetCommunity, options?: RequestOptions) {
     if (!form.handle) {
-      throw new Error("community slug required");
+      throw new Error("community handle required");
     }
 
     const { community_view, moderators } =

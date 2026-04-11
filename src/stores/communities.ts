@@ -53,9 +53,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
-      patchCommunity: (slug, prefix, patch) => {
+      patchCommunity: (handle, prefix, patch) => {
         const communities = get().communities;
-        const cacheKey = prefix(slug);
+        const cacheKey = prefix(handle);
         const prevCommunityData = communities[cacheKey]?.data;
         if (!prevCommunityData) {
           console.error(
@@ -86,9 +86,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
       },
       cacheCommunity: (prefix, view) => {
         const prev = get();
-        const slug = view.communityView.handle;
-        if (slug) {
-          const cacheKey = prefix(slug);
+        const handle = view.communityView.handle;
+        if (handle) {
+          const cacheKey = prefix(handle);
           const prevCommunityData = prev.communities[cacheKey]?.data;
           const updatedCommunityData: Data = {
             ...prevCommunityData,
@@ -118,9 +118,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
         const newCommunities: Record<string, CachedCommunity> = {};
 
         for (const view of views) {
-          const slug = view.communityView.handle;
-          if (slug) {
-            const cacheKey = prefix(slug);
+          const handle = view.communityView.handle;
+          if (handle) {
+            const cacheKey = prefix(handle);
             const prevCommunityData = prev[cacheKey]?.data;
             const data = {
               ...prevCommunityData,
@@ -219,7 +219,7 @@ export function useCommunitiesFromStore(communityHandle?: string[]) {
   return useCommunitiesStore(
     useShallow((s) =>
       communityHandle
-        ?.map((slug) => s.communities[cachePrefixer()(slug)]?.data)
+        ?.map((handle) => s.communities[cachePrefixer()(handle)]?.data)
         .filter(isNotNil),
     ),
   );

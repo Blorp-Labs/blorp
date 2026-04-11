@@ -37,7 +37,7 @@ export function usePersonActions({
 
   const requireAuth = useRequireAuth();
 
-  const slug = person ? person.handle : undefined;
+  const handle = person ? person.handle : undefined;
 
   const blockPerson = useBlockPersonMutation({
     apId: person?.apId,
@@ -92,7 +92,7 @@ export function usePersonActions({
                 await requireAuth();
                 const deferred = new Deferred();
                 alrt({
-                  message: `${isBlocked ? "Unblock" : "Block"} ${slug ?? "person"}`,
+                  message: `${isBlocked ? "Unblock" : "Block"} ${handle ?? "person"}`,
                   buttons: [
                     {
                       text: "Cancel",

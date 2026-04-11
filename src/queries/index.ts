@@ -2133,9 +2133,9 @@ export function useFollowCommunityMutation() {
       });
     },
     onMutate: (form) => {
-      const slug = form.community.handle;
-      if (slug) {
-        patchCommunity(slug, getCachePrefixer(), {
+      const handle = form.community.handle;
+      if (handle) {
+        patchCommunity(handle, getCachePrefixer(), {
           communityView: {
             optimisticSubscribed: "Pending",
           },
@@ -2151,9 +2151,9 @@ export function useFollowCommunityMutation() {
       });
     },
     onError: (err, form) => {
-      const slug = form.community.handle;
-      if (slug) {
-        patchCommunity(slug, getCachePrefixer(), {
+      const handle = form.community.handle;
+      if (handle) {
+        patchCommunity(handle, getCachePrefixer(), {
           communityView: {
             optimisticSubscribed: undefined,
           },
@@ -2451,9 +2451,9 @@ export function useEditPostMutation(apId: string) {
     onSuccess: (postView, _, toastId) => {
       toast.dismiss(toastId);
       patchPost(apId, getCachePrefixer(), postView);
-      const slug = postView.communityHandle;
-      if (slug) {
-        history.replace(`/home/c/${slug}/posts/${encodeURIComponent(apId)}`);
+      const handle = postView.communityHandle;
+      if (handle) {
+        history.replace(`/home/c/${handle}/posts/${encodeURIComponent(apId)}`);
       }
     },
     onError: (err, _, toastId) => {

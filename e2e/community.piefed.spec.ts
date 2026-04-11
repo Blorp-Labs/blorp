@@ -12,7 +12,7 @@ const tabs = [
   { name: "inbox", base: "/inbox/" },
 ] as const;
 
-const COMMUNITY_SLUG = "technology@piefed.social";
+const COMMUNITY_HANDLE = "technology@piefed.social";
 
 for (const { name, base } of tabs) {
   test.describe(`${name}-tab community page`, () => {
@@ -21,7 +21,7 @@ for (const { name, base } of tabs) {
       await page.route("**/api/alpha/post/list*", (route) =>
         jsonRoute(route, GET_FEED_POSTS_RES),
       );
-      await page.goto(`${base}c/${COMMUNITY_SLUG}`);
+      await page.goto(`${base}c/${COMMUNITY_HANDLE}`);
       const postCard = page.getByTestId("post-card").first();
       await expect(postCard).toBeVisible();
       await expect(postCard).toContainText(
@@ -35,7 +35,7 @@ for (const { name, base } of tabs) {
       await page.route("**/api/alpha/community*", (route) =>
         jsonRoute(route, GET_COMMUNITY_RES),
       );
-      await page.goto(`${base}c/${COMMUNITY_SLUG}`);
+      await page.goto(`${base}c/${COMMUNITY_HANDLE}`);
       if (isMobile) {
         await expect(page.getByText(/Subscribers/).first()).toBeVisible();
       } else {

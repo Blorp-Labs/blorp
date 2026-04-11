@@ -138,8 +138,12 @@ export function SmallScreenSidebar({
           <section className="p-3 flex flex-col gap-2">
             <h2>Communities</h2>
             {feed?.communityHandles?.length
-              ? feed.communityHandles.map((slug) => (
-                  <CommunityCard key={slug} communityHandle={slug} size="sm" />
+              ? feed.communityHandles.map((handle) => (
+                  <CommunityCard
+                    key={handle}
+                    communityHandle={handle}
+                    size="sm"
+                  />
                 ))
               : Array.from({ length: feed?.communityCount ?? 0 }).map(
                   (_, i) => <CommunityCardSkeleton key={i} size="sm" />,
@@ -280,10 +284,10 @@ export function FeedSidebar({
 
               <CollapsibleContent className="flex flex-col gap-2 pt-3">
                 {feed.communityHandles?.length
-                  ? feed.communityHandles.map((slug) => (
+                  ? feed.communityHandles.map((handle) => (
                       <CommunityCard
-                        key={slug}
-                        communityHandle={slug}
+                        key={handle}
+                        communityHandle={handle}
                         size="sm"
                       />
                     ))

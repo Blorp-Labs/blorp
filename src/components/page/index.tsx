@@ -154,7 +154,7 @@ export function Page({
   requireLogin,
   notFound,
   notFoundApId,
-  notFoundCommunitySlug,
+  notFoundCommunityHandle,
   ref,
   ...props
 }: {
@@ -163,7 +163,7 @@ export function Page({
   requireLogin?: boolean;
   notFound?: boolean;
   notFoundApId?: string;
-  notFoundCommunitySlug?: string;
+  notFoundCommunityHandle?: string;
   ref?: React.Ref<HTMLElement | undefined | null>;
 }) {
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -184,7 +184,7 @@ export function Page({
         ) : notFound ? (
           <NotFoundPageContent
             apId={notFoundApId}
-            communityHandle={notFoundCommunitySlug}
+            communityHandle={notFoundCommunityHandle}
           />
         ) : (
           children
