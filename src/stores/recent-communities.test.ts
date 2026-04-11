@@ -82,14 +82,15 @@ describe("persisted state snapshot", () => {
 // ─── migration ──────────────────────────────────────────────────────────────
 
 describe("migrateRecentCommunities", () => {
-  test("v1 → v2: renames slug to handle on communities", () => {
+  test("v1 → v2: copies slug to handle", () => {
     const community = api.getCommunity({ id: 1 });
     const { handle, ...rest } = community;
     const oldData = { recentlyVisited: [{ ...rest, slug: handle }] };
 
     const migrated = migrateRecentCommunities(oldData);
     expect(migrated.recentlyVisited[0]?.handle).toBe(handle);
-    expect(migrated.recentlyVisited[0]).not.toHaveProperty("slug");
+    // Keeps slug for backward compat with old tabs
+    expect((migrated.recentlyVisited[0] as any).slug).toBe(handle);
   });
 
   test("idempotent when handle already present", () => {
