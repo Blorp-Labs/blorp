@@ -144,7 +144,6 @@ export function useCommentActions({
           apId: commentView.apId,
           postId: commentView.postId,
           commentId: commentView.id,
-          communityHandle: commentView.communityHandle,
           route: route!,
         }
       : null,
