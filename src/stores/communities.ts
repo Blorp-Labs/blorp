@@ -4,7 +4,12 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { Account, CachePrefixer, useAuth } from "./auth";
-import { Schemas, communitySchema, personSchema } from "../apis/api-blueprint";
+import {
+  Handle,
+  Schemas,
+  communitySchema,
+  personSchema,
+} from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
@@ -197,7 +202,7 @@ export const useCommunitiesStore = create<CommunityStore>()(
 sync(useCommunitiesStore);
 
 export function useCommunityFromStore(
-  communityHandle?: string,
+  communityHandle?: Handle,
   account?: Account,
 ) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);

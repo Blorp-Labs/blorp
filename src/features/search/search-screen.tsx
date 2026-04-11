@@ -53,6 +53,7 @@ import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
+import { decodeCommunityHandle, Handle } from "@/src/lib/handle";
 
 const EMPTY_ARR: never[] = [];
 
@@ -181,7 +182,7 @@ export default function SearchFeed({
   const communityHandle = useMemo(
     () =>
       communityHandleEncoded
-        ? decodeURIComponent(communityHandleEncoded)
+        ? decodeCommunityHandle(communityHandleEncoded)
         : undefined,
     [communityHandleEncoded],
   );
@@ -464,7 +465,10 @@ export default function SearchFeed({
 
               return (
                 <ContentGutters>
-                  <CommunityCard communityHandle={item} className="pt-3.5" />
+                  <CommunityCard
+                    communityHandle={item satisfies string as Handle}
+                    className="pt-3.5"
+                  />
                   <></>
                 </ContentGutters>
               );

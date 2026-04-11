@@ -14,6 +14,7 @@ import { useState } from "react";
 import { AggregateBadges } from "../aggregates";
 import { CommunityJoinButton } from "./community-join-button";
 import { DateTime } from "../datetime";
+import { Handle } from "@/src/lib/handle";
 
 dayjs.extend(localizedFormat);
 
@@ -21,7 +22,7 @@ export function CommunityHoverCard({
   communityHandle,
   children,
 }: {
-  communityHandle: string;
+  communityHandle: Handle;
   children: React.ReactNode;
 }) {
   const [enabled, setEnabled] = useState(false);

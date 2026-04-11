@@ -22,6 +22,7 @@ import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
+import { decodeCommunityHandle } from "../lib/handle";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -31,7 +32,7 @@ export default function CommunityFeed() {
     `${linkCtx.root}c/:communityHandle/sidebar`,
   );
   const communityHandle = useMemo(
-    () => decodeURIComponent(communityHandleEncoded),
+    () => decodeCommunityHandle(communityHandleEncoded),
     [communityHandleEncoded],
   );
 
@@ -44,7 +45,7 @@ export default function CommunityFeed() {
 
   return (
     <Page
-      notFound={communityQuery.isError && !community}
+      notFound={!communityHandle || (communityQuery.isError && !community)}
       notFoundCommunityHandle={communityHandle}
     >
       <PageTitle>{communityHandle}</PageTitle>
@@ -62,7 +63,7 @@ export default function CommunityFeed() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" numRightIcons={2}>
-              {communityHandle}
+              {communityHandle ?? ""}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
@@ -88,14 +89,16 @@ export default function CommunityFeed() {
         >
           <IonRefresherContent />
         </IonRefresher>
-        <ContentGutters className="px-0">
-          <SmallScreenSidebar
-            communityHandle={communityHandle}
-            actorId={community?.apId}
-            expanded
-          />
-          <></>
-        </ContentGutters>
+        {communityHandle && (
+          <ContentGutters className="px-0">
+            <SmallScreenSidebar
+              communityHandle={communityHandle}
+              actorId={community?.apId}
+              expanded
+            />
+            <></>
+          </ContentGutters>
+        )}
       </IonContent>
     </Page>
   );

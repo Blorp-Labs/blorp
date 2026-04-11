@@ -50,6 +50,8 @@ import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
+import { parseHandle } from "../apis/utils";
+import { decodeCommunityHandle } from "../lib/handle";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -69,7 +71,7 @@ export default function CommunityPosts() {
     `${linkCtx.root}c/:communityHandle`,
   );
   const communityHandle = useMemo(
-    () => decodeURIComponent(communityHandleEncoded),
+    () => decodeCommunityHandle(communityHandleEncoded),
     [communityHandleEncoded],
   );
 
@@ -139,7 +141,7 @@ export default function CommunityPosts() {
 
   return (
     <Page
-      notFound={communityQuery.isError && !community}
+      notFound={!communityHandle || (communityQuery.isError && !community)}
       notFoundCommunityHandle={communityHandle}
     >
       <PageTitle>{communityHandle}</PageTitle>
@@ -157,7 +159,7 @@ export default function CommunityPosts() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" className="md:hidden" numRightIcons={3}>
-              {communityHandle}
+              {communityHandle ?? ""}
             </ToolbarTitle>
           </ToolbarButtons>
           <SearchBar
@@ -230,10 +232,12 @@ export default function CommunityPosts() {
             stickyIndicies={[1]}
             header={[
               <Fragment key="community-header">
-                <SmallScreenSidebar
-                  communityHandle={communityHandle}
-                  actorId={community?.communityView.apId}
-                />
+                {communityHandle && (
+                  <SmallScreenSidebar
+                    communityHandle={communityHandle}
+                    actorId={community?.communityView.apId}
+                  />
+                )}
                 <ContentGutters className="max-md:hidden pt-4">
                   <CommunityBanner communityHandle={communityHandle} />
                   <></>
@@ -256,7 +260,7 @@ export default function CommunityPosts() {
                 isBlocked={isBlocked || isInstanceBlocked}
                 blockedName={
                   isInstanceBlocked
-                    ? communityHandle.split("@")[1]
+                    ? parseHandle(communityHandle).name
                     : communityHandle
                 }
                 postSort={postSort}

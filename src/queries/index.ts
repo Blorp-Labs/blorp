@@ -35,7 +35,13 @@ import {
   useThrottledInfiniteQuery,
 } from "../tanstack-query/throttled-infinite-query";
 import { produce } from "immer";
-import { Errors, Forms, INIT_PAGE_TOKEN, Schemas } from "../apis/api-blueprint";
+import {
+  Errors,
+  Forms,
+  Handle,
+  INIT_PAGE_TOKEN,
+  Schemas,
+} from "../apis/api-blueprint";
 import { apiClient } from "../apis/client";
 import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
@@ -664,7 +670,7 @@ export function useCommunityQuery({
   ...form
 }: {
   enabled?: boolean;
-  name?: string;
+  name?: Handle;
   instance?: string;
 }) {
   const { api, queryKeyPrefix } = useApiClients();
@@ -2567,7 +2573,7 @@ export function useBlockInstanceMutation(options?: { account?: Account }) {
 
 export function useBlockCommunityMutation(options?: {
   account?: Account;
-  communityHandle?: string;
+  communityHandle?: Handle;
 }) {
   const { account, communityHandle } = options ?? {};
   const postsQueryKey = usePostsKey({ communityHandle });

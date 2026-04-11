@@ -3,6 +3,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { useIsCommunityBlocked } from "@/src/stores/auth";
 import { useMultiCommunityFeedFromStore } from "@/src/stores/multi-community-feeds";
+import { parseHandle } from "@/src/lib/handle";
 
 export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
   const [bannerReady, setBannerReady] = useState(false);
@@ -16,7 +17,7 @@ export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
 
   const hideBanner = !banner || isBlocked;
 
-  const [name, host] = feed?.handle.split("@") ?? [];
+  const { name, host } = parseHandle(feed?.handle);
 
   return (
     <div className="flex-1">

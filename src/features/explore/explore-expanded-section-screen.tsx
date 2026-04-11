@@ -23,6 +23,7 @@ import { VirtualList } from "../../components/virtual-list";
 import { FeedCard, FEEDS } from "./feed-card";
 import { SortControlBar, SortControlBarContent } from "./sort-bar";
 import { Page } from "@/src/components/page";
+import { Handle } from "@/src/lib/handle";
 
 const NO_ITEMS = "NO_ITEMS";
 
@@ -123,7 +124,10 @@ export function ExpandedCommunities({ sort }: { sort?: string }) {
 
         return (
           <ContentGutters className="md:contents">
-            <CommunityCard communityHandle={item} className="mt-1" />
+            <CommunityCard
+              communityHandle={item satisfies string as Handle}
+              className="mt-1"
+            />
           </ContentGutters>
         );
       }}

@@ -44,7 +44,7 @@ import { cn } from "@/src/lib/utils";
 import { AggregateBadges } from "../aggregates";
 import { useConfirmationAlert } from "@/src/hooks/index";
 import { Skeleton } from "../ui/skeleton";
-import { Schemas } from "@/src/apis/api-blueprint";
+import { Handle, Schemas } from "@/src/apis/api-blueprint";
 import { Flair } from "../flair";
 import { useFlairs } from "@/src/stores/flairs";
 import { EasterEggBox } from "@/src/components/easter-eggs/EasterEggBox";
@@ -57,7 +57,7 @@ export function SmallScreenSidebar({
   actorId,
   expanded,
 }: {
-  communityHandle: string;
+  communityHandle: Handle;
   actorId?: string | null;
   expanded?: boolean;
 }) {
@@ -221,7 +221,7 @@ export function useCommunityActions({
   communityView,
 }: {
   actorId?: string | null;
-  communityHandle: string;
+  communityHandle: Handle;
   communityView?: Schemas.Community;
 }): SubAction[] {
   const getConfirmation = useConfirmationAlert();
@@ -312,7 +312,7 @@ function CommunitySidebarInner({
   hideDescription = false,
   postApId,
 }: {
-  communityHandle: string;
+  communityHandle: Handle;
   actorId: string | undefined;
   hideDescription?: boolean;
   asPage?: boolean;

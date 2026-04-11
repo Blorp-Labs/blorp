@@ -59,6 +59,7 @@ import {
   ShowNsfwButton,
   useBlurNsfwState,
 } from "@/src/components/posts/nsfw-blur-toggle";
+import { decodeCommunityHandle, Handle } from "@/src/lib/handle";
 
 const EMPTY_ARR: never[] = [];
 
@@ -181,14 +182,14 @@ function useLightboxPostsData({
   listingType,
   activePostApId,
 }: {
-  communityHandle?: string;
+  communityHandle?: Handle;
   listingType: Forms.GetPosts["type"];
   activePostApId?: string | null;
 }) {
   const postsQuery = usePostsQuery(
     communityHandle
       ? {
-          communityHandle: communityHandle,
+          communityHandle,
         }
       : {
           type: listingType,
@@ -244,7 +245,7 @@ export default function LightBoxPosts() {
   const communityHandle = useMemo(
     () =>
       communityHandleEncoded
-        ? decodeURIComponent(communityHandleEncoded)
+        ? decodeCommunityHandle(communityHandleEncoded)
         : undefined,
     [communityHandleEncoded],
   );

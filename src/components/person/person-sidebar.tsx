@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import { DateTime } from "../datetime";
 import { useIsPersonBlocked } from "@/src/stores/auth";
 import { PersonBadge } from "./person-badge";
+import { parseHandle } from "@/src/lib/handle";
 
 dayjs.extend(localizedFormat);
 
@@ -106,7 +107,7 @@ function PersonSidebarInner({ person }: { person?: Schemas.Person }) {
     person ? s.userTags[person.handle] : undefined,
   );
 
-  const [name, host] = person ? person.handle.split("@") : [];
+  const { name, host } = parseHandle(person?.handle);
 
   const isBlocked = useIsPersonBlocked(person?.apId);
 

@@ -13,6 +13,7 @@ import { usePagination } from "../components/pagination/use-pagination";
 import { ModlogRow, ModlogRowSkeleton } from "../components/modlog/modlog-row";
 import { Schemas } from "../apis/api-blueprint";
 import { ContentGutters } from "../components/gutters";
+import { decodeCommunityHandle } from "../lib/handle";
 
 export default function CommunityModlog() {
   const linkCtx = useLinkContext();
@@ -20,7 +21,7 @@ export default function CommunityModlog() {
     `${linkCtx.root}c/:communityHandle/modlog`,
   );
   const communityHandle = useMemo(
-    () => decodeURIComponent(communityHandleEncoded),
+    () => decodeCommunityHandle(communityHandleEncoded),
     [communityHandleEncoded],
   );
 

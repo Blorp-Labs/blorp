@@ -8,11 +8,12 @@ import {
   COMMUNITY_NSFW_BANNER_BLUR_CLASS,
   COMMUNITY_NSFW_ICON_BLUR_CLASS,
 } from "./utils";
+import { Handle, parseHandle } from "@/src/lib/handle";
 
 export function CommunityBanner({
   communityHandle,
 }: {
-  communityHandle?: string;
+  communityHandle?: Handle;
 }) {
   const [bannerReady, setBannerReady] = useState(false);
   const [iconReady, setIconReady] = useState(false);
@@ -26,7 +27,7 @@ export function CommunityBanner({
 
   const hideBanner = !banner || isBlocked;
 
-  const [name, host] = communityView?.handle.split("@") ?? [];
+  const { name, host } = parseHandle(communityView?.handle);
 
   return (
     <div className="flex-1">

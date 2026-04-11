@@ -9,7 +9,7 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { parseAccountInfo, useAuth } from "../stores/auth";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { encodeApId } from "../apis/utils";
+import { encodeApId, parseHandle } from "../apis/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -114,7 +114,7 @@ export function UserDropdown() {
     );
   }
 
-  const [name] = person?.handle.split("@") ?? [];
+  const { name } = parseHandle(person?.handle);
 
   return (
     <DropdownMenu>
@@ -201,7 +201,7 @@ export function UserDropdown() {
               return null;
             }
             const { person, instance } = parseAccountInfo(a);
-            const [name] = person?.handle.split("@") ?? [];
+            const { name } = parseHandle(person?.handle);
 
             return (
               <DropdownMenuItem
@@ -260,7 +260,7 @@ export function UserSidebar() {
   const pmCounts = usePrivateMessagesCountQuery();
 
   const { person, instance } = parseAccountInfo(selectedAccount);
-  const userName = person?.handle.split("@")[0];
+  const userName = parseHandle(person?.handle).name;
 
   return (
     <div
@@ -348,7 +348,7 @@ export function UserSidebar() {
           return null;
         }
         const { person, instance } = parseAccountInfo(a);
-        const [name] = person?.handle.split("@") ?? [];
+        const { name } = parseHandle(person?.handle);
         return (
           <IonMenuToggle key={a.uuid}>
             <button

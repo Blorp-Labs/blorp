@@ -23,11 +23,12 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { PersonBadge } from "@/src/components/person/person-badge";
 import { X } from "@/src/components/icons";
+import { Handle } from "@/src/lib/handle";
 
 type ListItem =
   | { kind: "header"; label: string }
   | { kind: "person"; apId: string }
-  | { kind: "community"; handle: string }
+  | { kind: "community"; handle: Handle }
   | { kind: "instance"; domain: string; id: number };
 
 function BlockedPersonItem({
@@ -92,7 +93,7 @@ function BlockedCommunityItem({
   alrt,
   blockCommunity,
 }: {
-  handle: string;
+  handle: Handle;
   account: Parameters<typeof useCommunityFromStore>[1];
   alrt: ReturnType<typeof useIonAlert>[0];
   blockCommunity: ReturnType<typeof useBlockCommunityMutation>;
