@@ -442,6 +442,54 @@ export namespace Schemas {
   export type ModlogItem = z.infer<typeof modlogItemSchema>;
 }
 
+// ─── Form schemas ───────────────────────────────────────────────────────────
+
+export const pollChoiceInputSchema = z.object({
+  id: z.number(),
+  text: z.string(),
+  sortOrder: z.number(),
+});
+
+export const pollInputSchema = z.object({
+  endAmount: z.number(),
+  endUnit: z.enum(["minutes", "hours", "days", "weeks", "months", "permanent"]),
+  mode: z.enum(["single", "multiple"]),
+  localOnly: z.boolean(),
+  choices: z.array(pollChoiceInputSchema),
+});
+
+const formFlairSchema = flairSchema.pick({ title: true, apId: true });
+
+export const editPostSchema = postSchema
+  .pick({
+    title: true,
+    url: true,
+    body: true,
+    altText: true,
+    thumbnailUrl: true,
+    nsfw: true,
+  })
+  .extend({
+    apId: z.string(),
+    flairs: z.array(formFlairSchema).optional(),
+    poll: pollInputSchema.optional(),
+  });
+
+export const createPostSchema = postSchema
+  .pick({
+    title: true,
+    url: true,
+    body: true,
+    altText: true,
+    thumbnailUrl: true,
+    communityHandle: true,
+    nsfw: true,
+  })
+  .extend({
+    flairs: z.array(formFlairSchema).optional(),
+    poll: pollInputSchema.optional(),
+  });
+
 export namespace Forms {
   export type GetLinkMetadata = {
     url: string;
@@ -657,44 +705,10 @@ export namespace Forms {
     read: boolean;
   };
 
-  export interface PollChoiceInput {
-    id: number; // 0 for new choices; real id when editing existing
-    text: string; // matches postPollSchema choices[].text
-    sortOrder: number;
-  }
-
-  export interface PollInput {
-    endAmount: number;
-    endUnit: "minutes" | "hours" | "days" | "weeks" | "months" | "permanent";
-    mode: "single" | "multiple"; // matches postPollSchema.mode
-    localOnly: boolean; // matches postPollSchema.localOnly
-    choices: PollChoiceInput[];
-  }
-
-  export interface EditPost
-    extends Pick<
-      Schemas.Post,
-      "title" | "url" | "body" | "altText" | "thumbnailUrl" | "nsfw"
-    > {
-    apId: string;
-    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
-    poll?: PollInput;
-  }
-
-  export interface CreatePost
-    extends Pick<
-      Schemas.Post,
-      | "title"
-      | "url"
-      | "body"
-      | "altText"
-      | "thumbnailUrl"
-      | "communityHandle"
-      | "nsfw"
-    > {
-    flairs?: Pick<Schemas.Flair, "title" | "apId">[];
-    poll?: PollInput;
-  }
+  export type PollChoiceInput = z.infer<typeof pollChoiceInputSchema>;
+  export type PollInput = z.infer<typeof pollInputSchema>;
+  export type EditPost = z.infer<typeof editPostSchema>;
+  export type CreatePost = z.infer<typeof createPostSchema>;
 
   export type CreatePostReport = {
     postId: number;

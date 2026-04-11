@@ -4,32 +4,48 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import dayjs from "dayjs";
-import { Forms, Schemas } from "../apis/api-blueprint";
+import z from "zod";
+import {
+  Forms,
+  Schemas,
+  editPostSchema,
+  createPostSchema,
+} from "../apis/api-blueprint";
 import { isNotNil } from "../lib/utils";
 import { isTest } from "../lib/device";
 import { useMemo } from "react";
 import { getFlairLookup } from "../apis/utils";
+import { mergeCacheObject } from "./utils";
 
 export type CommunityPartial = Pick<
   Community,
   "name" | "title" | "icon" | "actor_id"
 >;
 
-export interface Draft extends Partial<Forms.EditPost & Forms.CreatePost> {
-  type: "text" | "media" | "link" | "poll";
-  createdAt: number;
-}
+export const draftSchema = editPostSchema
+  .merge(createPostSchema)
+  .partial()
+  .extend({
+    type: z.enum(["text", "media", "link", "poll"]),
+    createdAt: z.number(),
+    communityApId: z.string().optional(),
+  });
 
-type CreatePostStore = {
-  drafts: Record<string, Draft>;
+export type Draft = z.infer<typeof draftSchema>;
+
+const persistedSchema = z.object({
+  drafts: z.record(draftSchema),
+});
+
+type CreatePostStore = z.infer<typeof persistedSchema> & {
   updateDraft: (key: string, patch: Partial<Draft>) => void;
   deleteDraft: (key: string) => any;
   cleanup: () => void;
   reset: () => void;
 };
 
-const INIT_STATE = {
-  drafts: {} satisfies Record<string, Draft>,
+const INIT_STATE: z.infer<typeof persistedSchema> = {
+  drafts: {},
 };
 
 export const NEW_DRAFT: Draft = {
@@ -214,6 +230,28 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
   return post;
 }
 
+export function migrateCreatePostStore(
+  state: Record<string, unknown>,
+): z.infer<typeof persistedSchema> {
+  const drafts = (state["drafts"] ?? {}) as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const migratedDrafts: Record<string, Record<string, unknown>> = {};
+  for (const [key, draft] of Object.entries(drafts)) {
+    if (draft && typeof draft === "object") {
+      const { communitySlug, ...rest } = draft;
+      migratedDrafts[key] = {
+        ...rest,
+        ...(communitySlug && !rest["communityHandle"]
+          ? { communityHandle: communitySlug }
+          : {}),
+      };
+    }
+  }
+  return persistedSchema.parse({ ...state, drafts: migratedDrafts });
+}
+
 export const useCreatePostStore = create<CreatePostStore>()(
   persist(
     (set) => ({
@@ -276,8 +314,14 @@ export const useCreatePostStore = create<CreatePostStore>()(
     }),
     {
       name: "create-post",
-      storage: createStorage<CreatePostStore>(),
-      version: 5,
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
+      version: 6,
+      migrate: (state, version) => {
+        if (version < 6) {
+          return migrateCreatePostStore(state as Record<string, unknown>);
+        }
+        return state as z.infer<typeof persistedSchema>;
+      },
       onRehydrateStorage: () => {
         return (state) => {
           if (!alreadyClean) {
@@ -291,10 +335,11 @@ export const useCreatePostStore = create<CreatePostStore>()(
         return {
           ...current,
           ...persisted,
-          drafts: {
-            ...current.drafts,
-            ...persisted.drafts,
-          },
+          drafts: mergeCacheObject(
+            current.drafts,
+            persisted.drafts,
+            draftSchema,
+          ),
         } satisfies CreatePostStore;
       },
     },
