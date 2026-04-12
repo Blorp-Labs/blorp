@@ -12,6 +12,7 @@ import {
   mutationHookNaming,
   noQueryHooksInComponents,
 } from "./eslint/rules.js";
+import { zustandPersistMigrate } from "./eslint/zustand.js";
 
 const SRC_FOLDERS = [
   "apis",
@@ -48,6 +49,7 @@ const local = {
     "query-hook-naming": queryHookNaming,
     "mutation-hook-naming": mutationHookNaming,
     "no-query-hooks-in-components": noQueryHooksInComponents,
+    "zustand-persist-migrate": zustandPersistMigrate,
   },
 };
 
@@ -122,6 +124,13 @@ export default tseslint.config(
     files: ["src/stores/**", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "no-restricted-syntax": "off",
+    },
+  },
+  {
+    files: ["src/stores/**/*.ts"],
+    plugins: { local },
+    rules: {
+      "local/zustand-persist-migrate": "error",
     },
   },
   {
