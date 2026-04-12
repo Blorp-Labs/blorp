@@ -11,8 +11,8 @@ import { queryClient } from "./query-client";
 import { env } from "@/src/env";
 
 // List the last reason for bumping the key:
-// Notification and PM counts changed from number[] to Record<string, number>
-const REACT_QUERY_CACHE_VERSON = 12;
+// Change slug to handle for posts, communities, and users
+const REACT_QUERY_CACHE_VERSON = 13;
 
 function pruneInfinitePages(client: PersistedClient): PersistedClient {
   const cacheState = client.clientState;
