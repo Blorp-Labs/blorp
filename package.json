@@ -115,6 +115,7 @@
     "markdown-it-footnote": "4.0.0",
     "markdown-it-sub": "2.0.0",
     "markdown-it-sup": "2.0.0",
+    "masto": "7.10.2",
     "p-retry": "6.2.1",
     "p-timeout": "6.1.4",
     "path-to-regexp": "8.3.0",

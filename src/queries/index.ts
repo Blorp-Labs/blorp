@@ -108,7 +108,7 @@ export function useApiClients(config?: { instance?: string; jwt?: string }) {
 export function useSoftware(account?: Account) {
   const [software, setSoftware] = useState<
     | {
-        software: "lemmy" | "piefed";
+        software: "lemmy" | "piefed" | "mastodon";
         softwareVersion: string;
       }
     | {

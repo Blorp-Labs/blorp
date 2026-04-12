@@ -1,7 +1,7 @@
 import { compare } from "compare-versions";
 
 type Software = {
-  software: "lemmy" | "piefed" | undefined;
+  software: "lemmy" | "piefed" | "mastodon" | undefined;
   softwareVersion: string | undefined;
 };
 
@@ -16,6 +16,7 @@ function compareVersions(a: string, b: string) {
 
 export function supportsFeeds({ software, softwareVersion }: Software) {
   return (
+    software === "mastodon" ||
     software === "piefed" ||
     (software === "lemmy" && softwareVersion?.startsWith("nightly")) ||
     (software === "lemmy" &&
