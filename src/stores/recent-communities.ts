@@ -77,21 +77,13 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
     {
       name: "recent-communities",
       storage: createStorage<z.infer<typeof persistedSchema>>(),
-      version: 2,
-      migrate: (state, version) => {
-        if (version < 2) {
-          return migrateRecentCommunities(state as Record<string, unknown>);
-        }
-        return state as z.infer<typeof persistedSchema>;
-      },
+      version: 1,
       merge: (p: any, current) => {
-        const persisted = p as Partial<RecentCommunityStore>;
-
+        const migrated = migrateRecentCommunities(p ?? {});
         return {
           ...current,
-          ...persisted,
           recentlyVisited: mergeCacheArray(
-            persisted.recentlyVisited,
+            migrated.recentlyVisited as unknown[] | undefined,
             current.recentlyVisited,
             communitySchema,
           ),

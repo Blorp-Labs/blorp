@@ -322,13 +322,7 @@ export const useCreatePostStore = create<CreatePostStore>()(
     {
       name: "create-post",
       storage: createStorage<z.infer<typeof persistedSchema>>(),
-      version: 6,
-      migrate: (state, version) => {
-        if (version < 6) {
-          return migrateCreatePostStore(state as Record<string, unknown>);
-        }
-        return state as z.infer<typeof persistedSchema>;
-      },
+      version: 5,
       onRehydrateStorage: () => {
         return (state) => {
           if (!alreadyClean) {
@@ -338,13 +332,12 @@ export const useCreatePostStore = create<CreatePostStore>()(
         };
       },
       merge: (p: any, current) => {
-        const persisted = p as Partial<CreatePostStore>;
+        const migrated = migrateCreatePostStore(p ?? {});
         return {
           ...current,
-          ...persisted,
           drafts: mergeCacheObject(
             current.drafts,
-            persisted.drafts,
+            migrated.drafts,
             draftSchema,
           ),
         } satisfies CreatePostStore;
