@@ -1,4 +1,7 @@
 import { Link } from "@/src/routing/index";
+import { ErrorBoundary } from "react-error-boundary";
+import { Button } from "@/src/components/ui/button";
+import { useReportError } from "@/src/components/use-report-error";
 import {
   Avatar,
   AvatarFallback,
@@ -14,7 +17,7 @@ import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
 import { abbriviateNumber } from "@/src/lib/format";
 
-export function PersonCard({
+function PersonCardInner({
   actorId,
   size = "md",
   className,
@@ -124,6 +127,56 @@ export function PersonCard({
     <PersonHoverCard actorId={actorId} asChild>
       {withLinkContent}
     </PersonHoverCard>
+  );
+}
+
+function PersonCardErrorFallback({
+  actorId,
+  error,
+}: {
+  actorId: string;
+  error: unknown;
+}) {
+  const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
+    contextFields: { "Person actorId": actorId },
+    reportTitle: "[Crash] Person card rendering error",
+    error,
+  });
+
+  return (
+    <div className="p-2 text-sm flex flex-col gap-2 bg-destructive/20 rounded">
+      <p className="font-medium text-destructive text-xs">
+        Failed to render person
+      </p>
+      <span className="text-xs text-muted-foreground break-all">{actorId}</span>
+      <div className="flex flex-wrap justify-end gap-1">
+        <Button
+          size="sm"
+          variant={isLoggedIn ? "destructive" : "link"}
+          onClick={reportViaCommunity}
+        >
+          Report in App
+        </Button>
+        <Button size="sm" variant={isLoggedIn ? "link" : "destructive"} asChild>
+          <a href={issueUrl} target="_blank" rel="noopener noreferrer">
+            Report on GitHub
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function PersonCard(props: Parameters<typeof PersonCardInner>[0]) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <PersonCardErrorFallback actorId={props.actorId} error={error} />
+      )}
+      resetKeys={[props.actorId]}
+    >
+      <PersonCardInner {...props} />
+    </ErrorBoundary>
   );
 }
 

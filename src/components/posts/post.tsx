@@ -3,7 +3,7 @@ import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/apis/post-embed";
 import { encodeApId } from "@/src/apis/utils";
-import { Link, resolveRoute } from "@/src/routing/index";
+import { Link } from "@/src/routing/index";
 import {
   PostArticleEmbed,
   PostArticleMiniEmbed,
@@ -27,7 +27,6 @@ import { Skeleton } from "../ui/skeleton";
 import { useId, useRef, useState } from "react";
 import {
   getAccountSite,
-  parseAccountInfo,
   useAmIAdmin,
   useAuth,
   useIsInstanceBlocked,
@@ -52,16 +51,8 @@ import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
 import { ErrorBoundary } from "react-error-boundary";
-import { useIonRouter } from "@ionic/react";
-import { useCreatePostStore } from "@/src/stores/create-post";
-import { v4 as uuid } from "uuid";
 import { Button } from "../ui/button";
-import {
-  BLORP_COMMUNITY,
-  buildErrorReport,
-  buildIssueUrl,
-} from "@/src/lib/error-reporting";
-import { useRequireAuth } from "../auth-context";
+import { useReportError } from "@/src/components/use-report-error";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 
@@ -946,36 +937,11 @@ function PostCardErrorFallback({
   apId: string;
   error: unknown;
 }) {
-  const router = useIonRouter();
-  const updateDraft = useCreatePostStore((s) => s.updateDraft);
-  const requireAuth = useRequireAuth();
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const instance = useAuth(
-    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
-  );
-
-  const body = buildErrorReport(
-    { "Post apId": apId, "User Instance": instance },
+  const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
+    contextFields: { "Post apId": apId },
+    reportTitle: "[Crash] Post rendering error",
     error,
-  );
-
-  const issueUrl = buildIssueUrl("[Crash] Post rendering error", body);
-
-  const reportViaCommunity = async () => {
-    try {
-      await requireAuth();
-    } catch {
-      return;
-    }
-    const draftId = uuid();
-    updateDraft(draftId, {
-      type: "text",
-      communitySlug: BLORP_COMMUNITY,
-      title: "[Crash] Post rendering error",
-      body,
-    });
-    router.push(resolveRoute("/create_post", `?id=${draftId}`));
-  };
+  });
 
   return (
     <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">

@@ -41,12 +41,7 @@ import {
 import { cn } from "@/src/lib/utils";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import { PersonHoverCard } from "../person/person-hover-card";
-import {
-  getAccountSite,
-  useAuth,
-  useIsAdmin,
-  parseAccountInfo,
-} from "@/src/stores/auth";
+import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "../ui/button";
 import { useMemo, useRef } from "react";
@@ -75,14 +70,7 @@ import { Bookmark, Check, Lock } from "../icons";
 import { getCommentBgClass } from "./utils";
 import { usePersonActions } from "../person/person-action-menu";
 import { ErrorBoundary } from "react-error-boundary";
-import { useIonRouter } from "@ionic/react";
-import { useCreatePostStore } from "@/src/stores/create-post";
-import { v4 as uuid } from "uuid";
-import {
-  BLORP_COMMUNITY,
-  buildErrorReport,
-  buildIssueUrl,
-} from "@/src/lib/error-reporting";
+import { useReportError } from "@/src/components/use-report-error";
 
 type StoreState = {
   expandedDetails: Record<string, boolean>;
@@ -413,39 +401,16 @@ function PostCommentErrorFallback({
   commentTree: CommentTree;
   error: unknown;
 }) {
-  const router = useIonRouter();
-  const updateDraft = useCreatePostStore((s) => s.updateDraft);
-  const requireAuth = useRequireAuth();
-  const isLoggedIn = useAuth((s) => s.isLoggedIn());
-  const instance = useAuth(
-    (s) => parseAccountInfo(s.getSelectedAccount()).instance,
-  );
   const [commentView] = useCommentsByPaths(
     commentTree.comment ? [commentTree.comment.path] : [],
   );
   const apId = commentView?.apId;
 
-  const body = buildErrorReport(
-    { ...(apId ? { "Comment apId": apId } : {}), "User Instance": instance },
+  const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
+    contextFields: apId ? { "Comment apId": apId } : {},
+    reportTitle: "[Crash] Comment rendering error",
     error,
-  );
-  const issueUrl = buildIssueUrl("[Crash] Comment rendering error", body);
-
-  const reportViaCommunity = async () => {
-    try {
-      await requireAuth();
-    } catch {
-      return;
-    }
-    const draftId = uuid();
-    updateDraft(draftId, {
-      type: "text",
-      communitySlug: BLORP_COMMUNITY,
-      title: "[Crash] Comment rendering error",
-      body,
-    });
-    router.push(resolveRoute("/create_post", `?id=${draftId}`));
-  };
+  });
 
   return (
     <div className="border-b p-4 text-sm flex flex-col gap-5 bg-destructive/20">
