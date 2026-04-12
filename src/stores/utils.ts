@@ -6,10 +6,12 @@ import {
   type ThresholdSetting,
   type VoteDisplaySetting,
 } from "./settings";
+import _ from "lodash";
 import { type Schemas } from "../apis/api-blueprint";
 
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 
+const MERGE_CACHE_SAMPLE_SIZE = 10;
 export function mergeCacheObject<TSchema extends z.ZodType>(
   a: Record<string, unknown> | undefined,
   b: Record<string, unknown> | undefined,
@@ -19,15 +21,29 @@ export function mergeCacheObject<TSchema extends z.ZodType>(
   let result: Record<string, T> = {};
 
   try {
-    const firstKey = Object.keys(a ?? {})[0];
-    if (firstKey && schema.safeParse(a?.[firstKey]).success) {
+    const aKeys = Object.keys(a ?? {});
+    const success = _.every(
+      _.compact([
+        _.first(aKeys),
+        _.last(aKeys),
+        ..._.sampleSize(aKeys, MERGE_CACHE_SAMPLE_SIZE),
+      ]).map((key) => schema.safeParse(a?.[key]).success),
+    );
+    if (success) {
       result = { ...result, ...(a as Record<string, T>) };
     }
   } catch {}
 
   try {
-    const firstKey = Object.keys(b ?? {})[0];
-    if (firstKey && schema.safeParse(b?.[firstKey]).success) {
+    const bKeys = Object.keys(b ?? {});
+    const success = _.every(
+      _.compact([
+        _.first(bKeys),
+        _.last(bKeys),
+        ..._.sampleSize(bKeys, MERGE_CACHE_SAMPLE_SIZE),
+      ]).map((key) => schema.safeParse(b?.[key]).success),
+    );
+    if (success) {
       result = { ...result, ...(b as Record<string, T>) };
     }
   } catch {}
