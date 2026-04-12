@@ -17,6 +17,16 @@ import { PersonHoverCard } from "./person-hover-card";
 import _ from "lodash";
 import { abbriviateNumber } from "@/src/lib/format";
 
+type PersonCardProps = {
+  actorId: string;
+  size?: "xs" | "sm" | "md";
+  className?: string;
+  disableLink?: boolean;
+  disableHover?: boolean;
+  showCounts?: boolean;
+  account?: Account;
+};
+
 function PersonCardInner({
   actorId,
   size = "md",
@@ -25,15 +35,7 @@ function PersonCardInner({
   disableHover,
   showCounts,
   account,
-}: {
-  actorId: string;
-  size?: "xs" | "sm" | "md";
-  className?: string;
-  disableLink?: boolean;
-  disableHover?: boolean;
-  showCounts?: boolean;
-  account?: Account;
-}) {
+}: PersonCardProps) {
   const linkCtx = useLinkContext();
   const p = useProfileFromStore(actorId, account);
 
@@ -167,7 +169,7 @@ function PersonCardErrorFallback({
   );
 }
 
-export function PersonCard(props: Parameters<typeof PersonCardInner>[0]) {
+export function PersonCard(props: PersonCardProps) {
   return (
     <ErrorBoundary
       fallbackRender={({ error }) => (

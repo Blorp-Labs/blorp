@@ -18,6 +18,15 @@ import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 
+type CommunityCardProps = {
+  communitySlug: string;
+  disableLink?: boolean;
+  className?: string;
+  hideText?: boolean;
+  size?: "sm" | "md";
+  account?: Account;
+};
+
 function CommunityCardInner({
   communitySlug,
   disableLink,
@@ -25,14 +34,7 @@ function CommunityCardInner({
   hideText,
   size = "md",
   account,
-}: {
-  communitySlug: string;
-  disableLink?: boolean;
-  className?: string;
-  hideText?: boolean;
-  size?: "sm" | "md";
-  account?: Account;
-}) {
+}: CommunityCardProps) {
   const fromRecent = useRecentCommunitiesStore((s) => {
     return s.recentlyVisited.find((r) => r.slug === communitySlug);
   });
@@ -159,7 +161,7 @@ function CommunityCardErrorFallback({
   );
 }
 
-export function CommunityCard(props: Parameters<typeof CommunityCardInner>[0]) {
+export function CommunityCard(props: CommunityCardProps) {
   return (
     <ErrorBoundary
       fallbackRender={({ error }) => (
