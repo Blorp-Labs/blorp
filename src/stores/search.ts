@@ -49,7 +49,7 @@ export const useSearchStore = create<RecentCommunityStore>()(
       },
     }),
     {
-      name: "recent-communities",
+      name: "search",
       storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 1,
       migrate: (state) => {
