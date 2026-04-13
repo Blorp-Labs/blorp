@@ -4,6 +4,7 @@ import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 import _ from "lodash";
 import { env } from "../env";
+import z from "zod";
 
 export type PostCardStyle = "small" | "large" | "extra-small";
 
@@ -50,7 +51,7 @@ export const POST_CARD_STYLE_OPTIONS: {
   },
 ];
 
-export type ThresholdSetting = "account" | -5 | -10 | -15 | -20;
+export type ThresholdSetting = "account" | number;
 export const THRESHOLD_OPTIONS: ThresholdSetting[] = [
   "account",
   -5,
@@ -70,55 +71,64 @@ export const SHARE_LINK_TYPE_OPTIONS: {
   { value: "instance", label: "My Instance" },
 ];
 
+const persistedSchema = z.object({
+  postCardStyle: z.enum(["small", "large", "extra-small"]),
+  leftHandedMode: z.boolean(),
+  reduceMotion: z.boolean(),
+  disableHaptics: z.boolean(),
+  showMarkdown: z.boolean(),
+  hideRead: z.boolean(),
+  hideBotPosts: z.boolean(),
+  shareLinkType: z.enum(["blorp", "instance", "threadiverse.link"]).nullable(),
+  filterKeywords: z.array(z.string()),
+  paginationMode: z.enum(["infinite", "pages"]),
+  darkMode: z.enum(["system", "dark", "light"]),
+  nsfwPreviouslyEnabled: z.boolean(),
+  contentWarningAccepted: z.boolean(),
+  voteDisplaySetting: z.enum([
+    "account",
+    "none",
+    "score",
+    "upvotes",
+    "downvotes",
+  ]),
+  collapseThresholdSetting: z.union([z.literal("account"), z.number()]),
+  hideThresholdSetting: z.union([z.literal("account"), z.number()]),
+  collapseRemovedComments: z.boolean(),
+  lightTheme: z.enum(["default-light", "dracula-light"]),
+  darkTheme: z.enum(["default-dark", "dracula-dark"]),
+});
+
 type SettingsStore = {
-  postCardStyle: PostCardStyle;
   setPostCardStyle: (newVal: PostCardStyle) => any;
-  leftHandedMode: boolean;
   setLeftHandedMode: (newVal: boolean) => any;
-  reduceMotion: boolean;
   setReduceMotion: (newVal: boolean) => any;
-  disableHaptics: boolean;
   setDisableHaptics: (newVal: boolean) => any;
-  showMarkdown: boolean;
   setShowMarkdown: (newVal: boolean) => any;
-  hideRead: boolean;
   setHideRead: (newVal: boolean) => any;
-  hideBotPosts: boolean;
   setHideBotPosts: (newVal: boolean) => any;
-  shareLinkType: ShareLinkType | null;
   setShareLinkType: (newVal: ShareLinkType) => any;
-  filterKeywords: string[];
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
-  paginationMode: "infinite" | "pages";
   setPaginationMode: (mode: "infinite" | "pages") => void;
-  darkMode: DarkMode;
   setDarkMode: (mode: DarkMode) => void;
   // App stores (e.g. iOS) may prohibit showing NSFW settings by default.
   // We track whether any account ever had NSFW enabled so users can
   // re-enable it in-app after turning it off, without needing to go to
   // the web interface. The flag is set automatically when getSite() finds
   // an account with showNsfw=true, and is never cleared programmatically.
-  nsfwPreviouslyEnabled: boolean;
   setNsfwPreviouslyEnabled: (value: boolean) => void;
-  contentWarningAccepted: boolean;
   setContentWarningAccepted: (value: boolean) => void;
-  voteDisplaySetting: VoteDisplaySetting;
   setVoteDisplaySetting: (newVal: VoteDisplaySetting) => void;
-  collapseThresholdSetting: ThresholdSetting;
   setCollapseThresholdSetting: (newVal: ThresholdSetting) => void;
-  hideThresholdSetting: ThresholdSetting;
   setHideThresholdSetting: (newVal: ThresholdSetting) => void;
-  collapseRemovedComments: boolean;
   setCollapseRemovedComments: (newVal: boolean) => void;
-  lightTheme: LightTheme;
   setLightTheme: (newVal: LightTheme) => void;
-  darkTheme: DarkTheme;
   setDarkTheme: (newVal: DarkTheme) => void;
   reset: () => void;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   postCardStyle: "large",
   leftHandedMode: false,
   reduceMotion: false,
@@ -138,7 +148,7 @@ const INIT_STATE = {
   collapseRemovedComments: true,
   lightTheme: "default-light",
   darkTheme: "default-dark",
-} satisfies Partial<SettingsStore>;
+};
 
 function pruneFilterKeywords(keywords: string[]) {
   return _.uniq(keywords.filter(Boolean));
@@ -190,8 +200,11 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: "settings",
-      storage: createStorage<SettingsStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 1,
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<SettingsStore>;
         return {
