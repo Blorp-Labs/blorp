@@ -39,12 +39,29 @@ export const zustandPersistMigrate = {
     },
   },
   create(context) {
+    // Track which local names refer to `persist` imported from zustand/middleware.
+    // This prevents false positives when other libraries export a function also
+    // named `persist` (e.g. a caching lib, an ORM, etc.).
+    const zustandPersistNames = new Set();
+
     return {
+      ImportDeclaration(node) {
+        if (node.source.value !== "zustand/middleware") return;
+        for (const specifier of node.specifiers) {
+          if (
+            specifier.type === "ImportSpecifier" &&
+            specifier.imported.name === "persist"
+          ) {
+            zustandPersistNames.add(specifier.local.name);
+          }
+        }
+      },
+
       CallExpression(node) {
-        // Only care about calls named `persist`
+        // Only care about calls that resolve to zustand's `persist`
         if (
           node.callee.type !== "Identifier" ||
-          node.callee.name !== "persist"
+          !zustandPersistNames.has(node.callee.name)
         ) {
           return;
         }
