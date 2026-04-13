@@ -21,8 +21,11 @@ const cachedFeedSchema = z.object({
 type Data = z.infer<typeof cachedFeedSchema>["data"];
 type CachedFeed = z.infer<typeof cachedFeedSchema>;
 
+const persistedSchema = z.object({
+  feeds: z.record(z.string(), cachedFeedSchema),
+});
+
 type FeedStore = {
-  feeds: Record<string, CachedFeed>;
   patchFeed: (
     id: string,
     prefix: CachePrefixer,
@@ -34,9 +37,9 @@ type FeedStore = {
   ) => Record<string, CachedFeed>;
   cleanup: () => void;
   reset: () => any;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   feeds: {},
 };
 
@@ -142,12 +145,15 @@ export const useMultiCommunityFeedStore = create<FeedStore>()(
     }),
     {
       name: "multi-community-feeds",
-      storage: createStorage<FeedStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const persisted = p as Partial<FeedStore>;

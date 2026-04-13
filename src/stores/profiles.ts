@@ -16,8 +16,11 @@ const cachedProfileSchema = z.object({
 
 type CachedProfile = z.infer<typeof cachedProfileSchema>;
 
+const persistedSchema = z.object({
+  profiles: z.record(z.string(), cachedProfileSchema),
+});
+
 type ProfilesStore = {
-  profiles: Record<CacheKey, CachedProfile>;
   patchProfile: (
     id: string,
     prefixer: CachePrefixer,
@@ -29,9 +32,9 @@ type ProfilesStore = {
   ) => Record<string, CachedProfile>;
   cleanup: () => void;
   reset: () => void;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   profiles: {} satisfies Record<CacheKey, CachedProfile>,
 };
 
@@ -118,12 +121,15 @@ export const useProfilesStore = create<ProfilesStore>()(
     }),
     {
       name: "profiles",
-      storage: createStorage<ProfilesStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const persisted = p as Partial<ProfilesStore>;

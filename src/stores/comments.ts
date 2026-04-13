@@ -21,8 +21,11 @@ type CachedComment = z.infer<typeof cachedCommentSchema>;
 
 type CommentPath = Schemas.Comment["path"];
 
-type SortsStore = {
-  comments: Record<CommentPath, CachedComment>;
+const persistedSchema = z.object({
+  comments: z.record(z.string(), cachedCommentSchema),
+});
+
+type CommentsStore = {
   patchComment: (
     path: CommentPath,
     prefix: CachePrefixer,
@@ -35,13 +38,13 @@ type SortsStore = {
   markCommentForRemoval: (path: string, prefix: CachePrefixer) => void;
   cleanup: () => void;
   reset: () => void;
+} & z.infer<typeof persistedSchema>;
+
+const INIT_STATE: z.infer<typeof persistedSchema> = {
+  comments: {},
 };
 
-const INIT_STATE = {
-  comments: {} satisfies Record<CommentPath, CachedComment>,
-};
-
-export const useCommentsStore = create<SortsStore>()(
+export const useCommentsStore = create<CommentsStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
@@ -134,15 +137,18 @@ export const useCommentsStore = create<SortsStore>()(
     }),
     {
       name: "comments",
-      storage: createStorage<SortsStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 3,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
       },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
       merge: (p: any, current) => {
-        const persisted = p as Partial<SortsStore>;
+        const persisted = p as Partial<CommentsStore>;
         return {
           ...current,
           ...persisted,
@@ -151,7 +157,7 @@ export const useCommentsStore = create<SortsStore>()(
             persisted.comments,
             cachedCommentSchema,
           ),
-        } satisfies SortsStore;
+        } satisfies CommentsStore;
       },
     },
   ),

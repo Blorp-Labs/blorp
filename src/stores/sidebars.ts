@@ -2,45 +2,49 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage } from "./storage";
 import { isTest } from "../lib/device";
+import z from "zod";
+
+const persistedSchema = z.object({
+  mainSidebarCollapsed: z.boolean(),
+  mainSidebarRecent: z.boolean(),
+  mainSidebarSubscribed: z.boolean(),
+  mainSidebarModerating: z.boolean(),
+  siteAboutExpanded: z.boolean(),
+  siteAdminsExpanded: z.boolean(),
+  communityAboutExpanded: z.boolean(),
+  communityFlairsExpanded: z.boolean(),
+  communityModsExpanded: z.boolean(),
+  personBioExpanded: z.boolean(),
+  recentSearchesExpanded: z.boolean(),
+});
 
 type SidebarStore = {
   // Main (left) sidebar
-  mainSidebarCollapsed: boolean;
   setMainSidebarCollapsed: (val: boolean) => void;
 
-  mainSidebarRecent: boolean;
   setMainSidebarRecent: (val: boolean) => void;
-  mainSidebarSubscribed: boolean;
   setMainSidebarSubscribed: (val: boolean) => void;
-  mainSidebarModerating: boolean;
   setMainSidebarModerating: (val: boolean) => void;
 
   // Site sidebar
-  siteAboutExpanded: boolean;
   setSiteAboutExpanded: (val: boolean) => void;
-  siteAdminsExpanded: boolean;
   setSiteAdminsExpanded: (val: boolean) => void;
 
   // Community sidebar
-  communityAboutExpanded: boolean;
   setCommunityAboutExpanded: (val: boolean) => void;
-  communityFlairsExpanded: boolean;
   setCommunityFlairsExpanded: (val: boolean) => void;
-  communityModsExpanded: boolean;
   setCommunityModsExpanded: (val: boolean) => void;
 
   // User sidebar
-  personBioExpanded: boolean;
   setPersonBioExpanded: (val: boolean) => void;
 
   // Search
-  recentSearchesExpanded: boolean;
   setRecentSearchesExpanded: (val: boolean) => void;
 
   reset: () => void;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   mainSidebarCollapsed: false,
   mainSidebarRecent: true,
   mainSidebarSubscribed: true,
@@ -96,8 +100,11 @@ export const useSidebarStore = create<SidebarStore>()(
     }),
     {
       name: "sidebar",
-      storage: createStorage<SidebarStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 1,
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
     },
   ),
 );
