@@ -259,7 +259,6 @@ export function migrateCreatePostStore(
 }
 
 export const useCreatePostStore = create<CreatePostStore>()(
-  // eslint-disable-next-line local/zustand-persist-migrate -- todo
   persist(
     (set) => ({
       ...INIT_STATE,
@@ -330,6 +329,9 @@ export const useCreatePostStore = create<CreatePostStore>()(
             alreadyClean = true;
           }
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const migrated = migrateCreatePostStore(p ?? {});

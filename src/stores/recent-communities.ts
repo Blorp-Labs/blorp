@@ -55,7 +55,6 @@ export function migrateRecentCommunities(
 }
 
 export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
-  // eslint-disable-next-line local/zustand-persist-migrate -- todo
   persist(
     (set, get) => ({
       ...INIT_STATE,
@@ -75,6 +74,9 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
       name: "recent-communities",
       storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 1,
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
       merge: (p: any, current) => {
         const migrated = migrateRecentCommunities(p ?? {});
         return {
