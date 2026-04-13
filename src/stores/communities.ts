@@ -20,11 +20,14 @@ const cachedCommunitySchema = z.object({
   lastUsed: z.number(),
 });
 
+const persistedSchema = z.object({
+  communities: z.record(z.string(), cachedCommunitySchema),
+});
+
 type Data = z.infer<typeof cachedCommunitySchema>["data"];
 type CachedCommunity = z.infer<typeof cachedCommunitySchema>;
 
 type CommunityStore = {
-  communities: Record<string, CachedCommunity>;
   patchCommunity: (
     id: string,
     prefix: CachePrefixer,
@@ -40,9 +43,9 @@ type CommunityStore = {
   ) => Record<string, CachedCommunity>;
   cleanup: () => void;
   reset: () => any;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   communities: {},
 };
 
@@ -171,12 +174,15 @@ export const useCommunitiesStore = create<CommunityStore>()(
     }),
     {
       name: "communities",
-      storage: createStorage<CommunityStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const persisted = p as Partial<CommunityStore>;

@@ -19,17 +19,20 @@ const cachedFlairSchema = z.object({
 type Data = Schemas.Flair;
 type CachedFlair = z.infer<typeof cachedFlairSchema>;
 
+const persistedSchema = z.object({
+  flairs: z.record(z.string(), cachedFlairSchema),
+});
+
 type FlairStore = {
-  flairs: Record<string, CachedFlair>;
   cacheFlairs: (
     prefix: CachePrefixer,
     data: Data[],
   ) => Record<string, CachedFlair>;
   cleanup: () => any;
   reset: () => any;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   flairs: {},
 };
 
@@ -90,12 +93,15 @@ export const useFlairsStore = create<FlairStore>()(
     }),
     {
       name: "flairs",
-      storage: createStorage<FlairStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 2,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const persisted = p as Partial<FlairStore>;

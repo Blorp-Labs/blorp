@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { isTest } from "../lib/device";
+import z from "zod";
 
 type RecentCommunityStore = {
   searchHistory: string[];
@@ -11,9 +12,13 @@ type RecentCommunityStore = {
   reset: () => void;
 };
 
+const persistedSchema = z.object({
+  searchHistory: z.array(z.string()),
+});
+
 export const MAX_SAVED = 100;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   searchHistory: [],
 };
 
@@ -45,8 +50,11 @@ export const useSearchStore = create<RecentCommunityStore>()(
     }),
     {
       name: "recent-communities",
-      storage: createStorage<RecentCommunityStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 1,
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<RecentCommunityStore>;
         return {

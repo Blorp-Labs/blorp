@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
-import { CacheKey, CachePrefixer, useAuth } from "./auth";
+import { CachePrefixer, useAuth } from "./auth";
 import { Schemas, postSchema } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import z from "zod";
@@ -16,8 +16,11 @@ const cachedPostSchema = z.object({
 
 type CachedPost = z.infer<typeof cachedPostSchema>;
 
+const persistedSchema = z.object({
+  posts: z.record(z.string(), cachedPostSchema),
+});
+
 type SortsStore = {
-  posts: Record<CacheKey, CachedPost>;
   patchPost: (
     id: Schemas.Post["apId"],
     prefix: CachePrefixer,
@@ -29,9 +32,9 @@ type SortsStore = {
   ) => Record<string, CachedPost>;
   cleanup: () => void;
   reset: () => void;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
+const INIT_STATE: z.infer<typeof persistedSchema> = {
   posts: {},
 };
 
@@ -124,12 +127,15 @@ export const usePostsStore = create<SortsStore>()(
     }),
     {
       name: "posts",
-      storage: createStorage<SortsStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 6,
       onRehydrateStorage: () => {
         return (state) => {
           state?.cleanup();
         };
+      },
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
       },
       merge: (p: any, current) => {
         const persisted = p as Partial<SortsStore>;
