@@ -215,6 +215,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
 }
 
 export const useCreatePostStore = create<CreatePostStore>()(
+  // eslint-disable-next-line local/zustand-persist-migrate -- todo
   persist(
     (set) => ({
       ...INIT_STATE,

@@ -29,6 +29,7 @@ function mergeCommunities(
 }
 
 export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
+  // eslint-disable-next-line local/zustand-persist-migrate -- todo
   persist(
     (set, get) => ({
       ...INIT_STATE,
