@@ -3,7 +3,7 @@
 exports[`persisted state snapshot > filters store initial shape 1`] = `
 {
   "commentSort": "Hot",
-  "communitiesListingType": "ModeratorView",
+  "communitiesListingType": "All",
   "communitySort": "TopAll",
   "listingType": "All",
   "postSort": "Active",

@@ -11,18 +11,18 @@ const tester = new RuleTester({
 
 tester.run("zustand-persist-migrate", zustandPersistMigrate, {
   valid: [
-    // version: 0 is exempt — nothing to migrate from
+    // no version key but migrate present — compliant
     {
       code: `
         import { persist } from "zustand/middleware";
-        persist(creator, { name: "store", version: 0 });
+        persist(creator, { name: "store", migrate: (s) => s });
       `,
     },
-    // no version key — rule doesn't apply
+    // version 0 with migrate — compliant
     {
       code: `
         import { persist } from "zustand/middleware";
-        persist(creator, { name: "store" });
+        persist(creator, { name: "store", version: 0, migrate: (s) => s });
       `,
     },
     // version > 0 with a migrate function — compliant
@@ -50,15 +50,29 @@ tester.run("zustand-persist-migrate", zustandPersistMigrate, {
   ],
 
   invalid: [
+    // no version key and no migrate
+    {
+      code: `
+        import { persist } from "zustand/middleware";
+        persist(creator, { name: "my-store" });
+      `,
+      errors: [{ messageId: "missingMigrate", data: { name: "my-store" } }],
+    },
+    // version: 0 with no migrate — rollback from a higher version still needs it
+    {
+      code: `
+        import { persist } from "zustand/middleware";
+        persist(creator, { name: "my-store", version: 0 });
+      `,
+      errors: [{ messageId: "missingMigrate", data: { name: "my-store" } }],
+    },
     // version: 1 with no migrate
     {
       code: `
         import { persist } from "zustand/middleware";
         persist(creator, { name: "my-store", version: 1 });
       `,
-      errors: [
-        { messageId: "missingMigrate", data: { name: "my-store", version: 1 } },
-      ],
+      errors: [{ messageId: "missingMigrate", data: { name: "my-store" } }],
     },
     // version: 6 with no migrate (higher version)
     {
@@ -66,9 +80,7 @@ tester.run("zustand-persist-migrate", zustandPersistMigrate, {
         import { persist } from "zustand/middleware";
         persist(creator, { name: "posts", version: 6 });
       `,
-      errors: [
-        { messageId: "missingMigrate", data: { name: "posts", version: 6 } },
-      ],
+      errors: [{ messageId: "missingMigrate", data: { name: "posts" } }],
     },
     // renamed import without migrate — rename is tracked and should still be caught
     {
@@ -76,9 +88,7 @@ tester.run("zustand-persist-migrate", zustandPersistMigrate, {
         import { persist as zustandPersist } from "zustand/middleware";
         zustandPersist(creator, { name: "store", version: 2 });
       `,
-      errors: [
-        { messageId: "missingMigrate", data: { name: "store", version: 2 } },
-      ],
+      errors: [{ messageId: "missingMigrate", data: { name: "store" } }],
     },
     // unknown store name falls back to <unknown> in the message
     {
@@ -86,12 +96,7 @@ tester.run("zustand-persist-migrate", zustandPersistMigrate, {
         import { persist } from "zustand/middleware";
         persist(creator, { version: 1 });
       `,
-      errors: [
-        {
-          messageId: "missingMigrate",
-          data: { name: "<unknown>", version: 1 },
-        },
-      ],
+      errors: [{ messageId: "missingMigrate", data: { name: "<unknown>" } }],
     },
   ],
 });

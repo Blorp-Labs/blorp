@@ -5,14 +5,17 @@ import z from "zod";
 import { isTest } from "../lib/device";
 import { mergeCacheObject } from "./utils";
 
+const persistedSchema = z.object({
+  userTags: z.record(z.string(), z.string()),
+});
+
 type InboxStore = {
-  userTags: Record<string, string>;
   setUserTag: (userSlug: string, tag: string) => any;
   reset: () => void;
-};
+} & z.infer<typeof persistedSchema>;
 
-const INIT_STATE = {
-  userTags: {} satisfies Record<string, string>,
+const INIT_STATE: z.infer<typeof persistedSchema> = {
+  userTags: {},
 };
 
 export const useTagUserStore = create<InboxStore>()(
@@ -42,8 +45,11 @@ export const useTagUserStore = create<InboxStore>()(
     }),
     {
       name: "user-tags",
-      storage: createStorage<InboxStore>(),
+      storage: createStorage<z.infer<typeof persistedSchema>>(),
       version: 0,
+      migrate: (state) => {
+        return persistedSchema.passthrough().parse(state);
+      },
       merge: (p: any, current) => {
         const persisted = p as Partial<InboxStore>;
         return {

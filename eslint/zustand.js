@@ -1,41 +1,45 @@
 // Custom ESLint rule for enforcing safe usage of Zustand's persist middleware.
 //
-//   zustand-persist-migrate — persist stores with version > 0 must define a migrate function
+//   zustand-persist-migrate — every persist store must define a migrate function
 //
-// Zustand's persist middleware stores a version number alongside the serialized state.
-// When the version bumps, Zustand calls the `migrate` function to transform old state
-// into the new shape. Without it, Zustand silently discards the stored data (or worse,
-// passes incompatible state to the store). Every time you bump `version`, you must also
-// provide a `migrate` function that handles all prior versions.
+// The purpose of migrate here is not step-by-step schema transformation — it is
+// defensive rollback protection. If a user ran a newer version of the app and then
+// downgraded, Zustand will load state written by the newer version. Without migrate,
+// Zustand silently discards that state. With migrate (using passthrough().parse()),
+// known fields are validated and unknown fields from the newer schema are kept harmlessly.
 
 /**
  * Rule: zustand-persist-migrate
  *
- * Requires a `migrate` function whenever a Zustand persist store declares `version > 0`.
- * Version 0 is the initial state — there is nothing to migrate from yet — so it is exempt.
+ * Requires a `migrate` function on every Zustand persist store, regardless of version.
+ * Purpose: rollback protection — if a user ran a newer app version and downgraded, Zustand
+ * will encounter state written by the newer version. Without migrate, it discards it silently.
  *
  * @example
- * // ✅ OK — version 0 has no prior versions to migrate from
+ * // ✅ OK
+ * persist(creator, { name: "store", migrate: (state) => schema.passthrough().parse(state) })
+ *
+ * // ✅ OK
+ * persist(creator, { name: "store", version: 2, migrate: (state) => schema.passthrough().parse(state) })
+ *
+ * // ❌ Error — no migrate function
  * persist(creator, { name: "store", version: 0 })
  *
- * // ✅ OK — migration function is provided
- * persist(creator, { name: "store", version: 2, migrate: (state, from) => { ... } })
- *
- * // ❌ Error — version bumped without a migrate function
- * persist(creator, { name: "store", version: 2 })
+ * // ❌ Error — no migrate function even without a version key
+ * persist(creator, { name: "store" })
  */
 export const zustandPersistMigrate = {
   meta: {
     type: "problem",
     docs: {
       description:
-        'Zustand persist stores with version > 0 must define a "migrate" function',
+        'Every Zustand persist store must define a "migrate" function',
     },
     messages: {
       missingMigrate:
-        'persist store "{{name}}" is at version {{version}} but has no "migrate" function. ' +
-        "Add a migrate function that transforms stored state from each prior version into the current shape. " +
-        "Without it, Zustand will silently discard any data stored by older versions of the app.",
+        'persist store "{{name}}" has no "migrate" function. ' +
+        "Add a migrate function (e.g. persistedSchema.passthrough().parse(state)) so that state " +
+        "written by a newer app version survives a rollback instead of being silently discarded.",
     },
   },
   create(context) {
@@ -76,16 +80,18 @@ export const zustandPersistMigrate = {
           (p) => p.type === "Property" && p.key.type === "Identifier",
         );
 
-        // Require a numeric version > 0 to trigger the rule
+        // Every persist store needs migrate — even without an explicit version
+        // key, or at version 0. A user who ran a newer version and then rolled
+        // back will have state written by that newer version, and without
+        // migrate Zustand discards it on load.
+        //
+        // Skip only if version is explicitly a non-numeric value (dynamic),
+        // since we can't statically reason about that case.
         const versionProp = properties.find((p) => p.key.name === "version");
-        if (!versionProp) {
-          return;
-        }
-        const versionValue = versionProp.value;
         if (
-          versionValue.type !== "Literal" ||
-          typeof versionValue.value !== "number" ||
-          versionValue.value <= 0
+          versionProp &&
+          (versionProp.value.type !== "Literal" ||
+            typeof versionProp.value.value !== "number")
         ) {
           return;
         }
@@ -107,7 +113,7 @@ export const zustandPersistMigrate = {
         context.report({
           node,
           messageId: "missingMigrate",
-          data: { name: storeName, version: versionValue.value },
+          data: { name: storeName },
         });
       },
     };
