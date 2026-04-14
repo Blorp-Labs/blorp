@@ -89,6 +89,86 @@ const POLL_UNIT_OPTIONS: {
 
 const EMPTY_ARR: never[] = [];
 
+function DraftCard({
+  draft,
+  draftKey: key,
+  onClickDraft,
+  isActive,
+}: {
+  draft: Draft;
+  draftKey: string;
+  onClickDraft: () => void;
+  isActive: boolean;
+}) {
+  const draftIdParam = useDraftIdUrlParam();
+  const state = useDraftEditorState();
+  const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
+  const [alrt] = useIonAlert();
+  const slug = draft.communitySlug;
+  return (
+    <div className="relative">
+      <Link
+        to="/create_post"
+        searchParams={`?id=${key}`}
+        className={cn(
+          "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
+          isActive && "border-brand border-dashed bg-brand/20",
+        )}
+        onClick={onClickDraft}
+      >
+        <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
+          <RelativeTime time={draft.createdAt} />
+          {slug && (
+            <>
+              <span>•</span>
+              <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
+                {slug}
+              </span>
+            </>
+          )}
+        </div>
+        <span
+          className={cn(
+            "font-medium line-clamp-1 break-words",
+            !draft.title && "italic",
+          )}
+        >
+          {draft.title || "Untitled"}
+        </span>
+      </Link>
+      <button
+        className="absolute top-2 right-2 text-destructive text-xl"
+        onClick={async () => {
+          try {
+            const deferred = new Deferred();
+            alrt({
+              message: "Delete draft",
+              buttons: [
+                {
+                  text: "Cancel",
+                  role: "cancel",
+                  handler: () => deferred.reject(),
+                },
+                {
+                  text: "OK",
+                  role: "confirm",
+                  handler: () => deferred.resolve(),
+                },
+              ],
+            });
+            await deferred.promise;
+            deleteDraft(key);
+            state.reset();
+            draftIdParam.remove();
+          } catch {}
+        }}
+      >
+        <MdDelete />
+      </button>
+    </div>
+  );
+}
+
 function DraftsSidebar({
   createPostId,
   onClickDraft,
@@ -96,10 +176,7 @@ function DraftsSidebar({
   createPostId: string;
   onClickDraft: () => void;
 }) {
-  const [alrt] = useIonAlert();
   const drafts = useCreatePostStore((s) => s.drafts);
-  const draftIdParam = useDraftIdUrlParam();
-  const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
   const state = useDraftEditorState();
   return (
     <div className="flex flex-col gap-3">
@@ -115,76 +192,25 @@ function DraftsSidebar({
           </Link>
         </Button>
       </div>
+      {state.isInitState && (
+        <DraftCard
+          draftKey={state.draftId}
+          draft={state.draft}
+          onClickDraft={onClickDraft}
+          isActive
+        />
+      )}
+      INIT END
       {_.entries(drafts)
         .sort(([_a, a], [_b, b]) => b.createdAt - a.createdAt)
-        .map(([key, draft]) => {
-          const slug = draft.communitySlug;
-          return (
-            <div key={key} className="relative">
-              <Link
-                to="/create_post"
-                searchParams={`?id=${key}`}
-                className={cn(
-                  "bg-background border px-3 py-2 gap-1 rounded-lg flex flex-col",
-                  createPostId === key &&
-                    "border-brand border-dashed bg-brand/20",
-                )}
-                onClick={onClickDraft}
-              >
-                <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
-                  <RelativeTime time={draft.createdAt} />
-                  {slug && (
-                    <>
-                      <span>•</span>
-                      <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
-                        {slug}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    "font-medium line-clamp-1 break-words",
-                    !draft.title && "italic",
-                  )}
-                >
-                  {draft.title || "Untitled"}
-                </span>
-              </Link>
-              <button
-                className="absolute top-2 right-2 text-destructive text-xl"
-                onClick={async () => {
-                  try {
-                    const deferred = new Deferred();
-                    alrt({
-                      message: "Delete draft",
-                      buttons: [
-                        {
-                          text: "Cancel",
-                          role: "cancel",
-                          handler: () => deferred.reject(),
-                        },
-                        {
-                          text: "OK",
-                          role: "confirm",
-                          handler: () => deferred.resolve(),
-                        },
-                      ],
-                    });
-                    await deferred.promise;
-                    state.reset();
-                    deleteDraft(key);
-                    if (key === draftIdParam.value) {
-                      draftIdParam.remove();
-                    }
-                  } catch {}
-                }}
-              >
-                <MdDelete />
-              </button>
-            </div>
-          );
-        })}
+        .map(([key, draft]) => (
+          <DraftCard
+            draftKey={key}
+            draft={draft}
+            isActive={createPostId === key}
+            onClickDraft={onClickDraft}
+          />
+        ))}
     </div>
   );
 }

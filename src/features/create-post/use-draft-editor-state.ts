@@ -1,15 +1,18 @@
-import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import _ from "lodash";
 import z from "zod";
-import {
-  Draft,
-  isEmptyDraft,
-  newDraft,
-  useCreatePostStore,
-} from "../../stores/create-post";
+import { Draft, newDraft, useCreatePostStore } from "../../stores/create-post";
 import { useUrlSearchState } from "../../hooks";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { create } from "zustand";
+
+const useFallbackUuid = create<{
+  uuid: string;
+  reset: () => void;
+}>((set) => ({
+  uuid: uuid(),
+  reset: () => set({ uuid: uuid() }),
+}));
 
 export function useDraftIdUrlParam() {
   return useUrlSearchState("id", null, z.string().uuid().nullable());
@@ -74,7 +77,7 @@ export function useDraftFromUrl() {
 }
 
 export function useDraftEditorState() {
-  const [fallbackUuid, setFallbackUuid] = useState(uuid());
+  const fallbackUuid = useFallbackUuid();
 
   const initDraft = useDraftFromUrl();
   const draftIdParam = useDraftIdUrlParam();
@@ -84,26 +87,37 @@ export function useDraftEditorState() {
       return draftIdParam.value;
     }
 
-    if (!isEmptyDraft(initDraft.draft)) {
-      return fallbackUuid;
-    }
+    // if (!isEmptyDraft(initDraft.draft)) {
+    //   return fallbackUuid.uuid;
+    // }
 
     const [firstKey] = _.entries(s.drafts).sort(
       ([_a, a], [_b, b]) => b.createdAt - a.createdAt,
     );
 
-    return firstKey?.[0] ?? fallbackUuid;
+    return firstKey?.[0] ?? fallbackUuid.uuid;
   });
 
-  const draft =
-    useCreatePostStore((s) => {
-      return s.drafts[draftId];
-    }) ?? initDraft.draft;
+  const draftFromStore = useCreatePostStore((s) => {
+    return s.drafts[draftId];
+  });
+  const draft = draftFromStore ?? initDraft.draft;
 
   const _patchDraft = useCreatePostStore((s) => s.updateDraft);
   const patchDraft = (key: string, patch: Partial<Draft>) => {
+    const patchKeys = _.keys(patch);
+    if (
+      patchKeys.length === 1 &&
+      patchKeys[0] === "body" &&
+      !draft.body &&
+      !patch.body
+    ) {
+      // THIS IS A HACK
+      // This ignored the empty body our markdown render fires on init load
+      return;
+    }
     _patchDraft(key, {
-      ...initDraft.draft,
+      ...draft,
       ...patch,
     });
     initDraft.reset();
@@ -112,10 +126,11 @@ export function useDraftEditorState() {
   return {
     draftId,
     draft,
+    isInitState: !draftFromStore,
     patchDraft,
     reset: () => {
       initDraft.reset();
-      setFallbackUuid(uuid());
+      fallbackUuid.reset();
     },
   };
 }
