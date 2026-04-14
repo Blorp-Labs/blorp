@@ -98,6 +98,7 @@ function DraftsSidebar({
 }) {
   const [alrt] = useIonAlert();
   const drafts = useCreatePostStore((s) => s.drafts);
+  const draftIdParam = useDraftIdUrlParam();
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
   return (
     <div className="flex flex-col gap-3">
@@ -171,6 +172,9 @@ function DraftsSidebar({
                     });
                     await deferred.promise;
                     deleteDraft(key);
+                    if (key === draftIdParam.value) {
+                      draftIdParam.remove();
+                    }
                   } catch {}
                 }}
               >
@@ -278,14 +282,18 @@ const DEFAULT_POLL: Forms.PollInput = {
   ],
 };
 
+function useDraftIdUrlParam() {
+  return useUrlSearchState("id", null, z.string().uuid().nullable());
+}
+
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
 
   const [fallbackUuid, setFallbackUuid] = useState(uuid());
-  const draftIdParam = useUrlSearchState("id", null, z.string().nullable());
+  const draftIdParam = useDraftIdUrlParam();
   const draftId = useCreatePostStore((s) => {
-    if (_.isString(draftIdParam.value) && draftIdParam.value in s.drafts) {
+    if (_.isString(draftIdParam.value)) {
       return draftIdParam.value;
     }
     const [firstKey] = _.entries(s.drafts).sort(
