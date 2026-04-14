@@ -32,10 +32,12 @@ const INIT_STATE = {
   drafts: {} satisfies Record<string, Draft>,
 };
 
-export const NEW_DRAFT: Draft = {
-  type: "text",
-  createdAt: Date.now(),
-};
+export function newDraft(): Draft {
+  return {
+    type: "text",
+    createdAt: Date.now(),
+  };
+}
 
 export function isEmptyDraft(draft: Draft) {
   const fields = _.omit(draft, [
@@ -222,7 +224,7 @@ export const useCreatePostStore = create<CreatePostStore>()(
       updateDraft: (key, patch) => {
         set((prev) => {
           const drafts = { ...prev.drafts };
-          const prevDraft = drafts[key] ?? NEW_DRAFT;
+          const prevDraft = drafts[key] ?? newDraft();
           drafts[key] = {
             ...prevDraft,
             ...patch,
@@ -259,7 +261,6 @@ export const useCreatePostStore = create<CreatePostStore>()(
         set((prev) => {
           const drafts = { ...prev.drafts };
           for (const key in drafts) {
-            console.log(drafts[key], drafts[key] && isEmptyDraft(drafts[key]));
             if (drafts[key] && isEmptyDraft(drafts[key])) {
               delete drafts[key];
             }

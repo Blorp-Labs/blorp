@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
-  NEW_DRAFT,
+  newDraft,
   useCreatePostStore,
   useFlairLookup,
 } from "../stores/create-post";
@@ -204,13 +204,7 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
   }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
 }
 
-function useDraftFromUrl({
-  draft,
-  patchDraft,
-}: {
-  draft: Draft;
-  patchDraft: (key: string, patch: Partial<Draft>) => void;
-}) {
+function useDraftFromUrl() {
   const titleParam = useUrlSearchState("title", "", z.string());
   const urlParam = useUrlSearchState("url", "", z.string());
   const bodyParam = useUrlSearchState("body", "", z.string());
@@ -231,45 +225,34 @@ function useDraftFromUrl({
   const url = urlParam.value;
   const body = bodyParam.value;
   const nsfw = nsfwParam.value;
-  const removeTitle = titleParam.remove;
-  const removeUrl = urlParam.remove;
-  const removeBody = bodyParam.remove;
-  const removeNsfw = nsfwParam.remove;
 
-  useEffect(() => {
-    let commit = _.noop;
-    if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
-      const updateDraft: Partial<Draft> = {};
-      if (title) {
-        updateDraft.title = title;
-      }
-      if (url) {
-        updateDraft.url = url;
-        updateDraft.type = "link";
-      }
-      if (body) {
-        updateDraft.body = body;
-      }
-      if (nsfw === "1" || nsfw === "true") {
-        updateDraft.nsfw = true;
-      }
-      commit = () => patchDraft(uuid(), updateDraft);
+  const draft = newDraft();
+
+  if (title || url || body || nsfw) {
+    if (title) {
+      draft.title = title;
     }
-    if (title || url || body || nsfw) {
-      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw, commit);
+    if (url) {
+      draft.url = url;
+      draft.type = "link";
     }
-  }, [
+    if (body) {
+      draft.body = body;
+    }
+    if (nsfw === "1" || nsfw === "true") {
+      draft.nsfw = true;
+    }
+  }
+
+  return {
     draft,
-    title,
-    url,
-    body,
-    nsfw,
-    removeTitle,
-    removeUrl,
-    removeBody,
-    removeNsfw,
-    patchDraft,
-  ]);
+    reset: () =>
+      titleParam
+        .remove()
+        .and(urlParam.remove)
+        .and(bodyParam.remove)
+        .and(nsfwParam.remove),
+  };
 }
 
 const DEFAULT_POLL: Forms.PollInput = {
@@ -287,13 +270,17 @@ function useDraftIdUrlParam() {
   return useUrlSearchState("id", null, z.string().uuid().nullable());
 }
 
-export function CreatePost() {
-  const [showDrafts, setShowDrafts] = useState(false);
-  const media = useMedia();
-
+function useDraftEditorState() {
   const [fallbackUuid, setFallbackUuid] = useState(uuid());
+
+  const initDraft = useDraftFromUrl();
   const draftIdParam = useDraftIdUrlParam();
+
   const draftId = useCreatePostStore((s) => {
+    if (!isEmptyDraft(initDraft.draft)) {
+      return fallbackUuid;
+    }
+
     if (_.isString(draftIdParam.value)) {
       return draftIdParam.value;
     }
@@ -303,10 +290,35 @@ export function CreatePost() {
 
     return firstKey?.[0] ?? fallbackUuid;
   });
+
   const draft =
     useCreatePostStore((s) => {
       return s.drafts[draftId];
-    }) ?? NEW_DRAFT;
+    }) ?? initDraft.draft;
+
+  const _patchDraft = useCreatePostStore((s) => s.updateDraft);
+  const patchDraft = (key: string, patch: Partial<Draft>) => {
+    _patchDraft(key, {
+      ...initDraft.draft,
+      ...patch,
+    });
+    initDraft.reset();
+  };
+
+  return {
+    draftId,
+    draft,
+    patchDraft,
+    reset: () => setFallbackUuid(uuid()),
+  };
+}
+
+export function CreatePost() {
+  const [showDrafts, setShowDrafts] = useState(false);
+  const media = useMedia();
+
+  const { draft, draftId, patchDraft, reset } = useDraftEditorState();
+
   const id = useId();
 
   useEffect(() => {
@@ -317,13 +329,7 @@ export function CreatePost() {
 
   const numDrafts = useCreatePostStore((s) => Object.keys(s.drafts).length);
   const isEdit = !!draft.apId;
-  const patchDraft = useCreatePostStore((s) => s.updateDraft);
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
-
-  useDraftFromUrl({
-    draft,
-    patchDraft,
-  });
 
   useLoadRecentCommunity(draftId, draft);
 
@@ -446,14 +452,13 @@ export function CreatePost() {
           if (draft.communitySlug) {
             const cleanup = () => {
               deleteDraft(draftId);
-              setFallbackUuid(uuid());
+              reset();
             };
             if (isEdit) {
               editPost.mutateAsync(draft).then(cleanup);
             } else {
               createPost.mutateAsync(draft).then(cleanup);
             }
-            setFallbackUuid(uuid());
           }
         } catch {
           // TODO: handle incomplete post data
@@ -861,8 +866,7 @@ function ChooseCommunity({
   const [search, setSearch] = useState("");
   const debouncedSetSearch = useCallback(_.debounce(setSearch, 500), []);
 
-  const draft = useCreatePostStore((s) => s.drafts[createPostId]) ?? NEW_DRAFT;
-  const patchDraft = useCreatePostStore((s) => s.updateDraft);
+  const { draft, patchDraft } = useDraftEditorState();
 
   const subscribedCommunitiesRes = useListCommunitiesQuery({
     type: "Subscribed",
