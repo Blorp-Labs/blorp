@@ -3,7 +3,6 @@ import { useRecentCommunitiesStore } from "../../stores/recent-communities";
 import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
-  isEmptyDraft,
   useCreatePostStore,
   useFlairLookup,
 } from "../../stores/create-post";
@@ -54,7 +53,6 @@ import { RelativeTime } from "../../components/relative-time";
 import { Deferred } from "../../lib/deferred";
 import { usePostFromStore } from "../../stores/posts";
 import { getAccountActorId, useAuth } from "../../stores/auth";
-import { usePathname } from "@/src/hooks/use-pathname";
 import { Sidebar, SidebarContent } from "../../components/sidebar";
 import {
   useCommunitiesFromStore,
@@ -102,6 +100,7 @@ function DraftsSidebar({
   const drafts = useCreatePostStore((s) => s.drafts);
   const draftIdParam = useDraftIdUrlParam();
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
+  const state = useDraftEditorState();
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-row justify-between items-center">
@@ -173,6 +172,7 @@ function DraftsSidebar({
                       ],
                     });
                     await deferred.promise;
+                    state.reset();
                     deleteDraft(key);
                     if (key === draftIdParam.value) {
                       draftIdParam.remove();
@@ -187,23 +187,6 @@ function DraftsSidebar({
         })}
     </div>
   );
-}
-
-function useLoadRecentCommunity(draftId: string, draft: Draft) {
-  const pathname = usePathname();
-  const isActive = pathname === "/create_post";
-  const isEmpty = isEmptyDraft(draft);
-  const mostRecentCommunity = useRecentCommunitiesStore(
-    (s) => s.recentlyVisited[0],
-  );
-  const patchDraft = useCreatePostStore((s) => s.updateDraft);
-  useEffect(() => {
-    if (isActive && isEmpty && mostRecentCommunity) {
-      patchDraft(draftId, {
-        communitySlug: mostRecentCommunity.slug,
-      });
-    }
-  }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
 }
 
 const DEFAULT_POLL: Forms.PollInput = {
@@ -234,8 +217,6 @@ export function CreatePost() {
   const numDrafts = useCreatePostStore((s) => Object.keys(s.drafts).length);
   const isEdit = !!draft.apId;
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
-
-  useLoadRecentCommunity(draftId, draft);
 
   useCommunityQuery({
     name: draft.communitySlug,

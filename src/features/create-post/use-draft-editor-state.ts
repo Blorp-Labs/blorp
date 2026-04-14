@@ -9,12 +9,18 @@ import {
   useCreatePostStore,
 } from "../../stores/create-post";
 import { useUrlSearchState } from "../../hooks";
+import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 
 export function useDraftIdUrlParam() {
   return useUrlSearchState("id", null, z.string().uuid().nullable());
 }
 
 export function useDraftFromUrl() {
+  const mostRecentCommunity = useRecentCommunitiesStore(
+    (s) => s.recentlyVisited[0],
+  );
+
+  const idUrlParam = useDraftIdUrlParam();
   const titleParam = useUrlSearchState("title", "", z.string());
   const urlParam = useUrlSearchState("url", "", z.string());
   const bodyParam = useUrlSearchState("body", "", z.string());
@@ -38,7 +44,7 @@ export function useDraftFromUrl() {
 
   const draft = newDraft();
 
-  if (title || url || body || nsfw) {
+  if (_.isNil(idUrlParam.value) && (title || url || body || nsfw)) {
     if (title) {
       draft.title = title;
     }
@@ -52,6 +58,8 @@ export function useDraftFromUrl() {
     if (nsfw === "1" || nsfw === "true") {
       draft.nsfw = true;
     }
+  } else {
+    draft.communitySlug = mostRecentCommunity?.slug;
   }
 
   return {
@@ -72,13 +80,14 @@ export function useDraftEditorState() {
   const draftIdParam = useDraftIdUrlParam();
 
   const draftId = useCreatePostStore((s) => {
+    if (_.isString(draftIdParam.value)) {
+      return draftIdParam.value;
+    }
+
     if (!isEmptyDraft(initDraft.draft)) {
       return fallbackUuid;
     }
 
-    if (_.isString(draftIdParam.value)) {
-      return draftIdParam.value;
-    }
     const [firstKey] = _.entries(s.drafts).sort(
       ([_a, a], [_b, b]) => b.createdAt - a.createdAt,
     );
@@ -104,6 +113,9 @@ export function useDraftEditorState() {
     draftId,
     draft,
     patchDraft,
-    reset: () => setFallbackUuid(uuid()),
+    reset: () => {
+      initDraft.reset();
+      setFallbackUuid(uuid());
+    },
   };
 }

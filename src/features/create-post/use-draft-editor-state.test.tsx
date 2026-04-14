@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, cleanup } from "@testing-library/react";
 import { useCreatePostStore } from "../../stores/create-post";
+import { RouteSearchParamProvider } from "../../hooks/use-url-search-state";
 import { useDraftEditorState } from "./use-draft-editor-state";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -57,27 +58,39 @@ function seedDraft(id: string, createdAt: number, title?: string) {
     .updateDraft(id, { type: "text", createdAt, title });
 }
 
+function wrap() {
+  return ({ children }: { children: React.ReactNode }) => (
+    <RouteSearchParamProvider>{children}</RouteSearchParamProvider>
+  );
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("useDraftEditorState — no drafts, no URL params", () => {
   test("draftId is the fallback UUID", () => {
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draftId).toBe(FALLBACK_UUID);
   });
 
   test("draft is a fresh empty draft", () => {
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draft.title).toBeUndefined();
     expect(result.current.draft.type).toBe("text");
   });
 
   test("nothing is persisted to the store on mount", () => {
-    renderHook(() => useDraftEditorState());
+    renderHook(() => useDraftEditorState(), { wrapper: wrap() });
     expect(useCreatePostStore.getState().drafts[FALLBACK_UUID]).toBeUndefined();
   });
 
   test("patchDraft persists the draft to the store", () => {
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     act(() => {
       result.current.patchDraft(result.current.draftId, { title: "Hello" });
     });
@@ -91,14 +104,18 @@ describe("useDraftEditorState — existing drafts, no URL params", () => {
   test("selects the most recent draft", () => {
     seedDraft(DRAFT_A, 1000);
     seedDraft(DRAFT_B, 2000);
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draftId).toBe(DRAFT_B);
   });
 
   test("draft content matches the most recent draft", () => {
     seedDraft(DRAFT_A, 1000, "Older");
     seedDraft(DRAFT_B, 2000, "Newer");
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draft.title).toBe("Newer");
   });
 });
@@ -108,7 +125,9 @@ describe("useDraftEditorState — URL id param", () => {
     seedDraft(DRAFT_A, 1000, "Draft A");
     seedDraft(DRAFT_B, 2000, "Draft B");
     mockSearch = `?id=${DRAFT_A}`;
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draftId).toBe(DRAFT_A);
     expect(result.current.draft.title).toBe("Draft A");
   });
@@ -118,13 +137,17 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
   test("uses fallback UUID, not an existing draft", () => {
     seedDraft(DRAFT_A, 1000, "Existing");
     mockSearch = "?title=From+URL";
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draftId).toBe(FALLBACK_UUID);
   });
 
   test("draft reflects the URL params", () => {
     mockSearch = "?title=Hello&url=https%3A%2F%2Fexample.com";
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draft.title).toBe("Hello");
     expect(result.current.draft.url).toBe("https://example.com");
     expect(result.current.draft.type).toBe("link");
@@ -132,19 +155,23 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
 
   test("nsfw param sets nsfw flag", () => {
     mockSearch = "?nsfw=1";
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     expect(result.current.draft.nsfw).toBe(true);
   });
 
   test("nothing is persisted to the store on mount", () => {
     mockSearch = "?title=From+URL";
-    renderHook(() => useDraftEditorState());
+    renderHook(() => useDraftEditorState(), { wrapper: wrap() });
     expect(useCreatePostStore.getState().drafts[FALLBACK_UUID]).toBeUndefined();
   });
 
   test("patchDraft merges URL params into the persisted draft", () => {
     mockSearch = "?title=From+URL";
-    const { result } = renderHook(() => useDraftEditorState());
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
     act(() => {
       result.current.patchDraft(result.current.draftId, {
         communitySlug: "mycommunity@example.com",
