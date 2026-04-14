@@ -250,7 +250,7 @@ describe("useUrlSearchState — onCommit callback", () => {
     );
 
     act(() => {
-      result.current.set("2", { onCommit: cb });
+      result.current.set("2", cb);
     });
 
     expect(cb).not.toHaveBeenCalled();
@@ -259,7 +259,6 @@ describe("useUrlSearchState — onCommit callback", () => {
       vi.advanceTimersByTime(10);
     });
 
-    // cb not passed yet — just confirming history fired
     expect(mockReplace).toHaveBeenCalledTimes(1);
     expect(cb).toHaveBeenCalled();
   });
@@ -309,8 +308,9 @@ describe("useUrlSearchState — onCommit callback", () => {
   });
 
   test("all callbacks fire when multiple .and calls each have a callback", () => {
-    const cb1 = vi.fn();
-    const cb2 = vi.fn();
+    const order: number[] = [];
+    const cb1 = vi.fn(() => order.push(1));
+    const cb2 = vi.fn(() => order.push(2));
     const { result } = renderHook(() => ({
       a: useUrlSearchState("a", "", z.string()),
       b: useUrlSearchState("b", "", z.string()),
@@ -331,6 +331,7 @@ describe("useUrlSearchState — onCommit callback", () => {
     expect(mockReplace).toHaveBeenCalledTimes(1);
     expect(cb1).toHaveBeenCalledTimes(1);
     expect(cb2).toHaveBeenCalledTimes(1);
+    expect(order).toEqual([1, 2]);
   });
 
   test("callback does NOT fire when route is inactive", () => {

@@ -26,7 +26,7 @@ type AndSet<V> = (
 
 export type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
-  config?: UrlSearchParamConfig,
+  config?: UrlSearchParamConfig | (() => void),
 ) => {
   and: AndSet<V>;
 };
@@ -36,7 +36,9 @@ type AndRemove = (
   cb?: () => void,
 ) => { and: AndRemove };
 
-export type RemoveUrlSearchParam = (opts?: UrlSearchParamConfig) => {
+export type RemoveUrlSearchParam = (
+  opts?: UrlSearchParamConfig | (() => void),
+) => {
   and: AndRemove;
 };
 
@@ -146,7 +148,11 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
-    (next, config) => {
+    (next, configOrCb) => {
+      const config =
+        typeof configOrCb === "function"
+          ? { onCommit: configOrCb }
+          : configOrCb;
       const lock = locked.current;
       const replace = config?.replace ?? true;
 
@@ -199,10 +205,14 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   const removeParam = useCallback(
     (
-      config?: UrlSearchParamConfig,
+      configOrCb?: UrlSearchParamConfig | (() => void),
     ): {
       and: AndRemove;
     } => {
+      const config =
+        typeof configOrCb === "function"
+          ? { onCommit: configOrCb }
+          : configOrCb;
       const lock = locked.current;
       const replace = config?.replace ?? true;
       const params = new URLSearchParams(config?.search ?? search);
