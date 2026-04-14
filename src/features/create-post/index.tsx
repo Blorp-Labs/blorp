@@ -68,9 +68,9 @@ import { SimpleSelect } from "../../components/ui/simple-select";
 import { Trash } from "../../components/icons";
 import { Separator } from "../../components/ui/separator";
 import { parseSlug } from "../../apis/utils";
-import { useDraftEditorState } from "./use-draft-editor-state";
+import { Context, useDraftEditorState } from "./use-draft-editor-state";
 import { useShallow } from "zustand/shallow";
-import { createContext, useContextSelector } from "use-context-selector";
+import { useContextSelector } from "use-context-selector";
 
 dayjs.extend(localizedFormat);
 
@@ -87,10 +87,6 @@ const POLL_UNIT_OPTIONS: {
 ];
 
 const EMPTY_ARR: never[] = [];
-
-const Context = createContext<Partial<ReturnType<typeof useDraftEditorState>>>(
-  {},
-);
 
 const DraftCardMemoed = memo(function DraftCard({
   title,
@@ -274,7 +270,10 @@ function CreatePostInner() {
   const hideDrafts = useCallback(() => setShowDrafts(false), []);
   const media = useMedia();
 
-  const { draft, draftId, patchDraft, reset } = useDraftEditorState();
+  const draft = useContextSelector(Context, (s) => s.draft);
+  const draftId = useContextSelector(Context, (s) => s.draftId);
+  const patchDraft = useContextSelector(Context, (s) => s.patchDraft);
+  const reset = useContextSelector(Context, (s) => s.reset);
 
   const id = useId();
 

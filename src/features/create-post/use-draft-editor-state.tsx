@@ -9,16 +9,26 @@ import {
 } from "../../stores/create-post";
 import { useUrlSearchState } from "../../hooks";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
-import { create } from "zustand";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { createContext } from "use-context-selector";
 
-const useFallbackUuid = create<{
-  uuid: string;
+type EditorState = {
+  draftId: string;
+  draft: Draft;
+  isInitState: boolean;
+  patchDraft: (key: string, patch: Partial<Draft>) => void;
   reset: () => void;
-}>((set) => ({
+  uuid: string;
+};
+
+export const Context = createContext<EditorState>({
+  draftId: "",
+  draft: newDraft(),
+  isInitState: false,
+  patchDraft: _.noop,
+  reset: _.noop,
   uuid: uuid(),
-  reset: () => set({ uuid: uuid() }),
-}));
+});
 
 export function useDraftIdUrlParam() {
   return useUrlSearchState("id", null, z.string().uuid().nullable());
@@ -85,19 +95,17 @@ export function useDraftFromUrl() {
   };
 }
 
-export function useDraftEditorState() {
-  const resetFallbackUuid = useFallbackUuid((s) => s.reset);
-  const fallbackUuid = useFallbackUuid((s) => s.uuid);
+export function useDraftEditorState(): EditorState {
+  const [fallbackUuid, setFallbackUuid] = useState(uuid());
 
   const initDraft = useDraftFromUrl();
   const draftIdParam = useDraftIdUrlParam();
 
   const draftId = useCreatePostStore((s) => {
-    if (draftIdParam.value && _.isString(draftIdParam.value)) {
+    if (draftIdParam.value) {
       return draftIdParam.value;
     }
 
-    // TODO: do we need this?
     if (!isEmptyDraft(initDraft.draft)) {
       return fallbackUuid;
     }
@@ -110,7 +118,7 @@ export function useDraftEditorState() {
   });
 
   const draftFromStore = useCreatePostStore((s) => {
-    return s.drafts[draftId];
+    return draftId ? s.drafts[draftId] : undefined;
   });
   const draft = draftFromStore ?? initDraft.draft;
 
@@ -137,13 +145,14 @@ export function useDraftEditorState() {
   const resetInitDraft = initDraft.reset;
 
   return {
+    uuid: fallbackUuid,
     draftId,
     draft,
     isInitState: !draftFromStore,
     patchDraft,
     reset: useCallback(() => {
       resetInitDraft().and(draftIdParam.remove);
-      resetFallbackUuid();
-    }, [resetInitDraft, draftIdParam.remove, resetFallbackUuid]),
+      setFallbackUuid(uuid());
+    }, [resetInitDraft, draftIdParam.remove]),
   };
 }
