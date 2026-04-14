@@ -12,33 +12,21 @@ import { useGetIsActiveRoute, useIsActiveRoute } from "./navigation-hooks";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type UrlSearchParamConfig = {
-  replace?: boolean;
-  search?: string;
-  onCommit?: () => void;
-};
-
-type AndSet<V> = (
-  fn: SetUrlSearchParam<V>,
-  val: V,
-  cb?: () => void,
-) => { and: AndSet<V> };
+type AndSet<V> = (fn: SetUrlSearchParam<V>, val: V) => { and: AndSet<V> };
 
 export type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
-  config?: UrlSearchParamConfig | (() => void),
+  config?: { replace?: boolean; search?: string },
 ) => {
   and: AndSet<V>;
 };
 
-type AndRemove = (
-  fn: RemoveUrlSearchParam,
-  cb?: () => void,
-) => { and: AndRemove };
+type AndRemove = (fn: RemoveUrlSearchParam) => { and: AndRemove };
 
-export type RemoveUrlSearchParam = (
-  opts?: UrlSearchParamConfig | (() => void),
-) => {
+export type RemoveUrlSearchParam = (opts?: {
+  replace?: boolean;
+  search?: string;
+}) => {
   and: AndRemove;
 };
 
@@ -96,11 +84,12 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   const defaults = useContext(RouteSearchParamContext);
 
-  const locked = useRef(0);
+  const locked = useRef(false);
 
   useEffect(() => {
+    locked.current = false;
     return () => {
-      locked.current += 1;
+      locked.current = true;
     };
   }, [defaultValue]);
 
@@ -148,12 +137,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
-    (next, configOrCb) => {
-      const config =
-        typeof configOrCb === "function"
-          ? { onCommit: configOrCb }
-          : configOrCb;
-      const lock = locked.current;
+    (next, config) => {
       const replace = config?.replace ?? true;
 
       const newVal =
@@ -175,45 +159,33 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       };
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
-        if (locked.current === lock && getIsActiveRoute()) {
+        if (!locked.current && getIsActiveRoute()) {
           if (replace) {
             history.replace(to);
           } else {
             history.push(to);
           }
-          config?.onCommit?.();
         }
       }, 5);
       pendingTimeouts.current.add(id);
       return {
-        and: <V,>(fn: SetUrlSearchParam<V>, val: V, cb?: () => void) => {
+        and: <V,>(setValue: SetUrlSearchParam<V>, val: V) => {
           window.clearTimeout(id);
           pendingTimeouts.current.delete(id);
-          return fn(val, {
-            ...config,
-            search: newSearch,
-            onCommit: () => {
-              config?.onCommit?.();
-              cb?.();
-            },
-          });
+          return setValue(val, { ...config, search: newSearch });
         },
       };
     },
-    [history, key, schema, value, search, getIsActiveRoute],
+    [history, key, schema, value, search, locked, getIsActiveRoute],
   );
 
   const removeParam = useCallback(
-    (
-      configOrCb?: UrlSearchParamConfig | (() => void),
-    ): {
+    (config?: {
+      replace?: boolean;
+      search?: string;
+    }): {
       and: AndRemove;
     } => {
-      const config =
-        typeof configOrCb === "function"
-          ? { onCommit: configOrCb }
-          : configOrCb;
-      const lock = locked.current;
       const replace = config?.replace ?? true;
       const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
@@ -225,28 +197,20 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       };
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
-        if (locked.current === lock && getIsActiveRoute()) {
+        if (!locked.current && getIsActiveRoute()) {
           if (replace) {
             history.replace(to);
           } else {
             history.push(to);
           }
-          config?.onCommit?.();
         }
       }, 5);
       pendingTimeouts.current.add(id);
       return {
-        and: (fn: RemoveUrlSearchParam, cb?: () => void) => {
+        and: (removeParam) => {
           window.clearTimeout(id);
           pendingTimeouts.current.delete(id);
-          return fn({
-            ...config,
-            search: newSearch,
-            onCommit: () => {
-              config?.onCommit?.();
-              cb?.();
-            },
-          });
+          return removeParam({ ...config, search: newSearch });
         },
       };
     },
