@@ -23,7 +23,7 @@ import { lazy } from "react";
 import { dispatchScrollEvent } from "@/src/lib/scroll-events";
 import { isAndroid } from "@/src/lib/device";
 import { AppUrlListener } from "@/src/components/universal-links";
-import { CreatePost } from "@/src/features/create-post";
+import { CreatePost } from "@/src/features/create-post/index";
 import { cn } from "./lib/utils";
 import { UserSidebar } from "./components/nav";
 import {

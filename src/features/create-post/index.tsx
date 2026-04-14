@@ -1,15 +1,14 @@
-import { ContentGutters } from "../components/gutters";
-import { useRecentCommunitiesStore } from "../stores/recent-communities";
+import { ContentGutters } from "../../components/gutters";
+import { useRecentCommunitiesStore } from "../../stores/recent-communities";
 import { useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   isEmptyDraft,
-  newDraft,
   useCreatePostStore,
   useFlairLookup,
-} from "../stores/create-post";
+} from "../../stores/create-post";
 import { VirtualList } from "@/src/components/virtual-list";
-import { CommunityCard } from "../components/communities/community-card";
+import { CommunityCard } from "../../components/communities/community-card";
 import {
   useCommunityQuery,
   useCreatePostMutation,
@@ -20,9 +19,9 @@ import {
   useSearchQuery,
   useSoftware,
   useUploadImageMutation,
-} from "../queries";
-import { supportsPollCreation } from "../apis/support";
-import { Forms } from "../apis/api-blueprint";
+} from "../../queries";
+import { supportsPollCreation } from "../../apis/support";
+import { Forms } from "../../apis/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -34,44 +33,47 @@ import {
   IonToolbar,
   useIonAlert,
 } from "@ionic/react";
-import { MarkdownEditor } from "../components/markdown/editor";
-import { Button, LoadingButton } from "../components/ui/button";
+import { MarkdownEditor } from "../../components/markdown/editor";
+import { Button, LoadingButton } from "../../components/ui/button";
 import { close } from "ionicons/icons";
 import { FaCheck, FaChevronDown, FaRegImage } from "react-icons/fa6";
-import { Input } from "../components/ui/input";
+import { Input } from "../../components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { useDropzone } from "react-dropzone";
-import { UserDropdown } from "../components/nav";
-import { Skeleton } from "../components/ui/skeleton";
+import { UserDropdown } from "../../components/nav";
+import { Skeleton } from "../../components/ui/skeleton";
 import { Label } from "@/src/components/ui/label";
-import { cn, isNotNil } from "../lib/utils";
+import { cn, isNotNil } from "../../lib/utils";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Link } from "@/src/routing/index";
 import { v4 as uuid } from "uuid";
 import { MdDelete } from "react-icons/md";
-import { useMedia, useUrlSearchState } from "../hooks";
-import { RelativeTime } from "../components/relative-time";
-import { Deferred } from "../lib/deferred";
-import z from "zod";
-import { usePostFromStore } from "../stores/posts";
-import { getAccountActorId, useAuth } from "../stores/auth";
+import { useMedia } from "../../hooks";
+import { RelativeTime } from "../../components/relative-time";
+import { Deferred } from "../../lib/deferred";
+import { usePostFromStore } from "../../stores/posts";
+import { getAccountActorId, useAuth } from "../../stores/auth";
 import { usePathname } from "@/src/hooks/use-pathname";
-import { Sidebar, SidebarContent } from "../components/sidebar";
+import { Sidebar, SidebarContent } from "../../components/sidebar";
 import {
   useCommunitiesFromStore,
   useCommunityFromStore,
-} from "../stores/communities";
-import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { MultiSelect } from "../components/ui/multi-select";
-import { Flair } from "../components/flair";
+} from "../../stores/communities";
+import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
+import { MultiSelect } from "../../components/ui/multi-select";
+import { Flair } from "../../components/flair";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import { useFlairs } from "../stores/flairs";
-import { Page } from "../components/page";
-import { SimpleSelect } from "../components/ui/simple-select";
-import { Trash } from "../components/icons";
-import { Separator } from "../components/ui/separator";
-import { parseSlug } from "../apis/utils";
+import { useFlairs } from "../../stores/flairs";
+import { Page } from "../../components/page";
+import { SimpleSelect } from "../../components/ui/simple-select";
+import { Trash } from "../../components/icons";
+import { Separator } from "../../components/ui/separator";
+import { parseSlug } from "../../apis/utils";
+import {
+  useDraftIdUrlParam,
+  useDraftEditorState,
+} from "./use-draft-editor-state";
 
 dayjs.extend(localizedFormat);
 
@@ -204,57 +206,6 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
   }, [draftId, isActive, patchDraft, isEmpty, mostRecentCommunity]);
 }
 
-function useDraftFromUrl() {
-  const titleParam = useUrlSearchState("title", "", z.string());
-  const urlParam = useUrlSearchState("url", "", z.string());
-  const bodyParam = useUrlSearchState("body", "", z.string());
-  const nsfwParam = useUrlSearchState(
-    "nsfw",
-    undefined,
-    z
-      .union([
-        z.literal("1"),
-        z.literal("0"),
-        z.literal("true"),
-        z.literal("false"),
-      ])
-      .optional(),
-  );
-
-  const title = titleParam.value;
-  const url = urlParam.value;
-  const body = bodyParam.value;
-  const nsfw = nsfwParam.value;
-
-  const draft = newDraft();
-
-  if (title || url || body || nsfw) {
-    if (title) {
-      draft.title = title;
-    }
-    if (url) {
-      draft.url = url;
-      draft.type = "link";
-    }
-    if (body) {
-      draft.body = body;
-    }
-    if (nsfw === "1" || nsfw === "true") {
-      draft.nsfw = true;
-    }
-  }
-
-  return {
-    draft,
-    reset: () =>
-      titleParam
-        .remove()
-        .and(urlParam.remove)
-        .and(bodyParam.remove)
-        .and(nsfwParam.remove),
-  };
-}
-
 const DEFAULT_POLL: Forms.PollInput = {
   endAmount: 7,
   endUnit: "days",
@@ -265,53 +216,6 @@ const DEFAULT_POLL: Forms.PollInput = {
     { id: 0, text: "", sortOrder: 1 },
   ],
 };
-
-function useDraftIdUrlParam() {
-  return useUrlSearchState("id", null, z.string().uuid().nullable());
-}
-
-function useDraftEditorState() {
-  const [fallbackUuid, setFallbackUuid] = useState(uuid());
-
-  const initDraft = useDraftFromUrl();
-  const draftIdParam = useDraftIdUrlParam();
-
-  const draftId = useCreatePostStore((s) => {
-    if (!isEmptyDraft(initDraft.draft)) {
-      return fallbackUuid;
-    }
-
-    if (_.isString(draftIdParam.value)) {
-      return draftIdParam.value;
-    }
-    const [firstKey] = _.entries(s.drafts).sort(
-      ([_a, a], [_b, b]) => b.createdAt - a.createdAt,
-    );
-
-    return firstKey?.[0] ?? fallbackUuid;
-  });
-
-  const draft =
-    useCreatePostStore((s) => {
-      return s.drafts[draftId];
-    }) ?? initDraft.draft;
-
-  const _patchDraft = useCreatePostStore((s) => s.updateDraft);
-  const patchDraft = (key: string, patch: Partial<Draft>) => {
-    _patchDraft(key, {
-      ...initDraft.draft,
-      ...patch,
-    });
-    initDraft.reset();
-  };
-
-  return {
-    draftId,
-    draft,
-    patchDraft,
-    reset: () => setFallbackUuid(uuid()),
-  };
-}
 
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
