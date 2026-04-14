@@ -196,6 +196,35 @@ describe("useUrlSearchState — default value behavior", () => {
 
     expect(result.current.value).toBe("1");
   });
+
+  test("defaults track the latest setValue even when the URL hasn't updated yet", () => {
+    // Regression: if setValue doesn't eagerly update defaults, and the URL
+    // update is pending in a setTimeout, a remount before the timer fires
+    // causes the fallback to return a stale value (e.g. "c" instead of "cats").
+    mockSearch = "";
+
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("q", "", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    // Simulate typing char-by-char. Each call schedules a history update
+    // but fake timers prevent them from firing.
+    act(() => {
+      result.current.set("c");
+      result.current.set("ca");
+      result.current.set("cat");
+      result.current.set("cats");
+    });
+
+    // Simulate remount before timers fire — the URL still has no param,
+    // so value is undefined and the hook must fall back to defaults.
+    act(() => {
+      rerender();
+    });
+
+    expect(result.current.value).toBe("cats");
+  });
 });
 
 describe("useUrlSearchState — chaining", () => {
