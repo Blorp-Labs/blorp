@@ -130,7 +130,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // Update stored default when we get a valid value from the URL
   useEffect(() => {
-    if (value !== undefined) {
+    if (value !== undefined && defaults.get(key) === undefined) {
       defaults.set(key, value);
     }
   }, [value, key, defaults]);

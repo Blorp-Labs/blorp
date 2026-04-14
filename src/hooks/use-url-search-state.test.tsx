@@ -60,8 +60,9 @@ afterEach(() => {
 
 describe("useUrlSearchState", () => {
   test("setValue updates history when route is active", () => {
-    const { result } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -79,8 +80,9 @@ describe("useUrlSearchState", () => {
   });
 
   test("setValue does NOT update history after route becomes inactive", () => {
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -102,8 +104,9 @@ describe("useUrlSearchState", () => {
   test("removeParam does NOT update history after route becomes inactive", () => {
     mockSearch = "?page=2";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -123,8 +126,9 @@ describe("useUrlSearchState", () => {
   });
 
   test("pending timeouts are cleared when route becomes inactive", () => {
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -150,8 +154,9 @@ describe("useUrlSearchState — default value behavior", () => {
   test("remembers last URL value as default after param is removed from URL", () => {
     mockSearch = "?page=5";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     // Value should be "5" from URL
@@ -171,8 +176,9 @@ describe("useUrlSearchState — default value behavior", () => {
   test("removeParam resets default back to initial value", () => {
     mockSearch = "?page=5";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     expect(result.current.value).toBe("5");
@@ -196,11 +202,14 @@ describe("useUrlSearchState — chaining", () => {
   test("chained remove calls produce a single history.replace with all params removed", () => {
     mockSearch = "?title=hello&url=https://example.com&body=world";
 
-    const { result } = renderHook(() => ({
-      title: useUrlSearchState("title", "", z.string()),
-      url: useUrlSearchState("url", "", z.string()),
-      body: useUrlSearchState("body", "", z.string()),
-    }));
+    const { result } = renderHook(
+      () => ({
+        title: useUrlSearchState("title", "", z.string()),
+        url: useUrlSearchState("url", "", z.string()),
+        body: useUrlSearchState("body", "", z.string()),
+      }),
+      { wrapper: wrapWithRouteProvider() },
+    );
 
     act(() => {
       result.current.title
@@ -221,10 +230,13 @@ describe("useUrlSearchState — chaining", () => {
   });
 
   test("chained set calls produce a single history.replace with all params set", () => {
-    const { result } = renderHook(() => ({
-      page: useUrlSearchState("page", "1", z.string()),
-      sort: useUrlSearchState("sort", "new", z.string()),
-    }));
+    const { result } = renderHook(
+      () => ({
+        page: useUrlSearchState("page", "1", z.string()),
+        sort: useUrlSearchState("sort", "new", z.string()),
+      }),
+      { wrapper: wrapWithRouteProvider() },
+    );
 
     act(() => {
       result.current.page.set("5").and(result.current.sort.set, "top");

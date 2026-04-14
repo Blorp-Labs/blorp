@@ -9,7 +9,7 @@ import { useDraftEditorState } from "./use-draft-editor-state";
 const FALLBACK_UUID = "00000000-0000-0000-0000-000000000001";
 
 vi.mock("uuid", () => ({
-  v4: () => FALLBACK_UUID,
+  v4: () => "00000000-0000-0000-0000-000000000001",
 }));
 
 let mockPathname = "/create_post";

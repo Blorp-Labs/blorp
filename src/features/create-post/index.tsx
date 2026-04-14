@@ -1,6 +1,6 @@
 import { ContentGutters } from "../../components/gutters";
 import { useRecentCommunitiesStore } from "../../stores/recent-communities";
-import { useCallback, useEffect, useId, useState } from "react";
+import { memo, useCallback, useEffect, useId, useState } from "react";
 import {
   Draft,
   useCreatePostStore,
@@ -68,10 +68,9 @@ import { SimpleSelect } from "../../components/ui/simple-select";
 import { Trash } from "../../components/icons";
 import { Separator } from "../../components/ui/separator";
 import { parseSlug } from "../../apis/utils";
-import {
-  useDraftIdUrlParam,
-  useDraftEditorState,
-} from "./use-draft-editor-state";
+import { useDraftEditorState } from "./use-draft-editor-state";
+import { useShallow } from "zustand/shallow";
+import { createContext, useContextSelector } from "use-context-selector";
 
 dayjs.extend(localizedFormat);
 
@@ -89,22 +88,30 @@ const POLL_UNIT_OPTIONS: {
 
 const EMPTY_ARR: never[] = [];
 
-function DraftCard({
-  draft,
+const Context = createContext<Partial<ReturnType<typeof useDraftEditorState>>>(
+  {},
+);
+
+const DraftCardMemoed = memo(function DraftCard({
+  title,
+  communitySlug: slug,
+  createdAt,
   draftKey: key,
   onClickDraft,
   isActive,
+  canDelete = false,
 }: {
-  draft: Draft;
+  title: string | undefined;
+  communitySlug: string | undefined;
+  createdAt: number;
   draftKey: string;
   onClickDraft: () => void;
   isActive: boolean;
+  canDelete?: boolean;
 }) {
-  const draftIdParam = useDraftIdUrlParam();
-  const state = useDraftEditorState();
+  const resetState = useContextSelector(Context, (s) => s.reset);
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
   const [alrt] = useIonAlert();
-  const slug = draft.communitySlug;
   return (
     <div className="relative">
       <Link
@@ -117,7 +124,7 @@ function DraftCard({
         onClick={onClickDraft}
       >
         <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
-          <RelativeTime time={draft.createdAt} />
+          <RelativeTime time={createdAt} />
           {slug && (
             <>
               <span>•</span>
@@ -130,54 +137,105 @@ function DraftCard({
         <span
           className={cn(
             "font-medium line-clamp-1 break-words",
-            !draft.title && "italic",
+            !title && "italic",
           )}
         >
-          {draft.title || "Untitled"}
+          {title || "Untitled"}
         </span>
       </Link>
-      <button
-        className="absolute top-2 right-2 text-destructive text-xl"
-        onClick={async () => {
-          try {
-            const deferred = new Deferred();
-            alrt({
-              message: "Delete draft",
-              buttons: [
-                {
-                  text: "Cancel",
-                  role: "cancel",
-                  handler: () => deferred.reject(),
-                },
-                {
-                  text: "OK",
-                  role: "confirm",
-                  handler: () => deferred.resolve(),
-                },
-              ],
-            });
-            await deferred.promise;
-            deleteDraft(key);
-            state.reset();
-            draftIdParam.remove();
-          } catch {}
-        }}
-      >
-        <MdDelete />
-      </button>
+      {canDelete && (
+        <button
+          className="absolute top-2 right-2 text-destructive text-xl"
+          onClick={async () => {
+            try {
+              const deferred = new Deferred();
+              alrt({
+                message: "Delete draft",
+                buttons: [
+                  {
+                    text: "Cancel",
+                    role: "cancel",
+                    handler: () => deferred.reject(),
+                  },
+                  {
+                    text: "OK",
+                    role: "confirm",
+                    handler: () => deferred.resolve(),
+                  },
+                ],
+              });
+              await deferred.promise;
+              deleteDraft(key);
+              resetState?.();
+            } catch {}
+          }}
+        >
+          <MdDelete />
+        </button>
+      )}
     </div>
+  );
+});
+
+function UnsavedDraftCard({ onClickDraft }: { onClickDraft: () => void }) {
+  const isInitState = useContextSelector(Context, (s) => s.isInitState);
+  const draftId = useContextSelector(Context, (s) => s.draftId);
+  const draft = useContextSelector(Context, (s) => s.draft);
+
+  if (!isInitState || _.isNil(draftId) || _.isNil(draft)) {
+    return null;
+  }
+
+  return (
+    <DraftCardMemoed
+      draftKey={draftId}
+      title={draft.title}
+      communitySlug={draft.communitySlug}
+      createdAt={draft.createdAt}
+      onClickDraft={onClickDraft}
+      isActive
+    />
   );
 }
 
-function DraftsSidebar({
-  createPostId,
+function StoredDraftCard({
+  draftId,
   onClickDraft,
 }: {
-  createPostId: string;
+  draftId: string;
   onClickDraft: () => void;
 }) {
-  const drafts = useCreatePostStore((s) => s.drafts);
-  const state = useDraftEditorState();
+  const draft = useCreatePostStore((s) => s.drafts[draftId]);
+  const stateDraftId = useContextSelector(Context, (s) => s.draftId);
+
+  if (!draft) {
+    return null;
+  }
+  return (
+    <DraftCardMemoed
+      draftKey={draftId}
+      title={draft.title}
+      communitySlug={draft.communitySlug}
+      createdAt={draft.createdAt}
+      onClickDraft={onClickDraft}
+      isActive={draftId === stateDraftId}
+      canDelete
+    />
+  );
+}
+
+const DraftsSidebarMemoed = memo(function DraftsSidebar({
+  onClickDraft,
+}: {
+  onClickDraft: () => void;
+}) {
+  const draftIds = useCreatePostStore(
+    useShallow((s) =>
+      _.entries(s.drafts)
+        .sort(([_a, a], [_b, b]) => b.createdAt - a.createdAt)
+        .map(([key]) => key),
+    ),
+  );
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-row justify-between items-center">
@@ -192,28 +250,13 @@ function DraftsSidebar({
           </Link>
         </Button>
       </div>
-      {state.isInitState && (
-        <DraftCard
-          draftKey={state.draftId}
-          draft={state.draft}
-          onClickDraft={onClickDraft}
-          isActive
-        />
-      )}
-      INIT END
-      {_.entries(drafts)
-        .sort(([_a, a], [_b, b]) => b.createdAt - a.createdAt)
-        .map(([key, draft]) => (
-          <DraftCard
-            draftKey={key}
-            draft={draft}
-            isActive={createPostId === key}
-            onClickDraft={onClickDraft}
-          />
-        ))}
+      <UnsavedDraftCard onClickDraft={onClickDraft} />
+      {draftIds.map((id) => (
+        <StoredDraftCard key={id} draftId={id} onClickDraft={onClickDraft} />
+      ))}
     </div>
   );
-}
+});
 
 const DEFAULT_POLL: Forms.PollInput = {
   endAmount: 7,
@@ -226,8 +269,9 @@ const DEFAULT_POLL: Forms.PollInput = {
   ],
 };
 
-export function CreatePost() {
+function CreatePostInner() {
   const [showDrafts, setShowDrafts] = useState(false);
+  const hideDrafts = useCallback(() => setShowDrafts(false), []);
   const media = useMedia();
 
   const { draft, draftId, patchDraft, reset } = useDraftEditorState();
@@ -321,6 +365,7 @@ export function CreatePost() {
   });
 
   const [chooseCommunity, setChooseCommunity] = useState(false);
+  const closeChooseCommunity = useCallback(() => setChooseCommunity(false), []);
 
   const createPost = useCreatePostMutation();
   const editPost = useEditPostMutation(draftId);
@@ -417,18 +462,15 @@ export function CreatePost() {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <ChooseCommunity
+        <ChooseCommunityMemoed
           createPostId={draftId}
           isOpen={chooseCommunity && !isEdit}
-          closeModal={() => setChooseCommunity(false)}
+          closeModal={closeChooseCommunity}
         />
 
         <ContentGutters className="max-md:h-full">
           {media.maxMd && showDrafts ? (
-            <DraftsSidebar
-              createPostId={draftId}
-              onClickDraft={() => setShowDrafts(false)}
-            />
+            <DraftsSidebarMemoed onClickDraft={hideDrafts} />
           ) : (
             <div className="flex flex-col gap-5 max-md:pt-3 md:py-6">
               {isEdit && !canEdit && (
@@ -750,10 +792,7 @@ export function CreatePost() {
 
           <Sidebar>
             <SidebarContent className="p-4">
-              <DraftsSidebar
-                createPostId={draftId}
-                onClickDraft={() => setShowDrafts(false)}
-              />
+              <DraftsSidebarMemoed onClickDraft={hideDrafts} />
             </SidebarContent>
           </Sidebar>
         </ContentGutters>
@@ -762,7 +801,7 @@ export function CreatePost() {
   );
 }
 
-function ChooseCommunity({
+const ChooseCommunityMemoed = memo(function ChooseCommunity({
   createPostId,
   isOpen,
   closeModal,
@@ -777,7 +816,8 @@ function ChooseCommunity({
   const [search, setSearch] = useState("");
   const debouncedSetSearch = useCallback(_.debounce(setSearch, 500), []);
 
-  const { draft, patchDraft } = useDraftEditorState();
+  const draft = useContextSelector(Context, (s) => s.draft);
+  const patchDraft = useContextSelector(Context, (s) => s.patchDraft);
 
   const subscribedCommunitiesRes = useListCommunitiesQuery({
     type: "Subscribed",
@@ -795,7 +835,7 @@ function ChooseCommunity({
   });
 
   const selectedCommunityData = useCommunityFromStore(
-    draft.communitySlug ?? undefined,
+    draft?.communitySlug ?? undefined,
   );
   const selectedCommunity = selectedCommunityData?.communityView ?? null;
 
@@ -885,18 +925,19 @@ function ChooseCommunity({
               <ContentGutters className="cursor-pointer">
                 <button
                   onClick={() => {
-                    patchDraft(createPostId, {
+                    patchDraft?.(createPostId, {
                       communitySlug: item.slug,
                     });
                     closeModal();
                   }}
                   className="flex flex-row items-center gap-2"
-                  disabled={!!draft.apId}
+                  disabled={!!draft?.apId}
                 >
                   <CommunityCard communitySlug={item.slug} disableLink />
-                  {draft.communitySlug && item.slug === draft.communitySlug && (
-                    <FaCheck className="text-brand" />
-                  )}
+                  {draft?.communitySlug &&
+                    item.slug === draft.communitySlug && (
+                      <FaCheck className="text-brand" />
+                    )}
                 </button>
               </ContentGutters>
             );
@@ -905,5 +946,14 @@ function ChooseCommunity({
         />
       </IonContent>
     </IonModal>
+  );
+});
+
+export function CreatePost() {
+  const state = useDraftEditorState();
+  return (
+    <Context.Provider value={state}>
+      <CreatePostInner />
+    </Context.Provider>
   );
 }

@@ -1,10 +1,16 @@
 import { v4 as uuid } from "uuid";
 import _ from "lodash";
 import z from "zod";
-import { Draft, newDraft, useCreatePostStore } from "../../stores/create-post";
+import {
+  Draft,
+  isEmptyDraft,
+  newDraft,
+  useCreatePostStore,
+} from "../../stores/create-post";
 import { useUrlSearchState } from "../../hooks";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { create } from "zustand";
+import { useCallback } from "react";
 
 const useFallbackUuid = create<{
   uuid: string;
@@ -65,37 +71,42 @@ export function useDraftFromUrl() {
     draft.communitySlug = mostRecentCommunity?.slug;
   }
 
+  const removeTitle = titleParam.remove;
   return {
     draft,
-    reset: () =>
-      titleParam
-        .remove()
-        .and(urlParam.remove)
-        .and(bodyParam.remove)
-        .and(nsfwParam.remove),
+    reset: useCallback(
+      () =>
+        removeTitle()
+          .and(urlParam.remove)
+          .and(bodyParam.remove)
+          .and(nsfwParam.remove),
+      [removeTitle, urlParam.remove, bodyParam.remove, nsfwParam.remove],
+    ),
   };
 }
 
 export function useDraftEditorState() {
-  const fallbackUuid = useFallbackUuid();
+  const resetFallbackUuid = useFallbackUuid((s) => s.reset);
+  const fallbackUuid = useFallbackUuid((s) => s.uuid);
 
   const initDraft = useDraftFromUrl();
   const draftIdParam = useDraftIdUrlParam();
 
   const draftId = useCreatePostStore((s) => {
-    if (_.isString(draftIdParam.value)) {
+    if (draftIdParam.value && _.isString(draftIdParam.value)) {
       return draftIdParam.value;
     }
 
-    // if (!isEmptyDraft(initDraft.draft)) {
-    //   return fallbackUuid.uuid;
-    // }
+    // TODO: do we need this?
+    if (!isEmptyDraft(initDraft.draft)) {
+      return fallbackUuid;
+    }
 
     const [firstKey] = _.entries(s.drafts).sort(
       ([_a, a], [_b, b]) => b.createdAt - a.createdAt,
     );
 
-    return firstKey?.[0] ?? fallbackUuid.uuid;
+    return firstKey?.[0] ?? fallbackUuid;
   });
 
   const draftFromStore = useCreatePostStore((s) => {
@@ -123,14 +134,16 @@ export function useDraftEditorState() {
     initDraft.reset();
   };
 
+  const resetInitDraft = initDraft.reset;
+
   return {
     draftId,
     draft,
     isInitState: !draftFromStore,
     patchDraft,
-    reset: () => {
-      initDraft.reset();
-      fallbackUuid.reset();
-    },
+    reset: useCallback(() => {
+      resetInitDraft().and(draftIdParam.remove);
+      resetFallbackUuid();
+    }, [resetInitDraft, draftIdParam.remove, resetFallbackUuid]),
   };
 }
