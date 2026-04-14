@@ -237,6 +237,7 @@ function useDraftFromUrl({
   const removeNsfw = nsfwParam.remove;
 
   useEffect(() => {
+    let commit = _.noop;
     if (isEmptyDraft(draft) && (title || url || body || nsfw)) {
       const updateDraft: Partial<Draft> = {};
       if (title) {
@@ -252,10 +253,10 @@ function useDraftFromUrl({
       if (nsfw === "1" || nsfw === "true") {
         updateDraft.nsfw = true;
       }
-      patchDraft(uuid(), updateDraft);
+      commit = () => patchDraft(uuid(), updateDraft);
     }
     if (title || url || body || nsfw) {
-      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
+      removeTitle().and(removeUrl).and(removeBody).and(removeNsfw, commit);
     }
   }, [
     draft,

@@ -6,6 +6,9 @@ import {
   RouteSearchParamProvider,
 } from "./use-url-search-state";
 
+// Import after mocks are set up
+import { useUrlSearchState } from "./index";
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 let mockPathname = "/lightbox";
@@ -31,9 +34,6 @@ vi.mock("react-router-dom", () => ({
 vi.mock("@ionic/react", () => ({
   useIonAlert: () => [vi.fn()],
 }));
-
-// Import after mocks are set up
-import { useUrlSearchState } from "./index";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -239,6 +239,122 @@ describe("useUrlSearchState — chaining", () => {
     const params = new URLSearchParams(search);
     expect(params.get("page")).toBe("5");
     expect(params.get("sort")).toBe("top");
+  });
+});
+
+describe("useUrlSearchState — onCommit callback", () => {
+  test("callback fires after set updates history", () => {
+    const cb = vi.fn();
+    const { result } = renderHook(() =>
+      useUrlSearchState("page", "1", z.string()),
+    );
+
+    act(() => {
+      result.current.set("2", { onCommit: cb });
+    });
+
+    expect(cb).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    // cb not passed yet — just confirming history fired
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(cb).toHaveBeenCalled();
+  });
+
+  test("callback on last .and fires after chained sets", () => {
+    const cb = vi.fn();
+    const { result } = renderHook(() => ({
+      page: useUrlSearchState("page", "1", z.string()),
+      sort: useUrlSearchState("sort", "new", z.string()),
+    }));
+
+    act(() => {
+      result.current.page.set("5").and(result.current.sort.set, "top", cb);
+    });
+
+    expect(cb).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test("callback on last .and fires after chained removes", () => {
+    mockSearch = "?title=hello&url=https://example.com";
+    const cb = vi.fn();
+
+    const { result } = renderHook(() => ({
+      title: useUrlSearchState("title", "", z.string()),
+      url: useUrlSearchState("url", "", z.string()),
+    }));
+
+    act(() => {
+      result.current.title.remove().and(result.current.url.remove, cb);
+    });
+
+    expect(cb).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test("all callbacks fire when multiple .and calls each have a callback", () => {
+    const cb1 = vi.fn();
+    const cb2 = vi.fn();
+    const { result } = renderHook(() => ({
+      a: useUrlSearchState("a", "", z.string()),
+      b: useUrlSearchState("b", "", z.string()),
+      c: useUrlSearchState("c", "", z.string()),
+    }));
+
+    act(() => {
+      result.current.a
+        .set("1")
+        .and(result.current.b.set, "2", cb1)
+        .and(result.current.c.set, "3", cb2);
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(cb1).toHaveBeenCalledTimes(1);
+    expect(cb2).toHaveBeenCalledTimes(1);
+  });
+
+  test("callback does NOT fire when route is inactive", () => {
+    const cb = vi.fn();
+    const { result, rerender } = renderHook(() => ({
+      page: useUrlSearchState("page", "1", z.string()),
+      sort: useUrlSearchState("sort", "new", z.string()),
+    }));
+
+    act(() => {
+      result.current.page.set("5").and(result.current.sort.set, "top", cb);
+    });
+
+    act(() => {
+      mockPathname = "/home";
+      rerender();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(cb).not.toHaveBeenCalled();
   });
 });
 

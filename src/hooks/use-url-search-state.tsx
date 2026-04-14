@@ -12,21 +12,31 @@ import { useGetIsActiveRoute, useIsActiveRoute } from "./navigation-hooks";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type AndSet<V> = (fn: SetUrlSearchParam<V>, val: V) => { and: AndSet<V> };
+type UrlSearchParamConfig = {
+  replace?: boolean;
+  search?: string;
+  onCommit?: () => void;
+};
+
+type AndSet<V> = (
+  fn: SetUrlSearchParam<V>,
+  val: V,
+  cb?: () => void,
+) => { and: AndSet<V> };
 
 export type SetUrlSearchParam<V> = (
   next: V | ((prev: V) => V),
-  config?: { replace?: boolean; search?: string },
+  config?: UrlSearchParamConfig,
 ) => {
   and: AndSet<V>;
 };
 
-type AndRemove = (fn: RemoveUrlSearchParam) => { and: AndRemove };
+type AndRemove = (
+  fn: RemoveUrlSearchParam,
+  cb?: () => void,
+) => { and: AndRemove };
 
-export type RemoveUrlSearchParam = (opts?: {
-  replace?: boolean;
-  search?: string;
-}) => {
+export type RemoveUrlSearchParam = (opts?: UrlSearchParamConfig) => {
   and: AndRemove;
 };
 
@@ -84,12 +94,11 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   const defaults = useContext(RouteSearchParamContext);
 
-  const locked = useRef(false);
+  const locked = useRef(0);
 
   useEffect(() => {
-    locked.current = false;
     return () => {
-      locked.current = true;
+      locked.current += 1;
     };
   }, [defaultValue]);
 
@@ -138,6 +147,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
   // setter that validates and pushes/replaces the URL
   const setValue = useCallback<SetUrlSearchParam<z.infer<S>>>(
     (next, config) => {
+      const lock = locked.current;
       const replace = config?.replace ?? true;
 
       const newVal =
@@ -159,33 +169,41 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       };
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
-        if (!locked.current && getIsActiveRoute()) {
+        if (locked.current === lock && getIsActiveRoute()) {
           if (replace) {
             history.replace(to);
           } else {
             history.push(to);
           }
+          config?.onCommit?.();
         }
       }, 5);
       pendingTimeouts.current.add(id);
       return {
-        and: <V,>(setValue: SetUrlSearchParam<V>, val: V) => {
+        and: <V,>(fn: SetUrlSearchParam<V>, val: V, cb?: () => void) => {
           window.clearTimeout(id);
           pendingTimeouts.current.delete(id);
-          return setValue(val, { ...config, search: newSearch });
+          return fn(val, {
+            ...config,
+            search: newSearch,
+            onCommit: () => {
+              config?.onCommit?.();
+              cb?.();
+            },
+          });
         },
       };
     },
-    [history, key, schema, value, search, locked, getIsActiveRoute],
+    [history, key, schema, value, search, getIsActiveRoute],
   );
 
   const removeParam = useCallback(
-    (config?: {
-      replace?: boolean;
-      search?: string;
-    }): {
+    (
+      config?: UrlSearchParamConfig,
+    ): {
       and: AndRemove;
     } => {
+      const lock = locked.current;
       const replace = config?.replace ?? true;
       const params = new URLSearchParams(config?.search ?? search);
       params.delete(key);
@@ -197,20 +215,28 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       };
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
-        if (!locked.current && getIsActiveRoute()) {
+        if (locked.current === lock && getIsActiveRoute()) {
           if (replace) {
             history.replace(to);
           } else {
             history.push(to);
           }
+          config?.onCommit?.();
         }
       }, 5);
       pendingTimeouts.current.add(id);
       return {
-        and: (removeParam) => {
+        and: (fn: RemoveUrlSearchParam, cb?: () => void) => {
           window.clearTimeout(id);
           pendingTimeouts.current.delete(id);
-          return removeParam({ ...config, search: newSearch });
+          return fn({
+            ...config,
+            search: newSearch,
+            onCommit: () => {
+              config?.onCommit?.();
+              cb?.();
+            },
+          });
         },
       };
     },
