@@ -193,7 +193,11 @@ function LoadNsfwSettings() {
 
   useEffect(() => {
     updateSelectedAccount({
-      site: api.getSite({ showNsfw: true, blurNsfw: true }),
+      site: api.getSite({
+        showNsfw: true,
+        blurNsfw: true,
+      }),
+      jwt: "123",
     });
   }, [updateSelectedAccount]);
 
