@@ -622,6 +622,7 @@ function CreatePostInner() {
                 <Label htmlFor={`${id}-title`}>Title</Label>
                 <Input
                   id={`${id}-title`}
+                  data-testid="create-post-title"
                   placeholder="Title"
                   value={draft.title ?? ""}
                   className="md:text-2xl! font-bold"

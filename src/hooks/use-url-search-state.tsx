@@ -152,6 +152,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
       const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
+      defaults.set(key, newVal);
       const newSearch = params.toString();
       const to = {
         ...frozenLocation.current,
@@ -176,7 +177,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         },
       };
     },
-    [history, key, schema, value, search, locked, getIsActiveRoute],
+    [history, key, schema, value, search, locked, getIsActiveRoute, defaults],
   );
 
   const removeParam = useCallback(
