@@ -181,4 +181,22 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
     expect(saved?.title).toBe("From URL");
     expect(saved?.communitySlug).toBe("mycommunity@example.com");
   });
+
+  test("after first edit, draft is read from store not URL params", () => {
+    mockSearch = "?title=From+URL";
+    const { result } = renderHook(() => useDraftEditorState(), {
+      wrapper: wrap(),
+    });
+
+    // Before any edit, draft comes from URL params
+    expect(result.current.draft.title).toBe("From URL");
+
+    act(() => {
+      result.current.patchDraft(result.current.draftId, { title: "Edited" });
+    });
+
+    // After edit, draft comes from store — store value wins over URL params
+    expect(result.current.draft.title).toBe("Edited");
+    expect(result.current.draft.communitySlug).toBeUndefined();
+  });
 });
