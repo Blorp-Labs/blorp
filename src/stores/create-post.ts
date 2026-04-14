@@ -259,6 +259,7 @@ export const useCreatePostStore = create<CreatePostStore>()(
         set((prev) => {
           const drafts = { ...prev.drafts };
           for (const key in drafts) {
+            console.log(drafts[key], drafts[key] && isEmptyDraft(drafts[key]));
             if (drafts[key] && isEmptyDraft(drafts[key])) {
               delete drafts[key];
             }

@@ -37,13 +37,12 @@ import {
 import { MarkdownEditor } from "../components/markdown/editor";
 import { Button, LoadingButton } from "../components/ui/button";
 import { close } from "ionicons/icons";
-import { FaCheck, FaChevronDown } from "react-icons/fa6";
+import { FaCheck, FaChevronDown, FaRegImage } from "react-icons/fa6";
 import { Input } from "../components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/src/components/ui/toggle-group";
 import { useDropzone } from "react-dropzone";
 import { UserDropdown } from "../components/nav";
 import { Skeleton } from "../components/ui/skeleton";
-import { FaRegImage } from "react-icons/fa6";
 import { Label } from "@/src/components/ui/label";
 import { cn, isNotNil } from "../lib/utils";
 import dayjs from "dayjs";
@@ -204,11 +203,9 @@ function useLoadRecentCommunity(draftId: string, draft: Draft) {
 function useDraftFromUrl({
   draft,
   patchDraft,
-  draftId,
 }: {
   draft: Draft;
   patchDraft: (key: string, patch: Partial<Draft>) => void;
-  draftId: string;
 }) {
   const titleParam = useUrlSearchState("title", "", z.string());
   const urlParam = useUrlSearchState("url", "", z.string());
@@ -251,7 +248,7 @@ function useDraftFromUrl({
       if (nsfw === "1" || nsfw === "true") {
         updateDraft.nsfw = true;
       }
-      patchDraft(draftId, updateDraft);
+      patchDraft(uuid(), updateDraft);
     }
     if (title || url || body || nsfw) {
       removeTitle().and(removeUrl).and(removeBody).and(removeNsfw);
@@ -267,7 +264,6 @@ function useDraftFromUrl({
     removeBody,
     removeNsfw,
     patchDraft,
-    draftId,
   ]);
 }
 
@@ -285,9 +281,23 @@ const DEFAULT_POLL: Forms.PollInput = {
 export function CreatePost() {
   const [showDrafts, setShowDrafts] = useState(false);
   const media = useMedia();
-  const [defaultUuid, setDefaultUuid] = useState(uuid());
-  const draftIdParam = useUrlSearchState("id", defaultUuid, z.string());
-  const draftId = decodeURIComponent(draftIdParam.value);
+
+  const [fallbackUuid, setFallbackUuid] = useState(uuid());
+  const draftIdParam = useUrlSearchState("id", null, z.string().nullable());
+  const draftId = useCreatePostStore((s) => {
+    if (_.isString(draftIdParam.value) && draftIdParam.value in s.drafts) {
+      return draftIdParam.value;
+    }
+    const [firstKey] = _.entries(s.drafts).sort(
+      ([_a, a], [_b, b]) => b.createdAt - a.createdAt,
+    );
+
+    return firstKey?.[0] ?? fallbackUuid;
+  });
+  const draft =
+    useCreatePostStore((s) => {
+      return s.drafts[draftId];
+    }) ?? NEW_DRAFT;
   const id = useId();
 
   useEffect(() => {
@@ -297,14 +307,12 @@ export function CreatePost() {
   }, [media.md]);
 
   const numDrafts = useCreatePostStore((s) => Object.keys(s.drafts).length);
-  const draft = useCreatePostStore((s) => s.drafts[draftId]) ?? NEW_DRAFT;
   const isEdit = !!draft.apId;
   const patchDraft = useCreatePostStore((s) => s.updateDraft);
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
 
   useDraftFromUrl({
     draft,
-    draftId,
     patchDraft,
   });
 
@@ -429,13 +437,14 @@ export function CreatePost() {
           if (draft.communitySlug) {
             const cleanup = () => {
               deleteDraft(draftId);
-              setDefaultUuid(uuid());
+              setFallbackUuid(uuid());
             };
             if (isEdit) {
               editPost.mutateAsync(draft).then(cleanup);
             } else {
               createPost.mutateAsync(draft).then(cleanup);
             }
+            setFallbackUuid(uuid());
           }
         } catch {
           // TODO: handle incomplete post data
