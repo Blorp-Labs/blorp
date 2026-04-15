@@ -17,6 +17,14 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 600, height: 600 },
+        launchOptions: {
+          args: [
+            // Disable subpixel text rendering — the main source of
+            // cross-platform font differences between macOS and Linux.
+            "--disable-lcd-text",
+            "--disable-font-subpixel-positioning",
+          ],
+        },
       },
     },
   ],
