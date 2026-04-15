@@ -29,9 +29,6 @@ jobs:
           node-version: "20.x"
           cache: "pnpm"
 
-      - name: Install libvips
-        run: sudo apt-get update && sudo apt-get install -y libvips-dev
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -45,14 +42,8 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm playwright install --with-deps chromium
 
-      - name: Build Storybook
-        run: pnpm build-storybook
-
-      - name: Serve Storybook and run visual tests
-        run: |
-          npx http-server storybook-static --port 6006 --silent &
-          npx wait-on http://localhost:6006
-          pnpm test:visual
+      - name: Run visual tests
+        run: pnpm test:visual
 
       - name: Upload snapshot diffs on failure
         if: failure()

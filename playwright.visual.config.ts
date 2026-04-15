@@ -20,14 +20,10 @@ export default defineConfig({
       },
     },
   ],
-  // Locally: auto-start Storybook if not already running.
-  // In CI: the workflow starts the server before running this config.
-  webServer: process.env["CI"]
-    ? undefined
-    : {
-        command: "pnpm storybook",
-        url: `http://localhost:${STORYBOOK_PORT}`,
-        reuseExistingServer: true,
-        timeout: 120_000,
-      },
+  webServer: {
+    command: "pnpm storybook",
+    url: `http://localhost:${STORYBOOK_PORT}`,
+    reuseExistingServer: true,
+    timeout: 120_000,
+  },
 });
