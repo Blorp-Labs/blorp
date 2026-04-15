@@ -725,8 +725,8 @@ function SignupForm({
         {captcha.isPending && <LuLoaderCircle className="animate-spin" />}
 
         {captcha.data && (
-          <Field className="bg-secondary p-3 rounded-md flex flex-row gap-4 justify-between">
-            <div className="flex flex-col justify-between">
+          <Field className="bg-secondary p-3 rounded-md flex md:flex-row gap-4 justify-between">
+            <div className="flex flex-col gap-3 justify-between">
               <FieldLabel required htmlFor="captcha">
                 Captcha
               </FieldLabel>
@@ -740,23 +740,25 @@ function SignupForm({
               />
             </div>
 
-            <div className="flex flex-col justify-around items-center p-2">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() => captcha.refetch()}
-                type="button"
-              >
-                <MdOutlineRefresh size={24} />
-              </Button>
+            <div className="md:contents flex flex-row gap-3">
+              <div className="flex flex-col justify-around items-center p-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => captcha.refetch()}
+                  type="button"
+                >
+                  <MdOutlineRefresh size={24} />
+                </Button>
 
-              <AudioPlayButton src={captcha.data?.audioUrl} />
+                <AudioPlayButton src={captcha.data?.audioUrl} />
+              </div>
+
+              <img
+                src={`data:image/png;base64,${captcha.data?.imgUrl}`}
+                className="h-28 aspect-video object-contain"
+              />
             </div>
-
-            <img
-              src={`data:image/png;base64,${captcha.data?.imgUrl}`}
-              className="h-28 aspect-video object-contain"
-            />
           </Field>
         )}
 
