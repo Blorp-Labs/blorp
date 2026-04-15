@@ -5,7 +5,7 @@ import { PostCard } from "./posts/post";
 import * as api from "@/test-utils/api";
 import { useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePagination } from "./pagination/use-pagination";
 
 // 50 posts for the basic feed stories
@@ -35,29 +35,20 @@ const PAGES = Array.from({ length: 10 }, (_, i) =>
 );
 const ALL_PAGED_POSTS = PAGES.flat();
 
-function LoadData() {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cachePosts = usePostsStore((s) => s.cachePosts);
-
-  useEffect(() => {
-    cachePosts(getCachePrefixer(), [
+function loadData() {
+  const prefixer = useAuth.getState().getCachePrefixer();
+  usePostsStore
+    .getState()
+    .cachePosts(prefixer, [
       ...POST_FEED.map((p) => p.post),
       ...ALL_PAGED_POSTS.map((p) => p.post),
     ]);
-  }, [getCachePrefixer, cachePosts]);
-
-  return null;
 }
 
 //👇 This default export determines where your story goes in the story list
 const meta: Meta<typeof VirtualList> = {
   component: VirtualList,
-  decorators: (Story) => (
-    <>
-      <LoadData />
-      <Story />
-    </>
-  ),
+  loaders: [loadData],
 };
 
 export default meta;

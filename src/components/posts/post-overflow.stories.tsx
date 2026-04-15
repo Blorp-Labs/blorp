@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PostCard } from "./post";
 import * as api from "@/test-utils/api";
 import { usePostsStore } from "@/src/stores/posts";
-import { useEffect } from "react";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { useFlairsStore } from "@/src/stores/flairs";
@@ -120,32 +119,24 @@ const POSTS = [
   manyCrossPostsPost,
 ];
 
-function LoadData() {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cachePosts = usePostsStore((s) => s.cachePosts);
-  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
-  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
-
-  useEffect(() => {
-    cacheProfiles(
-      getCachePrefixer(),
-      POSTS.map((p) => p.creator),
-    );
-    cachePosts(
-      getCachePrefixer(),
-      POSTS.map((p) => p.post),
-    );
-    cacheFlairs(getCachePrefixer(), ALL_FLAIRS);
-  }, [cachePosts, cacheProfiles, getCachePrefixer, cacheFlairs]);
-
-  return null;
+function loadData() {
+  const prefixer = useAuth.getState().getCachePrefixer();
+  useProfilesStore.getState().cacheProfiles(
+    prefixer,
+    POSTS.map((p) => p.creator),
+  );
+  usePostsStore.getState().cachePosts(
+    prefixer,
+    POSTS.map((p) => p.post),
+  );
+  useFlairsStore.getState().cacheFlairs(prefixer, ALL_FLAIRS);
 }
 
 const meta: Meta<typeof PostCard> = {
   component: PostCard,
+  loaders: [loadData],
   decorators: (Story) => (
     <>
-      <LoadData />
       <div className="max-w-xs">
         <Story />
       </div>
