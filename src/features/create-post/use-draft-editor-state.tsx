@@ -7,7 +7,7 @@ import {
   newDraft,
   useCreatePostStore,
 } from "../../stores/create-post";
-import { useUrlSearchState } from "../../hooks";
+import { useEvent, useUrlSearchState } from "../../hooks";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { useCallback, useState } from "react";
 import { createContext } from "use-context-selector";
@@ -123,7 +123,7 @@ export function useDraftEditorState(): EditorState {
   const draft = draftFromStore ?? initDraft.draft;
 
   const _patchDraft = useCreatePostStore((s) => s.updateDraft);
-  const patchDraft = (key: string, patch: Partial<Draft>) => {
+  const patchDraft = useEvent((key: string, patch: Partial<Draft>) => {
     const patchKeys = _.keys(patch);
     if (
       patchKeys.length === 1 &&
@@ -140,7 +140,7 @@ export function useDraftEditorState(): EditorState {
       ...patch,
     });
     initDraft.reset();
-  };
+  });
 
   const resetInitDraft = initDraft.reset;
 

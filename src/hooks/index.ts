@@ -20,6 +20,7 @@ export * from "./alerts";
 export { useMedia } from "./use-media";
 export { useTheme } from "./use-theme";
 export { useUrlSearchState } from "./use-url-search-state";
+export { useEvent } from "./use-event";
 export type {
   UrlSearchState,
   SetUrlSearchParam,
