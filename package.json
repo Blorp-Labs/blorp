@@ -23,7 +23,9 @@
     "test:e2e": "playwright test",
     "test:ts": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build --stats-json"
+    "build-storybook": "storybook build --stats-json",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
     "@blorp-labs/piefed-api-client": "0.0.0-906d602",
@@ -163,6 +165,8 @@
     "@storybook/addon-a11y": "10.2.14",
     "@storybook/addon-docs": "10.2.14",
     "@storybook/react-vite": "10.2.14",
+    "@storybook/test": "8.6.15",
+    "@storybook/test-runner": "0.24.3",
     "@t3-oss/env-core": "0.13.10",
     "@tanstack/eslint-plugin-query": "5.91.4",
     "@tanstack/react-devtools": "0.3.1",
