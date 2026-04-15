@@ -3,10 +3,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PostCard } from "./post";
 import * as api from "@/test-utils/api";
 import { usePostsStore } from "@/src/stores/posts";
-import { useEffect } from "react";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { useFlairsStore } from "@/src/stores/flairs";
+import { waitForHydration } from "@/test-utils/storybook";
 
 const textPost = api.getPost({
   variant: "text",
@@ -166,55 +166,36 @@ const POSTS = [
   nsfwPeerTubePost,
 ];
 
-function LoadData() {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cachePosts = usePostsStore((s) => s.cachePosts);
-  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
-  const cacheFlairs = useFlairsStore((s) => s.cacheFlairs);
-
-  useEffect(() => {
-    cacheProfiles(
-      getCachePrefixer(),
-      POSTS.map((p) => p.creator),
-    );
-    cachePosts(
-      getCachePrefixer(),
-      POSTS.map((p) => p.post),
-    );
-    cacheFlairs(getCachePrefixer(), postFlairs);
-  }, [cachePosts, cacheProfiles, getCachePrefixer, cacheFlairs]);
-
-  return null;
-}
-
-// showNsfw: true makes the post visible; blurNsfw: true keeps the blur overlay.
-function LoadNsfwSettings() {
-  const updateSelectedAccount = useAuth((s) => s.updateSelectedAccount);
-
-  useEffect(() => {
-    updateSelectedAccount({
-      site: api.getSite({
-        showNsfw: true,
-        blurNsfw: true,
-      }),
-      jwt: "123",
-    });
-  }, [updateSelectedAccount]);
-
-  return null;
+async function loadData() {
+  await waitForHydration(
+    useAuth,
+    usePostsStore,
+    useProfilesStore,
+    useFlairsStore,
+  );
+  useAuth.getState().updateSelectedAccount({
+    site: api.getSite({
+      showNsfw: true,
+      blurNsfw: true,
+    }),
+    jwt: "123",
+  });
+  const prefixer = useAuth.getState().getCachePrefixer();
+  useProfilesStore.getState().cacheProfiles(
+    prefixer,
+    POSTS.map((p) => p.creator),
+  );
+  usePostsStore.getState().cachePosts(
+    prefixer,
+    POSTS.map((p) => p.post),
+  );
+  useFlairsStore.getState().cacheFlairs(prefixer, postFlairs);
 }
 
 //👇 This default export determines where your story goes in the story list
 const meta: Meta<typeof PostCard> = {
   component: PostCard,
-  decorators: (Story) => {
-    return (
-      <>
-        <LoadData />
-        <Story />
-      </>
-    );
-  },
+  loaders: [loadData],
 };
 
 export default meta;
@@ -368,15 +349,7 @@ export const WithManyReactionsTruncated: Story = {
   },
 };
 
-const nsfwDecorator: Story["decorators"] = (Story) => (
-  <>
-    <LoadNsfwSettings />
-    <Story />
-  </>
-);
-
 export const NsfwImage: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwImagePost.post.apId,
     postCardStyle: "large",
@@ -384,7 +357,6 @@ export const NsfwImage: Story = {
 };
 
 export const NsfwArticle: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwArticlePost.post.apId,
     postCardStyle: "large",
@@ -392,7 +364,6 @@ export const NsfwArticle: Story = {
 };
 
 export const NsfwVideo: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwVideoPost.post.apId,
     postCardStyle: "large",
@@ -400,7 +371,6 @@ export const NsfwVideo: Story = {
 };
 
 export const NsfwLoops: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwLoopsPost.post.apId,
     postCardStyle: "large",
@@ -408,7 +378,6 @@ export const NsfwLoops: Story = {
 };
 
 export const NsfwRedGif: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwRedGifPost.post.apId,
     postCardStyle: "large",
@@ -416,7 +385,6 @@ export const NsfwRedGif: Story = {
 };
 
 export const NsfwPeerTube: Story = {
-  decorators: nsfwDecorator,
   args: {
     apId: nsfwPeerTubePost.post.apId,
     postCardStyle: "large",

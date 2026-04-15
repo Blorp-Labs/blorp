@@ -1,36 +1,25 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { CommunityCard } from "./community-card";
-import _ from "lodash";
 import * as api from "@/test-utils/api";
 import { useAuth } from "@/src/stores/auth";
 import { useCommunitiesStore } from "@/src/stores/communities";
-import { useEffect } from "react";
+import { waitForHydration } from "@/test-utils/storybook";
 
 const COMMUNITY = api.getCommunity();
 
-function LoadCommunity() {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cacheCommunity = useCommunitiesStore((s) => s.cacheCommunity);
-
-  useEffect(() => {
-    cacheCommunity(getCachePrefixer(), {
-      communityView: COMMUNITY,
-    });
-  }, []);
-
-  return null;
+async function loadData() {
+  await waitForHydration(useAuth, useCommunitiesStore);
+  const prefixer = useAuth.getState().getCachePrefixer();
+  useCommunitiesStore.getState().cacheCommunity(prefixer, {
+    communityView: COMMUNITY,
+  });
 }
 
 //👇 This default export determines where your story goes in the story list
 const meta: Meta<typeof CommunityCard> = {
   component: CommunityCard,
-  decorators: (Story) => (
-    <>
-      <LoadCommunity />
-      <Story />
-    </>
-  ),
+  loaders: [loadData],
 };
 
 export default meta;

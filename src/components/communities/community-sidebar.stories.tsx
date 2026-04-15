@@ -3,41 +3,30 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CommunitySidebar } from "./community-sidebar";
 
 import { useCommunitiesStore } from "@/src/stores/communities";
-import { useEffect } from "react";
 import * as api from "@/test-utils/api";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
+import { waitForHydration } from "@/test-utils/storybook";
 
 const COMMUNITY = api.getCommunity();
 const MODS = Array.from({ length: 5 })
   .fill(0)
   .map((_, id) => api.getPerson({ id }));
 
-function LoadCommunity() {
-  const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
-  const cacheCommunity = useCommunitiesStore((s) => s.cacheCommunity);
-  const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
-
-  useEffect(() => {
-    cacheCommunity(getCachePrefixer(), {
-      communityView: COMMUNITY,
-      mods: MODS,
-    });
-    cacheProfiles(getCachePrefixer(), MODS);
-  }, [cacheProfiles, getCachePrefixer, cacheCommunity]);
-
-  return null;
+async function loadData() {
+  await waitForHydration(useAuth, useCommunitiesStore, useProfilesStore);
+  const prefixer = useAuth.getState().getCachePrefixer();
+  useCommunitiesStore.getState().cacheCommunity(prefixer, {
+    communityView: COMMUNITY,
+    mods: MODS,
+  });
+  useProfilesStore.getState().cacheProfiles(prefixer, MODS);
 }
 
 //👇 This default export determines where your story goes in the story list
 const meta: Meta<typeof CommunitySidebar> = {
   component: CommunitySidebar,
-  decorators: (Story) => (
-    <>
-      <LoadCommunity />
-      <Story />
-    </>
-  ),
+  loaders: [loadData],
 };
 
 export default meta;
