@@ -6,6 +6,7 @@ import * as api from "@/test-utils/api";
 import { useAuth } from "../stores/auth";
 import { usePostsStore } from "../stores/posts";
 import { useState } from "react";
+import { waitForHydration } from "@/test-utils/storybook";
 import { usePagination } from "./pagination/use-pagination";
 
 // 50 posts for the basic feed stories
@@ -35,7 +36,8 @@ const PAGES = Array.from({ length: 10 }, (_, i) =>
 );
 const ALL_PAGED_POSTS = PAGES.flat();
 
-function loadData() {
+async function loadData() {
+  await waitForHydration(useAuth, usePostsStore);
   const prefixer = useAuth.getState().getCachePrefixer();
   usePostsStore
     .getState()

@@ -4,10 +4,12 @@ import { CommunityBanner } from "./community-banner";
 import { useCommunitiesStore } from "@/src/stores/communities";
 import * as api from "@/test-utils/api";
 import { useAuth } from "@/src/stores/auth";
+import { waitForHydration } from "@/test-utils/storybook";
 
 const COMMUNITY = api.getCommunity();
 
-function loadData() {
+async function loadData() {
+  await waitForHydration(useAuth, useCommunitiesStore);
   const prefixer = useAuth.getState().getCachePrefixer();
   useCommunitiesStore.getState().cacheCommunity(prefixer, {
     communityView: COMMUNITY,

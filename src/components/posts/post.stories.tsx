@@ -6,6 +6,7 @@ import { usePostsStore } from "@/src/stores/posts";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { useFlairsStore } from "@/src/stores/flairs";
+import { waitForHydration } from "@/test-utils/storybook";
 
 const textPost = api.getPost({
   variant: "text",
@@ -165,7 +166,13 @@ const POSTS = [
   nsfwPeerTubePost,
 ];
 
-function loadData() {
+async function loadData() {
+  await waitForHydration(
+    useAuth,
+    usePostsStore,
+    useProfilesStore,
+    useFlairsStore,
+  );
   const prefixer = useAuth.getState().getCachePrefixer();
   useProfilesStore.getState().cacheProfiles(
     prefixer,
@@ -179,7 +186,8 @@ function loadData() {
 }
 
 // showNsfw: true makes the post visible; blurNsfw: true keeps the blur overlay.
-function loadNsfwSettings() {
+async function loadNsfwSettings() {
+  await waitForHydration(useAuth);
   useAuth.getState().updateSelectedAccount({
     site: api.getSite({
       showNsfw: true,

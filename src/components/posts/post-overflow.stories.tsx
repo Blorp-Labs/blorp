@@ -6,6 +6,7 @@ import { usePostsStore } from "@/src/stores/posts";
 import { useAuth } from "@/src/stores/auth";
 import { useProfilesStore } from "@/src/stores/profiles";
 import { useFlairsStore } from "@/src/stores/flairs";
+import { waitForHydration } from "@/test-utils/storybook";
 
 // Long unbroken string — stress-tests break-words / overflow clipping
 const unbrokenTitlePost = api.getPost({
@@ -119,7 +120,13 @@ const POSTS = [
   manyCrossPostsPost,
 ];
 
-function loadData() {
+async function loadData() {
+  await waitForHydration(
+    useAuth,
+    usePostsStore,
+    useProfilesStore,
+    useFlairsStore,
+  );
   const prefixer = useAuth.getState().getCachePrefixer();
   useProfilesStore.getState().cacheProfiles(
     prefixer,
