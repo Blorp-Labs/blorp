@@ -162,7 +162,7 @@ const DraftCardMemoed = memo(function DraftCard({
               });
               await deferred.promise;
               deleteDraft(key);
-              resetState?.();
+              resetState();
             } catch {}
           }}
         >
@@ -925,7 +925,7 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
               <ContentGutters className="cursor-pointer">
                 <button
                   onClick={() => {
-                    patchDraft?.(createPostId, {
+                    patchDraft(createPostId, {
                       communitySlug: item.slug,
                     });
                     closeModal();
