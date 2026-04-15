@@ -166,7 +166,6 @@
     "@storybook/addon-docs": "10.2.14",
     "@storybook/react-vite": "10.2.14",
     "@storybook/test": "8.6.15",
-    "@storybook/test-runner": "0.24.3",
     "@t3-oss/env-core": "0.13.10",
     "@tanstack/eslint-plugin-query": "5.91.4",
     "@tanstack/react-devtools": "0.3.1",
