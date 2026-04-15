@@ -257,7 +257,7 @@ function VirtualListInternal<T>({
     focused,
     listKey,
     scrollToTop: useCallback(() => {
-      scrollToOffset(0, { behavior: "smooth" });
+      scrollToOffset(0, { behavior: "auto" });
     }, [scrollToOffset]),
   });
 
@@ -374,11 +374,21 @@ export function VirtualList<T>({
   const focused = useRef(false);
   const [key, setKey] = useState(0);
 
-  // When the virtual list isn't in the active
-  // screen, it's better to bump the key and reset
-  // the virtualizer. Otherwise scroll events are
-  // handled by VirtualListInternal by smoothly
-  // scrolling to the top.
+  // Bump the key to reset the virtualizer (and its height cache) on scroll-to-top
+  // events dispatched by pagination controls. This avoids stale cached item heights
+  // from the previous page tripping up the virtualizer on page 1.
+  const r = useRouterSafe();
+  const pathname = r?.routeInfo?.pathname;
+  useEffect(() => {
+    if (pathname) {
+      return subscribeToScrollEvent(pathname, () => {
+        setKey((k) => k + 1);
+      });
+    }
+  }, [pathname]);
+
+  // When the virtual list isn't in the active screen, bump the key to reset
+  // the virtualizer rather than relying on VirtualListInternal to scroll to top.
   const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   useEffect(() => {
     if (!focused.current) {
