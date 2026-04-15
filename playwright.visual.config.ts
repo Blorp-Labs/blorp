@@ -5,7 +5,7 @@ const STORYBOOK_PORT = 6006;
 export default defineConfig({
   testDir: "./visual",
   snapshotDir: "./visual-snapshots",
-  snapshotPathTemplate: "{snapshotDir}/{arg}{ext}",
+  snapshotPathTemplate: "{snapshotDir}/{platform}/{arg}{ext}",
   fullyParallel: false,
   forbidOnly: !!process.env["CI"],
   retries: 0,
