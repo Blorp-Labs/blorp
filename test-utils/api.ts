@@ -46,7 +46,6 @@ export function getPerson(overrides?: Partial<Schemas.Person>): Schemas.Person {
   return {
     createdAt: relativeTime(),
     id,
-    apId,
     avatar: null,
     slug: createSlug({ apId, name: String(id) }).slug,
     matrixUserId: null,
@@ -56,6 +55,8 @@ export function getPerson(overrides?: Partial<Schemas.Person>): Schemas.Person {
     isBanned: false,
     postCount: 100,
     commentCount: 2000,
+    ...overrides,
+    apId,
   };
 }
 

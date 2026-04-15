@@ -35,6 +35,7 @@ import {
   useIonPageElement,
   useMedia,
   useTheme,
+  useRequireAuth,
 } from "../hooks";
 import { Page } from "../components/page";
 import { CommentSkeleton } from "../components/comments/comment-skeleton";
@@ -48,7 +49,6 @@ import { SearchBar } from "./search/search-bar";
 import { useCommentsByPaths } from "../stores/comments";
 import { useCommunityFromStore } from "../stores/communities";
 import { useQueryToast } from "../hooks/use-query-toast";
-import { useRequireAuth } from "../components/auth-context";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;

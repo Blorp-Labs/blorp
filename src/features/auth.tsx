@@ -1,24 +1,22 @@
 import {
-  createContext,
   FormEvent,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { getAccountSite, useAuth } from "@/src/stores/auth";
 import {
-  // eslint-disable-next-line local/no-query-hooks-in-components -- auth-context is a session bootstrapper, not a UI component. It owns the auth lifecycle (login, register, captcha, site config) and is the only appropriate place to fetch these.
+  getAccountSite,
+  useAuth,
+  useLoginSuggestions,
+} from "@/src/stores/auth";
+import {
   useCaptchaQuery,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useInstancesQuery,
   useLoginMutation,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useRefreshAuthQuery,
   useRegisterMutation,
-  // eslint-disable-next-line local/no-query-hooks-in-components -- same as above
   useSiteQuery,
 } from "../queries";
 import fuzzysort from "fuzzysort";
@@ -30,40 +28,45 @@ import {
   IonModal,
   IonToolbar,
 } from "@ionic/react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "./ui/input-otp";
+} from "../components/ui/input-otp";
 import { LuLoaderCircle } from "react-icons/lu";
 import { FaPlay, FaPause } from "react-icons/fa";
 import { MdOutlineRefresh } from "react-icons/md";
-import { Textarea } from "./ui/textarea";
-import { MarkdownRenderer } from "./markdown/renderer";
+import { Textarea } from "../components/ui/textarea";
+import { MarkdownRenderer } from "../components/markdown/renderer";
 import { env } from "../env";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { cn } from "../lib/utils";
 import { normalizeInstance } from "../normalize-instance";
-import { ToolbarButtons } from "./toolbar/toolbar-buttons";
+import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import {
   Select,
   SelectContent,
   SelectTrigger,
   SelectItem,
   SelectValue,
-} from "./ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+} from "../components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Software } from "../apis/api-blueprint";
-import { ToolbarTitle } from "./toolbar/toolbar-title";
+import { ToolbarTitle } from "../components/toolbar/toolbar-title";
 import { ChevronLeft, Spinner, X } from "@/src/components/icons";
+import { AuthContext } from "../hooks/use-require-auth";
+import { Field, FieldLabel } from "../components/ui/field";
+import { useQueryToast } from "../hooks/use-query-toast";
+import { getFirstZodIssue } from "../lib/zod";
+import { Badge } from "../components/ui/badge";
 
 function LegalNotice({ instance }: { instance: SelectedInstance }) {
   return (
     <span className="mx-auto text-muted-foreground text-sm text-center">
-      By signing up you agree to {instance.baseurl} and{" "}
+      By signing up you agree to {instance.host} and{" "}
       <a
         className="underline"
         href="https://blorpblorp.xyz/terms"
@@ -84,6 +87,22 @@ function InstanceSelect({
   instance: SelectedInstance;
   setInstance: (val: string) => void;
 }) {
+  const options = useMemo(() => {
+    return env.defaultInstances.map((i) => {
+      let label: string = i;
+
+      try {
+        const url = new URL(i);
+        label = `@${url.host}`;
+      } catch {}
+
+      return {
+        value: i,
+        label,
+      };
+    });
+  }, []);
+
   if (
     !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ||
     env.defaultInstances.length <= 1
@@ -94,13 +113,13 @@ function InstanceSelect({
   return (
     <Select value={instance.url} onValueChange={(val) => setInstance(val)}>
       <SelectTrigger className="w-64">
-        <SelectValue>@{instance.baseurl}</SelectValue>
+        <SelectValue>@{instance.host}</SelectValue>
       </SelectTrigger>
       <SelectContent align="end">
         {/* TODO: Render @instance instead of full url */}
-        {env.defaultInstances.map((i) => (
-          <SelectItem key={i} value={i}>
-            {i}
+        {options.map(({ value, label }) => (
+          <SelectItem key={value} value={value}>
+            {label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -113,19 +132,26 @@ const AudioPlayButton = ({ src }: { src: string }) => {
   const audioRef = useRef(new Audio(`data:audio/wav;base64,${src}`));
 
   useEffect(() => {
+    audioRef.current.pause();
+    audioRef.current.src = `data:audio/wav;base64,${src}`;
+    audioRef.current.load();
+    setPlaying(false);
+  }, [src]);
+
+  useEffect(() => {
     const start = () => setPlaying(true);
     const stop = () => setPlaying(false);
 
-    const current = audioRef.current;
+    const audio = audioRef.current;
 
-    current.addEventListener("play", start);
-    current.addEventListener("ended", stop);
-    current.addEventListener("pause", stop);
+    audio.addEventListener("play", start);
+    audio.addEventListener("ended", stop);
+    audio.addEventListener("pause", stop);
 
     return () => {
-      current.removeEventListener("play", start);
-      current.removeEventListener("ended", stop);
-      current.removeEventListener("pause", stop);
+      audio.removeEventListener("play", start);
+      audio.removeEventListener("ended", stop);
+      audio.removeEventListener("pause", stop);
     };
   }, []);
 
@@ -139,17 +165,11 @@ const AudioPlayButton = ({ src }: { src: string }) => {
   };
 
   return (
-    <button type="button" onClick={handlePlay}>
+    <Button size="icon" variant="outline" type="button" onClick={handlePlay}>
       {playing ? <FaPause /> : <FaPlay />}
-    </button>
+    </Button>
   );
 };
-
-const Context = createContext<{
-  authenticate: (config?: { addAccount?: boolean }) => Promise<void>;
-}>({
-  authenticate: () => Promise.reject(),
-});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = useRefreshAuthQuery();
@@ -195,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refresh.isSuccess, isLoggedIn, site, authenticate]);
 
   return (
-    <Context.Provider
+    <AuthContext.Provider
       value={{
         authenticate,
       }}
@@ -207,12 +227,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onSuccess={() => promise?.resolve()}
         addAccount={promise?.addAccount === true}
       />
-    </Context.Provider>
+    </AuthContext.Provider>
   );
-}
-
-export function useRequireAuth() {
-  return useContext(Context).authenticate;
 }
 
 function useAuthSite({
@@ -223,21 +239,19 @@ function useAuthSite({
   instance: SelectedInstance;
 }) {
   return useSiteQuery({
-    instance: search || instance.baseurl || env.defaultInstance,
+    instance: search || instance.host || env.defaultInstance,
   });
 }
 
 function InstanceSelectionPage({
   instance,
   setInstance,
-  software,
-  setSoftware,
 }: {
   instance: SelectedInstance;
   setInstance: (newInstance: string) => void;
-  software: Software;
-  setSoftware: (software: Software) => void;
 }) {
+  const [software, setSoftware] = useState<Software | "all">("all");
+
   const [search, setSearch] = useState("");
   const searchUrl = useMemo(() => {
     try {
@@ -248,15 +262,24 @@ function InstanceSelectionPage({
   }, [search]);
 
   const instances = useInstancesQuery();
+  const suggestions = useAuth((s) => s.knownAccounts);
+  const keyedSuggestions = useMemo(
+    () => _.keyBy(suggestions, "instance"),
+    [suggestions],
+  );
 
   const site = useSiteQuery(
     {
-      instance: searchUrl ?? instance.baseurl,
+      instance: searchUrl ?? instance.host,
     },
     {
       retry: false,
     },
   );
+
+  useQueryToast(site, {
+    error: getFirstZodIssue(site.error)?.message,
+  });
 
   const data = useMemo(() => {
     const output = [...(instances.data ?? [])];
@@ -274,7 +297,8 @@ function InstanceSelectionPage({
       } catch {}
     }
     return _.uniqBy(output, ({ host }) => host).filter(
-      (item) => !item.software || item.software === software,
+      (item) =>
+        software === "all" || !item.software || item.software === software,
     );
   }, [instances.data, site.data, software]);
 
@@ -287,7 +311,7 @@ function InstanceSelectionPage({
       (acc, crnt) => acc + (crnt.software === "piefed" ? 1 : 0),
       0,
     );
-    return { lemmy, piefed };
+    return { lemmy, piefed, all: _.sum(_.compact([lemmy, piefed])) };
   }, [instances.data]);
 
   const sortedInstances =
@@ -321,9 +345,12 @@ function InstanceSelectionPage({
           type="single"
           variant="outline"
           size="sm"
-          value={software}
+          value={software ?? "all"}
           onValueChange={(val) => val && setSoftware(val as Software)}
         >
+          <ToggleGroupItem value="all" data-testid="auth-filter-all">
+            All ({counts.all})
+          </ToggleGroupItem>
           <ToggleGroupItem value="lemmy" data-testid="auth-filter-lemmy">
             Lemmy ({counts.lemmy})
           </ToggleGroupItem>
@@ -348,11 +375,14 @@ function InstanceSelectionPage({
             <AvatarImage src={i.icon} />
             <AvatarFallback>{i.host[0]}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1.5 leading-tight">
             <span>{i.host}</span>
             <span className="text-sm text-muted-foreground">
               {i.description}
             </span>
+            {keyedSuggestions[i.url] && (
+              <Badge variant="brand">Previously used</Badge>
+            )}
           </div>
         </button>
       ))}
@@ -378,7 +408,12 @@ function LoginForm({
   const updateSelectedAccount = useAuth((a) => a.updateSelectedAccount);
   const addAccountFn = useAuth((a) => a.addAccount);
 
-  const [userName, setUsername] = useState("");
+  const suggestions = useLoginSuggestions(instance.url);
+  const suggestedUsername =
+    suggestions.length === 1 ? suggestions[0]?.username.split("@")[0] : null;
+
+  const [_username, setUsername] = useState<string | null>();
+  const username = _username ?? suggestedUsername ?? "";
   const [password, setPassword] = useState("");
   const [mfaToken, setMfaToken] = useState<string>();
 
@@ -400,7 +435,7 @@ function LoginForm({
   const mutateLogin = (newMfaToken = mfaToken) => {
     login
       .mutateAsync({
-        username: userName,
+        username: username,
         password: password,
         mfaCode: newMfaToken,
       })
@@ -418,110 +453,119 @@ function LoginForm({
   return (
     <form
       onSubmit={submitLogin}
-      className="gap-4 flex flex-col p-4 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden"
+      className="gap-4 flex flex-col p-6 overflow-y-auto ion-content-scroll-host h-full overflow-x-hidden"
       data-testid="login-form"
     >
-      <div className="flex flex-col gap-1">
-        <label className="text-muted-foreground text-sm">Username</label>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-5">
+        <span className="text-2xl font-bold">Login to {instance.host}</span>
+
+        <p>
+          Login with your <b>{instance.host}</b> credentials. If your account is
+          hosted on a different server, you must change instance before loggin
+          in.
+        </p>
+
+        <Field>
+          <FieldLabel required>Username</FieldLabel>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Username"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              required
+            />
+            <InstanceSelect instance={instance} setInstance={setInstance} />
+          </div>
+        </Field>
+
+        <Field>
+          <FieldLabel required>Password</FieldLabel>
           <Input
-            placeholder="Username"
-            id="username"
-            defaultValue={userName}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
+            placeholder="Enter password"
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
             required
           />
-          <InstanceSelect instance={instance} setInstance={setInstance} />
-        </div>
-      </div>
+        </Field>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-muted-foreground text-sm">Password</label>
-        <Input
-          placeholder="Enter password"
-          type="password"
-          id="password"
-          defaultValue={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          required
-        />
-      </div>
+        {(login.needsMfa || _.isString(mfaToken)) && (
+          <InputOTP
+            data-testid="otp-input"
+            maxLength={6}
+            value={mfaToken}
+            onChange={(newMfa) => {
+              setMfaToken(newMfa);
+              if (newMfa.length === 6) {
+                mutateLogin(newMfa);
+              }
+            }}
+            autoComplete="one-time-code"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            required
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+            </InputOTPGroup>
+            <InputOTPSeparator />
+            <InputOTPGroup>
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+        )}
 
-      {(login.needsMfa || _.isString(mfaToken)) && (
-        <InputOTP
-          data-testid="otp-input"
-          maxLength={6}
-          defaultValue={mfaToken}
-          onChange={(newMfa) => {
-            setMfaToken(newMfa);
-            if (newMfa.length === 6) {
-              mutateLogin(newMfa);
-            }
-          }}
-          autoComplete="one-time-code"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          required
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-          </InputOTPGroup>
-          <InputOTPSeparator />
-          <InputOTPGroup>
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-          </InputOTPGroup>
-        </InputOTP>
-      )}
-
-      <Button type="submit" className="mx-auto">
-        Sign In
-        {login.isPending && <LuLoaderCircle className="animate-spin" />}
-      </Button>
-
-      <span className="mx-auto">
-        Need an account?
-        <Button type="button" variant="link" onClick={handleSignup}>
-          Sign up
+        <Button type="submit" className="">
+          Sign In
+          {login.isPending && <LuLoaderCircle className="animate-spin" />}
         </Button>
-      </span>
 
-      {site.data?.site.privateInstance === false && (
-        <Button
-          type="button"
-          className="mx-auto"
-          variant="ghost"
-          onClick={() => {
-            if (addAccount) {
-              addAccountFn({
-                instance: instance.url,
-              });
-            } else {
-              updateSelectedAccount({
-                instance: instance.url,
-              });
-            }
-            // setInstance(null);
-            onClose();
-          }}
-        >
-          Continue as Guest
-        </Button>
-      )}
+        <span className="mx-auto">
+          <Button type="button" variant="link" onClick={handleSignup}>
+            Sign up
+          </Button>
 
-      <LegalNotice instance={instance} />
+          {site.data?.site.privateInstance === false && (
+            <Button
+              type="button"
+              className="mx-auto"
+              variant="link"
+              onClick={() => {
+                if (addAccount) {
+                  addAccountFn({
+                    instance: instance.url,
+                  });
+                } else {
+                  updateSelectedAccount({
+                    instance: instance.url,
+                  });
+                }
+                // setInstance(null);
+                onClose();
+              }}
+            >
+              Continue as Guest
+            </Button>
+          )}
+        </span>
+
+        <LegalNotice instance={instance} />
+      </div>
     </form>
   );
 }
@@ -583,7 +627,7 @@ function SignupForm({
   const applicationQuestion = site.data?.site.applicationQuestion;
 
   return (
-    <div className="p-4 overflow-y-auto ion-content-scroll-host h-full">
+    <div className="p-6 overflow-y-auto ion-content-scroll-host h-full">
       {site.data?.site.software === "piefed" && (
         <div className="bg-destructive text-background p-1 rounded-md text-center mb-4 sticky top-0">
           PieFed doesn't yet support registrations through 3rd party clients
@@ -599,11 +643,22 @@ function SignupForm({
 
       <form
         onSubmit={submitLogin}
-        className="gap-4 flex flex-col"
+        className="gap-5 flex flex-col"
         data-testid="signup-form"
       >
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm">Email</label>
+        <span className="text-2xl font-bold">
+          Let's get you set up on {instance.host}.
+        </span>
+
+        <p>
+          With an account on this server, you'll be able to follow any other
+          person on the fediverse, regardless of where their account is hosted.
+        </p>
+
+        <Field>
+          <FieldLabel required htmlFor="email">
+            Email
+          </FieldLabel>
           <Input
             placeholder="Email"
             id="email"
@@ -614,12 +669,12 @@ function SignupForm({
             autoCorrect="off"
             spellCheck={false}
           />
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm" htmlFor="username">
+        <Field>
+          <FieldLabel required htmlFor="username">
             Username
-          </label>
+          </FieldLabel>
           <div className="flex gap-2">
             <Input
               placeholder="Username"
@@ -634,12 +689,12 @@ function SignupForm({
             />
             <InstanceSelect instance={instance} setInstance={setInstance} />
           </div>
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm" htmlFor="password">
+        <Field>
+          <FieldLabel required htmlFor="password">
             Password
-          </label>
+          </FieldLabel>
           <Input
             placeholder="Enter password"
             type="password"
@@ -652,14 +707,9 @@ function SignupForm({
             spellCheck={false}
             required
           />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-muted-foreground text-sm">
-            Verify Password
-          </label>
           <Input
-            placeholder="Verify password"
+            wrapperClassName="mt-1"
+            placeholder="Confirm password"
             type="password"
             id="password"
             defaultValue={verifyPassword}
@@ -670,44 +720,66 @@ function SignupForm({
             spellCheck={false}
             required
           />
-        </div>
+        </Field>
 
         {captcha.isPending && <LuLoaderCircle className="animate-spin" />}
 
         {captcha.data && (
-          <div className="flex flex-row gap-4">
-            <div className="flex flex-col justify-around items-center p-2">
-              <button onClick={() => captcha.refetch()} type="button">
-                <MdOutlineRefresh size={24} />
-              </button>
-
-              <AudioPlayButton src={captcha.data?.audioUrl} />
+          <Field className="bg-secondary p-3 rounded-md flex md:flex-row gap-4 justify-between">
+            <div className="flex flex-col gap-3 justify-between">
+              <FieldLabel required htmlFor="captcha">
+                Captcha
+              </FieldLabel>
+              <Input
+                id="captcha"
+                wrapperClassName="bg-background"
+                className="self-center"
+                placeholder="Captcha answer"
+                value={captchaAnswer}
+                onChange={(e) => setCaptchaAnswer(e.target.value)}
+              />
             </div>
 
-            <img
-              src={`data:image/png;base64,${captcha.data?.imgUrl}`}
-              className="h-28 aspect-video object-contain"
-            />
+            <div className="md:contents flex flex-row gap-3">
+              <div className="flex flex-col justify-around items-center p-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => captcha.refetch()}
+                  type="button"
+                >
+                  <MdOutlineRefresh size={24} />
+                </Button>
 
-            <Input
-              className="self-center"
-              value={captchaAnswer}
-              onChange={(e) => setCaptchaAnswer(e.target.value)}
-            />
-          </div>
+                <AudioPlayButton src={captcha.data?.audioUrl} />
+              </div>
+
+              <img
+                src={`data:image/png;base64,${captcha.data?.imgUrl}`}
+                className="h-28 aspect-video object-contain"
+              />
+            </div>
+          </Field>
         )}
 
         {applicationQuestion && (
-          <MarkdownRenderer markdown={applicationQuestion} />
+          <>
+            <div className="bg-amber-100 text-amber-800 border-amber-800 border p-2 rounded-md">
+              To join this server, you need to fill out the application below,
+              and wait to be accepted.
+            </div>
+            <MarkdownRenderer markdown={applicationQuestion} />
+          </>
         )}
 
         <Textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           required
+          placeholder="Application answer"
         />
 
-        <Button type="submit" className="mx-auto">
+        <Button type="submit">
           Sign up
           {register.isPending && <LuLoaderCircle className="animate-spin" />}
         </Button>
@@ -720,12 +792,12 @@ function SignupForm({
 
 const DEFAULT_INSTACE = {
   url: env.defaultInstance,
-  baseurl: new URL(env.defaultInstance).host,
+  host: new URL(env.defaultInstance).host,
 };
 
 type SelectedInstance = {
   url: string;
-  baseurl: string;
+  host: string;
 };
 
 function useInstanceState() {
@@ -736,13 +808,13 @@ function useInstanceState() {
       _setInstanceLocal(DEFAULT_INSTACE);
       return;
     }
-    let baseurl: string | undefined = undefined;
+    let host: string | undefined = undefined;
     try {
-      baseurl = new URL(url).host;
+      host = new URL(url).host;
     } catch {}
     _setInstanceLocal({
       url,
-      baseurl: baseurl ?? url,
+      host: host ?? url,
     });
   };
 
@@ -753,9 +825,7 @@ function useInstanceState() {
   return [_instance, setInstanceLocal] as const;
 }
 
-const INIT_STEP = env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE
-  ? "login"
-  : "instance-selection";
+const INIT_STEP = "login";
 
 function AuthModal({
   open,
@@ -775,13 +845,12 @@ function AuthModal({
   const [instance, setInstance] = useInstanceState();
   const modal = useRef<HTMLIonModalElement>(null);
 
-  const [software, setSoftware] = useState<Software>(
-    _.sample([Software.LEMMY, Software.PIEFED]),
-  );
-
   const resetForm = () => {
     setStep(INIT_STEP);
   };
+
+  const canGoBack =
+    step !== "instance-selection" && !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE;
 
   return (
     <IonModal
@@ -795,6 +864,7 @@ function AuthModal({
           <ToolbarButtons side="left">
             <IonButton
               className="size-5"
+              data-testid={canGoBack ? "auth-change-instance" : "auth-close"}
               onClick={() => {
                 if (
                   step !== "instance-selection" &&
@@ -806,8 +876,7 @@ function AuthModal({
                 }
               }}
             >
-              {step !== "instance-selection" &&
-              !env.REACT_APP_LOCK_TO_DEFAULT_INSTANCE ? (
+              {canGoBack ? (
                 <ChevronLeft
                   className="-ml-1"
                   aria-label="Back to instance selection"
@@ -819,7 +888,7 @@ function AuthModal({
             <ToolbarTitle numRightIcons={0}>
               {step === "instance-selection"
                 ? "Chose an instance"
-                : instance.baseurl}
+                : "Change instance"}
             </ToolbarTitle>
           </ToolbarButtons>
           {step !== "instance-selection" && (
@@ -844,8 +913,6 @@ function AuthModal({
               setInstance(val);
               setStep("login");
             }}
-            software={software}
-            setSoftware={setSoftware}
           />
         )}
 

@@ -765,17 +765,12 @@ export function useRegisterMutation(config: {
       if (res.jwt && config.instance) {
         const payload = {
           jwt: res.jwt,
+          instance: config.instance,
         };
         if (config?.addAccount) {
-          addAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          addAccount(payload);
         } else {
-          updateSelectedAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          updateSelectedAccount(payload);
         }
       }
       return res;
@@ -831,17 +826,12 @@ export function useLoginMutation(config: {
       if (res.jwt && config.instance) {
         const payload = {
           jwt: res.jwt,
+          instance: config.instance,
         };
         if (config?.addAccount) {
-          addAccount({
-            ...payload,
-            instance: config.instance,
-          });
+          addAccount(payload);
         } else {
-          updateSelectedAccount({
-            ...payload,
-            instance: config?.instance,
-          });
+          updateSelectedAccount(payload);
         }
       }
       return res;
@@ -2095,17 +2085,15 @@ export function useInstancesQuery() {
           )
           .parse(json);
 
-        return _.shuffle(
-          _.uniqBy(
-            lemmy.map((item) => ({
-              host: new URL(item.url).host,
-              url: normalizeInstance(item.url),
-              software: item.software as typeof item.software | undefined,
-              description: item.description,
-              icon: item.icon,
-            })),
-            ({ url }) => url,
-          ),
+        return _.uniqBy(
+          lemmy.map((item) => ({
+            host: new URL(item.url).host.replace(/^www\./, ""),
+            url: normalizeInstance(item.url),
+            software: item.software as typeof item.software | undefined,
+            description: item.description,
+            icon: item.icon,
+          })),
+          ({ url }) => url,
         );
       } catch {
         return undefined;

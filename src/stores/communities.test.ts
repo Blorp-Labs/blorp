@@ -13,8 +13,12 @@ import _ from "lodash";
 import { renderHook, act } from "@testing-library/react";
 import { SubscribedType } from "lemmy-v3";
 import { getCachePrefixer } from "./auth";
+import { normalizeInstance } from "../normalize-instance";
 
-const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
+const prefix = getCachePrefixer({
+  instance: normalizeInstance("lemmy.world"),
+  uuid: "test",
+});
 
 afterEach(() => {
   const { result } = renderHook(() => useCommunitiesStore());

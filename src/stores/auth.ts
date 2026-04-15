@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useShallow } from "zustand/shallow";
 import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { env } from "../env";
@@ -8,11 +9,13 @@ import { Schemas, siteSchema } from "../apis/api-blueprint";
 import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../normalize-instance";
+import { DistributedOmit } from "type-fest";
 
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
 
 const MAX_LOGGED_OUT_UUIDS = 20;
+const MAX_KNOWN_ACCOUNTS = 20;
 
 export function getCachePrefixer(account: Account | undefined): CachePrefixer {
   let prefix = "";
@@ -35,14 +38,14 @@ export function getCachePrefixer(account: Account | undefined): CachePrefixer {
 
 const accountSchema = z.union([
   z.object({
-    instance: z.string(),
+    instance: z.string().transform(normalizeInstance),
     jwt: z.string().optional(),
     site: siteSchema,
     uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
   }),
   z.object({
-    instance: z.string(),
+    instance: z.string().transform(normalizeInstance),
     jwt: z.string().optional(),
     uuid: z.string(),
     siteUpdatedAt: z.number().optional(),
@@ -51,10 +54,22 @@ const accountSchema = z.union([
 
 export type Account = z.infer<typeof accountSchema>;
 
+export type UpdateAccount = DistributedOmit<Account, "instance"> & {
+  instance: string;
+};
+
+const knownAccountSchema = z.object({
+  instance: z.string().transform(normalizeInstance),
+  username: z.string(),
+});
+
+export type KnownAccount = z.infer<typeof knownAccountSchema>;
+
 const storeSchema = z.object({
   accounts: z.array(accountSchema),
   selectedUuid: z.string().optional(),
   loggedOutUuids: z.array(z.string()).optional(),
+  knownAccounts: z.array(knownAccountSchema).optional(),
   /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
   accountIndex: z.number().optional(),
 });
@@ -66,9 +81,9 @@ type Uuid = string;
 type AuthStore = {
   getSelectedAccount: () => Account;
   isLoggedIn: () => boolean;
-  updateSelectedAccount: (patch: Partial<Account>) => any;
+  updateSelectedAccount: (patch: Partial<UpdateAccount>) => any;
   updateAccountSite: (uuid: Uuid, site: Schemas.Site) => any;
-  addAccount: (patch?: Partial<Account>) => any;
+  addAccount: (patch?: Partial<UpdateAccount>) => any;
   selectAccount: (uuid: Uuid) => Account | null;
   logout: (uuid?: Uuid) => any;
   logoutMultiple: (uuids: Uuid[]) => any;
@@ -119,6 +134,7 @@ function getNewAccount(): Account {
 
 const INIT_STATE = {
   accounts: [getNewAccount()],
+  knownAccounts: [] satisfies KnownAccount[],
   /** @deprecated Hard-coded to 0. Kept so v4 can still parse this store without throwing. */
   accountIndex: 0,
 };
@@ -244,19 +260,23 @@ export const useAuth = create<AuthStore>()(
       },
       updateAccountSite: (selectedUuid, site) => {
         const state = get();
-        let { accounts } = state;
+        let { accounts, knownAccounts = [] } = state;
         accounts = accounts.map((a) =>
           a.uuid === selectedUuid
-            ? {
-                ...a,
-                site,
-                siteUpdatedAt: Date.now(),
-              }
+            ? { ...a, site, siteUpdatedAt: Date.now() }
             : a,
         );
-        set({
-          accounts,
-        });
+        if (site.me) {
+          const account = accounts.find((a) => a.uuid === selectedUuid);
+          const username = site.me.slug;
+          if (account?.instance && username) {
+            knownAccounts = _.uniqBy(
+              [{ instance: account.instance, username }, ...knownAccounts],
+              (ka) => `${ka.instance}:${ka.username}`,
+            ).slice(0, MAX_KNOWN_ACCOUNTS);
+          }
+        }
+        set({ accounts, knownAccounts });
       },
       updateSelectedAccount: (patch) => {
         const state = get();
@@ -267,6 +287,7 @@ export const useAuth = create<AuthStore>()(
             ? {
                 ...a,
                 ...patch,
+                instance: normalizeInstance(patch.instance ?? a.instance),
                 ...("site" in patch && patch.site
                   ? { siteUpdatedAt: Date.now() }
                   : null),
@@ -444,4 +465,36 @@ export function useAmIAdmin() {
     const site = getAccountSite(account);
     return site?.me?.apId && site?.admins?.includes(site.me?.apId);
   });
+}
+
+export function useLoginSuggestions(instance: string) {
+  return useAuth(
+    useShallow((state) => {
+      if (instance.trim().length === 0) {
+        return [];
+      }
+
+      const { knownAccounts = [], accounts } = state;
+
+      const normalizedInstance = normalizeInstance(instance);
+
+      const loggedInSlugs = new Set(
+        _.compact(
+          accounts
+            .filter((a) => {
+              if (!a.jwt) {
+                return false;
+              }
+              return a.instance === normalizedInstance;
+            })
+            .map((a) => getAccountSite(a)?.me?.slug),
+        ),
+      );
+
+      return knownAccounts.filter(
+        (ka) =>
+          ka.instance === normalizedInstance && !loggedInSlugs.has(ka.username),
+      );
+    }),
+  );
 }

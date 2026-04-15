@@ -8,11 +8,11 @@ import { Button } from "../../ui/button";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useVotePostPollMutation } from "@/src/queries/post-mutations";
-import { useRequireAuth } from "../../auth-context";
 import { getAccountSite, useAuth } from "@/src/stores/auth";
 import { ABOVE_LINK_OVERLAY } from "../config";
 import { PersonAvatar } from "../../person/person-avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
+import { useRequireAuth } from "@/src/hooks";
 dayjs.extend(utc);
 
 function formatPercent(value: number) {

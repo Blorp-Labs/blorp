@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
+import { normalizeInstance } from "../src/normalize-instance";
 
 const TEST_JWT = "test-piefed-inbox-jwt";
 const TEST_UUID = "test-piefed-inbox-uuid";
@@ -17,7 +18,7 @@ async function mockInboxApis(page: Page) {
 
 test("inbox loads when logged in", async ({ page }) => {
   await seedAuth(page, {
-    instance: "piefed.social",
+    instance: normalizeInstance("piefed.social"),
     jwt: TEST_JWT,
     uuid: TEST_UUID,
   });

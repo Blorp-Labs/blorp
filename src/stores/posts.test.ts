@@ -12,9 +12,13 @@ import * as api from "@/test-utils/api";
 import { usePostsStore } from "./posts";
 import _ from "lodash";
 import { getCachePrefixer } from "./auth";
+import { normalizeInstance } from "../normalize-instance";
 import { Schemas } from "../apis/api-blueprint";
 
-const prefix = getCachePrefixer({ instance: "123", uuid: "test" });
+const prefix = getCachePrefixer({
+  instance: normalizeInstance("lemmy.world"),
+  uuid: "test",
+});
 
 afterEach(() => {
   const { result } = renderHook(() => usePostsStore());

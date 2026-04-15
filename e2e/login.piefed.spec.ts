@@ -48,6 +48,7 @@ test("login", async ({ page }, testInfo) => {
   }
 
   const authModal = page.getByTestId("auth-modal");
+  await authModal.getByTestId("auth-change-instance").click();
   await page.getByTestId("auth-filter-piefed").click();
   await authModal.getByText("piefed.social").click();
   await authModal.getByPlaceholder("Username").fill(USERNAME);

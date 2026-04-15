@@ -1,6 +1,5 @@
 import { useIonRouter } from "@ionic/react";
 import { useCreatePostStore } from "@/src/stores/create-post";
-import { useRequireAuth } from "@/src/components/auth-context";
 import { parseAccountInfo, useAuth } from "@/src/stores/auth";
 import { resolveRoute } from "@/src/routing/index";
 import { v4 as uuid } from "uuid";
@@ -9,6 +8,7 @@ import {
   buildErrorReport,
   buildIssueUrl,
 } from "@/src/lib/error-reporting";
+import { useRequireAuth } from "../hooks";
 
 export function useReportError({
   contextFields,
