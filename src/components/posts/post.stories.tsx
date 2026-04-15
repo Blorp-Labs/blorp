@@ -173,6 +173,13 @@ async function loadData() {
     useProfilesStore,
     useFlairsStore,
   );
+  useAuth.getState().updateSelectedAccount({
+    site: api.getSite({
+      showNsfw: true,
+      blurNsfw: true,
+    }),
+    jwt: "123",
+  });
   const prefixer = useAuth.getState().getCachePrefixer();
   useProfilesStore.getState().cacheProfiles(
     prefixer,
@@ -183,18 +190,6 @@ async function loadData() {
     POSTS.map((p) => p.post),
   );
   useFlairsStore.getState().cacheFlairs(prefixer, postFlairs);
-}
-
-// showNsfw: true makes the post visible; blurNsfw: true keeps the blur overlay.
-async function loadNsfwSettings() {
-  await waitForHydration(useAuth);
-  useAuth.getState().updateSelectedAccount({
-    site: api.getSite({
-      showNsfw: true,
-      blurNsfw: true,
-    }),
-    jwt: "123",
-  });
 }
 
 //👇 This default export determines where your story goes in the story list
@@ -354,10 +349,7 @@ export const WithManyReactionsTruncated: Story = {
   },
 };
 
-const nsfwLoaders: Story["loaders"] = [loadNsfwSettings];
-
 export const NsfwImage: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwImagePost.post.apId,
     postCardStyle: "large",
@@ -365,7 +357,6 @@ export const NsfwImage: Story = {
 };
 
 export const NsfwArticle: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwArticlePost.post.apId,
     postCardStyle: "large",
@@ -373,7 +364,6 @@ export const NsfwArticle: Story = {
 };
 
 export const NsfwVideo: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwVideoPost.post.apId,
     postCardStyle: "large",
@@ -381,7 +371,6 @@ export const NsfwVideo: Story = {
 };
 
 export const NsfwLoops: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwLoopsPost.post.apId,
     postCardStyle: "large",
@@ -389,7 +378,6 @@ export const NsfwLoops: Story = {
 };
 
 export const NsfwRedGif: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwRedGifPost.post.apId,
     postCardStyle: "large",
@@ -397,7 +385,6 @@ export const NsfwRedGif: Story = {
 };
 
 export const NsfwPeerTube: Story = {
-  loaders: nsfwLoaders,
   args: {
     apId: nsfwPeerTubePost.post.apId,
     postCardStyle: "large",
