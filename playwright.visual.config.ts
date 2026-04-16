@@ -17,6 +17,13 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 600, height: 600 },
+        launchOptions: {
+          args: [
+            "--font-render-hinting=none",
+            "--disable-skia-runtime-opts",
+            "--force-device-scale-factor=1",
+          ],
+        },
       },
     },
   ],
