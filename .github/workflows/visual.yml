@@ -6,6 +6,12 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: "Regenerate snapshots and commit them"
+        type: boolean
+        default: false
 
 concurrency:
   group: "visual-${{ github.event.pull_request.head.sha || github.sha }}"
@@ -14,10 +20,10 @@ concurrency:
 jobs:
   visual:
     name: Visual Snapshot Tests
-    if: github.event.pull_request.draft == false || github.event_name == 'push'
+    if: github.event.pull_request.draft == false || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +48,21 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm playwright install --with-deps chromium
 
+      - name: Update snapshots
+        if: inputs.update_snapshots
+        run: pnpm test:visual:update
+
+      - name: Commit updated snapshots
+        if: inputs.update_snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add visual-snapshots/
+          git diff --cached --quiet || git commit -m "chore: update visual snapshots"
+          git push
+
       - name: Run visual tests
+        if: "!inputs.update_snapshots"
         run: pnpm test:visual
 
       - name: Upload snapshot diffs on failure
