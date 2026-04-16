@@ -23,7 +23,9 @@
     "test:e2e": "playwright test",
     "test:ts": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build --stats-json"
+    "build-storybook": "storybook build --stats-json",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
     "@blorp-labs/piefed-api-client": "0.0.0-906d602",

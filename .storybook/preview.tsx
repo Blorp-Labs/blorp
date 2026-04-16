@@ -1,13 +1,12 @@
 import * as React from "react";
-import { IonApp, IonContent, IonPage } from "@ionic/react";
+import { IonApp, IonContent, IonPage, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import type { Preview } from "@storybook/react-vite";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { setupIonicReact } from "@ionic/react";
 import { queryClient } from "../src/tanstack-query/query-client";
 import "../src/styles/index.css";
 
-setupIonicReact();
+setupIonicReact({ animated: false });
 
 const preview: Preview = {
   parameters: {

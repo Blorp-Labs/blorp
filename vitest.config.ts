@@ -16,6 +16,6 @@ export default defineConfig({
       reporter: ["text", "json-summary", "json", "html"],
       include: ["src/**"],
     },
-    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/visual/**"],
   },
 });

@@ -2,4 +2,7 @@ node_modules
 dist
 .git
 .vscode
-.yarn/cache
+visual-snapshots/
+playwright-report/
+docs/
+src-tauri/
