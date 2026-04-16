@@ -147,4 +147,5 @@ Want to ask questions, share feedback, or just chat with other Blorp users? Head
 
 ## 📄 License
 
+
 - [AGPL-3.0](https://github.com/Blorp-Labs/blorp/blob/main/LICENSE) © Blorp
