@@ -20,10 +20,7 @@ const COMMUNITY_DESCRIPTION = _.repeat(BODY_TEXT_PARAGRAPH + "\n\n", 2);
 export const randomDbId = () => _.random(2000, 200000);
 
 const absoluteTime = () =>
-  dayjs(1738299372085)
-    .utc()
-    .subtract(1, "hour")
-    .format("YYYY-MM-DDTHH:mm:ss.SSS[000]Z");
+  dayjs(1738238400000).utc().format("YYYY-MM-DDTHH:mm:ss.SSS[000]Z"); // 2025-01-30T12:00:00Z — noon UTC, safe across all timezones
 
 const relativeTime = () =>
   dayjs().utc().subtract(1, "hour").format("YYYY-MM-DDTHH:mm:ss.SSS[000]Z");
