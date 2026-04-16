@@ -14,7 +14,7 @@ on:
         default: false
 
 concurrency:
-  group: "visual-${{ github.event.pull_request.head.sha || github.sha }}"
+  group: "visual-${{ github.event.pull_request.number || github.sha }}"
   cancel-in-progress: true
 
 jobs:

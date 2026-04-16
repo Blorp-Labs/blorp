@@ -1,5 +1,6 @@
 import { deflateSync } from "node:zlib";
 import { test, expect } from "@playwright/test";
+import { z } from "zod";
 
 const STORYBOOK_PORT = 6006;
 const BASE_URL = `http://localhost:${STORYBOOK_PORT}`;
@@ -129,11 +130,15 @@ test("visual snapshots", async ({ page }) => {
   test.setTimeout(300_000);
 
   const response = await page.goto(`${BASE_URL}/index.json`);
-  const { entries } = (await response!.json()) as {
-    entries: Record<string, unknown>;
-  };
+  const { entries } = z
+    .object({ entries: z.record(z.object({ type: z.string() })) })
+    .parse(await response!.json());
 
-  for (const id of Object.keys(entries)) {
+  const storyIds = Object.entries(entries)
+    .filter(([, entry]) => entry.type === "story")
+    .map(([id]) => id);
+
+  for (const id of storyIds) {
     await test.step(id, async () => {
       await page.goto(`${BASE_URL}/iframe.html?id=${id}&viewMode=story`);
 
