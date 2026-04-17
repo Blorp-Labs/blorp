@@ -3,7 +3,6 @@ import { appendFileSync, existsSync, readFileSync } from "node:fs";
 const RESULTS_FILE = "visual-results.json";
 
 if (!existsSync(RESULTS_FILE)) {
-  // eslint-disable-next-line no-undef
   console.error(`${RESULTS_FILE} not found — skipping summary`);
   process.exit(0);
 }
