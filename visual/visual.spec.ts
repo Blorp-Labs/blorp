@@ -85,18 +85,28 @@ function dimensionsFromUrl(url: string): { width: number; height: number } {
 }
 
 test.beforeEach(async ({ page }) => {
-  // Intercept external image/embed requests so tests don't depend on the
-  // network. Return a correctly-sized placeholder PNG so components that
-  // lay out based on natural image dimensions look right.
+  // Intercept all external requests so tests don't depend on the network.
+  // Images get a correctly-sized placeholder PNG so components that lay out
+  // based on natural image dimensions look right. Everything else (iframes,
+  // scripts, etc.) gets an empty HTML page so embedded content like SoundCloud
+  // or Spotify resolves immediately rather than being in-flight at screenshot time.
   await page.route(
-    /picsum\.photos|youtube\.com|youtu\.be|lemmy\.world|w3schools\.com/,
+    (url) => url.hostname !== "localhost",
     (route) => {
-      const { width, height } = dimensionsFromUrl(route.request().url());
-      route.fulfill({
-        status: 200,
-        contentType: "image/png",
-        body: createPlaceholderPng(width, height),
-      });
+      if (route.request().resourceType() === "image") {
+        const { width, height } = dimensionsFromUrl(route.request().url());
+        route.fulfill({
+          status: 200,
+          contentType: "image/png",
+          body: createPlaceholderPng(width, height),
+        });
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: "text/html",
+          body: "<html><body></body></html>",
+        });
+      }
     },
   );
 
@@ -153,7 +163,7 @@ test("visual snapshots", async ({ page }) => {
       await page.addStyleTag({ content: ANIMATION_KILL_CSS });
       // Use soft assertions so all stories are captured even if some fail
       await expect.soft(page).toHaveScreenshot(`${id}.png`, {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.0001,
       });
     });
   }

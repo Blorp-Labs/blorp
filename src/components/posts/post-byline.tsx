@@ -1,7 +1,7 @@
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
-import { useShouldBlurNsfw, useRequireAuth } from "@/src/hooks";
+import { useShouldBlurNsfw, useRequireAuth, useInputAlert } from "@/src/hooks";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "@/src/components/communities/utils";
 import { Link, resolveRoute } from "@/src/routing/index";
@@ -39,7 +39,6 @@ import {
 } from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/queries/index";
-import { useInputAlert } from "@/src/hooks/index";
 import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
 import { usePersonActions } from "../person/person-action-menu";
 import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";

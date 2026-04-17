@@ -10,13 +10,22 @@ export default defineConfig({
   forbidOnly: !!process.env["CI"],
   retries: 0,
   workers: 1,
-  reporter: process.env["CI"] ? "list" : "html",
+  reporter: process.env["CI"]
+    ? [["list"], ["json", { outputFile: "visual-results.json" }]]
+    : "html",
   projects: [
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 600, height: 600 },
+        launchOptions: {
+          args: [
+            "--font-render-hinting=none",
+            "--disable-skia-runtime-opts",
+            "--force-device-scale-factor=1",
+          ],
+        },
       },
     },
   ],
