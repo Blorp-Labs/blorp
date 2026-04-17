@@ -124,14 +124,14 @@ function CommunityCardInner({
 }
 
 function CommunityCardErrorFallback({
-  communitySlug,
+  communityHandle,
   error,
 }: {
-  communitySlug: string;
+  communityHandle: string;
   error: unknown;
 }) {
   const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
-    contextFields: { "Community Slug": communitySlug },
+    contextFields: { "Community Handle": communityHandle },
     reportTitle: "[Crash] Community card rendering error",
     error,
   });
@@ -142,7 +142,7 @@ function CommunityCardErrorFallback({
         Failed to render community
       </p>
       <span className="text-xs text-muted-foreground break-all">
-        {communitySlug}
+        {communityHandle}
       </span>
       <div className="flex flex-wrap justify-end gap-1">
         <Button
@@ -167,7 +167,7 @@ export function CommunityCard(props: CommunityCardProps) {
     <ErrorBoundary
       fallbackRender={({ error }) => (
         <CommunityCardErrorFallback
-          communitySlug={props.communityHandle}
+          communityHandle={props.communityHandle}
           error={error}
         />
       )}

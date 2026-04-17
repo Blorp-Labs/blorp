@@ -479,7 +479,7 @@ export function useLoginSuggestions(instance: string) {
 
       const normalizedInstance = normalizeInstance(instance);
 
-      const loggedInSlugs = new Set(
+      const loggedInHandles = new Set(
         _.compact(
           accounts
             .filter((a) => {
@@ -494,7 +494,8 @@ export function useLoginSuggestions(instance: string) {
 
       return knownAccounts.filter(
         (ka) =>
-          ka.instance === normalizedInstance && !loggedInSlugs.has(ka.username),
+          ka.instance === normalizedInstance &&
+          !loggedInHandles.has(ka.username),
       );
     }),
   );

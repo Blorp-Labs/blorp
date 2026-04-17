@@ -90,7 +90,7 @@ const EMPTY_ARR: never[] = [];
 
 const DraftCardMemoed = memo(function DraftCard({
   title,
-  communitySlug: slug,
+  communityHandle: handle,
   createdAt,
   draftKey: key,
   onClickDraft,
@@ -98,7 +98,7 @@ const DraftCardMemoed = memo(function DraftCard({
   canDelete = false,
 }: {
   title: string | undefined;
-  communitySlug: string | undefined;
+  communityHandle: string | undefined;
   createdAt: number;
   draftKey: string;
   onClickDraft: () => void;
@@ -121,11 +121,11 @@ const DraftCardMemoed = memo(function DraftCard({
       >
         <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
           <RelativeTime time={createdAt} />
-          {slug && (
+          {handle && (
             <>
               <span>•</span>
               <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
-                {slug}
+                {handle}
               </span>
             </>
           )}
@@ -186,7 +186,7 @@ function UnsavedDraftCard({ onClickDraft }: { onClickDraft: () => void }) {
     <DraftCardMemoed
       draftKey={draftId}
       title={draft.title}
-      communitySlug={draft.communityHandle}
+      communityHandle={draft.communityHandle}
       createdAt={draft.createdAt}
       onClickDraft={onClickDraft}
       isActive
@@ -211,7 +211,7 @@ function StoredDraftCard({
     <DraftCardMemoed
       draftKey={draftId}
       title={draft.title}
-      communitySlug={draft.communityHandle}
+      communityHandle={draft.communityHandle}
       createdAt={draft.createdAt}
       onClickDraft={onClickDraft}
       isActive={draftId === stateDraftId}
