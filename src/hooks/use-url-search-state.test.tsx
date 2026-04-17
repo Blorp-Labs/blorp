@@ -283,6 +283,46 @@ describe("useUrlSearchState — chaining", () => {
   });
 });
 
+describe("useUrlSearchState — no-op when URL unchanged", () => {
+  test("setValue does NOT call history.replace when new search matches current search", () => {
+    mockSearch = "?page=2";
+
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    act(() => {
+      result.current.set("2");
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  test("removeParam does NOT call history.replace when param is already absent", () => {
+    mockSearch = "";
+
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    act(() => {
+      result.current.remove();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+});
+
 describe("useUrlSearchState — route isolation", () => {
   test("two route instances have isolated defaults", () => {
     mockSearch = "?apId=post-42";

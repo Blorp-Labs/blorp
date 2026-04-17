@@ -161,6 +161,10 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
         if (!locked.current && getIsActiveRoute()) {
+          const currentSearch = new URLSearchParams(search).toString();
+          if (newSearch === currentSearch) {
+            return;
+          }
           if (replace) {
             history.replace(to);
           } else {
@@ -199,6 +203,10 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
         if (!locked.current && getIsActiveRoute()) {
+          const currentSearch = new URLSearchParams(search).toString();
+          if (newSearch === currentSearch) {
+            return;
+          }
           if (replace) {
             history.replace(to);
           } else {
