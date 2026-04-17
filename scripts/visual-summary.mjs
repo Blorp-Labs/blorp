@@ -40,7 +40,7 @@ const lines = [
 if (failed.length > 0) {
   lines.push("", "### Failed Stories", "");
   for (const s of failed) {
-    lines.push(`- \`${s.id}\``);
+    lines.push(`- [${s.id}](http://localhost:6006/?path=/story/${s.id})`);
   }
 }
 

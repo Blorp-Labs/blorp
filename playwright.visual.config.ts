@@ -11,7 +11,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: process.env["CI"]
-    ? [["list"], ["json", { outputFile: "visual-results.json" }], ["github"]]
+    ? [["list"], ["json", { outputFile: "visual-results.json" }]]
     : "html",
   projects: [
     {
