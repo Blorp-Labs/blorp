@@ -81,7 +81,7 @@ export function useDraftFromUrl() {
       draft.nsfw = true;
     }
   } else {
-    draft.communitySlug = mostRecentCommunity?.slug;
+    draft.communityHandle = mostRecentCommunity?.handle;
   }
 
   const removeTitle = titleParam.remove;
