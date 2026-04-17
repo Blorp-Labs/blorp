@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
+import { normalizeInstance } from "@/src/normalize-instance";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ const NEWER_DRAFT_UUID = "22222222-2222-2222-2222-222222222222";
 
 async function setup(page: Page) {
   await seedAuth(page, {
-    instance: "lemmy.world",
+    instance: normalizeInstance("lemmy.world"),
     jwt: TEST_JWT,
     uuid: TEST_UUID,
   });
