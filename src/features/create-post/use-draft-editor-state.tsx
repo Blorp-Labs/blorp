@@ -121,6 +121,7 @@ export function useDraftEditorState(): EditorState {
     return draftId ? s.drafts[draftId] : undefined;
   });
   const draft = draftFromStore ?? initDraft.draft;
+  const isInitState = !draftFromStore;
 
   const _patchDraft = useCreatePostStore((s) => s.updateDraft);
   const patchDraft = useEvent((key: string, patch: Partial<Draft>) => {
@@ -139,7 +140,9 @@ export function useDraftEditorState(): EditorState {
       ...draft,
       ...patch,
     });
-    initDraft.reset();
+    if (isInitState) {
+      initDraft.reset();
+    }
   });
 
   const resetInitDraft = initDraft.reset;
@@ -148,7 +151,7 @@ export function useDraftEditorState(): EditorState {
     uuid: fallbackUuid,
     draftId,
     draft,
-    isInitState: !draftFromStore,
+    isInitState,
     patchDraft,
     reset: useCallback(() => {
       resetInitDraft().and(draftIdParam.remove);
