@@ -324,7 +324,7 @@ export function PostByline({
       {!hideImage && (
         <Avatar
           className={cn(
-            "h-6 w-6 text-sm",
+            "h-6 w-6 text-sm translate-x-px",
             showCommunity && showCreator && "h-8 w-8 text-md",
           )}
           aria-hidden
