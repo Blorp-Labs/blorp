@@ -92,14 +92,14 @@ export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 
 export function useCommentActions({
   commentView,
-  queryKeyParentId,
   canMod,
   postCreatorId,
+  onEdit,
 }: {
   commentView?: Schemas.Comment;
-  queryKeyParentId?: number;
   canMod?: boolean;
   postCreatorId?: number;
+  onEdit?: () => void;
 }): ActionMenuProps["actions"] {
   const myUserId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.id,
@@ -119,8 +119,6 @@ export function useCommentActions({
 
   const deleteComment = useDeleteCommentMutation();
   const lockComment = useLockCommentMutation();
-
-  const loadCommentIntoEditor = useLoadCommentIntoEditor();
 
   const linkCtx = useLinkContext();
 
@@ -191,17 +189,11 @@ export function useCommentActions({
           },
         ]
       : []),
-    ...(isMyComment && !commentView.deleted
+    ...(isMyComment && !commentView.deleted && onEdit
       ? [
           {
             text: "Edit",
-            onClick: () => {
-              loadCommentIntoEditor({
-                postApId: commentView.postApId,
-                queryKeyParentId: queryKeyParentId,
-                comment: commentView,
-              });
-            },
+            onClick: () => onEdit(),
           } as const,
         ]
       : []),
@@ -577,9 +569,14 @@ function PostCommentInner({
 
   const actions = useCommentActions({
     commentView,
-    queryKeyParentId,
     canMod,
     postCreatorId,
+    onEdit: () =>
+      loadCommentIntoEditor({
+        postApId,
+        queryKeyParentId,
+        comment: commentView,
+      }),
   });
 
   const bgOnParent = sorted.length === 0 && !replyState;
@@ -737,7 +734,7 @@ function PostCommentInner({
                     requireAuth().then(() =>
                       loadCommentIntoEditor({
                         postApId: commentView.postApId,
-                        queryKeyParentId: queryKeyParentId,
+                        queryKeyParentId,
                         parent: commentView,
                       }),
                     )
