@@ -65,6 +65,10 @@ jobs:
         if: "!inputs.update_snapshots"
         run: pnpm test:visual
 
+      - name: Summarize visual test results
+        if: "!inputs.update_snapshots && always()"
+        run: node scripts/visual-summary.mjs
+
       - name: Upload snapshot diffs on failure
         if: failure()
         uses: actions/upload-artifact@v4
