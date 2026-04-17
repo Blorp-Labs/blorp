@@ -32,12 +32,23 @@ function registerSafeArea() {
     () => SafeArea.getSafeAreaInsets().then(updateInsets),
     50,
   );
+
+  // When returning from background, keyboard events may not fire to clear stale
+  // keyboard state — reset it here so insets aren't stuck with the old value.
+  const resetKeyboardOnForeground = () => {
+    if (keyboardShowing) {
+      keyboardShowing = false;
+      document.body.style.setProperty("--keyboard-height", "0");
+    }
+    debouncedUpdateInset();
+  };
+
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
-      debouncedUpdateInset();
+      resetKeyboardOnForeground();
     }
   });
-  window.addEventListener("focus", debouncedUpdateInset);
+  window.addEventListener("focus", resetKeyboardOnForeground);
 
   if (!isAndroid()) {
     Keyboard.addListener("keyboardWillShow", (info) => {
