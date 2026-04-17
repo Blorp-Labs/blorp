@@ -105,6 +105,7 @@ export default tseslint.config(
       "no-empty": "warn",
       "prefer-const": "warn",
       "no-useless-assignment": "warn",
+      "object-shorthand": "warn",
       curly: ["warn", "all"],
       "no-restricted-syntax": ["error", ...restrictions],
       "no-restricted-imports": ["error", importRestrictions],
