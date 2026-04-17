@@ -6,6 +6,9 @@ import {
   RouteSearchParamProvider,
 } from "./use-url-search-state";
 
+// Import after mocks are set up
+import { useUrlSearchState } from "./index";
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 let mockPathname = "/lightbox";
@@ -32,9 +35,6 @@ vi.mock("@ionic/react", () => ({
   useIonAlert: () => [vi.fn()],
 }));
 
-// Import after mocks are set up
-import { useUrlSearchState } from "./index";
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function wrapWithRouteProvider() {
@@ -60,8 +60,9 @@ afterEach(() => {
 
 describe("useUrlSearchState", () => {
   test("setValue updates history when route is active", () => {
-    const { result } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -79,8 +80,9 @@ describe("useUrlSearchState", () => {
   });
 
   test("setValue does NOT update history after route becomes inactive", () => {
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -102,8 +104,9 @@ describe("useUrlSearchState", () => {
   test("removeParam does NOT update history after route becomes inactive", () => {
     mockSearch = "?page=2";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -123,8 +126,9 @@ describe("useUrlSearchState", () => {
   });
 
   test("pending timeouts are cleared when route becomes inactive", () => {
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     act(() => {
@@ -150,8 +154,9 @@ describe("useUrlSearchState — default value behavior", () => {
   test("remembers last URL value as default after param is removed from URL", () => {
     mockSearch = "?page=5";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     // Value should be "5" from URL
@@ -171,8 +176,9 @@ describe("useUrlSearchState — default value behavior", () => {
   test("removeParam resets default back to initial value", () => {
     mockSearch = "?page=5";
 
-    const { result, rerender } = renderHook(() =>
-      useUrlSearchState("page", "1", z.string()),
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
     );
 
     expect(result.current.value).toBe("5");
@@ -190,17 +196,49 @@ describe("useUrlSearchState — default value behavior", () => {
 
     expect(result.current.value).toBe("1");
   });
+
+  test("defaults track the latest setValue even when the URL hasn't updated yet", () => {
+    // Regression: if setValue doesn't eagerly update defaults, and the URL
+    // update is pending in a setTimeout, a remount before the timer fires
+    // causes the fallback to return a stale value (e.g. "c" instead of "cats").
+    mockSearch = "";
+
+    const { result, rerender } = renderHook(
+      () => useUrlSearchState("q", "", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    // Simulate typing char-by-char. Each call schedules a history update
+    // but fake timers prevent them from firing.
+    act(() => {
+      result.current.set("c");
+      result.current.set("ca");
+      result.current.set("cat");
+      result.current.set("cats");
+    });
+
+    // Simulate remount before timers fire — the URL still has no param,
+    // so value is undefined and the hook must fall back to defaults.
+    act(() => {
+      rerender();
+    });
+
+    expect(result.current.value).toBe("cats");
+  });
 });
 
 describe("useUrlSearchState — chaining", () => {
   test("chained remove calls produce a single history.replace with all params removed", () => {
     mockSearch = "?title=hello&url=https://example.com&body=world";
 
-    const { result } = renderHook(() => ({
-      title: useUrlSearchState("title", "", z.string()),
-      url: useUrlSearchState("url", "", z.string()),
-      body: useUrlSearchState("body", "", z.string()),
-    }));
+    const { result } = renderHook(
+      () => ({
+        title: useUrlSearchState("title", "", z.string()),
+        url: useUrlSearchState("url", "", z.string()),
+        body: useUrlSearchState("body", "", z.string()),
+      }),
+      { wrapper: wrapWithRouteProvider() },
+    );
 
     act(() => {
       result.current.title
@@ -221,10 +259,13 @@ describe("useUrlSearchState — chaining", () => {
   });
 
   test("chained set calls produce a single history.replace with all params set", () => {
-    const { result } = renderHook(() => ({
-      page: useUrlSearchState("page", "1", z.string()),
-      sort: useUrlSearchState("sort", "new", z.string()),
-    }));
+    const { result } = renderHook(
+      () => ({
+        page: useUrlSearchState("page", "1", z.string()),
+        sort: useUrlSearchState("sort", "new", z.string()),
+      }),
+      { wrapper: wrapWithRouteProvider() },
+    );
 
     act(() => {
       result.current.page.set("5").and(result.current.sort.set, "top");
@@ -239,6 +280,46 @@ describe("useUrlSearchState — chaining", () => {
     const params = new URLSearchParams(search);
     expect(params.get("page")).toBe("5");
     expect(params.get("sort")).toBe("top");
+  });
+});
+
+describe("useUrlSearchState — no-op when URL unchanged", () => {
+  test("setValue does NOT call history.replace when new search matches current search", () => {
+    mockSearch = "?page=2";
+
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    act(() => {
+      result.current.set("2");
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  test("removeParam does NOT call history.replace when param is already absent", () => {
+    mockSearch = "";
+
+    const { result } = renderHook(
+      () => useUrlSearchState("page", "1", z.string()),
+      { wrapper: wrapWithRouteProvider() },
+    );
+
+    act(() => {
+      result.current.remove();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
 

@@ -130,7 +130,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
   // Update stored default when we get a valid value from the URL
   useEffect(() => {
-    if (value !== undefined) {
+    if (value !== undefined && defaults.get(key) === undefined) {
       defaults.set(key, value);
     }
   }, [value, key, defaults]);
@@ -152,6 +152,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
 
       const params = new URLSearchParams(config?.search ?? search);
       params.set(key, newVal);
+      defaults.set(key, newVal);
       const newSearch = params.toString();
       const to = {
         ...frozenLocation.current,
@@ -160,6 +161,10 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
         if (!locked.current && getIsActiveRoute()) {
+          const currentSearch = new URLSearchParams(search).toString();
+          if (newSearch === currentSearch) {
+            return;
+          }
           if (replace) {
             history.replace(to);
           } else {
@@ -176,7 +181,7 @@ export function useUrlSearchState<S extends z.ZodSchema>(
         },
       };
     },
-    [history, key, schema, value, search, locked, getIsActiveRoute],
+    [history, key, schema, value, search, locked, getIsActiveRoute, defaults],
   );
 
   const removeParam = useCallback(
@@ -198,6 +203,10 @@ export function useUrlSearchState<S extends z.ZodSchema>(
       const id = window.setTimeout(() => {
         pendingTimeouts.current.delete(id);
         if (!locked.current && getIsActiveRoute()) {
+          const currentSearch = new URLSearchParams(search).toString();
+          if (newSearch === currentSearch) {
+            return;
+          }
           if (replace) {
             history.replace(to);
           } else {
