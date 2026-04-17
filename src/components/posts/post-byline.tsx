@@ -316,7 +316,7 @@ export function PostByline({
   return (
     <div
       className={cn(
-        "flex flex-row items-center gap-6 h-7",
+        "flex flex-row items-center gap-2 h-7",
         showCommunity && showCreator && "h-9",
         className,
       )}
