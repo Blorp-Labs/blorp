@@ -320,7 +320,7 @@ function CreatePostInner() {
     const choices = draft.poll.choices.map((c, i) =>
       i === index ? { ...c, text } : c,
     );
-    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+    patchDraft({ poll: { ...draft.poll, choices } });
   };
 
   const addPollChoice = () => {
@@ -331,7 +331,7 @@ function CreatePostInner() {
       ...draft.poll.choices,
       { id: 0, text: "", sortOrder: draft.poll.choices.length },
     ];
-    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+    patchDraft({ poll: { ...draft.poll, choices } });
   };
 
   const removePollChoice = (index: number) => {
@@ -341,7 +341,7 @@ function CreatePostInner() {
     const choices = draft.poll.choices
       .filter((_, i) => i !== index)
       .map((c, i) => ({ ...c, sortOrder: i }));
-    patchDraft(draftId, { poll: { ...draft.poll, choices } });
+    patchDraft({ poll: { ...draft.poll, choices } });
   };
 
   const uploadImage = useUploadImageMutation();
@@ -354,7 +354,7 @@ function CreatePostInner() {
         uploadImage
           .mutateAsync({ image: files[0] })
           .then((res) => {
-            patchDraft(draftId, {
+            patchDraft({
               thumbnailUrl: res.url,
             });
           })
@@ -393,7 +393,7 @@ function CreatePostInner() {
           if (meta.imageUrl) {
             patch.thumbnailUrl = meta.imageUrl;
           }
-          patchDraft(draftId, patch);
+          patchDraft(patch);
         });
     }
   };
@@ -462,7 +462,6 @@ function CreatePostInner() {
       </IonHeader>
       <IonContent>
         <ChooseCommunityMemoed
-          createPostId={draftId}
           isOpen={chooseCommunity && !isEdit}
           closeModal={closeChooseCommunity}
         />
@@ -512,7 +511,7 @@ function CreatePostInner() {
                     ) {
                       patch.poll = DEFAULT_POLL;
                     }
-                    patchDraft(draftId, patch);
+                    patchDraft(patch);
                   }
                 }}
               >
@@ -543,7 +542,7 @@ function CreatePostInner() {
                     id={`${id}-nsfw`}
                     checked={draft.nsfw ?? false}
                     onCheckedChange={(nsfw) =>
-                      patchDraft(draftId, {
+                      patchDraft({
                         nsfw: nsfw === true,
                       })
                     }
@@ -558,7 +557,7 @@ function CreatePostInner() {
                       checked={draft.poll?.localOnly ?? false}
                       onCheckedChange={(v) =>
                         draft.poll &&
-                        patchDraft(draftId, {
+                        patchDraft({
                           poll: { ...draft.poll, localOnly: !!v },
                         })
                       }
@@ -579,7 +578,7 @@ function CreatePostInner() {
                   <MultiSelect
                     id={`${id}-flair`}
                     onChange={(values) => {
-                      patchDraft(draftId, {
+                      patchDraft({
                         flairs: values,
                       });
                     }}
@@ -609,9 +608,7 @@ function CreatePostInner() {
                     placeholder="Link"
                     className="border-b border-border"
                     value={draft.url ?? ""}
-                    onChange={(e) =>
-                      patchDraft(draftId, { url: e.target.value })
-                    }
+                    onChange={(e) => patchDraft({ url: e.target.value })}
                     onBlur={() => draft.url && parseUrl(draft.url)}
                   />
                 </div>
@@ -627,7 +624,7 @@ function CreatePostInner() {
                   className="md:text-2xl! font-bold"
                   wrapperClassName="border-0 -mx-3 w-auto shadow-none"
                   onInput={(e) =>
-                    patchDraft(draftId, {
+                    patchDraft({
                       title: e.currentTarget.value ?? "",
                     })
                   }
@@ -713,7 +710,7 @@ function CreatePostInner() {
                         value={draft.poll?.mode ?? "single"}
                         onChange={(mode) =>
                           draft.poll &&
-                          patchDraft(draftId, {
+                          patchDraft({
                             poll: {
                               ...draft.poll,
                               mode: mode,
@@ -739,7 +736,7 @@ function CreatePostInner() {
                             className="w-20"
                             onChange={(e) =>
                               draft.poll &&
-                              patchDraft(draftId, {
+                              patchDraft({
                                 poll: {
                                   ...draft.poll,
                                   endAmount: parseFloat(e.target.value || "1"),
@@ -753,7 +750,7 @@ function CreatePostInner() {
                           value={draft.poll?.endUnit ?? "days"}
                           onChange={(o) =>
                             draft.poll &&
-                            patchDraft(draftId, {
+                            patchDraft({
                               poll: { ...draft.poll, endUnit: o.value },
                             })
                           }
@@ -772,7 +769,7 @@ function CreatePostInner() {
                   id={`${id}-body`}
                   content={draft.body ?? ""}
                   onChange={(body) =>
-                    patchDraft(draftId, {
+                    patchDraft({
                       body,
                     })
                   }
@@ -802,11 +799,9 @@ function CreatePostInner() {
 }
 
 const ChooseCommunityMemoed = memo(function ChooseCommunity({
-  createPostId,
   isOpen,
   closeModal,
 }: {
-  createPostId: string;
   isOpen: boolean;
   closeModal: () => void;
 }) {
@@ -925,7 +920,7 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
               <ContentGutters className="cursor-pointer">
                 <button
                   onClick={() => {
-                    patchDraft(createPostId, {
+                    patchDraft({
                       communitySlug: item.slug,
                     });
                     closeModal();

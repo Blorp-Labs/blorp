@@ -16,9 +16,8 @@ type EditorState = {
   draftId: string;
   draft: Draft;
   isInitState: boolean;
-  patchDraft: (key: string, patch: Partial<Draft>) => void;
+  patchDraft: (patch: Partial<Draft>) => void;
   reset: () => void;
-  uuid: string;
 };
 
 export const Context = createContext<EditorState>({
@@ -27,7 +26,6 @@ export const Context = createContext<EditorState>({
   isInitState: false,
   patchDraft: _.noop,
   reset: _.noop,
-  uuid: uuid(),
 });
 
 export function useDraftIdUrlParam() {
@@ -124,7 +122,7 @@ export function useDraftEditorState(): EditorState {
   const isInitState = !draftFromStore;
 
   const _patchDraft = useCreatePostStore((s) => s.updateDraft);
-  const patchDraft = useEvent((key: string, patch: Partial<Draft>) => {
+  const patchDraft = useEvent((patch: Partial<Draft>) => {
     const patchKeys = _.keys(patch);
     if (
       patchKeys.length === 1 &&
@@ -132,11 +130,10 @@ export function useDraftEditorState(): EditorState {
       !draft.body &&
       !patch.body
     ) {
-      // THIS IS A HACK
-      // This ignored the empty body our markdown render fires on init load
+      // This ignores the empty body our markdown render fires on init load
       return;
     }
-    _patchDraft(key, {
+    _patchDraft(draftId, {
       ...draft,
       ...patch,
     });
@@ -148,7 +145,6 @@ export function useDraftEditorState(): EditorState {
   const resetInitDraft = initDraft.reset;
 
   return {
-    uuid: fallbackUuid,
     draftId,
     draft,
     isInitState,

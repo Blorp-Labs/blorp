@@ -92,7 +92,7 @@ describe("useDraftEditorState — no drafts, no URL params", () => {
       wrapper: wrap(),
     });
     act(() => {
-      result.current.patchDraft(result.current.draftId, { title: "Hello" });
+      result.current.patchDraft({ title: "Hello" });
     });
     expect(useCreatePostStore.getState().drafts[FALLBACK_UUID]?.title).toBe(
       "Hello",
@@ -173,7 +173,7 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
       wrapper: wrap(),
     });
     act(() => {
-      result.current.patchDraft(result.current.draftId, {
+      result.current.patchDraft({
         communitySlug: "mycommunity@example.com",
       });
     });
@@ -192,7 +192,7 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
     expect(result.current.draft.title).toBe("From URL");
 
     act(() => {
-      result.current.patchDraft(result.current.draftId, { title: "Edited" });
+      result.current.patchDraft({ title: "Edited" });
     });
 
     // After edit, draft comes from store — store value wins over URL params
