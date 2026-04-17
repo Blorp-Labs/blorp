@@ -11,6 +11,7 @@ import { useEvent, useUrlSearchState } from "../../hooks";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { useCallback, useState } from "react";
 import { createContext } from "use-context-selector";
+import { encodedApIdSchema } from "@/src/apis/utils";
 
 type EditorState = {
   draftId: string;
@@ -29,7 +30,11 @@ export const Context = createContext<EditorState>({
 });
 
 export function useDraftIdUrlParam() {
-  return useUrlSearchState("id", null, z.string().uuid().nullable());
+  return useUrlSearchState(
+    "id",
+    null,
+    z.union([z.string().uuid(), encodedApIdSchema]).nullable(),
+  );
 }
 
 export function useDraftFromUrl() {

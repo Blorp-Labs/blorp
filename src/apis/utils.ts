@@ -1,5 +1,6 @@
 import { Schemas } from "./api-blueprint";
 import _ from "lodash";
+import z from "zod";
 
 export type Slug = {
   name: string;
@@ -41,6 +42,13 @@ export function encodeApId(id: string) {
 export function decodeApId(encodedUrl: string) {
   return decodeURIComponent(encodedUrl);
 }
+
+export const encodedApIdSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    return decodeApId(val);
+  }
+  return val;
+}, z.string().url());
 
 export const lemmyTimestamp = () => new Date().toISOString();
 
