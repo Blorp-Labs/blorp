@@ -260,7 +260,7 @@ export default function CommunityPosts() {
                 isBlocked={isBlocked || isInstanceBlocked}
                 blockedName={
                   isInstanceBlocked
-                    ? parseHandle(communityHandle).name
+                    ? parseHandle(communityHandle).host
                     : communityHandle
                 }
                 postSort={postSort}
