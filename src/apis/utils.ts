@@ -2,38 +2,12 @@ import { Schemas } from "./api-blueprint";
 import _ from "lodash";
 import z from "zod";
 
-export type Slug = {
-  name: string;
-  host: string;
-  slug: string;
-};
-
-export function createSlug({
-  apId,
-  name,
-}: {
-  apId: string;
-  name: string;
-}): Slug {
-  const url = new URL(apId);
-  if (!name) {
-    throw new Error("invalid url for slug, apId=" + apId);
-  }
-  const host = url.host;
-  return {
-    name,
-    host,
-    slug: `${name}@${host}`,
-  } satisfies Slug;
-}
-
-export function parseSlug(slug?: string) {
-  const parsed = slug?.split("@");
-  return {
-    name: parsed?.[0],
-    host: parsed?.[1],
-  };
-}
+export {
+  createHandle,
+  parseHandle,
+  apIdFromCommunityHandle,
+} from "../lib/handle";
+export type { Handle } from "../lib/handle";
 
 export function encodeApId(id: string) {
   return encodeURIComponent(id);
@@ -65,7 +39,7 @@ export function shrinkBlockedPerson(person: Schemas.Person): Schemas.Person {
     "createdAt",
     "id",
     "apId",
-    "slug",
+    "handle",
     "deleted",
     "isBot",
     "isBanned",
@@ -80,7 +54,14 @@ export function shrinkBlockedPerson(person: Schemas.Person): Schemas.Person {
 export function shrinkBlockedCommunity(
   community: Schemas.Community,
 ): Schemas.Community {
-  return _.pick(community, ["createdAt", "id", "apId", "slug", "icon", "nsfw"]);
+  return _.pick(community, [
+    "createdAt",
+    "id",
+    "apId",
+    "handle",
+    "icon",
+    "nsfw",
+  ]);
 }
 
 export function commentIsAnswer(comment: Schemas.Comment | undefined) {
@@ -88,18 +69,6 @@ export function commentIsAnswer(comment: Schemas.Comment | undefined) {
     return false;
   }
   return comment.optimisticAnswer ?? comment.answer;
-}
-
-export function apIdFromCommunitySlug(slug: string): string | undefined {
-  const parts = slug.split("@");
-  if (parts.length !== 2) {
-    return undefined;
-  }
-  const [name, host] = parts;
-  if (!name || !host) {
-    return undefined;
-  }
-  return `https://${host}/c/${name}`;
 }
 
 export function getPostEmojiReactions(post: Schemas.Post) {

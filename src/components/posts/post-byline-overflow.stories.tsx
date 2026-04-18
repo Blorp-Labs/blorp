@@ -3,20 +3,20 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PostByline } from "./post-byline";
 import * as api from "@/test-utils/api";
 
-// Long unbroken creator slug — stress-tests creator name truncation
+// Long unbroken creator handle — stress-tests creator name truncation
 const longCreatorNamePost = api.getPost({
   post: {
     id: api.randomDbId(),
-    creatorSlug:
+    creatorHandle:
       "averylongcreatornamewithnospacesatall@averylonghostname.example.com",
   },
 });
 
-// Long unbroken community slug — stress-tests community name truncation
+// Long unbroken community handle — stress-tests community name truncation
 const longCommunityNamePost = api.getPost({
   post: {
     id: api.randomDbId(),
-    communitySlug:
+    communityHandle:
       "averylongcommunitynamewithnospacesatall@averylonghostname.example.com",
   },
 });

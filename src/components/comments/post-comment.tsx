@@ -30,6 +30,7 @@ import {
   getCommentEmojiReactions,
   getCommentMyVote,
   getCommentSaved,
+  parseHandle,
 } from "@/src/apis/utils";
 import { Link, resolveRoute } from "../../routing/index";
 import {
@@ -142,7 +143,6 @@ export function useCommentActions({
           apId: commentView.apId,
           postId: commentView.postId,
           commentId: commentView.id,
-          communitySlug: commentView.communitySlug,
           route: route!,
         }
       : null,
@@ -299,7 +299,7 @@ export function useCommentActions({
 function Byline({
   comment,
   actorId,
-  actorSlug,
+  actorHandle,
   publishedDate,
   isMod,
   className,
@@ -307,7 +307,7 @@ function Byline({
 }: {
   comment: Schemas.Comment;
   actorId: string;
-  actorSlug: string;
+  actorHandle: string;
   publishedDate: string;
   isMod?: boolean;
   className?: string;
@@ -318,11 +318,11 @@ function Byline({
 
   const locked = comment.optimisticLocked ?? comment.locked;
 
-  const tag = useTagUserStore((s) => s.userTags[actorSlug]);
+  const tag = useTagUserStore((s) => s.userTags[actorHandle]);
 
   const isAdmin = useIsAdmin(comment.creatorApId);
 
-  const [name, host] = profileView?.slug.split("@") ?? [];
+  const { name, host } = parseHandle(profileView?.handle);
 
   return (
     <CollapsibleTrigger
@@ -339,7 +339,7 @@ function Byline({
         <Avatar className="w-6 h-6">
           <AvatarImage src={profileView?.avatar ?? undefined} />
           <AvatarFallback className="text-xs">
-            {profileView?.slug?.substring(0, 1).toUpperCase()}{" "}
+            {profileView?.handle?.substring(0, 1).toUpperCase()}{" "}
           </AvatarFallback>
         </Avatar>
       )}
@@ -677,7 +677,7 @@ function PostCommentInner({
                 getCommentBgClass({ commentView, highlightComment }),
             )}
             actorId={commentView.creatorApId}
-            actorSlug={commentView.creatorSlug}
+            actorHandle={commentView.creatorHandle}
             publishedDate={commentView.createdAt}
             isMod={isMod}
             comment={commentView}

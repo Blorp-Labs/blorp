@@ -10,6 +10,7 @@ import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../normalize-instance";
 import { DistributedOmit } from "type-fest";
+import { handleSchema } from "../lib/handle";
 
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
@@ -60,7 +61,7 @@ export type UpdateAccount = DistributedOmit<Account, "instance"> & {
 
 const knownAccountSchema = z.object({
   instance: z.string().transform(normalizeInstance),
-  username: z.string(),
+  username: handleSchema,
 });
 
 export type KnownAccount = z.infer<typeof knownAccountSchema>;
@@ -268,7 +269,7 @@ export const useAuth = create<AuthStore>()(
         );
         if (site.me) {
           const account = accounts.find((a) => a.uuid === selectedUuid);
-          const username = site.me.slug;
+          const username = site.me.handle;
           if (account?.instance && username) {
             knownAccounts = _.uniqBy(
               [{ instance: account.instance, username }, ...knownAccounts],
@@ -429,15 +430,15 @@ export function useIsPersonBlocked(apId?: string | null) {
   });
 }
 
-export function useIsCommunityBlocked(slug?: string | null) {
+export function useIsCommunityBlocked(handle?: string | null) {
   return useAuth((s) => {
     const account = s.getSelectedAccount();
     const site = getAccountSite(account);
     const communityBlocks = site?.communityBlocks;
-    if (!slug || !communityBlocks || communityBlocks.length === 0) {
+    if (!handle || !communityBlocks || communityBlocks.length === 0) {
       return false;
     }
-    return !!communityBlocks.find((c) => c === slug);
+    return !!communityBlocks.find((c) => c === handle);
   });
 }
 
@@ -478,7 +479,7 @@ export function useLoginSuggestions(instance: string) {
 
       const normalizedInstance = normalizeInstance(instance);
 
-      const loggedInSlugs = new Set(
+      const loggedInHandles = new Set(
         _.compact(
           accounts
             .filter((a) => {
@@ -487,13 +488,14 @@ export function useLoginSuggestions(instance: string) {
               }
               return a.instance === normalizedInstance;
             })
-            .map((a) => getAccountSite(a)?.me?.slug),
+            .map((a) => getAccountSite(a)?.me?.handle),
         ),
       );
 
       return knownAccounts.filter(
         (ka) =>
-          ka.instance === normalizedInstance && !loggedInSlugs.has(ka.username),
+          ka.instance === normalizedInstance &&
+          !loggedInHandles.has(ka.username),
       );
     }),
   );

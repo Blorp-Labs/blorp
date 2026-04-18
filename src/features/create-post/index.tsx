@@ -20,7 +20,7 @@ import {
   useUploadImageMutation,
 } from "../../queries";
 import { supportsPollCreation } from "../../apis/support";
-import { Forms } from "../../apis/api-blueprint";
+import { Forms, Handle } from "../../apis/api-blueprint";
 import _ from "lodash";
 import {
   IonButton,
@@ -67,10 +67,10 @@ import { Page } from "../../components/page";
 import { SimpleSelect } from "../../components/ui/simple-select";
 import { Trash } from "../../components/icons";
 import { Separator } from "../../components/ui/separator";
-import { parseSlug } from "../../apis/utils";
 import { Context, useDraftEditorState } from "./use-draft-editor-state";
 import { useShallow } from "zustand/shallow";
 import { useContextSelector } from "use-context-selector";
+import { parseHandle } from "../../apis/utils";
 
 dayjs.extend(localizedFormat);
 
@@ -90,7 +90,7 @@ const EMPTY_ARR: never[] = [];
 
 const DraftCardMemoed = memo(function DraftCard({
   title,
-  communitySlug: slug,
+  communityHandle: handle,
   createdAt,
   draftKey: key,
   onClickDraft,
@@ -98,7 +98,7 @@ const DraftCardMemoed = memo(function DraftCard({
   canDelete = false,
 }: {
   title: string | undefined;
-  communitySlug: string | undefined;
+  communityHandle: string | undefined;
   createdAt: number;
   draftKey: string;
   onClickDraft: () => void;
@@ -121,11 +121,11 @@ const DraftCardMemoed = memo(function DraftCard({
       >
         <div className="text-muted-foreground flex flex-row items-center text-sm gap-1 pr-3.5">
           <RelativeTime time={createdAt} />
-          {slug && (
+          {handle && (
             <>
               <span>•</span>
               <span className="flex-1 overflow-hidden text-ellipsis break-words line-clamp-1">
-                {slug}
+                {handle}
               </span>
             </>
           )}
@@ -186,7 +186,7 @@ function UnsavedDraftCard({ onClickDraft }: { onClickDraft: () => void }) {
     <DraftCardMemoed
       draftKey={draftId}
       title={draft.title}
-      communitySlug={draft.communitySlug}
+      communityHandle={draft.communityHandle}
       createdAt={draft.createdAt}
       onClickDraft={onClickDraft}
       isActive
@@ -211,7 +211,7 @@ function StoredDraftCard({
     <DraftCardMemoed
       draftKey={draftId}
       title={draft.title}
-      communitySlug={draft.communitySlug}
+      communityHandle={draft.communityHandle}
       createdAt={draft.createdAt}
       onClickDraft={onClickDraft}
       isActive={draftId === stateDraftId}
@@ -288,19 +288,19 @@ function CreatePostInner() {
   const deleteDraft = useCreatePostStore((s) => s.deleteDraft);
 
   useCommunityQuery({
-    name: draft.communitySlug,
+    name: draft.communityHandle,
   });
-  const community = useCommunityFromStore(draft.communitySlug);
+  const community = useCommunityFromStore(draft.communityHandle);
   const flairs = useFlairs(community?.flairs?.map((f) => f.id));
   const flairLookup = useFlairLookup(flairs);
 
   const post = usePostFromStore(draft.apId ?? undefined);
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const canEdit = isEdit && post?.creatorApId && myUserId === post.creatorApId;
-  const postOwner = post?.creatorSlug;
+  const postOwner = post?.creatorHandle;
 
   const communitySoftware = useInstanceSoftwareQuery({
-    instance: parseSlug(draft.communitySlug).host,
+    instance: parseHandle(draft.communityHandle).host,
   }).data;
 
   const softwareInfo = useSoftware();
@@ -404,7 +404,7 @@ function CreatePostInner() {
       className={className}
       onClick={() => {
         try {
-          if (draft.communitySlug) {
+          if (draft.communityHandle) {
             const cleanup = () => {
               deleteDraft(draftId);
               reset();
@@ -420,7 +420,7 @@ function CreatePostInner() {
         }
       }}
       disabled={
-        !draft.communitySlug ||
+        !draft.communityHandle ||
         (isEdit && !canEdit) ||
         (draft.type === "poll" &&
           (software === "lemmy" || communitySoftware === "lemmy"))
@@ -484,9 +484,9 @@ function CreatePostInner() {
                 className="flex flex-row items-center gap-2 h-9 self-start"
                 disabled={isEdit}
               >
-                {draft.communitySlug ? (
+                {draft.communityHandle ? (
                   <CommunityCard
-                    communitySlug={draft.communitySlug}
+                    communityHandle={draft.communityHandle}
                     disableLink
                   />
                 ) : (
@@ -830,17 +830,17 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
   });
 
   const selectedCommunityData = useCommunityFromStore(
-    draft?.communitySlug ?? undefined,
+    draft.communityHandle ?? undefined,
   );
   const selectedCommunity = selectedCommunityData?.communityView ?? null;
 
   const searchResultsCommunities =
     searchResultsRes.data?.pages.flatMap((p) =>
-      p.communities.map((slug) => ({ slug })),
+      p.communities.map((handle) => ({ handle })),
     ) ?? EMPTY_ARR;
 
   let data: (
-    | { slug: string }
+    | { handle: Handle }
     | "Selected"
     | "Recent"
     | "Subscribed"
@@ -854,7 +854,7 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
   if (subscribedCommunities && recentCommunities.recentlyVisited.length > 0) {
     data.push(
       "Subscribed",
-      ...subscribedCommunities.map((c) => ({ slug: c.communityView.slug })),
+      ...subscribedCommunities.map((c) => ({ handle: c.communityView.handle })),
     );
   }
 
@@ -873,7 +873,7 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
     if (typeof item === "string") {
       return item;
     }
-    return item.slug;
+    return item.handle;
   });
 
   return (
@@ -921,16 +921,16 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
                 <button
                   onClick={() => {
                     patchDraft({
-                      communitySlug: item.slug,
+                      communityHandle: item.handle,
                     });
                     closeModal();
                   }}
                   className="flex flex-row items-center gap-2"
                   disabled={!!draft?.apId}
                 >
-                  <CommunityCard communitySlug={item.slug} disableLink />
-                  {draft?.communitySlug &&
-                    item.slug === draft.communitySlug && (
+                  <CommunityCard communityHandle={item.handle} disableLink />
+                  {draft?.communityHandle &&
+                    item.handle === draft.communityHandle && (
                       <FaCheck className="text-brand" />
                     )}
                 </button>

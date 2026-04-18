@@ -53,6 +53,7 @@ import { useCommentActions } from "@/src/components/comments/post-comment";
 import { EllipsisActionMenu } from "@/src/components/adaptable/action-menu";
 import { StickyFilterBar } from "@/src/components/sticky-filter-bar";
 import { Page } from "@/src/components/page";
+import { decodeCommunityHandle, Handle } from "@/src/lib/handle";
 
 const EMPTY_ARR: never[] = [];
 
@@ -133,7 +134,7 @@ function Comment({ commentPath }: { commentPath: string }) {
             >
               <div className="flex flex-row flex-wrap">
                 <span>
-                  <span className="font-bold">{comment.creatorSlug}</span>
+                  <span className="font-bold">{comment.creatorHandle}</span>
                   <span> commented in </span>
                   <span className="font-bold">{comment.postTitle}</span>
                 </span>
@@ -175,15 +176,15 @@ export default function SearchFeed({
   const media = useMedia();
 
   const linkCtx = useLinkContext();
-  const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName/s`,
+  const { communityHandle: communityHandleEncoded } = useParams(
+    `${linkCtx.root}c/:communityHandle/s`,
   );
-  const communityName = useMemo(
+  const communityHandle = useMemo(
     () =>
-      communityNameEncoded
-        ? decodeURIComponent(communityNameEncoded)
+      communityHandleEncoded
+        ? decodeCommunityHandle(communityHandleEncoded)
         : undefined,
-    [communityNameEncoded],
+    [communityHandleEncoded],
   );
 
   const searchInputParam = useUrlSearchState("q", "", z.string());
@@ -240,9 +241,9 @@ export default function SearchFeed({
   const { postSort } = useAvailableSortsQuery();
 
   useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
   });
-  const community = useCommunityFromStore(communityName);
+  const community = useCommunityFromStore(communityHandle);
 
   let type_: SearchType;
   switch (type) {
@@ -263,8 +264,8 @@ export default function SearchFeed({
   const searchResults = useSearchQuery({
     q: search ?? "",
     sort: type === "communities" ? "TopAll" : postSort,
-    communitySlug:
-      scope === "community" || type === "posts" ? communityName : undefined,
+    communityHandle:
+      scope === "community" || type === "posts" ? communityHandle : undefined,
     type: type_,
   });
 
@@ -310,7 +311,7 @@ export default function SearchFeed({
   return (
     <Page>
       <PageTitle>
-        {communityName ? `Search ${communityName}` : "Search"}
+        {communityHandle ? `Search ${communityHandle}` : "Search"}
       </PageTitle>
       <IonHeader>
         <IonToolbar data-tauri-drag-region>
@@ -321,8 +322,8 @@ export default function SearchFeed({
             value={searchInputParam.value}
             onValueChange={(value) => updateSearch(value)}
             placeholder={
-              communityName && type === "posts"
-                ? `Search ${communityName}`
+              communityHandle && type === "posts"
+                ? `Search ${communityHandle}`
                 : undefined
             }
             preventOpen
@@ -464,7 +465,10 @@ export default function SearchFeed({
 
               return (
                 <ContentGutters>
-                  <CommunityCard communitySlug={item} className="pt-3.5" />
+                  <CommunityCard
+                    communityHandle={item satisfies string as Handle}
+                    className="pt-3.5"
+                  />
                   <></>
                 </ContentGutters>
               );
@@ -496,9 +500,9 @@ export default function SearchFeed({
 
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0 z-10">
           <div className="flex-1" />
-          {communityName ? (
+          {communityHandle ? (
             <CommunitySidebar
-              communityName={communityName}
+              communityHandle={communityHandle}
               actorId={community?.communityView.apId}
             />
           ) : (

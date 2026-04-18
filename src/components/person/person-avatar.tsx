@@ -33,7 +33,7 @@ export function PersonAvatar({
         className="object-cover"
       />
       <AvatarFallback>
-        {(override?.slug ?? personView?.slug)?.substring(0, 1)}
+        {(override?.handle ?? personView?.handle)?.substring(0, 1)}
       </AvatarFallback>
     </Avatar>
   );

@@ -970,7 +970,7 @@ describe("updateAccountSite", () => {
       act(() =>
         result.current.updateAccountSite(
           account.uuid,
-          getSite({ me: getPerson({ slug: "123user@lemmy.world" }) }),
+          getSite({ me: getPerson({ handle: "123user@lemmy.world" }) }),
         ),
       );
 
@@ -1166,6 +1166,6 @@ describe("useLoginSuggestions", () => {
 
     suggestions.rerender();
     expect(suggestions.result.current).toHaveLength(1);
-    expect(suggestions.result.current[0]!.username).toBe(person1.slug);
+    expect(suggestions.result.current[0]!.username).toBe(person1.handle);
   });
 });

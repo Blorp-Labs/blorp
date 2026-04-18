@@ -178,7 +178,7 @@ function useResolveComment(pathOrApId: string | undefined): {
         ...noResult,
         apId: decoded,
       };
-    } catch {}
+    } catch { }
 
     try {
       const commentPathArr = decoded?.split(".") ?? [];
@@ -189,7 +189,7 @@ function useResolveComment(pathOrApId: string | undefined): {
         commentId,
         highlightCommentId,
       };
-    } catch {}
+    } catch { }
 
     return noResult;
   }, [decoded]);
@@ -251,12 +251,12 @@ export default function Post() {
 
   const post = usePostFromStore(decodedApId ?? undefined);
 
-  const communityName = post?.communitySlug;
+  const communityHandle = post?.communityHandle;
 
   useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
   });
-  const community = useCommunityFromStore(communityName);
+  const community = useCommunityFromStore(communityHandle);
   const modApIds = community?.mods?.map((m) => m.apId);
   const canMod =
     (myUserApId ? modApIds?.includes(myUserApId) : false) || !!amIAdmin;
@@ -354,34 +354,36 @@ export default function Post() {
             media.maxMd
               ? theme === "light"
                 ? {
-                    "--background": "var(--color-brand-secondary)",
-                    "--border-color": "var(--color-brand-secondary)",
-                  }
+                  "--background": "var(--color-brand-secondary)",
+                  "--border-color": "var(--color-brand-secondary)",
+                }
                 : {
-                    "--border-color": "var(--color-background)",
-                  }
+                  "--border-color": "var(--color-background)",
+                }
               : undefined
           }
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton className="max-md:text-white max-md:dark:text-muted-foreground" />
             <ToolbarTitle className="md:hidden" size="sm" numRightIcons={2}>
-              {communityName ?? "Loading..."}
+              {communityHandle ?? "Loading..."}
             </ToolbarTitle>
           </ToolbarButtons>
           <SearchBar
-            placeholder={communityName ? `Search ${communityName}` : "Search"}
+            placeholder={
+              communityHandle ? `Search ${communityHandle}` : "Search"
+            }
             value={search}
             onValueChange={setSearch}
             onSubmit={(newVal) => {
-              if (!communityName) {
+              if (!communityHandle) {
                 return;
               }
               router.push(
                 resolveRoute(
-                  `${linkCtx.root}c/:communityName/s`,
+                  `${linkCtx.root}c/:communityHandle/s`,
                   {
-                    communityName,
+                    communityHandle,
                   },
                   `?q=${newVal ?? search}`,
                 ),
@@ -410,7 +412,7 @@ export default function Post() {
               scrollHost
               className={cn(
                 showMobileReply &&
-                  "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
+                "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
               )}
               data={data}
               header={[
@@ -486,9 +488,9 @@ export default function Post() {
 
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0 z-10">
           <div className="flex-1" />
-          {communityName && (
+          {communityHandle && (
             <CommunitySidebar
-              communityName={communityName}
+              communityHandle={communityHandle}
               actorId={community?.communityView.apId}
               postApId={post?.apId}
             />

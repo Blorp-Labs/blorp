@@ -8,7 +8,7 @@ const tabs = [
 
 // Arbitrary post AP ID — the redirect is purely client-side routing and
 // requires no API calls, so the exact value doesn't matter.
-const COMMUNITY_SLUG = "asklemmy@lemmy.ml";
+const COMMUNITY_HANDLE = "asklemmy@lemmy.ml";
 const ENCODED_POST_AP_ID = encodeURIComponent(
   "https://lemmy.world/post/23863920",
 );
@@ -22,7 +22,9 @@ for (const { name, base } of tabs) {
     test("legacy community post URL redirects to canonical URL", async ({
       page,
     }) => {
-      await page.goto(`${base}c/${COMMUNITY_SLUG}/posts/${ENCODED_POST_AP_ID}`);
+      await page.goto(
+        `${base}c/${COMMUNITY_HANDLE}/posts/${ENCODED_POST_AP_ID}`,
+      );
       await expect(page).toHaveURL(`${base}posts/${ENCODED_POST_AP_ID}`);
     });
   });

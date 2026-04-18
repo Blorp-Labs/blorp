@@ -34,7 +34,7 @@ type Story = StoryObj<typeof CommunitySidebar>;
 
 export const Sidebar: Story = {
   args: {
-    communityName: COMMUNITY.slug,
+    communityHandle: COMMUNITY.handle,
     asPage: true,
   },
 };

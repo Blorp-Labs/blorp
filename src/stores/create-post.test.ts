@@ -15,6 +15,7 @@ import {
   draftToEditPostData,
   isEmptyDraft,
   Draft,
+  migrateCreatePostStore,
 } from "./create-post";
 import * as api from "@/test-utils/api";
 
@@ -77,7 +78,7 @@ describe("empty choice filtering", () => {
     type: "poll",
     createdAt: Date.now(),
     title: "Test poll",
-    communitySlug: "test@example.com",
+    communityHandle: "test@example.com",
     apId: "https://example.com/post/1",
     poll: {
       endAmount: 7,
@@ -150,5 +151,68 @@ describe("persisted state snapshot", () => {
     });
 
     expect(result.current.drafts).toMatchSnapshot();
+  });
+});
+
+// ─── migration ──────────────────────────────────────────────────────────────
+
+describe("migrateCreatePostStore", () => {
+  test("v5 → v6: copies communitySlug to communityHandle", () => {
+    const oldData = {
+      drafts: {
+        "draft-1": {
+          type: "text",
+          createdAt: Date.now(),
+          communitySlug: "test@example.com",
+          title: "Hello",
+        },
+      },
+    };
+    const migrated = migrateCreatePostStore(oldData);
+    expect(migrated.drafts["draft-1"]?.communityHandle).toBe(
+      "test@example.com",
+    );
+    // Keeps communitySlug for backward compat with old tabs
+    expect((migrated.drafts["draft-1"] as any).communitySlug).toBe(
+      "test@example.com",
+    );
+  });
+
+  test("idempotent when communityHandle already present", () => {
+    const oldData = {
+      drafts: {
+        "draft-1": {
+          type: "text",
+          createdAt: Date.now(),
+          communityHandle: "test@example.com",
+        },
+      },
+    };
+    const migrated = migrateCreatePostStore(oldData);
+    expect(migrated.drafts["draft-1"]?.communityHandle).toBe(
+      "test@example.com",
+    );
+  });
+
+  test("handles empty drafts", () => {
+    const migrated = migrateCreatePostStore({ drafts: {} });
+    expect(migrated.drafts).toEqual({});
+  });
+
+  test("handles missing drafts key", () => {
+    const migrated = migrateCreatePostStore({});
+    expect(migrated.drafts).toEqual({});
+  });
+
+  test("migrates multiple drafts", () => {
+    const oldData = {
+      drafts: {
+        a: { type: "text", createdAt: 1, communitySlug: "a@x.com" },
+        b: { type: "link", createdAt: 2, communitySlug: "b@y.com" },
+      },
+    };
+    const migrated = migrateCreatePostStore(oldData);
+    expect(migrated.drafts["a"]?.communityHandle).toBe("a@x.com");
+    expect(migrated.drafts["b"]?.communityHandle).toBe("b@y.com");
   });
 });

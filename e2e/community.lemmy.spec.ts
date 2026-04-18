@@ -40,7 +40,7 @@ for (const { name, base } of tabs) {
         await expect(page.getByText(/Subscribers/).first()).toBeVisible();
       } else {
         // CommunitySidebarInner returns null when data is absent, so the
-        // slug is only visible when community data is in the store
+        // handle is only visible when community data is in the store
         await expect(page.getByText("asklemmy@lemmy.ml").first()).toBeVisible();
       }
     });

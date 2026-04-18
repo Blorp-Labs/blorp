@@ -9,7 +9,7 @@ import { cn } from "../../lib/utils";
 import { abbriviateNumber } from "../../lib/format";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { removeMd } from "../../components/markdown/remove-md";
-import { encodeApId } from "../../apis/utils";
+import { encodeApId, parseHandle } from "../../apis/utils";
 import { useMultiCommunityFeedFromStore } from "../../stores/multi-community-feeds";
 
 export const FEEDS = "Feeds";
@@ -25,7 +25,7 @@ export function FeedCard({
 }) {
   const ctx = useLinkContext();
   const feed = useMultiCommunityFeedFromStore(apId)?.feedView;
-  const host = feed?.slug?.split("@")?.[1];
+  const { host } = parseHandle(feed?.handle);
 
   return (
     <Link

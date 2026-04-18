@@ -127,15 +127,15 @@ const postWithCrossPosts = api.getPost({
     crossPosts: [
       {
         apId: "https://blorpblorp.xyz/post/1001",
-        communitySlug: "news@lemmy.world",
+        communityHandle: "news@lemmy.world",
       },
       {
         apId: "https://blorpblorp.xyz/post/1002",
-        communitySlug: "technology@beehaw.org",
+        communityHandle: "technology@beehaw.org",
       },
       {
         apId: "https://blorpblorp.xyz/post/1003",
-        communitySlug: "worldnews@feddit.de",
+        communityHandle: "worldnews@feddit.de",
       },
     ],
   },

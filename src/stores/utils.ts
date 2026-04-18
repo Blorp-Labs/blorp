@@ -6,32 +6,73 @@ import {
   type ThresholdSetting,
   type VoteDisplaySetting,
 } from "./settings";
+import _ from "lodash";
 import { type Schemas } from "../apis/api-blueprint";
 
 // ─── Pure logic (exported for testing) ──────────────────────────────────────
 
-export function mergeCacheObject<T>(
-  a: Record<string, T> | undefined,
-  b: Record<string, T> | undefined,
-  schema: z.ZodType<T>,
-): Record<string, T> {
+const MERGE_CACHE_SAMPLE_SIZE = 10;
+export function mergeCacheObject<TSchema extends z.ZodType>(
+  a: Record<string, unknown> | undefined,
+  b: Record<string, unknown> | undefined,
+  schema: TSchema,
+): Record<string, z.infer<TSchema>> {
+  type T = z.infer<TSchema>;
   let result: Record<string, T> = {};
 
   try {
-    const firstKey = Object.keys(a ?? {})[0];
-    if (firstKey && schema.safeParse(a?.[firstKey]).success) {
-      result = { ...result, ...a };
+    const aKeys = Object.keys(a ?? {});
+    const success = _.every(
+      _.compact([
+        _.first(aKeys),
+        _.last(aKeys),
+        ..._.sampleSize(aKeys, MERGE_CACHE_SAMPLE_SIZE),
+      ]).map((key) => schema.safeParse(a?.[key]).success),
+    );
+    if (success) {
+      result = { ...result, ...(a as Record<string, T>) };
     }
   } catch {}
 
   try {
-    const firstKey = Object.keys(b ?? {})[0];
-    if (firstKey && schema.safeParse(b?.[firstKey]).success) {
-      result = { ...result, ...b };
+    const bKeys = Object.keys(b ?? {});
+    const success = _.every(
+      _.compact([
+        _.first(bKeys),
+        _.last(bKeys),
+        ..._.sampleSize(bKeys, MERGE_CACHE_SAMPLE_SIZE),
+      ]).map((key) => schema.safeParse(b?.[key]).success),
+    );
+    if (success) {
+      result = { ...result, ...(b as Record<string, T>) };
     }
   } catch {}
 
   return result;
+}
+
+export function mergeCacheArray<TSchema extends z.ZodType>(
+  a: unknown[] | undefined,
+  b: unknown[] | undefined,
+  schema: TSchema,
+): z.infer<TSchema>[] {
+  type T = z.infer<TSchema>;
+  let aItems: T[] = [];
+  let bItems: T[] = [];
+
+  try {
+    if (a && a.length > 0 && schema.safeParse(a[0]).success) {
+      aItems = a as T[];
+    }
+  } catch {}
+
+  try {
+    if (b && b.length > 0 && schema.safeParse(b[0]).success) {
+      bItems = b as T[];
+    }
+  } catch {}
+
+  return [...aItems, ...bItems];
 }
 
 export function scoreDisplayFromSite(

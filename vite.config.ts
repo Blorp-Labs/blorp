@@ -10,8 +10,9 @@ import { resolveRoute } from "./src/routing/resolve-route";
 import { execSync } from "child_process";
 
 process.env["REACT_APP_COMMIT_SHA"] ??= (() => {
-  if (process.env["CF_PAGES_COMMIT_SHA"])
+  if (process.env["CF_PAGES_COMMIT_SHA"]) {
     return process.env["CF_PAGES_COMMIT_SHA"];
+  }
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch {
@@ -130,30 +131,30 @@ export default defineConfig(({ mode }) => {
                 resolveRoute("/communities"),
                 resolveRoute("/communities/sidebar"),
                 resolveRoute("/inbox/sidebar"),
-                ...FEATURED_COMMUNITIES.flatMap((communityName) => [
-                  resolveRoute("/communities/c/:communityName", {
-                    communityName,
+                ...FEATURED_COMMUNITIES.flatMap((communityHandle) => [
+                  resolveRoute("/communities/c/:communityHandle", {
+                    communityHandle,
                   }),
-                  resolveRoute("/communities/c/:communityName/sidebar", {
-                    communityName,
+                  resolveRoute("/communities/c/:communityHandle/sidebar", {
+                    communityHandle,
                   }),
-                  resolveRoute("/home/c/:communityName", {
-                    communityName,
+                  resolveRoute("/home/c/:communityHandle", {
+                    communityHandle,
                   }),
-                  resolveRoute("/home/c/:communityName/sidebar", {
-                    communityName,
+                  resolveRoute("/home/c/:communityHandle/sidebar", {
+                    communityHandle,
                   }),
-                  resolveRoute("/communities/c/:communityName", {
-                    communityName,
+                  resolveRoute("/communities/c/:communityHandle", {
+                    communityHandle,
                   }),
-                  resolveRoute("/communities/c/:communityName/sidebar", {
-                    communityName,
+                  resolveRoute("/communities/c/:communityHandle/sidebar", {
+                    communityHandle,
                   }),
-                  resolveRoute("/inbox/c/:communityName", {
-                    communityName,
+                  resolveRoute("/inbox/c/:communityHandle", {
+                    communityHandle,
                   }),
-                  resolveRoute("/inbox/c/:communityName/sidebar", {
-                    communityName,
+                  resolveRoute("/inbox/c/:communityHandle/sidebar", {
+                    communityHandle,
                   }),
                 ]),
               ],

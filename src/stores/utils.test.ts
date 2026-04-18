@@ -4,6 +4,7 @@ import {
   shouldShowDownvotes,
   resolveThreshold,
   mergeCacheObject,
+  mergeCacheArray,
 } from "./utils";
 import * as api from "@/test-utils/api";
 import z from "zod";
@@ -248,6 +249,78 @@ describe("mergeCacheObject", () => {
     const result = mergeCacheObject({}, versionBData, itemSchema);
     expect(result["key"]).toMatchObject({ value: "hello", lastUsed: 0 });
     expect((result["key"] as any).newField).toBe("extra");
+  });
+});
+
+// ─── mergeCacheArray ─────────────────────────────────────────────────────────
+
+describe("mergeCacheArray", () => {
+  test("returns empty array when both are empty", () => {
+    expect(mergeCacheArray([], [], itemSchema)).toEqual([]);
+  });
+
+  test("returns b when a is undefined", () => {
+    const b = [makeItem("hello")];
+    expect(mergeCacheArray(undefined, b, itemSchema)).toEqual(b);
+  });
+
+  test("returns b when a is empty", () => {
+    const b = [makeItem("hello")];
+    expect(mergeCacheArray([], b, itemSchema)).toEqual(b);
+  });
+
+  test("returns a when b is undefined", () => {
+    const a = [makeItem("hello")];
+    expect(mergeCacheArray(a, undefined, itemSchema)).toEqual(a);
+  });
+
+  test("returns a when b is empty", () => {
+    const a = [makeItem("hello")];
+    expect(mergeCacheArray(a, [], itemSchema)).toEqual(a);
+  });
+
+  test("merges both when both are valid, a items first then b items", () => {
+    const a = [makeItem("a-1"), makeItem("a-2")];
+    const b = [makeItem("b-1")];
+    const result = mergeCacheArray(a, b, itemSchema);
+    expect(result).toEqual([...a, ...b]);
+  });
+
+  test("rejects a with invalid schema, keeps valid b", () => {
+    const invalidA = [{ wrong: "shape" }] as any;
+    const validB = [makeItem("hello")];
+    const result = mergeCacheArray(invalidA, validB, itemSchema);
+    expect(result).toEqual(validB);
+  });
+
+  test("rejects b with invalid schema, keeps valid a", () => {
+    const validA = [makeItem("hello")];
+    const invalidB = [{ wrong: "shape" }] as any;
+    const result = mergeCacheArray(validA, invalidB, itemSchema);
+    expect(result).toEqual(validA);
+  });
+
+  test("returns empty array when both have invalid schema", () => {
+    const invalidA = [{ wrong: "shape" }] as any;
+    const invalidB = [{ wrong: "shape" }] as any;
+    expect(mergeCacheArray(invalidA, invalidB, itemSchema)).toEqual([]);
+  });
+
+  test("works with flat string values, not just object values", () => {
+    const a = ["hello"];
+    const b = ["world"];
+    expect(mergeCacheArray(a, b, z.string())).toEqual(["hello", "world"]);
+  });
+
+  test("tab running old schema passes through unknown fields added by newer schema", () => {
+    // Simulates two tabs on different app versions. Tab B runs a newer version
+    // that added `newField` to the schema. Tab A (old version) merges tab B's
+    // persisted data using the old schema — it should pass through `newField`
+    // untouched so that switching back to tab B doesn't lose it.
+    const versionBData = [{ value: "hello", lastUsed: 0, newField: "extra" }];
+    const result = mergeCacheArray(versionBData, [], itemSchema);
+    expect(result[0]).toMatchObject({ value: "hello", lastUsed: 0 });
+    expect((result[0] as any).newField).toBe("extra");
   });
 });
 

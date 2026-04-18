@@ -402,7 +402,7 @@ export function PostCommentsButton({
   const postView = usePostFromStore(postApId);
 
   const linkCtx = useLinkContext();
-  if (!onClick && postView?.communitySlug && postApId) {
+  if (!onClick && postView?.communityHandle && postApId) {
     return (
       <Button
         size="sm"

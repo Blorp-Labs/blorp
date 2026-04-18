@@ -145,7 +145,7 @@ function AccountCard({
         onClick={() => {
           if (isLoggedIn && person) {
             getConfirmation({
-              message: `Are you sure you want to logout of ${person.slug ?? "this account"}`,
+              message: `Are you sure you want to logout of ${person.handle ?? "this account"}`,
             }).then(() => logout.mutate(account));
           } else if (hasOtherAccounts) {
             logoutZustand(account.uuid);
@@ -156,7 +156,7 @@ function AccountCard({
       >
         {[
           isLoggedIn ? "Logout" : hasOtherAccounts ? "Remove" : "Login",
-          person ? person.slug : hasOtherAccounts ? instance : null,
+          person ? person.handle : hasOtherAccounts ? instance : null,
         ]
           .filter(Boolean)
           .join(" ")}

@@ -28,7 +28,7 @@ for (const { name, base } of tabs) {
       await page.goto(
         `${base}u/https%3A%2F%2Flemmy.world%2Fu%2FThe_Picard_Maneuver`,
       );
-      // Slug only renders if person data was correctly written to and read
+      // Handle only renders if person data was correctly written to and read
       // from the cache — the fallback is "Person" if the data is missing
       await expect(
         page.getByText("The_Picard_Maneuver@lemmy.world").first(),

@@ -17,9 +17,10 @@ import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "./utils";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
+import { Handle, parseHandle } from "@/src/lib/handle";
 
 type CommunityCardProps = {
-  communitySlug: string;
+  communityHandle: Handle;
   disableLink?: boolean;
   className?: string;
   hideText?: boolean;
@@ -28,7 +29,7 @@ type CommunityCardProps = {
 };
 
 function CommunityCardInner({
-  communitySlug,
+  communityHandle,
   disableLink,
   className,
   hideText,
@@ -36,9 +37,9 @@ function CommunityCardInner({
   account,
 }: CommunityCardProps) {
   const fromRecent = useRecentCommunitiesStore((s) => {
-    return s.recentlyVisited.find((r) => r.slug === communitySlug);
+    return s.recentlyVisited.find((r) => r.handle === communityHandle);
   });
-  const fromCommunityCache = useCommunityFromStore(communitySlug, account);
+  const fromCommunityCache = useCommunityFromStore(communityHandle, account);
   const communityView = fromCommunityCache?.communityView ?? fromRecent;
 
   const blurNsfw = useShouldBlurNsfw();
@@ -50,7 +51,7 @@ function CommunityCardInner({
     return <CommunityCardSkeleton size={size} />;
   }
 
-  const [name, host] = communityView.slug.split("@");
+  const { name, host } = parseHandle(communityView.handle);
 
   const content = (
     <>
@@ -62,7 +63,7 @@ function CommunityCardInner({
             communityView.nsfw && blurNsfw && COMMUNITY_NSFW_ICON_BLUR_CLASS,
           )}
         />
-        <AvatarFallback>{communityView.slug.substring(0, 1)}</AvatarFallback>
+        <AvatarFallback>{communityView.handle.substring(0, 1)}</AvatarFallback>
       </Avatar>
 
       <div
@@ -107,9 +108,9 @@ function CommunityCardInner({
   return (
     <Link
       data-testid="community-card"
-      to={`${linkCtx.root}c/:communityName`}
+      to={`${linkCtx.root}c/:communityHandle`}
       params={{
-        communityName: communityView.slug,
+        communityHandle: communityView.handle,
       }}
       className={cn(
         "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
@@ -123,14 +124,14 @@ function CommunityCardInner({
 }
 
 function CommunityCardErrorFallback({
-  communitySlug,
+  communityHandle,
   error,
 }: {
-  communitySlug: string;
+  communityHandle: string;
   error: unknown;
 }) {
   const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
-    contextFields: { "Community Slug": communitySlug },
+    contextFields: { "Community Handle": communityHandle },
     reportTitle: "[Crash] Community card rendering error",
     error,
   });
@@ -141,7 +142,7 @@ function CommunityCardErrorFallback({
         Failed to render community
       </p>
       <span className="text-xs text-muted-foreground break-all">
-        {communitySlug}
+        {communityHandle}
       </span>
       <div className="flex flex-wrap justify-end gap-1">
         <Button
@@ -166,11 +167,11 @@ export function CommunityCard(props: CommunityCardProps) {
     <ErrorBoundary
       fallbackRender={({ error }) => (
         <CommunityCardErrorFallback
-          communitySlug={props.communitySlug}
+          communityHandle={props.communityHandle}
           error={error}
         />
       )}
-      resetKeys={[props.communitySlug]}
+      resetKeys={[props.communityHandle]}
     >
       <CommunityCardInner {...props} />
     </ErrorBoundary>

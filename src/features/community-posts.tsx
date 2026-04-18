@@ -21,14 +21,13 @@ import {
 import { PostReportProvider } from "../components/posts/post-report";
 import _ from "lodash";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
-import { resolveRoute, useParams } from "@/src/routing/index";
+import { resolveRoute, useParams, Link } from "@/src/routing/index";
 import { CommunityBanner } from "../components/communities/community-banner";
 import { useUpdateRecentCommunity } from "../hooks/use-update-recent-communities";
 import { UserDropdown } from "../components/nav";
 import { PostSortButton } from "../components/lemmy-sort";
 import { PageTitle } from "../components/page-title";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { Link } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
 import { dispatchScrollEvent } from "../lib/scroll-events";
 import { LuLoaderCircle } from "react-icons/lu";
@@ -51,6 +50,8 @@ import { Separator } from "../components/ui/separator";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
 import { NoPostsMessage } from "../components/posts/no-posts-message";
+import { parseHandle } from "../apis/utils";
+import { decodeCommunityHandle } from "../lib/handle";
 
 const Post = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -66,33 +67,33 @@ export default function CommunityPosts() {
   const router = useIonRouter();
   const [search, setSearch] = useState("");
 
-  const { communityName: communityNameEncoded } = useParams(
-    `${linkCtx.root}c/:communityName`,
+  const { communityHandle: communityHandleEncoded } = useParams(
+    `${linkCtx.root}c/:communityHandle`,
   );
-  const communityName = useMemo(
-    () => decodeURIComponent(communityNameEncoded),
-    [communityNameEncoded],
+  const communityHandle = useMemo(
+    () => decodeCommunityHandle(communityHandleEncoded),
+    [communityHandleEncoded],
   );
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSortsQuery();
   const posts = usePostsQuery({
-    communitySlug: communityName,
+    communityHandle: communityHandle,
   });
 
   const mostRecentPost = useMostRecentPostQuery(
     "community",
     {
-      communitySlug: communityName,
+      communityHandle: communityHandle,
     },
     posts,
   );
 
   const communityQuery = useCommunityQuery({
-    name: communityName,
+    name: communityHandle,
   });
-  const community = useCommunityFromStore(communityName);
-  const isBlocked = useIsCommunityBlocked(communityName);
+  const community = useCommunityFromStore(communityHandle);
+  const isBlocked = useIsCommunityBlocked(communityHandle);
   const isInstanceBlocked = useIsInstanceBlocked(
     community?.communityView.instanceId,
   );
@@ -140,10 +141,10 @@ export default function CommunityPosts() {
 
   return (
     <Page
-      notFound={communityQuery.isError && !community}
-      notFoundCommunitySlug={communityName}
+      notFound={!communityHandle || (communityQuery.isError && !community)}
+      notFoundCommunityHandle={communityHandle}
     >
-      <PageTitle>{communityName}</PageTitle>
+      <PageTitle>{communityHandle}</PageTitle>
       <IonHeader>
         <IonToolbar
           data-tauri-drag-region
@@ -158,20 +159,20 @@ export default function CommunityPosts() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" className="md:hidden" numRightIcons={3}>
-              {communityName}
+              {communityHandle ?? ""}
             </ToolbarTitle>
           </ToolbarButtons>
           <SearchBar
-            placeholder={`Search ${communityName}`}
+            placeholder={`Search ${communityHandle}`}
             value={search}
             onValueChange={setSearch}
-            communitySlug={communityName}
+            communityHandle={communityHandle}
             onSubmit={(newVal) => {
               router.push(
                 resolveRoute(
-                  `${linkCtx.root}c/:communityName/s`,
+                  `${linkCtx.root}c/:communityHandle/s`,
                   {
-                    communityName,
+                    communityHandle,
                   },
                   `?q=${newVal ?? search}`,
                 ),
@@ -181,9 +182,9 @@ export default function CommunityPosts() {
           />
           <ToolbarButtons side="right">
             <Link
-              to={`${linkCtx.root}c/:communityName/s`}
+              to={`${linkCtx.root}c/:communityHandle/s`}
               params={{
-                communityName,
+                communityHandle,
               }}
               className="text-2xl contents md:hidden"
             >
@@ -231,17 +232,19 @@ export default function CommunityPosts() {
             stickyIndicies={[1]}
             header={[
               <Fragment key="community-header">
-                <SmallScreenSidebar
-                  communityName={communityName}
-                  actorId={community?.communityView.apId}
-                />
+                {communityHandle && (
+                  <SmallScreenSidebar
+                    communityHandle={communityHandle}
+                    actorId={community?.communityView.apId}
+                  />
+                )}
                 <ContentGutters className="max-md:hidden pt-4">
-                  <CommunityBanner communityName={communityName} />
+                  <CommunityBanner communityHandle={communityHandle} />
                   <></>
                 </ContentGutters>
               </Fragment>,
               <Fragment key="community-sort-bar">
-                <CommunityPostSortBar communityName={communityName} />
+                <CommunityPostSortBar communityHandle={communityHandle} />
                 {!refreshing && (
                   <Separator className="[[data-is-sticky-header=false]_&]:opacity-1 data-[orientation=horizontal]:h-[0.5px] md:hidden" />
                 )}
@@ -257,8 +260,8 @@ export default function CommunityPosts() {
                 isBlocked={isBlocked || isInstanceBlocked}
                 blockedName={
                   isInstanceBlocked
-                    ? communityName.split("@")[1]
-                    : communityName
+                    ? parseHandle(communityHandle).host
+                    : communityHandle
                 }
                 postSort={postSort}
                 suggestedPostSort={suggestedPostSort}
@@ -290,9 +293,9 @@ export default function CommunityPosts() {
 
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0 z-10">
           <div className="flex-1" />
-          {communityName && (
+          {communityHandle && (
             <CommunitySidebar
-              communityName={communityName}
+              communityHandle={communityHandle}
               actorId={community?.communityView.apId}
             />
           )}

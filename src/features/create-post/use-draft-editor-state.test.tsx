@@ -174,12 +174,12 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
     });
     act(() => {
       result.current.patchDraft({
-        communitySlug: "mycommunity@example.com",
+        communityHandle: "mycommunity@example.com",
       });
     });
     const saved = useCreatePostStore.getState().drafts[FALLBACK_UUID];
     expect(saved?.title).toBe("From URL");
-    expect(saved?.communitySlug).toBe("mycommunity@example.com");
+    expect(saved?.communityHandle).toBe("mycommunity@example.com");
   });
 
   test("after first edit, draft is read from store not URL params", () => {
@@ -197,6 +197,6 @@ describe("useDraftEditorState — URL content params (title/url/body/nsfw)", () 
 
     // After edit, draft comes from store — store value wins over URL params
     expect(result.current.draft.title).toBe("Edited");
-    expect(result.current.draft.communitySlug).toBeUndefined();
+    expect(result.current.draft.communityHandle).toBeUndefined();
   });
 });

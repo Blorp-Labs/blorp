@@ -42,7 +42,7 @@ export function useReportError({
     const draftId = uuid();
     updateDraft(draftId, {
       type: "text",
-      communitySlug: BLORP_COMMUNITY,
+      communityHandle: BLORP_COMMUNITY,
       title: reportTitle,
       body,
     });

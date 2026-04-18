@@ -4,7 +4,12 @@ import { createStorage, sync } from "./storage";
 import _ from "lodash";
 import { MAX_CACHE_MS } from "./config";
 import { Account, CachePrefixer, useAuth } from "./auth";
-import { Schemas, communitySchema, personSchema } from "../apis/api-blueprint";
+import {
+  Handle,
+  Schemas,
+  communitySchema,
+  personSchema,
+} from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import { useShallow } from "zustand/shallow";
 import { isNotNil } from "../lib/utils";
@@ -53,9 +58,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
-      patchCommunity: (slug, prefix, patch) => {
+      patchCommunity: (handle, prefix, patch) => {
         const communities = get().communities;
-        const cacheKey = prefix(slug);
+        const cacheKey = prefix(handle);
         const prevCommunityData = communities[cacheKey]?.data;
         if (!prevCommunityData) {
           console.error(
@@ -86,9 +91,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
       },
       cacheCommunity: (prefix, view) => {
         const prev = get();
-        const slug = view.communityView.slug;
-        if (slug) {
-          const cacheKey = prefix(slug);
+        const handle = view.communityView.handle;
+        if (handle) {
+          const cacheKey = prefix(handle);
           const prevCommunityData = prev.communities[cacheKey]?.data;
           const updatedCommunityData: Data = {
             ...prevCommunityData,
@@ -118,9 +123,9 @@ export const useCommunitiesStore = create<CommunityStore>()(
         const newCommunities: Record<string, CachedCommunity> = {};
 
         for (const view of views) {
-          const slug = view.communityView.slug;
-          if (slug) {
-            const cacheKey = prefix(slug);
+          const handle = view.communityView.handle;
+          if (handle) {
+            const cacheKey = prefix(handle);
             const prevCommunityData = prev[cacheKey]?.data;
             const data = {
               ...prevCommunityData,
@@ -203,23 +208,23 @@ export const useCommunitiesStore = create<CommunityStore>()(
 sync(useCommunitiesStore);
 
 export function useCommunityFromStore(
-  communitySlug?: string,
+  communityHandle?: Handle,
   account?: Account,
 ) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
   return useCommunitiesStore((s) =>
-    communitySlug
-      ? s.communities[cachePrefixer(account)(communitySlug)]?.data
+    communityHandle
+      ? s.communities[cachePrefixer(account)(communityHandle)]?.data
       : undefined,
   );
 }
 
-export function useCommunitiesFromStore(communitySlug?: string[]) {
+export function useCommunitiesFromStore(communityHandle?: string[]) {
   const cachePrefixer = useAuth((s) => s.getCachePrefixer);
   return useCommunitiesStore(
     useShallow((s) =>
-      communitySlug
-        ?.map((slug) => s.communities[cachePrefixer()(slug)]?.data)
+      communityHandle
+        ?.map((handle) => s.communities[cachePrefixer()(handle)]?.data)
         .filter(isNotNil),
     ),
   );

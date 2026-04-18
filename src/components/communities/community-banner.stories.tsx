@@ -27,6 +27,6 @@ type Story = StoryObj<typeof CommunityBanner>;
 
 export const Banner: Story = {
   args: {
-    communityName: COMMUNITY.slug,
+    communityHandle: COMMUNITY.handle,
   },
 };

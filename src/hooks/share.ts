@@ -284,11 +284,10 @@ export type ShareEntityContext =
       postId: number;
       commentId: number;
       apId: string;
-      communitySlug: string;
       route: string;
     }
-  | { type: "community"; apId: string; slug: string; route: string }
-  | { type: "person"; apId: string; slug: string; route: string }
+  | { type: "community"; apId: string; handle: string; route: string }
+  | { type: "person"; apId: string; handle: string; route: string }
   | { type: "multi-community-feed"; route: string; apId: string };
 
 function resolveShareUrl(
@@ -310,10 +309,10 @@ function resolveShareUrl(
         return null;
       }
       if (entity.type === "community") {
-        return `https://${instance}/c/${entity.slug}`;
+        return `https://${instance}/c/${entity.handle}`;
       }
       if (entity.type === "person") {
-        return `https://${instance}/u/${entity.slug}`;
+        return `https://${instance}/u/${entity.handle}`;
       }
       if (entity.type === "post") {
         return `https://${instance}/post/${entity.id}`;
@@ -329,10 +328,10 @@ function resolveShareUrl(
         return entity.apId;
       }
       if (entity.type === "community") {
-        return `https://threadiverse.link/c/${entity.slug}`;
+        return `https://threadiverse.link/c/${entity.handle}`;
       }
       if (entity.type === "person") {
-        return `https://threadiverse.link/u/${entity.slug}`;
+        return `https://threadiverse.link/u/${entity.handle}`;
       }
       if (entity.type === "post") {
         return `https://threadiverse.link/${instance}/post/${entity.id}`;

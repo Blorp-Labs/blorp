@@ -83,11 +83,11 @@ export default function Messages() {
     return item.creatorApId === me?.apId
       ? {
           apId: item.recipientApId,
-          slug: item.recipientSlug,
+          handle: item.recipientHandle,
         }
       : {
           apId: item.creatorApId,
-          slug: item.creatorSlug,
+          handle: item.creatorHandle,
         };
   };
 
@@ -150,7 +150,7 @@ export default function Messages() {
                       <div className="flex flex-col gap-2 flex-1 overflow-hidden">
                         <div className="flex justify-between text-sm flex-1">
                           <span className="font-medium">
-                            {getOtherPerson(item).slug}
+                            {getOtherPerson(item).handle}
                           </span>
                           <RelativeTime
                             time={item.createdAt}

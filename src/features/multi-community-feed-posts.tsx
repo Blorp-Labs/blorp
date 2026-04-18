@@ -132,7 +132,7 @@ export default function MultiCommunityFeedPosts() {
       }
       notFoundApId={apId}
     >
-      <PageTitle>{feed?.slug ?? apId}</PageTitle>
+      <PageTitle>{feed?.handle ?? apId}</PageTitle>
       <IonHeader>
         <IonToolbar
           data-tauri-drag-region
@@ -147,7 +147,7 @@ export default function MultiCommunityFeedPosts() {
           <ToolbarButtons side="left">
             <ToolbarBackButton />
             <ToolbarTitle size="sm" className="md:hidden" numRightIcons={3}>
-              {feed?.slug ?? apId}
+              {feed?.handle ?? apId}
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
