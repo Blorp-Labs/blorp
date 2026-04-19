@@ -74,6 +74,26 @@ const WINDOW_REACT_APP_CONTENT_WARNING = getDockerInjectedEnv(
   "REACT_APP_CONTENT_WARNING",
 );
 
+const WINDOW_REACT_APP_DEFAULT_LIGHT_THEME = getDockerInjectedEnv(
+  "REACT_APP_DEFAULT_LIGHT_THEME",
+);
+
+const WINDOW_REACT_APP_DEFAULT_DARK_THEME = getDockerInjectedEnv(
+  "REACT_APP_DEFAULT_DARK_THEME",
+);
+
+export const lightThemeSchema = z.enum([
+  "default-light",
+  "dracula-light",
+  "unix-light",
+]);
+
+export const darkThemeSchema = z.enum([
+  "default-dark",
+  "dracula-dark",
+  "unix-dark",
+]);
+
 function parseBoolean(bool?: string) {
   switch (bool?.toLowerCase()) {
     case "true":
@@ -104,6 +124,8 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
       "default_random",
     ]),
     REACT_APP_CONTENT_WARNING: z.string().default(""),
+    REACT_APP_DEFAULT_LIGHT_THEME: lightThemeSchema.default("default-light"),
+    REACT_APP_DEFAULT_DARK_THEME: darkThemeSchema.default("default-dark"),
   },
   runtimeEnv: {
     REACT_APP_COMMIT_SHA: import.meta.env["REACT_APP_COMMIT_SHA"],
@@ -132,6 +154,14 @@ const { REACT_APP_DEFAULT_INSTANCE, ...config } = createEnv({
       WINDOW_REACT_APP_CONTENT_WARNING ||
       import.meta.env["REACT_APP_CONTENT_WARNING"] ||
       "",
+    REACT_APP_DEFAULT_LIGHT_THEME:
+      WINDOW_REACT_APP_DEFAULT_LIGHT_THEME ||
+      import.meta.env["REACT_APP_DEFAULT_LIGHT_THEME"] ||
+      "default-light",
+    REACT_APP_DEFAULT_DARK_THEME:
+      WINDOW_REACT_APP_DEFAULT_DARK_THEME ||
+      import.meta.env["REACT_APP_DEFAULT_DARK_THEME"] ||
+      "default-dark",
   },
   onValidationError: (issues) => {
     console.error("❌ Invalid environment variables:", issues);
