@@ -72,7 +72,7 @@ function SidebarTabs() {
                   }
                 }}
                 className={twMerge(
-                  "text-md hover:bg-accent relative flex flex-row items-center rounded-xl px-3 py-2 max-md:hidden",
+                  "text-md hover:bg-accent relative flex flex-row items-center rounded-md px-3 py-2 max-md:hidden",
                   isActive ? "bg-accent" : "text-muted-foreground",
                   mainSidebarCollapsed && "mx-auto",
                 )}
@@ -278,7 +278,7 @@ export function MainSidebar() {
                             communityHandle={c.handle}
                             size="sm"
                             className={cn(
-                              "hover:bg-accent h-10 px-3 md:rounded-xl",
+                              "hover:bg-accent h-10 px-3 md:rounded-md",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}
@@ -333,7 +333,7 @@ export function MainSidebar() {
                             communityHandle={c}
                             size="sm"
                             className={cn(
-                              "hover:bg-accent h-10 px-3 md:rounded-xl",
+                              "hover:bg-accent h-10 px-3 md:rounded-md",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}
@@ -388,7 +388,7 @@ export function MainSidebar() {
                             communityHandle={c}
                             size="sm"
                             className={cn(
-                              "hover:bg-secondary h-10 px-3 md:rounded-xl",
+                              "hover:bg-secondary h-10 px-3 md:rounded-md",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}

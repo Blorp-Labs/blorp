@@ -25,11 +25,11 @@ export function MultiCommunityFeedBanner({ apId }: { apId?: string }) {
         <div className="relative flex-1">
           <div className="aspect-[5] relative">
             {!bannerReady && (
-              <Skeleton className="absolute inset-0 rounded-xl" />
+              <Skeleton className="absolute inset-0 rounded-lg" />
             )}
             <img
               src={banner}
-              className="h-full w-full object-cover rounded-xl relative"
+              className="h-full w-full object-cover rounded-lg relative"
               onLoad={() => setBannerReady(true)}
             />
           </div>

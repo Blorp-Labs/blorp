@@ -39,6 +39,7 @@ import _ from "lodash";
 import { Separator } from "./ui/separator";
 import { formatOrdinal } from "../lib/utils";
 import { env } from "../env";
+import { Button } from "./ui/button";
 
 function AccountNotificationBadge({
   accountUuid,
@@ -107,8 +108,11 @@ export function UserDropdown() {
         menu={RIGHT_SIDEBAR_MENU_ID}
         autoHide={false}
         data-testid="user-sidebar-trigger"
+        className="contents"
       >
-        <button aria-label={USER_DROPDOWN_ARIA}>{content}</button>
+        <Button variant="outline" size="icon" aria-label={USER_DROPDOWN_ARIA}>
+          {content}
+        </Button>
       </IonMenuToggle>
     );
   }
@@ -410,12 +414,10 @@ export function UserSidebar() {
 export function MenuButton() {
   // Negative margin aligns icon left side with button left side
   return (
-    <IonMenuButton
-      menu={LEFT_SIDEBAR_MENU_ID}
-      autoHide={false}
-      className="lg:hidden"
-    >
-      <LuMenu className="-ml-[7px] scale-110 text-2xl" />
-    </IonMenuButton>
+    <Button asChild variant="ghost" size="icon" className="lg:hidden -ms-1.5">
+      <IonMenuButton menu={LEFT_SIDEBAR_MENU_ID} autoHide={false}>
+        <LuMenu className="-scale-110 text-2xl" />
+      </IonMenuButton>
+    </Button>
   );
 }

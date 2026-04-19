@@ -99,7 +99,7 @@ export function SidebarContent({
     <div className="overflow-y-auto md:pr-[6px] md:-mr-[14px]">
       <div
         className={cn(
-          "bg-secondary/60 dark:bg-transparent rounded-xl",
+          "bg-secondary/60 dark:bg-transparent rounded-lg",
           className,
         )}
       >

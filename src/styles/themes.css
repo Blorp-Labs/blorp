@@ -57,9 +57,7 @@ html[data-light-theme="dracula-light"] {
  * derived from --radius, so we override it explicitly for Win95 themes.
  */
 html[data-light-theme="win95-light"] .rounded-full,
-html[data-dark-theme="win95-dark"] .rounded-full,
-html[data-light-theme="win95-light"] .rounded-xl,
-html[data-dark-theme="win95-dark"] .rounded-xl {
+html[data-dark-theme="win95-dark"] .rounded-full {
   border-radius: 0;
 }
 
@@ -76,7 +74,7 @@ html[data-light-theme="win95-light"] {
   --light-popover-foreground: #000000;
   --light-primary: #000080;
   --light-primary-foreground: #ffffff;
-  --light-secondary: #d0d4d8;
+  --light-secondary: #c7c7c7;
   --light-secondary-foreground: #000000;
   --light-muted: #bfbfbf;
   --light-muted-foreground: #606878;
@@ -135,7 +133,9 @@ html[data-light-theme="win95-light"]
 /* Colored-button bevels use tints of the button's own color rather than gray,
    so the highlight/shadow read naturally against the filled background. */
 html[data-light-theme="win95-light"]
-  [data-theme-component="button"][data-variant="default"] {
+  [data-theme-component="button"][data-variant="default"],
+html[data-light-theme="win95-light"]
+  [data-theme-component="button"][data-state="on"] {
   box-shadow:
     inset 1px 1px 0 #8080ff,
     inset 2px 2px 0 #5050c0,
@@ -144,9 +144,9 @@ html[data-light-theme="win95-light"]
 }
 
 html[data-light-theme="win95-light"]
-  [data-theme-component="button"][data-variant="default"]:active:not(
-    :disabled
-  ) {
+  [data-theme-component="button"][data-variant="default"]:active:not(:disabled),
+html[data-light-theme="win95-light"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
     inset 1px 1px 0 #000000,
     inset 2px 2px 0 #00004c,

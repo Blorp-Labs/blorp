@@ -694,7 +694,9 @@ export default function Inbox() {
               }
               className="md:hidden"
             >
-              <DoubleCheck className="text-2xl" />
+              <Button size="icon" variant="outline" asChild>
+                <DoubleCheck />
+              </Button>
             </IonButton>
             <UserDropdown />
           </ToolbarButtons>
@@ -818,13 +820,13 @@ export default function Inbox() {
           onEndReached={
             isMergedTab
               ? () => {
-                if (!replies.isFetchingNextPage && replies.hasNextPage) {
-                  replies.fetchNextPage();
+                  if (!replies.isFetchingNextPage && replies.hasNextPage) {
+                    replies.fetchNextPage();
+                  }
+                  if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
+                    mentions.fetchNextPage();
+                  }
                 }
-                if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
-                  mentions.fetchNextPage();
-                }
-              }
               : activePagination.onEndReached
           }
           estimatedItemSize={375}

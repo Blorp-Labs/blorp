@@ -772,7 +772,7 @@ function PostCommentInner({
             rest.imediateChildren > 0 ||
             (replyState && media.md)) && (
             <div
-              className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-xl mb-2"
+              className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-lg mb-2"
               style={{ borderColor: color }}
             >
               {replyState && (

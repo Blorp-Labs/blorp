@@ -36,6 +36,7 @@ import { ToolbarButtons } from "@/src/components/toolbar/toolbar-buttons";
 import { useScrollToTopEvents } from "@/src/components/virtual-list";
 import { getPreferedTimeFormat } from "@/src/lib/format";
 import { Page } from "@/src/components/page";
+import { ThemeComponent } from "@/src/components/theme-components";
 
 const EMPTY_ARR: never[] = [];
 
@@ -193,7 +194,7 @@ export default function Messages() {
                         )}
                         <div
                           className={cn(
-                            "flex flex-col p-2.5 rounded-xl max-w-2/3",
+                            "flex flex-col p-2.5 rounded-lg max-w-2/3",
                             isMe
                               ? "bg-violet-600 ml-auto"
                               : "rounded-tl-none bg-secondary",
@@ -253,12 +254,13 @@ function ComposeMessage({
   return (
     <ContentGutters>
       <form
-        className="my-1 flex items-center gap-2 border rounded-2xl pr-1 focus-within:ring"
+        data-theme-component={ThemeComponent.Button}
+        className="my-1 flex items-center gap-2 border rounded-lg pr-1 focus-within:ring"
         onSubmit={(e) => {
           e.preventDefault();
           if (body.trim().length > 0) {
             createPrivateMessage.mutateAsync({
-              body: body,
+              body,
               recipientId: recipient.id,
             });
             onSubmit();
@@ -275,7 +277,7 @@ function ComposeMessage({
         />
         <Button
           size="icon"
-          variant={body.length === 0 ? "secondary" : "default"}
+          variant={body.length === 0 ? "ghost" : "default"}
           className="-rotate-90 h-6.5 w-6.5"
         >
           <Send />

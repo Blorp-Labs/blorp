@@ -191,7 +191,7 @@ export function CommentVoting({
           });
         }}
         className={cn(
-          "text-md font-normal -mr-2",
+          "text-md font-normal",
           isUpvoted && "text-brand hover:text-brand",
           fixRightAlignment && "-mr-2",
         )}
