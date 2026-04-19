@@ -149,8 +149,10 @@ html[data-light-theme="unix-light"] [data-theme-component="popover"] {
 /*
  * Unix dark (High Contrast Black): flat white border on black — no bevel, just contrast.
  * Ghost and link stay borderless, same as light.
+ * [data-dark-mode="dark"] gates these rules so they don't bleed into light mode when both
+ * unix-light and unix-dark are selected simultaneously.
  */
-html[data-dark-theme="unix-dark"]
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"]:not([data-variant="ghost"]):not(
     [data-variant="link"]
   ) {
@@ -158,13 +160,14 @@ html[data-dark-theme="unix-dark"]
   box-shadow: none;
 }
 
-html[data-dark-theme="unix-dark"]
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #ffffff;
   outline-offset: -4px;
 }
 
-html[data-dark-theme="unix-dark"] [data-theme-component="popover"] {
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="popover"] {
   border: 1px solid #ffffff;
   box-shadow: none;
 }
