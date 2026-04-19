@@ -9,6 +9,7 @@ import {
 } from "react-icons/pi";
 import { TbMessageCircle, TbMessageCirclePlus } from "react-icons/tb";
 import { cn } from "@/src/lib/utils";
+import { ThemeComponent } from "../theme-components";
 import { Button } from "../ui/button";
 import { useCallback, useId } from "react";
 import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
@@ -319,7 +320,7 @@ export function PostVoting({
 
   return (
     <div
-      data-slot="button"
+      data-theme-component={ThemeComponent.Button}
       data-variant={variant}
       className={cn(
         "flex flex-row items-center border-1 rounded-full",

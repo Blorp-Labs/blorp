@@ -68,19 +68,19 @@ html[data-light-theme="win95-light"] {
   --radius: 0px;
   --light-brand: #000080;
   --light-brand-secondary: #008080;
-  --light-background: #d0d4d8;
+  --light-background: #d4d4d4;
   --light-foreground: #000000;
   --light-card: #d0d4d8;
   --light-card-foreground: #000000;
-  --light-popover: #d0d4d8;
+  --light-popover: #d4d4d4;
   --light-popover-foreground: #000000;
   --light-primary: #000080;
   --light-primary-foreground: #ffffff;
   --light-secondary: #d0d4d8;
   --light-secondary-foreground: #000000;
-  --light-muted: #9098a8;
+  --light-muted: #bfbfbf;
   --light-muted-foreground: #606878;
-  --light-accent: #c8cbce;
+  --light-accent: #cccccc;
   --light-accent-foreground: #000000;
   --light-destructive: #ff0000;
   --light-border: #b0b0b0;
@@ -102,19 +102,15 @@ html[data-light-theme="win95-light"] {
 }
 
 /*
- * Win95 raised-button bevel applied via [data-slot="button"] so it covers both
- * <button> and <a asChild> elements rendered by the Button component.
+ * Win95 raised-button bevel applied via [data-theme-component="button"] so it
+ * covers <button>, <a asChild>, and any non-button wrapper that opts in.
  * ghost and link are excluded via :where() — using :where() zeroes the
  * exclusion's specificity so variant-specific overrides below can win.
  * border: none removes any Tailwind border utility so the bevel reads cleanly.
  * focus-visible uses Win95's dotted-outline convention instead of a glow ring.
  */
 html[data-light-theme="win95-light"]
-  [data-slot="button"]:not(
-    :where([data-variant="ghost"], [data-variant="link"])
-  ),
-html[data-light-theme="win95-light"]
-  [data-slot="dropdown-menu-trigger"][data-variant]:not(
+  [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ) {
   border: none;
@@ -126,7 +122,7 @@ html[data-light-theme="win95-light"]
 }
 
 html[data-light-theme="win95-light"]
-  [data-slot="button"]:not(
+  [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ):active:not(:disabled) {
   box-shadow:
@@ -139,7 +135,7 @@ html[data-light-theme="win95-light"]
 /* Colored-button bevels use tints of the button's own color rather than gray,
    so the highlight/shadow read naturally against the filled background. */
 html[data-light-theme="win95-light"]
-  [data-slot="button"][data-variant="default"] {
+  [data-theme-component="button"][data-variant="default"] {
   box-shadow:
     inset 1px 1px 0 #8080ff,
     inset 2px 2px 0 #5050c0,
@@ -148,7 +144,9 @@ html[data-light-theme="win95-light"]
 }
 
 html[data-light-theme="win95-light"]
-  [data-slot="button"][data-variant="default"]:active:not(:disabled) {
+  [data-theme-component="button"][data-variant="default"]:active:not(
+    :disabled
+  ) {
   box-shadow:
     inset 1px 1px 0 #000000,
     inset 2px 2px 0 #00004c,
@@ -157,7 +155,7 @@ html[data-light-theme="win95-light"]
 }
 
 html[data-light-theme="win95-light"]
-  [data-slot="button"][data-variant="destructive"] {
+  [data-theme-component="button"][data-variant="destructive"] {
   box-shadow:
     inset 1px 1px 0 #ff8080,
     inset 2px 2px 0 #d04040,
@@ -166,7 +164,9 @@ html[data-light-theme="win95-light"]
 }
 
 html[data-light-theme="win95-light"]
-  [data-slot="button"][data-variant="destructive"]:active:not(:disabled) {
+  [data-theme-component="button"][data-variant="destructive"]:active:not(
+    :disabled
+  ) {
   box-shadow:
     inset 1px 1px 0 #000000,
     inset 2px 2px 0 #600000,
@@ -174,7 +174,8 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #d04040;
 }
 
-html[data-light-theme="win95-light"] [data-slot="button"]:focus-visible {
+html[data-light-theme="win95-light"]
+  [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #000000;
   outline-offset: -4px;
 }
@@ -184,12 +185,15 @@ html[data-light-theme="win95-light"] [data-slot="button"]:focus-visible {
  * Ghost and link stay borderless, same as light.
  */
 html[data-dark-theme="win95-dark"]
-  [data-slot="button"]:not([data-variant="ghost"]):not([data-variant="link"]) {
+  [data-theme-component="button"]:not([data-variant="ghost"]):not(
+    [data-variant="link"]
+  ) {
   border: 1px solid #ffffff;
   box-shadow: none;
 }
 
-html[data-dark-theme="win95-dark"] [data-slot="button"]:focus-visible {
+html[data-dark-theme="win95-dark"]
+  [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #ffffff;
   outline-offset: -4px;
 }
