@@ -52,6 +52,186 @@ html[data-light-theme="dracula-light"] {
   --light-sidebar-ring: #bd93f9;
 }
 
+/*
+ * rounded-full in Tailwind v4 is hardcoded to calc(infinity * 1px) and is NOT
+ * derived from --radius, so we override it explicitly for Win95 themes.
+ */
+html[data-light-theme="win95-light"] .rounded-full,
+html[data-dark-theme="win95-dark"] .rounded-full,
+html[data-light-theme="win95-light"] .rounded-xl,
+html[data-dark-theme="win95-dark"] .rounded-xl {
+  border-radius: 0;
+}
+
+/* ── Windows 95 Light ── */
+html[data-light-theme="win95-light"] {
+  --radius: 0px;
+  --light-brand: #000080;
+  --light-brand-secondary: #008080;
+  --light-background: #d0d4d8;
+  --light-foreground: #000000;
+  --light-card: #d0d4d8;
+  --light-card-foreground: #000000;
+  --light-popover: #d0d4d8;
+  --light-popover-foreground: #000000;
+  --light-primary: #000080;
+  --light-primary-foreground: #ffffff;
+  --light-secondary: #d0d4d8;
+  --light-secondary-foreground: #000000;
+  --light-muted: #9098a8;
+  --light-muted-foreground: #606878;
+  --light-accent: #c8cbce;
+  --light-accent-foreground: #000000;
+  --light-destructive: #ff0000;
+  --light-border: #b0b0b0;
+  --light-input: #b0b0b0;
+  --light-ring: #000080;
+  --light-chart-1: #000080;
+  --light-chart-2: #008080;
+  --light-chart-3: #800000;
+  --light-chart-4: #808000;
+  --light-chart-5: #800080;
+  --light-sidebar: #d0d4d8;
+  --light-sidebar-foreground: #000000;
+  --light-sidebar-primary: #000080;
+  --light-sidebar-primary-foreground: #ffffff;
+  --light-sidebar-accent: #000080;
+  --light-sidebar-accent-foreground: #ffffff;
+  --light-sidebar-border: #808080;
+  --light-sidebar-ring: #000080;
+}
+
+/*
+ * Win95 raised-button bevel applied via [data-slot="button"] so it covers both
+ * <button> and <a asChild> elements rendered by the Button component.
+ * ghost and link are excluded via :where() — using :where() zeroes the
+ * exclusion's specificity so variant-specific overrides below can win.
+ * border: none removes any Tailwind border utility so the bevel reads cleanly.
+ * focus-visible uses Win95's dotted-outline convention instead of a glow ring.
+ */
+html[data-light-theme="win95-light"]
+  [data-slot="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ),
+html[data-light-theme="win95-light"]
+  [data-slot="dropdown-menu-trigger"][data-variant]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ) {
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 #ffffff,
+    inset 2px 2px 0 #e8ecf0,
+    inset -1px -1px 0 #000000,
+    inset -2px -2px 0 #808890;
+}
+
+html[data-light-theme="win95-light"]
+  [data-slot="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ):active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #000000,
+    inset 2px 2px 0 #808890,
+    inset -1px -1px 0 #ffffff,
+    inset -2px -2px 0 #e8ecf0;
+}
+
+/* Colored-button bevels use tints of the button's own color rather than gray,
+   so the highlight/shadow read naturally against the filled background. */
+html[data-light-theme="win95-light"]
+  [data-slot="button"][data-variant="default"] {
+  box-shadow:
+    inset 1px 1px 0 #8080ff,
+    inset 2px 2px 0 #5050c0,
+    inset -1px -1px 0 #000000,
+    inset -2px -2px 0 #00004c;
+}
+
+html[data-light-theme="win95-light"]
+  [data-slot="button"][data-variant="default"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #000000,
+    inset 2px 2px 0 #00004c,
+    inset -1px -1px 0 #8080ff,
+    inset -2px -2px 0 #5050c0;
+}
+
+html[data-light-theme="win95-light"]
+  [data-slot="button"][data-variant="destructive"] {
+  box-shadow:
+    inset 1px 1px 0 #ff8080,
+    inset 2px 2px 0 #d04040,
+    inset -1px -1px 0 #000000,
+    inset -2px -2px 0 #600000;
+}
+
+html[data-light-theme="win95-light"]
+  [data-slot="button"][data-variant="destructive"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #000000,
+    inset 2px 2px 0 #600000,
+    inset -1px -1px 0 #ff8080,
+    inset -2px -2px 0 #d04040;
+}
+
+html[data-light-theme="win95-light"] [data-slot="button"]:focus-visible {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+/*
+ * Win95 HC Black dark: flat white border on black — no bevel, just contrast.
+ * Ghost and link stay borderless, same as light.
+ */
+html[data-dark-theme="win95-dark"]
+  [data-slot="button"]:not([data-variant="ghost"]):not([data-variant="link"]) {
+  border: 1px solid #ffffff;
+  box-shadow: none;
+}
+
+html[data-dark-theme="win95-dark"] [data-slot="button"]:focus-visible {
+  outline: 1px dotted #ffffff;
+  outline-offset: -4px;
+}
+
+/* ── Windows 95 Dark (High Contrast Black) ── */
+html[data-dark-theme="win95-dark"] {
+  --radius: 0px;
+  --dark-brand: #00ff00;
+  --dark-brand-secondary: #00ffff;
+  --dark-background: #000000;
+  --dark-foreground: #ffffff;
+  --dark-card: #000000;
+  --dark-card-foreground: #ffffff;
+  --dark-popover: #000000;
+  --dark-popover-foreground: #ffffff;
+  --dark-primary: #ffffff;
+  --dark-primary-foreground: #000000;
+  --dark-secondary: #000080;
+  --dark-secondary-foreground: #ffffff;
+  --dark-muted: #008080;
+  --dark-muted-foreground: #00ffff;
+  --dark-accent: #008080;
+  --dark-accent-foreground: #ffffff;
+  --dark-destructive: #ff0000;
+  --dark-border: #ffffff;
+  --dark-input: #000000;
+  --dark-ring: #00ffff;
+  --dark-chart-1: #00ff00;
+  --dark-chart-2: #00ffff;
+  --dark-chart-3: #ffff00;
+  --dark-chart-4: #ff00ff;
+  --dark-chart-5: #ff8000;
+  --dark-sidebar: #000000;
+  --dark-sidebar-foreground: #ffffff;
+  --dark-sidebar-primary: #00ff00;
+  --dark-sidebar-primary-foreground: #000000;
+  --dark-sidebar-accent: #008080;
+  --dark-sidebar-accent-foreground: #ffffff;
+  --dark-sidebar-border: #ffffff;
+  --dark-sidebar-ring: #00ffff;
+}
+
 /* ── Dracula Dark ── */
 html[data-dark-theme="dracula-dark"] {
   --dark-brand: #ff79c6;

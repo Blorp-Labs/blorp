@@ -319,6 +319,8 @@ export function PostVoting({
 
   return (
     <div
+      data-slot="button"
+      data-variant={variant}
       className={cn(
         "flex flex-row items-center border-1 rounded-full",
         variant === "ghost" && "border-transparent",

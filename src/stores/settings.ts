@@ -10,17 +10,19 @@ export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
-export type LightTheme = "default-light" | "dracula-light";
-export type DarkTheme = "default-dark" | "dracula-dark";
+export type LightTheme = "default-light" | "dracula-light" | "win95-light";
+export type DarkTheme = "default-dark" | "dracula-dark" | "win95-dark";
 
 export const LIGHT_THEME_OPTIONS: { label: string; value: LightTheme }[] = [
   { value: "default-light", label: "Default" },
   { value: "dracula-light", label: "Dracula" },
+  { value: "win95-light", label: "Windows 95" },
 ];
 
 export const DARK_THEME_OPTIONS: { label: string; value: DarkTheme }[] = [
   { value: "default-dark", label: "Default" },
   { value: "dracula-dark", label: "Dracula" },
+  { value: "win95-dark", label: "Windows 95" },
 ];
 
 // How vote counts are displayed in the UI.
@@ -95,8 +97,8 @@ const persistedSchema = z.object({
   collapseThresholdSetting: z.union([z.literal("account"), z.number()]),
   hideThresholdSetting: z.union([z.literal("account"), z.number()]),
   collapseRemovedComments: z.boolean(),
-  lightTheme: z.enum(["default-light", "dracula-light"]),
-  darkTheme: z.enum(["default-dark", "dracula-dark"]),
+  lightTheme: z.enum(["default-light", "dracula-light", "win95-light"]),
+  darkTheme: z.enum(["default-dark", "dracula-dark", "win95-dark"]),
 });
 
 type SettingsStore = {
