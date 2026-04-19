@@ -21,15 +21,15 @@ html[data-dark-theme="unix-dark"] .rounded-full {
 /* ── Unix Light ── */
 html[data-light-theme="unix-light"] {
   --radius: 0px;
-  --light-brand: #000080;
-  --light-brand-secondary: #008080;
+  --light-brand: #d40091;
+  --light-brand-secondary: #4123d0;
   --light-background: #d4d4d4;
   --light-foreground: #000000;
   --light-card: #d0d4d8;
   --light-card-foreground: #000000;
   --light-popover: #d4d4d4;
   --light-popover-foreground: #000000;
-  --light-primary: #000080;
+  --light-primary: #d40091;
   --light-primary-foreground: #ffffff;
   --light-secondary: #c7c7c7;
   --light-secondary-foreground: #000000;
@@ -40,20 +40,20 @@ html[data-light-theme="unix-light"] {
   --light-destructive: #ff0000;
   --light-border: #b0b0b0;
   --light-input: #b0b0b0;
-  --light-ring: #000080;
-  --light-chart-1: #000080;
-  --light-chart-2: #008080;
+  --light-ring: #d40091;
+  --light-chart-1: #d40091;
+  --light-chart-2: #4123d0;
   --light-chart-3: #800000;
   --light-chart-4: #808000;
   --light-chart-5: #800080;
   --light-sidebar: #d0d4d8;
   --light-sidebar-foreground: #000000;
-  --light-sidebar-primary: #000080;
+  --light-sidebar-primary: #d40091;
   --light-sidebar-primary-foreground: #ffffff;
-  --light-sidebar-accent: #000080;
+  --light-sidebar-accent: #d40091;
   --light-sidebar-accent-foreground: #ffffff;
   --light-sidebar-border: #808080;
-  --light-sidebar-ring: #000080;
+  --light-sidebar-ring: #d40091;
 }
 
 /*
@@ -94,10 +94,10 @@ html[data-light-theme="unix-light"]
 html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-state="on"] {
   box-shadow:
-    inset 1px 1px 0 #8080ff,
-    inset 2px 2px 0 #5050c0,
-    inset -1px -1px 0 #000060,
-    inset -2px -2px 0 #00004c;
+    inset 1px 1px 0 #ffb0e0,
+    inset 2px 2px 0 #d000a0,
+    inset -1px -1px 0 #780050,
+    inset -2px -2px 0 #500030;
 }
 
 html[data-light-theme="unix-light"]
@@ -105,10 +105,10 @@ html[data-light-theme="unix-light"]
 html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
-    inset 1px 1px 0 #000060,
-    inset 2px 2px 0 #00004c,
-    inset -1px -1px 0 #8080ff,
-    inset -2px -2px 0 #5050c0;
+    inset 1px 1px 0 #500030,
+    inset 2px 2px 0 #780050,
+    inset -1px -1px 0 #d000a0,
+    inset -2px -2px 0 #ffb0e0;
 }
 
 html[data-light-theme="unix-light"]
@@ -182,10 +182,10 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"][data-state="on"] {
   box-shadow:
-    inset 1px 1px 0 #ff88d8,
-    inset 2px 2px 0 #cc00a0,
+    inset 1px 1px 0 #ffb0e8,
+    inset 2px 2px 0 #dd00b0,
     inset -1px -1px 0 #880060,
-    inset -2px -2px 0 #660048;
+    inset -2px -2px 0 #600040;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
@@ -193,10 +193,10 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
-    inset 1px 1px 0 #660048,
+    inset 1px 1px 0 #600040,
     inset 2px 2px 0 #880060,
-    inset -1px -1px 0 #cc00a0,
-    inset -2px -2px 0 #ff88d8;
+    inset -1px -1px 0 #dd00b0,
+    inset -2px -2px 0 #ffb0e8;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
