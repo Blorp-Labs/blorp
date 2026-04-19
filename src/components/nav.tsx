@@ -416,7 +416,7 @@ export function MenuButton() {
   return (
     <Button asChild variant="ghost" size="icon" className="lg:hidden -ms-1.5">
       <IonMenuButton menu={LEFT_SIDEBAR_MENU_ID} autoHide={false}>
-        <LuMenu className="-scale-110 text-2xl" />
+        <LuMenu className="scale-110 text-2xl" />
       </IonMenuButton>
     </Button>
   );

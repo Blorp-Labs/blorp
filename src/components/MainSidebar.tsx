@@ -388,7 +388,7 @@ export function MainSidebar() {
                             communityHandle={c}
                             size="sm"
                             className={cn(
-                              "hover:bg-secondary h-10 px-3 md:rounded-md",
+                              "hover:bg-accent h-10 px-3 md:rounded-md",
                               mainSidebarCollapsed && "px-2",
                             )}
                             hideText={mainSidebarCollapsed}

@@ -694,8 +694,8 @@ export default function Inbox() {
               }
               className="md:hidden"
             >
-              <Button size="icon" variant="outline" asChild>
-                <DoubleCheck />
+              <Button size="icon" variant="outline">
+                <DoubleCheck className="text-2xl" />
               </Button>
             </IonButton>
             <UserDropdown />

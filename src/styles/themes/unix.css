@@ -11,14 +11,14 @@
 
 /*
  * rounded-full in Tailwind v4 is hardcoded to calc(infinity * 1px) and is NOT
- * derived from --radius, so we override it explicitly for Win95 themes.
+ * derived from --radius, so we override it explicitly for the Unix themes.
  */
 html[data-light-theme="unix-light"] .rounded-full,
 html[data-dark-theme="unix-dark"] .rounded-full {
   border-radius: 0;
 }
 
-/* ── Windows 95 Light ── */
+/* ── Unix Light ── */
 html[data-light-theme="unix-light"] {
   --radius: 0px;
   --light-brand: #000080;
@@ -57,12 +57,12 @@ html[data-light-theme="unix-light"] {
 }
 
 /*
- * Win95 raised-button bevel applied via [data-theme-component="button"] so it
+ * Unix raised-button bevel applied via [data-theme-component="button"] so it
  * covers <button>, <a asChild>, and any non-button wrapper that opts in.
  * ghost and link are excluded via :where() — using :where() zeroes the
  * exclusion's specificity so variant-specific overrides below can win.
  * border: none removes any Tailwind border utility so the bevel reads cleanly.
- * focus-visible uses Win95's dotted-outline convention instead of a glow ring.
+ * focus-visible uses a dotted-outline convention instead of a glow ring.
  */
 html[data-light-theme="unix-light"]
   [data-theme-component="button"]:not(
@@ -137,7 +137,7 @@ html[data-light-theme="unix-light"]
   outline-offset: -4px;
 }
 
-/* Win95 popovers use the context-menu style: flat black border + drop shadow. */
+/* Unix popovers use the context-menu style: asymmetric border + drop shadow. */
 html[data-light-theme="unix-light"] [data-theme-component="popover"] {
   border-top: 1px solid #ffffff;
   border-left: 1px solid #ffffff;
@@ -147,7 +147,7 @@ html[data-light-theme="unix-light"] [data-theme-component="popover"] {
 }
 
 /*
- * Win95 HC Black dark: flat white border on black — no bevel, just contrast.
+ * Unix dark (High Contrast Black): flat white border on black — no bevel, just contrast.
  * Ghost and link stay borderless, same as light.
  */
 html[data-dark-theme="unix-dark"]
@@ -169,7 +169,7 @@ html[data-dark-theme="unix-dark"] [data-theme-component="popover"] {
   box-shadow: none;
 }
 
-/* ── Windows 95 Dark (High Contrast Black) ── */
+/* ── Unix Dark (High Contrast Black) ── */
 html[data-dark-theme="unix-dark"] {
   --radius: 0px;
   --dark-brand: #00ff00;
