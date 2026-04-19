@@ -176,16 +176,16 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
     inset -2px -2px 0 #909090;
 }
 
-/* Default/primary button (light gray bg) and toggled-on state get gray-tinted bevel. */
+/* Default button (bg-brand = #ff1fbb) and toggled-on state use pink tints. */
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"][data-variant="default"],
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"][data-state="on"] {
   box-shadow:
-    inset 1px 1px 0 #e8e8e8,
-    inset 2px 2px 0 #c0c0c0,
-    inset -1px -1px 0 #707070,
-    inset -2px -2px 0 #505050;
+    inset 1px 1px 0 #ff88d8,
+    inset 2px 2px 0 #cc00a0,
+    inset -1px -1px 0 #880060,
+    inset -2px -2px 0 #660048;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
@@ -193,10 +193,10 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
-    inset 1px 1px 0 #707070,
-    inset 2px 2px 0 #505050,
-    inset -1px -1px 0 #e8e8e8,
-    inset -2px -2px 0 #c0c0c0;
+    inset 1px 1px 0 #660048,
+    inset 2px 2px 0 #880060,
+    inset -1px -1px 0 #cc00a0,
+    inset -2px -2px 0 #ff88d8;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
