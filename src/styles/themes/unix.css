@@ -147,65 +147,129 @@ html[data-light-theme="unix-light"] [data-theme-component="popover"] {
 }
 
 /*
- * Unix dark (High Contrast Black): flat white border on black — no bevel, just contrast.
- * Ghost and link stay borderless, same as light.
- * [data-dark-mode="dark"] gates these rules so they don't bleed into light mode when both
- * unix-light and unix-dark are selected simultaneously.
+ * Unix dark button bevel: same 4-layer inset shadow pattern as unix-light, tuned for
+ * dark-gray backgrounds. Gray tones work across all button variants; default and
+ * destructive get color-matched tints. Ghost and link stay borderless.
+ * [data-dark-mode="dark"] gates all structural rules so they don't bleed into light mode
+ * when both unix-light and unix-dark are selected simultaneously.
  */
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
-  [data-theme-component="button"]:not([data-variant="ghost"]):not(
-    [data-variant="link"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
   ) {
-  border: 1px solid #ffffff;
-  box-shadow: none;
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 #909090,
+    inset 2px 2px 0 #787878,
+    inset -1px -1px 0 #585858,
+    inset -2px -2px 0 #505050;
+}
+
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ):active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #505050,
+    inset 2px 2px 0 #585858,
+    inset -1px -1px 0 #787878,
+    inset -2px -2px 0 #909090;
+}
+
+/* Default/primary button (light gray bg) and toggled-on state get gray-tinted bevel. */
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-variant="default"],
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-state="on"] {
+  box-shadow:
+    inset 1px 1px 0 #e8e8e8,
+    inset 2px 2px 0 #c0c0c0,
+    inset -1px -1px 0 #707070,
+    inset -2px -2px 0 #505050;
+}
+
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-variant="default"]:active:not(:disabled),
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #707070,
+    inset 2px 2px 0 #505050,
+    inset -1px -1px 0 #e8e8e8,
+    inset -2px -2px 0 #c0c0c0;
+}
+
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-variant="destructive"] {
+  box-shadow:
+    inset 1px 1px 0 #ee8888,
+    inset 2px 2px 0 #c04040,
+    inset -1px -1px 0 #800000,
+    inset -2px -2px 0 #600000;
+}
+
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-variant="destructive"]:active:not(
+    :disabled
+  ) {
+  box-shadow:
+    inset 1px 1px 0 #800000,
+    inset 2px 2px 0 #600000,
+    inset -1px -1px 0 #ee8888,
+    inset -2px -2px 0 #c04040;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="button"]:focus-visible {
-  outline: 1px dotted #ffffff;
+  outline: 1px dotted #e8e8e8;
   outline-offset: -4px;
 }
 
+/* Unix dark popovers: asymmetric border + drop shadow, same convention as light
+   (lighter top/left = highlight, darker right/bottom = shadow), tuned for gray surfaces. */
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
   [data-theme-component="popover"] {
-  border: 1px solid #ffffff;
-  box-shadow: none;
+  border-top: 1px solid #909090;
+  border-left: 1px solid #909090;
+  border-right: 1px solid #707070;
+  border-bottom: 1px solid #707070;
+  box-shadow: 3px 3px 0 #484848;
 }
 
-/* ── Unix Dark (High Contrast Black) ── */
+/* ── Unix Dark ── */
 html[data-dark-theme="unix-dark"] {
   --radius: 0px;
-  --dark-brand: #00ff00;
-  --dark-brand-secondary: #00ffff;
-  --dark-background: #000000;
-  --dark-foreground: #ffffff;
-  --dark-card: #000000;
-  --dark-card-foreground: #ffffff;
-  --dark-popover: #000000;
-  --dark-popover-foreground: #ffffff;
-  --dark-primary: #ffffff;
-  --dark-primary-foreground: #000000;
-  --dark-secondary: #000080;
-  --dark-secondary-foreground: #ffffff;
-  --dark-muted: #008080;
-  --dark-muted-foreground: #00ffff;
-  --dark-accent: #008080;
-  --dark-accent-foreground: #ffffff;
-  --dark-destructive: #ff0000;
-  --dark-border: #ffffff;
-  --dark-input: #000000;
-  --dark-ring: #00ffff;
-  --dark-chart-1: #00ff00;
-  --dark-chart-2: #00ffff;
-  --dark-chart-3: #ffff00;
-  --dark-chart-4: #ff00ff;
-  --dark-chart-5: #ff8000;
-  --dark-sidebar: #000000;
-  --dark-sidebar-foreground: #ffffff;
-  --dark-sidebar-primary: #00ff00;
-  --dark-sidebar-primary-foreground: #000000;
-  --dark-sidebar-accent: #008080;
-  --dark-sidebar-accent-foreground: #ffffff;
-  --dark-sidebar-border: #ffffff;
-  --dark-sidebar-ring: #00ffff;
+  --dark-brand: #ff1fbb;
+  --dark-brand-secondary: #876cff;
+  --dark-background: #1e1e1e;
+  --dark-foreground: #e8e8e8;
+  --dark-card: #242424;
+  --dark-card-foreground: #e8e8e8;
+  --dark-popover: #242424;
+  --dark-popover-foreground: #e8e8e8;
+  --dark-primary: #c8c8c8;
+  --dark-primary-foreground: #1e1e1e;
+  --dark-secondary: #363636;
+  --dark-secondary-foreground: #e8e8e8;
+  --dark-muted: #2e2e2e;
+  --dark-muted-foreground: #888888;
+  --dark-accent: #323232;
+  --dark-accent-foreground: #e8e8e8;
+  --dark-destructive: #cc4444;
+  --dark-border: #404040;
+  --dark-input: #2a2a2a;
+  --dark-ring: #5577cc;
+  --dark-chart-1: #5577cc;
+  --dark-chart-2: #447799;
+  --dark-chart-3: #774499;
+  --dark-chart-4: #997744;
+  --dark-chart-5: #447744;
+  --dark-sidebar: #1a1a1a;
+  --dark-sidebar-foreground: #e8e8e8;
+  --dark-sidebar-primary: #ff1fbb;
+  --dark-sidebar-primary-foreground: #ffffff;
+  --dark-sidebar-accent: #2a2a2a;
+  --dark-sidebar-accent-foreground: #e8e8e8;
+  --dark-sidebar-border: #383838;
+  --dark-sidebar-ring: #5577cc;
 }
