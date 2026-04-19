@@ -25,6 +25,7 @@ import {
 } from "@/src/hooks";
 import { isIos, isMacOs } from "@/src/lib/device";
 import { useSearchStore } from "@/src/stores/search";
+import { ThemeComponent } from "@/src/components/theme-components";
 
 function CommunitySearchResult({ handle }: { handle: Handle }) {
   const community = useCommunityFromStore(handle);
@@ -181,6 +182,7 @@ export function SearchBar({
 
   return (
     <Command
+      data-theme-component={ThemeComponent.Button}
       className={cn(
         "md:max-w-md relative mx-auto overflow-visible border group",
         canOpen && !preventOpen
@@ -223,6 +225,7 @@ export function SearchBar({
         }
       />
       <CommandList
+        data-theme-component={ThemeComponent.Popover}
         className={cn(
           "absolute top-full z-50 bg-popover rounded-b-lg border -left-px -right-px shadow hidden",
           canOpen && !preventOpen && "group-focus-within:block",

@@ -115,7 +115,7 @@ html[data-light-theme="win95-light"]
   box-shadow:
     inset 1px 1px 0 #ffffff,
     inset 2px 2px 0 #e8ecf0,
-    inset -1px -1px 0 #000000,
+    inset -1px -1px 0 #404040,
     inset -2px -2px 0 #808890;
 }
 
@@ -124,7 +124,7 @@ html[data-light-theme="win95-light"]
     :where([data-variant="ghost"], [data-variant="link"])
   ):active:not(:disabled) {
   box-shadow:
-    inset 1px 1px 0 #000000,
+    inset 1px 1px 0 #404040,
     inset 2px 2px 0 #808890,
     inset -1px -1px 0 #ffffff,
     inset -2px -2px 0 #e8ecf0;
@@ -139,7 +139,7 @@ html[data-light-theme="win95-light"]
   box-shadow:
     inset 1px 1px 0 #8080ff,
     inset 2px 2px 0 #5050c0,
-    inset -1px -1px 0 #000000,
+    inset -1px -1px 0 #000060,
     inset -2px -2px 0 #00004c;
 }
 
@@ -148,7 +148,7 @@ html[data-light-theme="win95-light"]
 html[data-light-theme="win95-light"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
-    inset 1px 1px 0 #000000,
+    inset 1px 1px 0 #000060,
     inset 2px 2px 0 #00004c,
     inset -1px -1px 0 #8080ff,
     inset -2px -2px 0 #5050c0;
@@ -159,7 +159,7 @@ html[data-light-theme="win95-light"]
   box-shadow:
     inset 1px 1px 0 #ff8080,
     inset 2px 2px 0 #d04040,
-    inset -1px -1px 0 #000000,
+    inset -1px -1px 0 #800000,
     inset -2px -2px 0 #600000;
 }
 
@@ -168,7 +168,7 @@ html[data-light-theme="win95-light"]
     :disabled
   ) {
   box-shadow:
-    inset 1px 1px 0 #000000,
+    inset 1px 1px 0 #800000,
     inset 2px 2px 0 #600000,
     inset -1px -1px 0 #ff8080,
     inset -2px -2px 0 #d04040;
@@ -178,6 +178,15 @@ html[data-light-theme="win95-light"]
   [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #000000;
   outline-offset: -4px;
+}
+
+/* Win95 popovers use the context-menu style: flat black border + drop shadow. */
+html[data-light-theme="win95-light"] [data-theme-component="popover"] {
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #808080;
+  border-bottom: 1px solid #808080;
+  box-shadow: 3px 3px 0 #404040;
 }
 
 /*
@@ -196,6 +205,11 @@ html[data-dark-theme="win95-dark"]
   [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #ffffff;
   outline-offset: -4px;
+}
+
+html[data-dark-theme="win95-dark"] [data-theme-component="popover"] {
+  border: 1px solid #ffffff;
+  box-shadow: none;
 }
 
 /* ── Windows 95 Dark (High Contrast Black) ── */

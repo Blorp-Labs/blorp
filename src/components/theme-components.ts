@@ -5,6 +5,7 @@
  */
 export const ThemeComponent = {
   Button: "button",
+  Popover: "popover",
 } as const;
 
 export type ThemeComponent =
