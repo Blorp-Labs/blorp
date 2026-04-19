@@ -15,7 +15,8 @@
 @import "./ionic-modifications.css";
 
 @import "./scrollbars.css";
-@import "./themes.css";
+@import "./themes/dracula.css";
+@import "./themes/unix.css";
 
 @font-face {
   font-family: Jersey10;

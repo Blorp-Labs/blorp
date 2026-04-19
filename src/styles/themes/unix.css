@@ -10,59 +10,16 @@
  */
 
 /*
- * Dracula color palette — https://draculatheme.com
- * Light theme colors from the Alucard spec, dark theme colors from the standard Dracula spec.
- * MIT License — Copyright (c) 2023 Zeno Rocha
- */
-
-/* ── Dracula Light ── */
-html[data-light-theme="dracula-light"] {
-  --light-brand: #a3144d;
-  --light-brand-secondary: #644ac9;
-  --light-background: #f8f8f2;
-  --light-foreground: #282a36;
-  --light-card: #ffffff;
-  --light-card-foreground: #282a36;
-  --light-popover: #f8f8f2;
-  --light-popover-foreground: #282a36;
-  --light-primary: #282a36;
-  --light-primary-foreground: #f8f8f2;
-  --light-secondary: #e9e9e3;
-  --light-secondary-foreground: #282a36;
-  --light-muted: #e9e9e3;
-  --light-muted-foreground: #6c664b;
-  --light-accent: #e9e9e3;
-  --light-accent-foreground: #282a36;
-  --light-destructive: #cb3a2a;
-  --light-border: #d4d4cc;
-  --light-input: #d4d4cc;
-  --light-ring: #bd93f9;
-  --light-chart-1: #d9369e;
-  --light-chart-2: #2d9e4f;
-  --light-chart-3: #6272a4;
-  --light-chart-4: #d08b3e;
-  --light-chart-5: #9669e0;
-  --light-sidebar: #f0f0ea;
-  --light-sidebar-foreground: #282a36;
-  --light-sidebar-primary: #282a36;
-  --light-sidebar-primary-foreground: #f8f8f2;
-  --light-sidebar-accent: #e9e9e3;
-  --light-sidebar-accent-foreground: #282a36;
-  --light-sidebar-border: #d4d4cc;
-  --light-sidebar-ring: #bd93f9;
-}
-
-/*
  * rounded-full in Tailwind v4 is hardcoded to calc(infinity * 1px) and is NOT
  * derived from --radius, so we override it explicitly for Win95 themes.
  */
-html[data-light-theme="win95-light"] .rounded-full,
-html[data-dark-theme="win95-dark"] .rounded-full {
+html[data-light-theme="unix-light"] .rounded-full,
+html[data-dark-theme="unix-dark"] .rounded-full {
   border-radius: 0;
 }
 
 /* ── Windows 95 Light ── */
-html[data-light-theme="win95-light"] {
+html[data-light-theme="unix-light"] {
   --radius: 0px;
   --light-brand: #000080;
   --light-brand-secondary: #008080;
@@ -107,7 +64,7 @@ html[data-light-theme="win95-light"] {
  * border: none removes any Tailwind border utility so the bevel reads cleanly.
  * focus-visible uses Win95's dotted-outline convention instead of a glow ring.
  */
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ) {
@@ -119,7 +76,7 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #808890;
 }
 
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ):active:not(:disabled) {
@@ -132,9 +89,9 @@ html[data-light-theme="win95-light"]
 
 /* Colored-button bevels use tints of the button's own color rather than gray,
    so the highlight/shadow read naturally against the filled background. */
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-variant="default"],
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-state="on"] {
   box-shadow:
     inset 1px 1px 0 #8080ff,
@@ -143,9 +100,9 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #00004c;
 }
 
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-variant="default"]:active:not(:disabled),
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
     inset 1px 1px 0 #000060,
@@ -154,7 +111,7 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #5050c0;
 }
 
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-variant="destructive"] {
   box-shadow:
     inset 1px 1px 0 #ff8080,
@@ -163,7 +120,7 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #600000;
 }
 
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"][data-variant="destructive"]:active:not(
     :disabled
   ) {
@@ -174,14 +131,14 @@ html[data-light-theme="win95-light"]
     inset -2px -2px 0 #d04040;
 }
 
-html[data-light-theme="win95-light"]
+html[data-light-theme="unix-light"]
   [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #000000;
   outline-offset: -4px;
 }
 
 /* Win95 popovers use the context-menu style: flat black border + drop shadow. */
-html[data-light-theme="win95-light"] [data-theme-component="popover"] {
+html[data-light-theme="unix-light"] [data-theme-component="popover"] {
   border-top: 1px solid #ffffff;
   border-left: 1px solid #ffffff;
   border-right: 1px solid #808080;
@@ -193,7 +150,7 @@ html[data-light-theme="win95-light"] [data-theme-component="popover"] {
  * Win95 HC Black dark: flat white border on black — no bevel, just contrast.
  * Ghost and link stay borderless, same as light.
  */
-html[data-dark-theme="win95-dark"]
+html[data-dark-theme="unix-dark"]
   [data-theme-component="button"]:not([data-variant="ghost"]):not(
     [data-variant="link"]
   ) {
@@ -201,19 +158,19 @@ html[data-dark-theme="win95-dark"]
   box-shadow: none;
 }
 
-html[data-dark-theme="win95-dark"]
+html[data-dark-theme="unix-dark"]
   [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #ffffff;
   outline-offset: -4px;
 }
 
-html[data-dark-theme="win95-dark"] [data-theme-component="popover"] {
+html[data-dark-theme="unix-dark"] [data-theme-component="popover"] {
   border: 1px solid #ffffff;
   box-shadow: none;
 }
 
 /* ── Windows 95 Dark (High Contrast Black) ── */
-html[data-dark-theme="win95-dark"] {
+html[data-dark-theme="unix-dark"] {
   --radius: 0px;
   --dark-brand: #00ff00;
   --dark-brand-secondary: #00ffff;
@@ -248,41 +205,4 @@ html[data-dark-theme="win95-dark"] {
   --dark-sidebar-accent-foreground: #ffffff;
   --dark-sidebar-border: #ffffff;
   --dark-sidebar-ring: #00ffff;
-}
-
-/* ── Dracula Dark ── */
-html[data-dark-theme="dracula-dark"] {
-  --dark-brand: #ff79c6;
-  --dark-brand-secondary: #bd93f9;
-  --dark-background: #282a36;
-  --dark-foreground: #f8f8f2;
-  --dark-card: #383b4a;
-  --dark-card-foreground: #f8f8f2;
-  --dark-popover: #383b4a;
-  --dark-popover-foreground: #f8f8f2;
-  --dark-primary: #f8f8f2;
-  --dark-primary-foreground: #282a36;
-  --dark-secondary: #44475a;
-  --dark-secondary-foreground: #f8f8f2;
-  --dark-muted: #44475a;
-  --dark-muted-foreground: #9aa5ce;
-  --dark-accent: #44475a;
-  --dark-accent-foreground: #f8f8f2;
-  --dark-destructive: #ff5555;
-  --dark-border: rgba(255, 255, 255, 0.15);
-  --dark-input: rgba(255, 255, 255, 0.1);
-  --dark-ring: #bd93f9;
-  --dark-chart-1: #ff79c6;
-  --dark-chart-2: #50fa7b;
-  --dark-chart-3: #8be9fd;
-  --dark-chart-4: #ffb86c;
-  --dark-chart-5: #bd93f9;
-  --dark-sidebar: #21222c;
-  --dark-sidebar-foreground: #f8f8f2;
-  --dark-sidebar-primary: #bd93f9;
-  --dark-sidebar-primary-foreground: #f8f8f2;
-  --dark-sidebar-accent: #44475a;
-  --dark-sidebar-accent-foreground: #f8f8f2;
-  --dark-sidebar-border: rgba(255, 255, 255, 0.08);
-  --dark-sidebar-ring: #bd93f9;
 }

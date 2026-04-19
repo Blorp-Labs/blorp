@@ -1,0 +1,90 @@
+/*
+ * Theme overrides
+ *
+ * Light themes override --light-* variables via `html[data-light-theme="<name>"]`.
+ * Dark themes override --dark-* variables via `html[data-dark-theme="<name>"]`.
+ * The mode selectors in index.css decide which set (light or dark) is active.
+ *
+ * "default-light" and "default-dark" are defined in index.css's :root block,
+ * so they don't need overrides here.
+ */
+
+/*
+ * Dracula color palette — https://draculatheme.com
+ * Light theme colors from the Alucard spec, dark theme colors from the standard Dracula spec.
+ * MIT License — Copyright (c) 2023 Zeno Rocha
+ */
+
+/* ── Dracula Light ── */
+html[data-light-theme="dracula-light"] {
+  --light-brand: #a3144d;
+  --light-brand-secondary: #644ac9;
+  --light-background: #f8f8f2;
+  --light-foreground: #282a36;
+  --light-card: #ffffff;
+  --light-card-foreground: #282a36;
+  --light-popover: #f8f8f2;
+  --light-popover-foreground: #282a36;
+  --light-primary: #282a36;
+  --light-primary-foreground: #f8f8f2;
+  --light-secondary: #e9e9e3;
+  --light-secondary-foreground: #282a36;
+  --light-muted: #e9e9e3;
+  --light-muted-foreground: #6c664b;
+  --light-accent: #e9e9e3;
+  --light-accent-foreground: #282a36;
+  --light-destructive: #cb3a2a;
+  --light-border: #d4d4cc;
+  --light-input: #d4d4cc;
+  --light-ring: #bd93f9;
+  --light-chart-1: #d9369e;
+  --light-chart-2: #2d9e4f;
+  --light-chart-3: #6272a4;
+  --light-chart-4: #d08b3e;
+  --light-chart-5: #9669e0;
+  --light-sidebar: #f0f0ea;
+  --light-sidebar-foreground: #282a36;
+  --light-sidebar-primary: #282a36;
+  --light-sidebar-primary-foreground: #f8f8f2;
+  --light-sidebar-accent: #e9e9e3;
+  --light-sidebar-accent-foreground: #282a36;
+  --light-sidebar-border: #d4d4cc;
+  --light-sidebar-ring: #bd93f9;
+}
+
+/* ── Dracula Dark ── */
+html[data-dark-theme="dracula-dark"] {
+  --dark-brand: #ff79c6;
+  --dark-brand-secondary: #bd93f9;
+  --dark-background: #282a36;
+  --dark-foreground: #f8f8f2;
+  --dark-card: #383b4a;
+  --dark-card-foreground: #f8f8f2;
+  --dark-popover: #383b4a;
+  --dark-popover-foreground: #f8f8f2;
+  --dark-primary: #f8f8f2;
+  --dark-primary-foreground: #282a36;
+  --dark-secondary: #44475a;
+  --dark-secondary-foreground: #f8f8f2;
+  --dark-muted: #44475a;
+  --dark-muted-foreground: #9aa5ce;
+  --dark-accent: #44475a;
+  --dark-accent-foreground: #f8f8f2;
+  --dark-destructive: #ff5555;
+  --dark-border: rgba(255, 255, 255, 0.15);
+  --dark-input: rgba(255, 255, 255, 0.1);
+  --dark-ring: #bd93f9;
+  --dark-chart-1: #ff79c6;
+  --dark-chart-2: #50fa7b;
+  --dark-chart-3: #8be9fd;
+  --dark-chart-4: #ffb86c;
+  --dark-chart-5: #bd93f9;
+  --dark-sidebar: #21222c;
+  --dark-sidebar-foreground: #f8f8f2;
+  --dark-sidebar-primary: #bd93f9;
+  --dark-sidebar-primary-foreground: #f8f8f2;
+  --dark-sidebar-accent: #44475a;
+  --dark-sidebar-accent-foreground: #f8f8f2;
+  --dark-sidebar-border: rgba(255, 255, 255, 0.08);
+  --dark-sidebar-ring: #bd93f9;
+}
