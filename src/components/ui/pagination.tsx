@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/src/lib/utils";
 import { ButtonProps, buttonVariants } from "@/src/components/ui/button";
+import { ThemeComponent } from "../theme-components";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -46,12 +47,14 @@ const PaginationButton = ({
   ...props
 }: PaginationLinkProps) => (
   <button
+    data-theme-component={ThemeComponent.Button}
     aria-current={isActive ? "page" : undefined}
     className={cn(
       buttonVariants({
-        variant: isActive ? "outline" : "ghost",
+        variant: isActive ? "secondary" : "ghost",
         size,
       }),
+      "mx-0",
       className,
     )}
     {...props}
@@ -109,7 +112,6 @@ PaginationEllipsis.displayName = "PaginationEllipsis";
 export {
   Pagination,
   PaginationContent,
-  PaginationButton as PaginationLink,
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
