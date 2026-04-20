@@ -93,12 +93,9 @@ html[data-light-theme="unix-light"]
     inset -2px -2px 0 #e8ecf0;
 }
 
-/* Colored-button bevels use tints of the button's own color rather than gray,
-   so the highlight/shadow read naturally against the filled background. */
+/* Default button variant keeps pink tints to match the brand color. */
 html[data-light-theme="unix-light"]
-  [data-theme-component="button"][data-variant="default"],
-html[data-light-theme="unix-light"]
-  [data-theme-component="button"][data-state="on"] {
+  [data-theme-component="button"][data-variant="default"] {
   box-shadow:
     inset 1px 1px 0 #ffb0e0,
     inset 2px 2px 0 #d000a0,
@@ -107,14 +104,33 @@ html[data-light-theme="unix-light"]
 }
 
 html[data-light-theme="unix-light"]
-  [data-theme-component="button"][data-variant="default"]:active:not(:disabled),
-html[data-light-theme="unix-light"]
-  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  [data-theme-component="button"][data-variant="default"]:active:not(
+    :disabled
+  ) {
   box-shadow:
     inset 1px 1px 0 #500030,
     inset 2px 2px 0 #780050,
     inset -1px -1px 0 #d000a0,
     inset -2px -2px 0 #ffb0e0;
+}
+
+/* Toggled-on state uses dark gray tints (--light-primary: #242424). */
+html[data-light-theme="unix-light"]
+  [data-theme-component="button"][data-state="on"] {
+  box-shadow:
+    inset 1px 1px 0 #686868,
+    inset 2px 2px 0 #484848,
+    inset -1px -1px 0 #0c0c0c,
+    inset -2px -2px 0 #181818;
+}
+
+html[data-light-theme="unix-light"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #0c0c0c,
+    inset 2px 2px 0 #181818,
+    inset -1px -1px 0 #686868,
+    inset -2px -2px 0 #484848;
 }
 
 html[data-light-theme="unix-light"]
@@ -182,11 +198,9 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
     inset -2px -2px 0 #909090;
 }
 
-/* Default button (bg-brand = #ff1fbb) and toggled-on state use pink tints. */
+/* Default button variant keeps pink tints to match the brand color. */
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
-  [data-theme-component="button"][data-variant="default"],
-html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
-  [data-theme-component="button"][data-state="on"] {
+  [data-theme-component="button"][data-variant="default"] {
   box-shadow:
     inset 1px 1px 0 #ffb0e8,
     inset 2px 2px 0 #dd00b0,
@@ -195,14 +209,33 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
-  [data-theme-component="button"][data-variant="default"]:active:not(:disabled),
-html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
-  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  [data-theme-component="button"][data-variant="default"]:active:not(
+    :disabled
+  ) {
   box-shadow:
     inset 1px 1px 0 #600040,
     inset 2px 2px 0 #880060,
     inset -1px -1px 0 #dd00b0,
     inset -2px -2px 0 #ffb0e8;
+}
+
+/* Toggled-on state uses light gray tints (--dark-primary: #c8c8c8). */
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-state="on"] {
+  box-shadow:
+    inset 1px 1px 0 #ffffff,
+    inset 2px 2px 0 #e0e0e0,
+    inset -1px -1px 0 #888888,
+    inset -2px -2px 0 #707070;
+}
+
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #888888,
+    inset 2px 2px 0 #707070,
+    inset -1px -1px 0 #ffffff,
+    inset -2px -2px 0 #e0e0e0;
 }
 
 html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
