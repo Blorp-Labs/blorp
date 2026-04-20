@@ -1,5 +1,4 @@
-import { IonApp } from "@ionic/react";
-import { setupIonicReact } from "@ionic/react";
+import { IonApp, setupIonicReact } from "@ionic/react";
 import _ from "lodash";
 import { useEffect } from "react";
 import Router from "./Router";
@@ -41,19 +40,13 @@ function RefreshNotificationCount() {
   return null;
 }
 
-function DarkModeEffect() {
-  const theme = useTheme();
-  useEffect(() => {
-    document.documentElement.setAttribute("data-dark-mode", theme);
-  }, [theme]);
-  return null;
-}
-
 function ThemeEffect() {
+  const mode = useTheme();
   const lightTheme = useSettingsStore((s) => s.lightTheme);
   const darkTheme = useSettingsStore((s) => s.darkTheme);
   useEffect(() => {
     const el = document.documentElement;
+    el.setAttribute("data-dark-mode", mode);
     if (lightTheme === "default-light") {
       el.removeAttribute("data-light-theme");
     } else {
@@ -64,14 +57,14 @@ function ThemeEffect() {
     } else {
       el.setAttribute("data-dark-theme", darkTheme);
     }
-  }, [lightTheme, darkTheme]);
+    el.setAttribute("data-theme", mode === "dark" ? darkTheme : lightTheme);
+  }, [mode, lightTheme, darkTheme]);
   return null;
 }
 
 export default function App() {
   return (
     <IonApp>
-      <DarkModeEffect />
       <ThemeEffect />
       <TanstackQueryProvider>
         <AuthProvider>
