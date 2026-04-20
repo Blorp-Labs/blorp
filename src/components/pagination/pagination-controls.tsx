@@ -88,7 +88,12 @@ export function PaginationControls({
                 page === "ellipsis" ? (
                   <PaginationEllipsis key={`ellipsis-${i}`} />
                 ) : (
-                  <ToggleGroupItem key={page} value={String(page)} size="icon">
+                  <ToggleGroupItem
+                    key={page}
+                    value={String(page)}
+                    size="icon"
+                    aria-current={page === currentPage ? "page" : undefined}
+                  >
                     {page + 1}
                   </ToggleGroupItem>
                 ),

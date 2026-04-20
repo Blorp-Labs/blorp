@@ -35,23 +35,19 @@ const PaginationItem = React.forwardRef<
 ));
 PaginationItem.displayName = "PaginationItem";
 
-type PaginationLinkProps = {
-  isActive?: boolean;
-} & Pick<ButtonProps, "size"> &
+type PaginationLinkProps = Pick<ButtonProps, "size"> &
   React.ComponentProps<"button">;
 
 const PaginationButton = ({
   className,
-  isActive,
   size = "icon",
   ...props
 }: PaginationLinkProps) => (
   <button
     data-theme-component={ThemeComponent.Button}
-    aria-current={isActive ? "page" : undefined}
     className={cn(
       buttonVariants({
-        variant: isActive ? "secondary" : "ghost",
+        variant: "ghost",
         size,
       }),
       "mx-0",

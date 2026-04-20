@@ -444,7 +444,7 @@ function CreatePostInner() {
               size="sm"
               variant="secondary"
               onClick={() => setShowDrafts((s) => !s)}
-              className="xl:hidden"
+              className="md:hidden"
             >
               {showDrafts
                 ? "Back"
