@@ -12,7 +12,10 @@ export function StickyFilterBar({
   innerClassName?: string;
 }) {
   return (
-    <ContentGutters className={cn("max-md:border-b-[.5px]", className)}>
+    <ContentGutters
+      cols={2}
+      className={cn("max-md:border-b-[.5px]", className)}
+    >
       <div>
         <div
           className={cn(
@@ -24,7 +27,6 @@ export function StickyFilterBar({
         </div>
         <Separator className="max-md:hidden" />
       </div>
-      <></>
     </ContentGutters>
   );
 }
