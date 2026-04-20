@@ -254,6 +254,7 @@ export function ActionMenu<V extends string>({
     <>
       <Button
         data-theme-component={ThemeComponent.Button}
+        data-variant="ghost"
         id={id}
         onClick={() => {
           if (!disableHaptics) {
