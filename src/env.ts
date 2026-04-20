@@ -85,13 +85,13 @@ const WINDOW_REACT_APP_DEFAULT_DARK_THEME = getDockerInjectedEnv(
 export const lightThemeSchema = z.enum([
   "default-light",
   "dracula-light",
-  "unix-light",
+  "web-1.0-light",
 ]);
 
 export const darkThemeSchema = z.enum([
   "default-dark",
   "dracula-dark",
-  "unix-dark",
+  "web-1.0-dark",
 ]);
 
 function parseBoolean(bool?: string) {

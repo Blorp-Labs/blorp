@@ -16,13 +16,13 @@ export type DarkTheme = z.infer<typeof darkThemeSchema>;
 export const LIGHT_THEME_OPTIONS: { label: string; value: LightTheme }[] = [
   { value: "default-light", label: "Default" },
   { value: "dracula-light", label: "Dracula" },
-  { value: "unix-light", label: "Unix" },
+  { value: "web-1.0-light", label: "Web 1.0" },
 ];
 
 export const DARK_THEME_OPTIONS: { label: string; value: DarkTheme }[] = [
   { value: "default-dark", label: "Default" },
   { value: "dracula-dark", label: "Dracula" },
-  { value: "unix-dark", label: "Unix" },
+  { value: "web-1.0-dark", label: "Web 1.0" },
 ];
 
 // How vote counts are displayed in the UI.

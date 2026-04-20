@@ -16,7 +16,7 @@
 
 @import "./scrollbars.css";
 @import "./themes/dracula.css";
-@import "./themes/unix.css";
+@import "./themes/web-1.0.css";
 
 @font-face {
   font-family: Jersey10;

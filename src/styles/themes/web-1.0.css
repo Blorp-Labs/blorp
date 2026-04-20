@@ -15,21 +15,21 @@
 
 /*
  * --radius and .rounded-full: gated on data-theme so they only apply when the
- * unix theme is actually active. rounded-full in Tailwind v4 is hardcoded to
+ * web 1.0 theme is actually active. rounded-full in Tailwind v4 is hardcoded to
  * calc(infinity * 1px) and is NOT derived from --radius, so it needs its own override.
  */
-html[data-theme="unix-light"],
-html[data-theme="unix-dark"] {
+html[data-theme="web-1.0-light"],
+html[data-theme="web-1.0-dark"] {
   --radius: 0px;
 }
 
-html[data-theme="unix-light"] .rounded-full,
-html[data-theme="unix-dark"] .rounded-full {
+html[data-theme="web-1.0-light"] .rounded-full,
+html[data-theme="web-1.0-dark"] .rounded-full {
   border-radius: 0;
 }
 
-/* ── Unix Light ── */
-html[data-light-theme="unix-light"] {
+/* ── Web 1.0 Light ── */
+html[data-light-theme="web-1.0-light"] {
   --light-brand: #d40091;
   --light-brand-secondary: #4123d0;
   --light-background: #d4d4d4;
@@ -66,14 +66,14 @@ html[data-light-theme="unix-light"] {
 }
 
 /*
- * Unix raised-button bevel applied via [data-theme-component="button"] so it
+ * Web 1.0 raised-button bevel applied via [data-theme-component="button"] so it
  * covers <button>, <a asChild>, and any non-button wrapper that opts in.
  * ghost and link are excluded via :where() — using :where() zeroes the
  * exclusion's specificity so variant-specific overrides below can win.
  * border: none removes any Tailwind border utility so the bevel reads cleanly.
  * focus-visible uses a dotted-outline convention instead of a glow ring.
  */
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ) {
@@ -85,7 +85,7 @@ html[data-theme="unix-light"]
     inset -2px -2px 0 #808890;
 }
 
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ):active:not(:disabled) {
@@ -97,7 +97,7 @@ html[data-theme="unix-light"]
 }
 
 /* Default button variant keeps pink tints to match the brand color. */
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"][data-variant="default"] {
   box-shadow:
     inset 1px 1px 0 #ffb0e0,
@@ -106,7 +106,7 @@ html[data-theme="unix-light"]
     inset -2px -2px 0 #500030;
 }
 
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"][data-variant="default"]:active:not(
     :disabled
   ) {
@@ -118,7 +118,8 @@ html[data-theme="unix-light"]
 }
 
 /* Toggled-on state uses dark gray tints (--light-primary: #242424). */
-html[data-theme="unix-light"] [data-theme-component="button"][data-state="on"] {
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-state="on"] {
   box-shadow:
     inset 1px 1px 0 #686868,
     inset 2px 2px 0 #484848,
@@ -126,7 +127,7 @@ html[data-theme="unix-light"] [data-theme-component="button"][data-state="on"] {
     inset -2px -2px 0 #181818;
 }
 
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
     inset 1px 1px 0 #0c0c0c,
@@ -135,7 +136,7 @@ html[data-theme="unix-light"]
     inset -2px -2px 0 #484848;
 }
 
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"][data-variant="destructive"] {
   box-shadow:
     inset 1px 1px 0 #ff8080,
@@ -144,7 +145,7 @@ html[data-theme="unix-light"]
     inset -2px -2px 0 #600000;
 }
 
-html[data-theme="unix-light"]
+html[data-theme="web-1.0-light"]
   [data-theme-component="button"][data-variant="destructive"]:active:not(
     :disabled
   ) {
@@ -155,13 +156,13 @@ html[data-theme="unix-light"]
     inset -2px -2px 0 #d04040;
 }
 
-html[data-theme="unix-light"] [data-theme-component="button"]:focus-visible {
+html[data-theme="web-1.0-light"] [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #000000;
   outline-offset: -4px;
 }
 
-/* Unix popovers use the context-menu style: asymmetric border + drop shadow. */
-html[data-theme="unix-light"] [data-theme-component="popover"] {
+/* Web 1.0 popovers use the context-menu style: asymmetric border + drop shadow. */
+html[data-theme="web-1.0-light"] [data-theme-component="popover"] {
   border-top: 1px solid #ffffff;
   border-left: 1px solid #ffffff;
   border-right: 1px solid #808080;
@@ -170,11 +171,11 @@ html[data-theme="unix-light"] [data-theme-component="popover"] {
 }
 
 /*
- * Unix dark button bevel: same 4-layer inset shadow pattern as unix-light, tuned for
+ * Web 1.0 dark button bevel: same 4-layer inset shadow pattern as web-1.0-light, tuned for
  * dark-gray backgrounds. Gray tones work across all button variants; default and
  * destructive get color-matched tints. Ghost and link stay borderless.
  */
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ) {
@@ -186,7 +187,7 @@ html[data-theme="unix-dark"]
     inset -2px -2px 0 #505050;
 }
 
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"]:not(
     :where([data-variant="ghost"], [data-variant="link"])
   ):active:not(:disabled) {
@@ -198,7 +199,7 @@ html[data-theme="unix-dark"]
 }
 
 /* Default button variant keeps pink tints to match the brand color. */
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"][data-variant="default"] {
   box-shadow:
     inset 1px 1px 0 #ffb0e8,
@@ -207,7 +208,7 @@ html[data-theme="unix-dark"]
     inset -2px -2px 0 #600040;
 }
 
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"][data-variant="default"]:active:not(
     :disabled
   ) {
@@ -219,7 +220,8 @@ html[data-theme="unix-dark"]
 }
 
 /* Toggled-on state uses light gray tints (--dark-primary: #c8c8c8). */
-html[data-theme="unix-dark"] [data-theme-component="button"][data-state="on"] {
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-state="on"] {
   box-shadow:
     inset 1px 1px 0 #ffffff,
     inset 2px 2px 0 #e0e0e0,
@@ -227,7 +229,7 @@ html[data-theme="unix-dark"] [data-theme-component="button"][data-state="on"] {
     inset -2px -2px 0 #707070;
 }
 
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
   box-shadow:
     inset 1px 1px 0 #888888,
@@ -236,7 +238,7 @@ html[data-theme="unix-dark"]
     inset -2px -2px 0 #e0e0e0;
 }
 
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"][data-variant="destructive"] {
   box-shadow:
     inset 1px 1px 0 #ee8888,
@@ -245,7 +247,7 @@ html[data-theme="unix-dark"]
     inset -2px -2px 0 #600000;
 }
 
-html[data-theme="unix-dark"]
+html[data-theme="web-1.0-dark"]
   [data-theme-component="button"][data-variant="destructive"]:active:not(
     :disabled
   ) {
@@ -256,14 +258,14 @@ html[data-theme="unix-dark"]
     inset -2px -2px 0 #c04040;
 }
 
-html[data-theme="unix-dark"] [data-theme-component="button"]:focus-visible {
+html[data-theme="web-1.0-dark"] [data-theme-component="button"]:focus-visible {
   outline: 1px dotted #e8e8e8;
   outline-offset: -4px;
 }
 
-/* Unix dark popovers: asymmetric border + drop shadow, same convention as light
+/* Web 1.0 dark popovers: asymmetric border + drop shadow, same convention as light
    (lighter top/left = highlight, darker right/bottom = shadow), tuned for gray surfaces. */
-html[data-theme="unix-dark"] [data-theme-component="popover"] {
+html[data-theme="web-1.0-dark"] [data-theme-component="popover"] {
   border-top: 1px solid #909090;
   border-left: 1px solid #909090;
   border-right: 1px solid #707070;
@@ -271,8 +273,8 @@ html[data-theme="unix-dark"] [data-theme-component="popover"] {
   box-shadow: 3px 3px 0 #484848;
 }
 
-/* ── Unix Dark ── */
-html[data-dark-theme="unix-dark"] {
+/* ── Web 1.0 Dark ── */
+html[data-dark-theme="web-1.0-dark"] {
   --dark-brand: #ff1fbb;
   --dark-brand-secondary: #876cff;
   --dark-background: #1e1e1e;
