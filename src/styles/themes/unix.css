@@ -10,17 +10,23 @@
  */
 
 /*
- * rounded-full in Tailwind v4 is hardcoded to calc(infinity * 1px) and is NOT
- * derived from --radius, so we override it explicitly for the Unix themes.
+ * --radius and .rounded-full are gated on the resolved mode ([data-dark-mode="light/dark"])
+ * so they don't bleed when unix-light is paired with a non-unix dark theme or vice versa.
+ * rounded-full in Tailwind v4 is hardcoded to calc(infinity * 1px) and is NOT derived from
+ * --radius, so it needs its own override.
  */
-html[data-light-theme="unix-light"] .rounded-full,
-html[data-dark-theme="unix-dark"] .rounded-full {
+html[data-light-theme="unix-light"][data-dark-mode="light"],
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"] {
+  --radius: 0px;
+}
+
+html[data-light-theme="unix-light"][data-dark-mode="light"] .rounded-full,
+html[data-dark-theme="unix-dark"][data-dark-mode="dark"] .rounded-full {
   border-radius: 0;
 }
 
 /* ── Unix Light ── */
 html[data-light-theme="unix-light"] {
-  --radius: 0px;
   --light-brand: #d40091;
   --light-brand-secondary: #4123d0;
   --light-background: #d4d4d4;
@@ -29,7 +35,7 @@ html[data-light-theme="unix-light"] {
   --light-card-foreground: #000000;
   --light-popover: #d4d4d4;
   --light-popover-foreground: #000000;
-  --light-primary: #d40091;
+  --light-primary: #242424;
   --light-primary-foreground: #ffffff;
   --light-secondary: #c7c7c7;
   --light-secondary-foreground: #000000;
@@ -238,7 +244,6 @@ html[data-dark-theme="unix-dark"][data-dark-mode="dark"]
 
 /* ── Unix Dark ── */
 html[data-dark-theme="unix-dark"] {
-  --radius: 0px;
   --dark-brand: #ff1fbb;
   --dark-brand-secondary: #876cff;
   --dark-background: #1e1e1e;
