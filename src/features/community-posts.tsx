@@ -78,13 +78,13 @@ export default function CommunityPosts() {
   const paginationMode = useSettingsStore((s) => s.paginationMode);
   const { postSort, suggestedPostSort } = useAvailableSortsQuery();
   const posts = usePostsQuery({
-    communityHandle: communityHandle,
+    communityHandle,
   });
 
   const mostRecentPost = useMostRecentPostQuery(
     "community",
     {
-      communityHandle: communityHandle,
+      communityHandle,
     },
     posts,
   );
@@ -181,15 +181,17 @@ export default function CommunityPosts() {
             className="max-md:hidden"
           />
           <ToolbarButtons side="right">
-            <Link
-              to={`${linkCtx.root}c/:communityHandle/s`}
-              params={{
-                communityHandle,
-              }}
-              className="text-2xl contents md:hidden"
-            >
-              <Search className="scale-110 text-muted-foreground" />
-            </Link>
+            <Button size="icon" variant="ghost" asChild>
+              <Link
+                to={`${linkCtx.root}c/:communityHandle/s`}
+                params={{
+                  communityHandle,
+                }}
+                className="text-muted-foreground md:hidden"
+              >
+                <Search className="text-2xl" />
+              </Link>
+            </Button>
             <div className="md:hidden contents">
               <PostSortButton align="end" className="text-muted-foreground" />
             </div>

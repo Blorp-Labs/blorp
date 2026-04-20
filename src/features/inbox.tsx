@@ -15,7 +15,7 @@ import {
   useResolvePostReportMutation,
   useResolveCommentReportMutation,
 } from "@/src/queries/index";
-import { IonButton, IonContent, IonHeader, IonToolbar } from "@ionic/react";
+import { IonContent, IonHeader, IonToolbar } from "@ionic/react";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { PageTitle } from "../components/page-title";
 import { cn } from "../lib/utils";
@@ -686,7 +686,9 @@ export default function Inbox() {
             <ToolbarTitle numRightIcons={1}>Inbox</ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
-            <IonButton
+            <Button
+              size="icon"
+              variant="ghost"
               onClick={() =>
                 confirmationAlrt({
                   message: "Mark all replies and mentions as read",
@@ -695,7 +697,7 @@ export default function Inbox() {
               className="md:hidden"
             >
               <DoubleCheck className="text-2xl" />
-            </IonButton>
+            </Button>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
@@ -774,7 +776,7 @@ export default function Inbox() {
                 </BadgeCount>
               </ToggleGroup>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     size="icon"
                     variant="ghost"
@@ -818,13 +820,13 @@ export default function Inbox() {
           onEndReached={
             isMergedTab
               ? () => {
-                if (!replies.isFetchingNextPage && replies.hasNextPage) {
-                  replies.fetchNextPage();
+                  if (!replies.isFetchingNextPage && replies.hasNextPage) {
+                    replies.fetchNextPage();
+                  }
+                  if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
+                    mentions.fetchNextPage();
+                  }
                 }
-                if (!mentions.isFetchingNextPage && mentions.hasNextPage) {
-                  mentions.fetchNextPage();
-                }
-              }
               : activePagination.onEndReached
           }
           estimatedItemSize={375}

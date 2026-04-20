@@ -1,0 +1,313 @@
+/*
+ * Theme overrides
+ *
+ * Light themes override --light-* variables via `html[data-light-theme="<name>"]`.
+ * Dark themes override --dark-* variables via `html[data-dark-theme="<name>"]`.
+ * The mode selectors in index.css decide which set (light or dark) is active.
+ *
+ * "default-light" and "default-dark" are defined in index.css's :root block,
+ * so they don't need overrides here.
+ *
+ * Structural and component rules (radius, bevels, popovers) use `html[data-theme]`,
+ * which is set by ActiveThemeEffect to the currently resolved theme name. This
+ * avoids needing to combine data-light-theme + data-dark-mode checks everywhere.
+ */
+
+/*
+ * --radius and .rounded-full: gated on data-theme so they only apply when the
+ * web 1.0 theme is actually active. rounded-full in Tailwind v4 is hardcoded to
+ * calc(infinity * 1px) and is NOT derived from --radius, so it needs its own override.
+ */
+html[data-theme="web-1.0-light"],
+html[data-theme="web-1.0-dark"] {
+  --radius: 0px;
+}
+
+html[data-theme="web-1.0-light"] .rounded-full,
+html[data-theme="web-1.0-dark"] .rounded-full,
+html[data-theme="web-1.0-light"] ion-badge,
+html[data-theme="web-1.0-dark"] ion-badge {
+  border-radius: 0;
+}
+
+/* ── Web 1.0 Light ── */
+html[data-light-theme="web-1.0-light"] {
+  --light-brand: #d40091;
+  --light-brand-secondary: #4123d0;
+  --light-background: #d4d4d4;
+  --light-foreground: #000000;
+  --light-card: #d0d4d8;
+  --light-card-foreground: #000000;
+  --light-popover: #d4d4d4;
+  --light-popover-foreground: #000000;
+  --light-primary: #242424;
+  --light-primary-foreground: #ffffff;
+  --light-secondary: #c7c7c7;
+  --light-secondary-foreground: #000000;
+  --light-muted: #bfbfbf;
+  --light-muted-foreground: #606878;
+  --light-accent: #c4c4c4;
+  --light-accent-foreground: #000000;
+  --light-destructive: #ff0000;
+  --light-border: #b0b0b0;
+  --light-input: #b0b0b0;
+  --light-ring: #000000;
+  --light-chart-1: #d40091;
+  --light-chart-2: #4123d0;
+  --light-chart-3: #800000;
+  --light-chart-4: #808000;
+  --light-chart-5: #800080;
+  --light-sidebar: #d0d4d8;
+  --light-sidebar-foreground: #000000;
+  --light-sidebar-primary: #d40091;
+  --light-sidebar-primary-foreground: #ffffff;
+  --light-sidebar-accent: #d40091;
+  --light-sidebar-accent-foreground: #ffffff;
+  --light-sidebar-border: #808080;
+  --light-sidebar-ring: #d40091;
+}
+
+/*
+ * Web 1.0 raised-button bevel applied via [data-theme-component="button"] so it
+ * covers <button>, <a asChild>, and any non-button wrapper that opts in.
+ * ghost and link are excluded via :where() — using :where() zeroes the
+ * exclusion's specificity so variant-specific overrides below can win.
+ * border: none removes any Tailwind border utility so the bevel reads cleanly.
+ * focus-visible uses a dotted-outline convention instead of a glow ring.
+ */
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ) {
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 #ffffff,
+    inset 2px 2px 0 #e8ecf0,
+    inset -1px -1px 0 #404040,
+    inset -2px -2px 0 #808890;
+}
+
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ):active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #404040,
+    inset 2px 2px 0 #808890,
+    inset -1px -1px 0 #ffffff,
+    inset -2px -2px 0 #e8ecf0;
+}
+
+/* Default button variant keeps pink tints to match the brand color. */
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-variant="default"] {
+  box-shadow:
+    inset 1px 1px 0 #ffb0e0,
+    inset 2px 2px 0 #d000a0,
+    inset -1px -1px 0 #780050,
+    inset -2px -2px 0 #500030;
+}
+
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-variant="default"]:active:not(
+    :disabled
+  ) {
+  box-shadow:
+    inset 1px 1px 0 #500030,
+    inset 2px 2px 0 #780050,
+    inset -1px -1px 0 #d000a0,
+    inset -2px -2px 0 #ffb0e0;
+}
+
+/* Toggled-on state uses dark gray tints (--light-primary: #242424). */
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-state="on"] {
+  box-shadow:
+    inset 1px 1px 0 #686868,
+    inset 2px 2px 0 #484848,
+    inset -1px -1px 0 #0c0c0c,
+    inset -2px -2px 0 #181818;
+}
+
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #0c0c0c,
+    inset 2px 2px 0 #181818,
+    inset -1px -1px 0 #686868,
+    inset -2px -2px 0 #484848;
+}
+
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-variant="destructive"] {
+  box-shadow:
+    inset 1px 1px 0 #ff8080,
+    inset 2px 2px 0 #d04040,
+    inset -1px -1px 0 #800000,
+    inset -2px -2px 0 #600000;
+}
+
+html[data-theme="web-1.0-light"]
+  [data-theme-component="button"][data-variant="destructive"]:active:not(
+    :disabled
+  ) {
+  box-shadow:
+    inset 1px 1px 0 #800000,
+    inset 2px 2px 0 #600000,
+    inset -1px -1px 0 #ff8080,
+    inset -2px -2px 0 #d04040;
+}
+
+html[data-theme="web-1.0-light"] [data-theme-component="button"]:focus-visible {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
+
+/* Web 1.0 popovers use the context-menu style: asymmetric border + drop shadow. */
+html[data-theme="web-1.0-light"] [data-theme-component="popover"] {
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #808080;
+  border-bottom: 1px solid #808080;
+  box-shadow: 3px 3px 0 #404040;
+}
+
+/*
+ * Web 1.0 dark button bevel: same 4-layer inset shadow pattern as web-1.0-light, tuned for
+ * dark-gray backgrounds. Gray tones work across all button variants; default and
+ * destructive get color-matched tints. Ghost and link stay borderless.
+ */
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ) {
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 #909090,
+    inset 2px 2px 0 #787878,
+    inset -1px -1px 0 #585858,
+    inset -2px -2px 0 #505050;
+}
+
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"]:not(
+    :where([data-variant="ghost"], [data-variant="link"])
+  ):active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #505050,
+    inset 2px 2px 0 #585858,
+    inset -1px -1px 0 #787878,
+    inset -2px -2px 0 #909090;
+}
+
+/* Default button variant keeps pink tints to match the brand color. */
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-variant="default"] {
+  box-shadow:
+    inset 1px 1px 0 #ffb0e8,
+    inset 2px 2px 0 #dd00b0,
+    inset -1px -1px 0 #880060,
+    inset -2px -2px 0 #600040;
+}
+
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-variant="default"]:active:not(
+    :disabled
+  ) {
+  box-shadow:
+    inset 1px 1px 0 #600040,
+    inset 2px 2px 0 #880060,
+    inset -1px -1px 0 #dd00b0,
+    inset -2px -2px 0 #ffb0e8;
+}
+
+/* Toggled-on state uses light gray tints (--dark-primary: #c8c8c8). */
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-state="on"] {
+  box-shadow:
+    inset 1px 1px 0 #ffffff,
+    inset 2px 2px 0 #e0e0e0,
+    inset -1px -1px 0 #888888,
+    inset -2px -2px 0 #707070;
+}
+
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-state="on"]:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px 0 #888888,
+    inset 2px 2px 0 #707070,
+    inset -1px -1px 0 #ffffff,
+    inset -2px -2px 0 #e0e0e0;
+}
+
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-variant="destructive"] {
+  box-shadow:
+    inset 1px 1px 0 #ee8888,
+    inset 2px 2px 0 #c04040,
+    inset -1px -1px 0 #800000,
+    inset -2px -2px 0 #600000;
+}
+
+html[data-theme="web-1.0-dark"]
+  [data-theme-component="button"][data-variant="destructive"]:active:not(
+    :disabled
+  ) {
+  box-shadow:
+    inset 1px 1px 0 #800000,
+    inset 2px 2px 0 #600000,
+    inset -1px -1px 0 #ee8888,
+    inset -2px -2px 0 #c04040;
+}
+
+html[data-theme="web-1.0-dark"] [data-theme-component="button"]:focus-visible {
+  outline: 1px dotted #e8e8e8;
+  outline-offset: -4px;
+}
+
+/* Web 1.0 dark popovers: asymmetric border + drop shadow, same convention as light
+   (lighter top/left = highlight, darker right/bottom = shadow), tuned for gray surfaces. */
+html[data-theme="web-1.0-dark"] [data-theme-component="popover"] {
+  border-top: 1px solid #909090;
+  border-left: 1px solid #909090;
+  border-right: 1px solid #707070;
+  border-bottom: 1px solid #707070;
+  box-shadow: 3px 3px 0 #484848;
+}
+
+/* ── Web 1.0 Dark ── */
+html[data-dark-theme="web-1.0-dark"] {
+  --dark-brand: #ff1fbb;
+  --dark-brand-secondary: #876cff;
+  --dark-background: #1e1e1e;
+  --dark-foreground: #e8e8e8;
+  --dark-card: #242424;
+  --dark-card-foreground: #e8e8e8;
+  --dark-popover: #242424;
+  --dark-popover-foreground: #e8e8e8;
+  --dark-primary: #c8c8c8;
+  --dark-primary-foreground: #1e1e1e;
+  --dark-secondary: #363636;
+  --dark-secondary-foreground: #e8e8e8;
+  --dark-muted: #2e2e2e;
+  --dark-muted-foreground: #888888;
+  --dark-accent: #323232;
+  --dark-accent-foreground: #e8e8e8;
+  --dark-destructive: #cc4444;
+  --dark-border: #404040;
+  --dark-input: #2a2a2a;
+  --dark-ring: #ffffff;
+  --dark-chart-1: #5577cc;
+  --dark-chart-2: #447799;
+  --dark-chart-3: #774499;
+  --dark-chart-4: #997744;
+  --dark-chart-5: #447744;
+  --dark-sidebar: #1a1a1a;
+  --dark-sidebar-foreground: #e8e8e8;
+  --dark-sidebar-primary: #ff1fbb;
+  --dark-sidebar-primary-foreground: #ffffff;
+  --dark-sidebar-accent: #2a2a2a;
+  --dark-sidebar-accent-foreground: #e8e8e8;
+  --dark-sidebar-border: #383838;
+  --dark-sidebar-ring: #5577cc;
+}

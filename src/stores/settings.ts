@@ -3,24 +3,26 @@ import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
 import { isTest } from "../lib/device";
 import _ from "lodash";
-import { env } from "../env";
+import { env, lightThemeSchema, darkThemeSchema } from "../env";
 import z from "zod";
 
 export type PostCardStyle = "small" | "large" | "extra-small";
 
 export type DarkMode = "system" | "dark" | "light";
 
-export type LightTheme = "default-light" | "dracula-light";
-export type DarkTheme = "default-dark" | "dracula-dark";
+export type LightTheme = z.infer<typeof lightThemeSchema>;
+export type DarkTheme = z.infer<typeof darkThemeSchema>;
 
 export const LIGHT_THEME_OPTIONS: { label: string; value: LightTheme }[] = [
   { value: "default-light", label: "Default" },
   { value: "dracula-light", label: "Dracula" },
+  { value: "web-1.0-light", label: "Web 1.0" },
 ];
 
 export const DARK_THEME_OPTIONS: { label: string; value: DarkTheme }[] = [
   { value: "default-dark", label: "Default" },
   { value: "dracula-dark", label: "Dracula" },
+  { value: "web-1.0-dark", label: "Web 1.0" },
 ];
 
 // How vote counts are displayed in the UI.
@@ -95,8 +97,8 @@ const persistedSchema = z.object({
   collapseThresholdSetting: z.union([z.literal("account"), z.number()]),
   hideThresholdSetting: z.union([z.literal("account"), z.number()]),
   collapseRemovedComments: z.boolean(),
-  lightTheme: z.enum(["default-light", "dracula-light"]),
-  darkTheme: z.enum(["default-dark", "dracula-dark"]),
+  lightTheme: lightThemeSchema,
+  darkTheme: darkThemeSchema,
 });
 
 type SettingsStore = {
@@ -146,8 +148,8 @@ const INIT_STATE: z.infer<typeof persistedSchema> = {
   collapseThresholdSetting: -10,
   hideThresholdSetting: "account",
   collapseRemovedComments: true,
-  lightTheme: "default-light",
-  darkTheme: "default-dark",
+  lightTheme: env.REACT_APP_DEFAULT_LIGHT_THEME,
+  darkTheme: env.REACT_APP_DEFAULT_DARK_THEME,
 };
 
 function pruneFilterKeywords(keywords: string[]) {

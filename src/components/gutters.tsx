@@ -35,12 +35,14 @@ import { twMerge } from "tailwind-merge";
 export function ContentGutters({
   children,
   noMobilePadding,
+  cols,
   ...props
 }: React.DetailedHTMLProps<
   React.HTMLAttributes<HTMLDivElement>,
   HTMLDivElement
 > & {
   noMobilePadding?: boolean;
+  cols?: 1 | 2;
 }) {
   const [first, second] = React.Children.toArray(children);
   return (
@@ -48,7 +50,7 @@ export function ContentGutters({
       {...props}
       className={twMerge(
         "max-w-[1075px] w-full grid grid-cols-1 mx-auto gap-4 px-3.5 md:px-6",
-        !!second &&
+        (!!second || cols === 2) &&
           "md:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_290px]",
         noMobilePadding && "px-0",
         props.className,

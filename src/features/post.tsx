@@ -90,7 +90,7 @@ function PostBottomBarWithCtx({
           commentsCount={commentCount}
           onReply={() =>
             loadCommentIntoEditor({
-              postApId: postApId,
+              postApId,
             })
           }
         />
@@ -120,7 +120,7 @@ function ReplyToPost({
           <InlineCommentReply state={postReplyState} autoFocus={media.md} />
         ) : (
           <button
-            className="py-2 max-md:py-4.5 md:px-3 md:border md:rounded-2xl w-full text-left text-muted-foreground md:text-sm"
+            className="py-2 max-md:py-4.5 md:px-3 md:border max-md:rounded-none rounded-full w-full text-left text-muted-foreground md:text-sm"
             onClick={() =>
               requireAuth().then(() =>
                 loadCommentIntoEditor({
@@ -178,7 +178,7 @@ function useResolveComment(pathOrApId: string | undefined): {
         ...noResult,
         apId: decoded,
       };
-    } catch { }
+    } catch {}
 
     try {
       const commentPathArr = decoded?.split(".") ?? [];
@@ -189,7 +189,7 @@ function useResolveComment(pathOrApId: string | undefined): {
         commentId,
         highlightCommentId,
       };
-    } catch { }
+    } catch {}
 
     return noResult;
   }, [decoded]);
@@ -270,7 +270,7 @@ export default function Post() {
   const comments = useCommentsQuery(
     {
       postApId: decodedApId ?? "",
-      parentId: parentId,
+      parentId,
     },
     {
       enabled: parentComment.status === "success" && !!decodedApId,
@@ -354,12 +354,12 @@ export default function Post() {
             media.maxMd
               ? theme === "light"
                 ? {
-                  "--background": "var(--color-brand-secondary)",
-                  "--border-color": "var(--color-brand-secondary)",
-                }
+                    "--background": "var(--color-brand-secondary)",
+                    "--border-color": "var(--color-brand-secondary)",
+                  }
                 : {
-                  "--border-color": "var(--color-background)",
-                }
+                    "--border-color": "var(--color-background)",
+                  }
               : undefined
           }
         >
@@ -412,7 +412,7 @@ export default function Post() {
               scrollHost
               className={cn(
                 showMobileReply &&
-                "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
+                  "max-md:pb-[calc(var(--ion-safe-area-bottom)+55px)]",
               )}
               data={data}
               header={[

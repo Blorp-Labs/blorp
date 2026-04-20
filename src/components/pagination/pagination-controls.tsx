@@ -4,10 +4,10 @@ import {
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { ContentGutters } from "../gutters";
 
 export type PaginationControlsProps = {
@@ -66,34 +66,40 @@ export function PaginationControls({
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              size="default"
+              size="sm"
               onClick={
                 isFirstPage ? undefined : () => onPageChange(currentPage - 1)
               }
-              aria-disabled={isFirstPage}
-              className={
-                isFirstPage ? "pointer-events-none opacity-50" : undefined
-              }
+              disabled={isFirstPage}
             />
           </PaginationItem>
 
-          {visiblePages.map((page, i) =>
-            page === "ellipsis" ? (
-              <PaginationItem key={`ellipsis-${i}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  size="icon"
-                  isActive={page === currentPage}
-                  onClick={() => onPageChange(page)}
-                >
-                  {page + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ),
-          )}
+          <PaginationItem>
+            <ToggleGroup
+              type="single"
+              value={String(currentPage)}
+              onValueChange={(val) => {
+                if (val) {
+                  onPageChange(Number(val));
+                }
+              }}
+            >
+              {visiblePages.map((page, i) =>
+                page === "ellipsis" ? (
+                  <PaginationEllipsis key={`ellipsis-${i}`} />
+                ) : (
+                  <ToggleGroupItem
+                    key={page}
+                    value={String(page)}
+                    size="icon"
+                    aria-current={page === currentPage ? "page" : undefined}
+                  >
+                    {page + 1}
+                  </ToggleGroupItem>
+                ),
+              )}
+            </ToggleGroup>
+          </PaginationItem>
 
           <PaginationItem>
             {isFetchingNextPage ? (
@@ -103,16 +109,13 @@ export function PaginationControls({
               </span>
             ) : (
               <PaginationNext
-                size="default"
+                size="sm"
                 onClick={
                   isLastKnownPage
                     ? undefined
                     : () => onPageChange(currentPage + 1)
                 }
-                aria-disabled={isLastKnownPage}
-                className={
-                  isLastKnownPage ? "pointer-events-none opacity-50" : undefined
-                }
+                disabled={isLastKnownPage}
               />
             )}
           </PaginationItem>

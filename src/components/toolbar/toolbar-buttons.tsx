@@ -19,8 +19,15 @@ export function ToolbarButtons({
     );
   } else {
     return (
-      <IonButtons slot="end" className={cn("gap-3.5 md:gap-4.5", className)}>
-        {children}
+      <IonButtons slot="end">
+        <div
+          className={cn(
+            "flex flex-row items-center gap-3.5 md:gap-4.5",
+            className,
+          )}
+        >
+          {children}
+        </div>
       </IonButtons>
     );
   }

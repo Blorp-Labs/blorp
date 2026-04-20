@@ -5,7 +5,11 @@ import { useMedia } from "../hooks";
 import { ActionMenu, ActionMenuProps } from "./adaptable/action-menu";
 import _ from "lodash";
 
-import { TbArrowsDownUp, TbMessageCircle } from "react-icons/tb";
+import {
+  TbArrowsDownUp,
+  TbMessageCircle,
+  TbMessageCircleUp,
+} from "react-icons/tb";
 import { LuClock3, LuCalendarArrowUp } from "react-icons/lu";
 import {
   FaPersonRunning,
@@ -15,7 +19,6 @@ import {
 import { HiOutlineRectangleStack } from "react-icons/hi2";
 
 import { IoSkullOutline, IoChevronDown } from "react-icons/io5";
-import { TbMessageCircleUp } from "react-icons/tb";
 import { PiFireSimpleBold } from "react-icons/pi";
 import { FaSortAlphaDown, FaSortAlphaUp } from "react-icons/fa";
 import { Button } from "./ui/button";
@@ -194,13 +197,15 @@ export function CommentSortSelect({
     return [];
   }, [commentSorts, setCommentSort]);
 
+  const ariaLabel = `${commentSort} comment sort`;
+
   return (
     <ActionMenu
       align="start"
       header="Comment Sort"
       actions={actions}
       selectedValue={commentSort}
-      triggerAsChild={variant === "button"}
+      triggerAsChild
       trigger={
         variant === "button" ? (
           <Button
@@ -216,9 +221,14 @@ export function CommentSortSelect({
               getIconCommentSort(commentSort)}
           </Button>
         ) : (
-          <div className={cn("text-2xl text-muted-foreground", className)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("text-2xl text-muted-foreground", className)}
+            aria-label={ariaLabel}
+          >
             {getIconForSort(commentSort)}
-          </div>
+          </Button>
         )
       }
     />
@@ -309,7 +319,7 @@ export function PostSortButton({
       align={align}
       actions={actions}
       selectedValue={postSort}
-      triggerAsChild={variant === "button"}
+      triggerAsChild
       trigger={
         variant === "button" ? (
           <Button
@@ -322,12 +332,14 @@ export function PostSortButton({
             {getIconForSort(postSort)}
           </Button>
         ) : (
-          <div
+          <Button
+            variant="ghost"
+            size="icon"
             className={cn("text-2xl text-muted-foreground", className)}
             aria-label={ariaLabel}
           >
             {getIconForSort(postSort)}
-          </div>
+          </Button>
         )
       }
     />
@@ -389,7 +401,7 @@ export function PostCardStyleButton({
   );
 }
 
-export function HomeFilter({ children }: { children?: React.ReactNode }) {
+export function HomeFilter() {
   const instance = useAuth((s) => s.getSelectedAccount().instance);
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const listingType = useFiltersStore((s) => s.listingType);
@@ -437,15 +449,17 @@ export function HomeFilter({ children }: { children?: React.ReactNode }) {
       align="start"
       actions={LISTING_TYPE_OPTIONS}
       selectedValue={listingType}
+      triggerAsChild
       trigger={
-        children ?? (
-          <div className="flex flex-row items-center gap-0.5 text-lg">
-            <span className="font-black capitalize">
-              {listingType === "ModeratorView" ? "Moderating" : listingType}
-            </span>
-            <IoChevronDown className="text-muted-foreground" />
-          </div>
-        )
+        <Button
+          variant="ghost"
+          className="flex flex-row items-center gap-0.5 text-lg"
+        >
+          <span className="font-black capitalize">
+            {listingType === "ModeratorView" ? "Moderating" : listingType}
+          </span>
+          <IoChevronDown className="text-muted-foreground" />
+        </Button>
       }
     />
   );
@@ -500,13 +514,14 @@ export function CommunityFilter() {
       align="start"
       actions={LISTING_TYPE_OPTIONS}
       selectedValue={listingType}
+      triggerAsChild
       trigger={
-        <div className="flex flex-row items-center gap-0.5 text-lg">
+        <Button variant="ghost" className="gap-0.5 text-lg">
           <span className="font-black capitalize">
             {listingType === "ModeratorView" ? "Moderating" : listingType}
           </span>
           <IoChevronDown className="text-muted-foreground" />
-        </div>
+        </Button>
       }
     />
   );

@@ -70,7 +70,7 @@ export function InlineCommentReply({
       }}
       className="max-md:hidden w-full flex-1 py-2"
     >
-      <div className="flex-1 border rounded-xl shadow-xs focus-within:border-ring">
+      <div className="flex-1 border rounded-lg shadow-xs focus-within:border-ring">
         <MarkdownEditor
           content={state.content || getSelectedAsMarkdownQuote()}
           onChange={(val) => state.setContent(val)}
@@ -173,14 +173,14 @@ export function CommentReplyProvider({
         .mutateAsync({
           id: comment.id,
           path: comment.path,
-          body: body,
+          body,
         })
         .catch(() => undoClearEditor());
     } else if (_.isString(postApId)) {
       createComment
         .mutateAsync({
           postApId,
-          body: body,
+          body,
           parentId: parent?.id,
           parentPath: parent?.path,
           queryKeyParentId,

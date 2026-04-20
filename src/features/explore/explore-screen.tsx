@@ -162,7 +162,7 @@ function CommunityItem({ communityHandle }: { communityHandle: Handle }) {
     <Link
       className="border py-1 px-2 rounded-lg h-24 hover:bg-accent/75"
       to="/communities/c/:communityHandle"
-      params={{ communityHandle: communityHandle }}
+      params={{ communityHandle }}
     >
       <CommunityCard communityHandle={communityHandle} disableLink />
       {description && (
@@ -448,13 +448,15 @@ export default function Communities() {
             data-testid="explore-search-bar"
           />
           <ToolbarButtons side="right">
-            <Link
-              to="/communities/s"
-              className="text-2xl contents md:hidden"
-              data-testid="explore-search-link"
-            >
-              <Search className="text-muted-foreground scale-110" />
-            </Link>
+            <Button size="icon" variant="ghost" asChild>
+              <Link
+                to="/communities/s"
+                className="md:hidden"
+                data-testid="explore-search-link"
+              >
+                <Search className="text-muted-foreground text-2xl" />
+              </Link>
+            </Button>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>

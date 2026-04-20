@@ -5,6 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/src/lib/utils";
 import { Spinner } from "../icons";
+import { ThemeComponent } from "../theme-components";
 
 const buttonVariants = cva(
   "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border-1",
@@ -30,6 +31,13 @@ const buttonVariants = cva(
         icon: "h-8 w-8",
       },
     },
+    compoundVariants: [
+      {
+        variant: "ghost",
+        size: "default",
+        class: "-mx-3",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",
@@ -52,6 +60,8 @@ function Button({
   return (
     <Comp
       data-slot="button"
+      data-theme-component={ThemeComponent.Button}
+      data-variant={variant ?? "default"}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

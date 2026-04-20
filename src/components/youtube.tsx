@@ -17,7 +17,7 @@ export function YouTubeVideoEmbed({
     return null;
   }
   return (
-    <div className={cn("aspect-video rounded-xl overflow-hidden", className)}>
+    <div className={cn("aspect-video rounded-lg overflow-hidden", className)}>
       {/* @ts-expect-error pkg doesn't have types */}
       <lite-youtube videoid={videoId} className="max-w-full! w-full" />
     </div>

@@ -50,7 +50,9 @@ export function getLinkHandler(
   url?: string | null,
 ): MouseEventHandler<HTMLAnchorElement> {
   return (e) => {
-    if (!url) return;
+    if (!url) {
+      return;
+    }
 
     // Desktop (Tauri): open with OS
     if (isTauri()) {
@@ -193,9 +195,9 @@ export function PostArticleEmbed({
         className="flex flex-col group/article"
       >
         {thumbnail && showImage && (
-          <div className="relative aspect-video overflow-hidden rounded-xl">
+          <div className="relative aspect-video overflow-hidden rounded-lg">
             {imageStatus === "loading" && (
-              <Skeleton className="absolute inset-0 rounded-b-none rounded-xl" />
+              <Skeleton className="absolute inset-0 rounded-b-none rounded-lg" />
             )}
             <img
               src={thumbnail}
@@ -219,7 +221,7 @@ export function PostArticleEmbed({
         {url && !showImage && (
           <div
             className={cn(
-              "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-xl text-sm text-zinc-500 flex items-center gap-1",
+              "p-3 bg-zinc-200 dark:bg-zinc-800 truncate text-ellipsis rounded-lg text-sm text-zinc-500 flex items-center gap-1",
             )}
           >
             <span className="truncate text-ellipsis group-hover/article:underline">

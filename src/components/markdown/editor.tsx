@@ -560,7 +560,7 @@ function TipTapEditor({
           size="sm"
           variant="ghost"
           type="button"
-          className="max-md:hidden"
+          className="max-xl:hidden"
           onClick={onChangeEditorType}
         >
           Show markdown editor
@@ -569,7 +569,7 @@ function TipTapEditor({
           size="icon"
           variant="ghost"
           type="button"
-          className="md:hidden"
+          className="xl:hidden"
           onClick={onChangeEditorType}
           aria-label="Show markdown editor"
         >
@@ -613,7 +613,7 @@ function TipTapEditor({
           size="sm"
           variant="ghost"
           type="button"
-          className="max-md:hidden"
+          className="max-xl:hidden"
           onClick={onChangeEditorType}
         >
           Show markdown editor
@@ -622,7 +622,7 @@ function TipTapEditor({
           size="icon"
           variant="ghost"
           type="button"
-          className="md:hidden"
+          className="xl:hidden"
           onClick={onChangeEditorType}
           aria-label="Show markdown editor"
         >
@@ -669,7 +669,7 @@ function TextAreaEditor({
           size="sm"
           variant="ghost"
           type="button"
-          className="max-md:hidden"
+          className="max-lg:hidden"
           onClick={onChangeEditorType}
         >
           Show rich text editor
@@ -678,7 +678,7 @@ function TextAreaEditor({
           size="icon"
           variant="ghost"
           type="button"
-          className="md:hidden"
+          className="lg:hidden"
           onClick={onChangeEditorType}
           aria-label="Show rich text editor"
         >

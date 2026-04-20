@@ -117,13 +117,15 @@ docker run -d \
 
 ### Environment variables
 
-| Variable                             | Description                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------- |
-| `REACT_APP_NAME`                     | App name shown in the UI                                                    |
-| `REACT_APP_DEFAULT_INSTANCE`         | Comma-separated list of default Lemmy/PieFed instances                      |
-| `REACT_APP_LOCK_TO_DEFAULT_INSTANCE` | Set to `1` to prevent users from adding other instances                     |
-| `REACT_APP_INSTANCE_SELECTION_MODE`  | How to pick the default instance (`default_first`, `default_random`)        |
-| `REACT_APP_CONTENT_WARNING`          | When set, logged-out users must accept this content warning before browsing |
+| Variable                             | Description                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `REACT_APP_NAME`                     | App name shown in the UI                                                              |
+| `REACT_APP_DEFAULT_INSTANCE`         | Comma-separated list of default Lemmy/PieFed instances                                |
+| `REACT_APP_LOCK_TO_DEFAULT_INSTANCE` | Set to `1` to prevent users from adding other instances                               |
+| `REACT_APP_INSTANCE_SELECTION_MODE`  | How to pick the default instance (`default_first`, `default_random`)                  |
+| `REACT_APP_CONTENT_WARNING`          | When set, logged-out users must accept this content warning before browsing           |
+| `REACT_APP_DEFAULT_LIGHT_THEME`      | Default light theme for new users (`default-light`, `dracula-light`, `web-1.0-light`) |
+| `REACT_APP_DEFAULT_DARK_THEME`       | Default dark theme for new users (`default-dark`, `dracula-dark`, `web-1.0-dark`)     |
 
 ## 💬 Blorp Community
 

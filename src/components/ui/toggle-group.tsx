@@ -6,6 +6,7 @@ import { type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/src/lib/utils";
 import { toggleVariants } from "@/src/components/ui/toggle";
+import { ThemeComponent } from "../theme-components";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>
@@ -41,6 +42,7 @@ const ToggleGroupItem = React.forwardRef<
 
   return (
     <ToggleGroupPrimitive.Item
+      data-theme-component={ThemeComponent.Button}
       ref={ref}
       className={cn(
         toggleVariants({

@@ -33,14 +33,14 @@ export function CommunityBanner({
     <div className="flex-1">
       {!hideBanner && (
         <div className="relative flex-1">
-          <div className="aspect-[5] relative overflow-hidden rounded-xl">
+          <div className="aspect-[5] relative overflow-hidden rounded-lg">
             {!bannerReady && (
-              <Skeleton className="absolute inset-0 rounded-xl" />
+              <Skeleton className="absolute inset-0 rounded-lg" />
             )}
             <img
               src={banner}
               className={twMerge(
-                "h-full w-full object-cover rounded-xl relative",
+                "h-full w-full object-cover rounded-lg relative",
                 communityView?.nsfw &&
                   blurNsfw &&
                   COMMUNITY_NSFW_BANNER_BLUR_CLASS,

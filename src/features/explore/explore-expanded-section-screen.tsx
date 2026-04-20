@@ -24,6 +24,7 @@ import { FeedCard, FEEDS } from "./feed-card";
 import { SortControlBar, SortControlBarContent } from "./sort-bar";
 import { Page } from "@/src/components/page";
 import { Handle } from "@/src/lib/handle";
+import { Button } from "@/src/components/ui/button";
 
 const NO_ITEMS = "NO_ITEMS";
 
@@ -177,9 +178,11 @@ export default function ExploreExpandedSectionScreen() {
             <CommunityFilter />
           </ToolbarButtons>
           <ToolbarButtons side="right">
-            <Link to="/communities/s" className="text-2xl contents md:hidden">
-              <Search className="text-muted-foreground scale-110" />
-            </Link>
+            <Button size="icon" variant="ghost" asChild>
+              <Link to="/communities/s" className="md:hidden">
+                <Search className="text-muted-foreground text-2xl" />
+              </Link>
+            </Button>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>

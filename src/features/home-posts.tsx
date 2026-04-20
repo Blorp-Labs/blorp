@@ -255,16 +255,16 @@ export default function HomePosts() {
             data-testid="home-search-bar"
           />
           <ToolbarButtons side="right">
-            <Link
-              to="/home/s"
-              className="text-2xl text-muted-foreground md:hidden"
-              data-testid="home-search-link"
-            >
-              <Search className="scale-110" />
-            </Link>
-            <div className="md:hidden contents">
-              <PostSortButton align="end" />
-            </div>
+            <Button size="icon" variant="ghost" asChild>
+              <Link
+                to="/home/s"
+                className="text-muted-foreground md:hidden"
+                data-testid="home-search-link"
+              >
+                <Search className="text-2xl" />
+              </Link>
+            </Button>
+            <PostSortButton align="end" className="md:hidden" />
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>

@@ -20,7 +20,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         duration: 2000,
         className:
-          "max-md:mt-[calc(var(--ion-safe-area-top)+50px)] bg-emerald-600! data-[type=error]:bg-destructive! data-[type=warning]:bg-amber-600! text-white! rounded-xl!",
+          "max-md:mt-[calc(var(--ion-safe-area-top)+50px)] bg-emerald-600! data-[type=error]:bg-destructive! data-[type=warning]:bg-amber-600! text-white! rounded-lg!",
       }}
       {...props}
     />
