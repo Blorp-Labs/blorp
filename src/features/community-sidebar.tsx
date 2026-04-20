@@ -23,6 +23,7 @@ import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { useCommunityFromStore } from "../stores/communities";
 import { Page } from "../components/page";
 import { decodeCommunityHandle } from "../lib/handle";
+import { Button } from "../components/ui/button";
 
 export default function CommunityFeed() {
   const media = useMedia();
@@ -67,15 +68,17 @@ export default function CommunityFeed() {
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
-            <Link
-              to={`${linkCtx.root}c/:communityHandle/s`}
-              params={{
-                communityHandle,
-              }}
-              className="text-2xl contents md:hidden"
-            >
-              <Search className="scale-110 text-muted-foreground" />
-            </Link>
+            <Button size="icon" variant="ghost" asChild>
+              <Link
+                to={`${linkCtx.root}c/:communityHandle/s`}
+                params={{
+                  communityHandle,
+                }}
+                className="md:hidden"
+              >
+                <Search className="text-muted-foreground text-2xl" />
+              </Link>
+            </Button>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>

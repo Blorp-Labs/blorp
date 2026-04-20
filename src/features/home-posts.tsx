@@ -255,7 +255,7 @@ export default function HomePosts() {
             data-testid="home-search-bar"
           />
           <ToolbarButtons side="right">
-            <Button size="icon" variant="outline" asChild>
+            <Button size="icon" variant="ghost" asChild>
               <Link
                 to="/home/s"
                 className="text-muted-foreground md:hidden"

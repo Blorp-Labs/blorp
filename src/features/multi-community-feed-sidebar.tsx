@@ -22,6 +22,7 @@ import { useMedia } from "../hooks";
 import { Search } from "../components/icons";
 import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
 import { decodeApId } from "../apis/utils";
+import { Button } from "../components/ui/button";
 
 export default function MultiCommunitySidebar() {
   const media = useMedia();
@@ -56,15 +57,17 @@ export default function MultiCommunitySidebar() {
             </ToolbarTitle>
           </ToolbarButtons>
           <ToolbarButtons side="right">
-            <Link
-              to={`${linkCtx.root}c/:communityHandle/s`}
-              params={{
-                communityHandle: apId,
-              }}
-              className="text-2xl contents md:hidden"
-            >
-              <Search className="scale-110 text-muted-foreground" />
-            </Link>
+            <Button size="icon" variant="ghost" asChild>
+              <Link
+                to={`${linkCtx.root}c/:communityHandle/s`}
+                params={{
+                  communityHandle: apId,
+                }}
+                className="md:hidden"
+              >
+                <Search className="text-muted-foreground text-2xl" />
+              </Link>
+            </Button>
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>

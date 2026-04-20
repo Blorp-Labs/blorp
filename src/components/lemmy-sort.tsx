@@ -197,13 +197,15 @@ export function CommentSortSelect({
     return [];
   }, [commentSorts, setCommentSort]);
 
+  const ariaLabel = `${commentSort} comment sort`;
+
   return (
     <ActionMenu
       align="start"
       header="Comment Sort"
       actions={actions}
       selectedValue={commentSort}
-      triggerAsChild={variant === "button"}
+      triggerAsChild
       trigger={
         variant === "button" ? (
           <Button
@@ -219,9 +221,14 @@ export function CommentSortSelect({
               getIconCommentSort(commentSort)}
           </Button>
         ) : (
-          <div className={cn("text-2xl text-muted-foreground", className)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("text-2xl text-muted-foreground", className)}
+            aria-label={ariaLabel}
+          >
             {getIconForSort(commentSort)}
-          </div>
+          </Button>
         )
       }
     />
@@ -326,7 +333,7 @@ export function PostSortButton({
           </Button>
         ) : (
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             className={cn("text-2xl text-muted-foreground", className)}
             aria-label={ariaLabel}

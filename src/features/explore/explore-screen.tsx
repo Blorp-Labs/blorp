@@ -448,7 +448,7 @@ export default function Communities() {
             data-testid="explore-search-bar"
           />
           <ToolbarButtons side="right">
-            <Button size="icon" variant="outline" asChild>
+            <Button size="icon" variant="ghost" asChild>
               <Link
                 to="/communities/s"
                 className="md:hidden"
