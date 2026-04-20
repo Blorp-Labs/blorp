@@ -24,7 +24,9 @@ html[data-theme="web-1.0-dark"] {
 }
 
 html[data-theme="web-1.0-light"] .rounded-full,
-html[data-theme="web-1.0-dark"] .rounded-full {
+html[data-theme="web-1.0-dark"] .rounded-full,
+html[data-theme="web-1.0-light"] ion-badge,
+html[data-theme="web-1.0-dark"] ion-badge {
   border-radius: 0;
 }
 
@@ -49,7 +51,7 @@ html[data-light-theme="web-1.0-light"] {
   --light-destructive: #ff0000;
   --light-border: #b0b0b0;
   --light-input: #b0b0b0;
-  --light-ring: #d40091;
+  --light-ring: #000000;
   --light-chart-1: #d40091;
   --light-chart-2: #4123d0;
   --light-chart-3: #800000;
@@ -294,7 +296,7 @@ html[data-dark-theme="web-1.0-dark"] {
   --dark-destructive: #cc4444;
   --dark-border: #404040;
   --dark-input: #2a2a2a;
-  --dark-ring: #5577cc;
+  --dark-ring: #ffffff;
   --dark-chart-1: #5577cc;
   --dark-chart-2: #447799;
   --dark-chart-3: #774499;
