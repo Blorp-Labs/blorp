@@ -776,7 +776,7 @@ export default function Inbox() {
                 </BadgeCount>
               </ToggleGroup>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     size="icon"
                     variant="ghost"

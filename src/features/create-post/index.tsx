@@ -444,7 +444,7 @@ function CreatePostInner() {
               size="sm"
               variant="secondary"
               onClick={() => setShowDrafts((s) => !s)}
-              className="md:hidden"
+              className="xl:hidden"
             >
               {showDrafts
                 ? "Back"
@@ -455,7 +455,7 @@ function CreatePostInner() {
           <IonTitle>{isEdit ? "Edit" : "Create"} post</IonTitle>
 
           <ToolbarButtons side="right">
-            {getPostButton(cn("md:hidden", showDrafts && "max-md:hidden"))}
+            {getPostButton(cn("xl:hidden", showDrafts && "max-xl:hidden"))}
             <UserDropdown />
           </ToolbarButtons>
         </IonToolbar>
@@ -713,7 +713,7 @@ function CreatePostInner() {
                           patchDraft({
                             poll: {
                               ...draft.poll,
-                              mode: mode,
+                              mode,
                             },
                           })
                         }
@@ -783,12 +783,12 @@ function CreatePostInner() {
                 />
               </div>
 
-              {getPostButton("self-end max-md:hidden")}
+              {getPostButton("self-end max-xl:hidden")}
             </div>
           )}
 
           <Sidebar>
-            <SidebarContent className="p-4">
+            <SidebarContent className="p-4 dark:px-0">
               <DraftsSidebarMemoed onClickDraft={hideDrafts} />
             </SidebarContent>
           </Sidebar>

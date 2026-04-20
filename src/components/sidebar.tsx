@@ -96,10 +96,10 @@ export function SidebarContent({
   className?: string;
 }) {
   return (
-    <div className="overflow-y-auto md:pr-[6px] md:-mr-[14px]">
+    <div className="overflow-y-scroll md:pr-[6px] md:-mr-[14px]">
       <div
         className={cn(
-          "bg-secondary/60 dark:bg-transparent rounded-lg",
+          "bg-secondary/60 dark:bg-transparent rounded-xl",
           className,
         )}
       >

@@ -48,8 +48,7 @@ export function ContentGutters({
       {...props}
       className={twMerge(
         "max-w-[1075px] w-full grid grid-cols-1 mx-auto gap-4 px-3.5 md:px-6",
-        !!second &&
-          "md:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_290px]",
+        !!second && "xl:grid-cols-[minmax(0,1fr)_290px]",
         noMobilePadding && "px-0",
         props.className,
       )}
@@ -57,7 +56,7 @@ export function ContentGutters({
       {second ? (
         <>
           {first}
-          <div className="max-md:hidden relative">{second}</div>
+          <div className="max-xl:hidden relative">{second}</div>
         </>
       ) : (
         first
