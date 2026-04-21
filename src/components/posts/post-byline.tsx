@@ -85,19 +85,15 @@ export function usePostActions({
   });
 
   const linkCtx = useLinkContext();
-  const shareActions = useShareActions(
-    "post",
-    post
-      ? {
-          type: "post",
-          id: post.id,
-          apId: post.apId,
-          route: resolveRoute(`${linkCtx.root}posts/:post`, {
-            post: encodeApId(post.apId),
-          }),
-        }
-      : null,
-  );
+  const shareActions = useShareActions("post", {
+    type: "post",
+    id: post.id,
+    apId: post.apId,
+    route: resolveRoute(`${linkCtx.root}posts/:post`, {
+      post: encodeApId(post.apId),
+    }),
+    body: post.body,
+  });
 
   const encodedApId = encodeApId(post.apId);
 

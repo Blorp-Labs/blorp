@@ -144,6 +144,7 @@ export function useCommentActions({
           postId: commentView.postId,
           commentId: commentView.id,
           route: route!,
+          body: commentView.body,
         }
       : null,
   );

@@ -80,6 +80,11 @@ export function useShareActions(
     }
   };
 
+  const body =
+    (entity.type === "post" || entity.type === "comment") && entity.body
+      ? entity.body
+      : null;
+
   return [
     {
       text: "Share",
@@ -96,6 +101,14 @@ export function useShareActions(
           text: `Copy link to ${label}`,
           onClick: doCopy,
         },
+        ...(body
+          ? [
+              {
+                text: `Copy ${label} markdown`,
+                onClick: () => copyToClipboard(body),
+              },
+            ]
+          : []),
       ],
     },
   ] satisfies ActionMenuProps["actions"];
