@@ -6,9 +6,11 @@ export interface CommentTree {
     postApId: string;
     childCount: number;
     path: string;
+    pageCursor: string | number;
   };
   imediateChildren: number;
   sort: number;
+  defaultCollapsed: boolean;
   [key: number]: CommentTree;
 }
 
@@ -35,6 +37,7 @@ export function buildCommentTree(
     postApId: string;
     childCount: number;
     path: string;
+    pageCursor: string | number;
   }[],
   commentPath?: string,
   maxDepth = 6,
