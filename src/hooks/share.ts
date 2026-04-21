@@ -371,8 +371,10 @@ export function useCanShare() {
 export async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
   } catch (e) {
     console.error("Error copying URL:", e);
+    toast.error("Couldn't copy to clipboard");
   }
 }
 
