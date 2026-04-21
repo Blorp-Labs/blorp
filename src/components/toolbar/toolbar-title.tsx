@@ -22,6 +22,7 @@ export function ToolbarTitle({
   children,
   className,
   numRightIcons,
+  ...rest
 }: {
   children: string;
   className?: string;
@@ -37,6 +38,7 @@ export function ToolbarTitle({
           ? `calc(100vw - 65px - ${35 * numRightIcons}px)`
           : 500,
       }}
+      {...rest}
     >
       {children}
     </span>

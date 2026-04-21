@@ -5,8 +5,8 @@ import { PostView, PersonView, CommunityView, CommentView } from "lemmy-v3";
 import { PartialDeep } from "type-fest";
 import { faker } from "@faker-js/faker";
 import {
-  TV_POST_VIEW,
-  TV_COMMENT_VIEW,
+  TEXT_POST_VIEW,
+  TEXT_COMMENT_VIEW,
   ASKLEMMY_COMMUNITY_VIEW,
   PICARD_PERSON_VIEW,
 } from "./lemmy-api-fixtures";
@@ -101,12 +101,12 @@ export function getPost(config?: {
   const id = config?.postView?.post?.id ?? POST_ID;
 
   const view: PostView = {
-    ...TV_POST_VIEW,
+    ...TEXT_POST_VIEW,
     ...config?.postView,
     community: community.community,
     creator: creator.person,
     post: {
-      ...TV_POST_VIEW.post,
+      ...TEXT_POST_VIEW.post,
       ...config?.postView?.post,
       id,
       ap_id: config?.postView?.post?.ap_id ?? `${API_ROOT}/post/${id}`,
@@ -114,7 +114,7 @@ export function getPost(config?: {
       community_id: community.community.id,
     },
     counts: {
-      ...TV_POST_VIEW.counts,
+      ...TEXT_POST_VIEW.counts,
       ...config?.postView?.counts,
       post_id: id,
     },
@@ -186,7 +186,7 @@ export function getComment(config?: {
   const id = config?.commentView?.comment?.id ?? COMMENT_ID;
 
   return {
-    ...TV_COMMENT_VIEW,
+    ...TEXT_COMMENT_VIEW,
     ...config?.commentView,
     post: {
       ...post.post,
@@ -201,7 +201,7 @@ export function getComment(config?: {
       ...config?.commentView?.community,
     },
     comment: {
-      ...TV_COMMENT_VIEW.comment,
+      ...TEXT_COMMENT_VIEW.comment,
       ...config?.commentView?.comment,
       id,
       ap_id: config?.commentView?.comment?.ap_id ?? `${API_ROOT}/comment/${id}`,
@@ -210,7 +210,7 @@ export function getComment(config?: {
       post_id: post.post.id,
     },
     counts: {
-      ...TV_COMMENT_VIEW.counts,
+      ...TEXT_COMMENT_VIEW.counts,
       ...config?.commentView?.counts,
       comment_id: id,
     },

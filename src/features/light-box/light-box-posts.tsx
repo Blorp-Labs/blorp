@@ -36,7 +36,7 @@ import {
 } from "@/src/components/posts/post-buttons";
 import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
-import { decodeApId, encodeApId } from "@/src/apis/utils";
+import { decodeApId } from "@/src/apis/utils";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useParams } from "@/src/routing";
 import { Forms } from "@/src/apis/api-blueprint";
@@ -145,8 +145,8 @@ const Post = memo(
         active,
         onZoom,
         imageAspectRatio: ar,
-        paddingTop: paddingTop,
-        paddingBottom: paddingBottom,
+        paddingTop,
+        paddingBottom,
       },
       [embed?.fullResThumbnail, img],
     );
@@ -340,7 +340,7 @@ export default function LightBoxPosts() {
     (newIndex: number) => {
       const newApId = data[newIndex];
       if (newApId && !isPending) {
-        setApId(encodeApId(newApId));
+        setApId(newApId);
       }
     },
     [data, isPending, setApId],
@@ -409,7 +409,11 @@ export default function LightBoxPosts() {
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
-            <ToolbarTitle size="sm" numRightIcons={1}>
+            <ToolbarTitle
+              size="sm"
+              numRightIcons={1}
+              data-testid="lightbox-toolbar-title"
+            >
               {post?.title ?? "Loading..."}
             </ToolbarTitle>
           </ToolbarButtons>
