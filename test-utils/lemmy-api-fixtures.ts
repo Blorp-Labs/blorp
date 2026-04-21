@@ -174,6 +174,12 @@ function makeImagePost(
     hidden: false,
     creator_blocked: false,
     unread_comments: 5,
+    image_details: {
+      width: 800,
+      height: 600,
+      link: `https://picsum.photos/id/${imgId}/800/600`,
+      content_type: "image/jpeg",
+    },
   } satisfies PostView;
 
   return { post, counts, view };

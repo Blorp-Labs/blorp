@@ -36,7 +36,7 @@ import {
 } from "@/src/components/posts/post-buttons";
 import { usePostFromStore } from "@/src/stores/posts";
 import z from "zod";
-import { decodeApId, encodeApId } from "@/src/apis/utils";
+import { decodeApId } from "@/src/apis/utils";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useParams } from "@/src/routing";
 import { Forms } from "@/src/apis/api-blueprint";
@@ -340,7 +340,7 @@ export default function LightBoxPosts() {
     (newIndex: number) => {
       const newApId = data[newIndex];
       if (newApId && !isPending) {
-        setApId(encodeApId(newApId));
+        setApId(newApId);
       }
     },
     [data, isPending, setApId],
