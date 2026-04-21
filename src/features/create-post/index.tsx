@@ -663,6 +663,18 @@ function CreatePostInner() {
                       </p>
                     )}
                   </div>
+                  <Label htmlFor={`${id}-alt-text`}>Alt text</Label>
+                  <Input
+                    id={`${id}-alt-text`}
+                    data-testid="create-post-alt-text"
+                    placeholder="Describe the image for screen readers"
+                    value={draft.altText ?? ""}
+                    onChange={(e) =>
+                      patchDraft({
+                        altText: e.target.value || null,
+                      })
+                    }
+                  />
                 </div>
               )}
 

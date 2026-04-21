@@ -131,6 +131,66 @@ describe("poll round trip", () => {
   });
 });
 
+describe("alt text", () => {
+  const ALT = "A cat on a windowsill";
+
+  test("postToDraft carries altText from the source post", () => {
+    const { post } = api.getPost({
+      variant: "image",
+      post: { altText: ALT },
+    });
+    const draft = postToDraft(post);
+    expect(draft.altText).toBe(ALT);
+  });
+
+  test("draftToCreatePostData outputs altText", () => {
+    const draft: Draft = {
+      type: "media",
+      createdAt: Date.now(),
+      title: "Image post",
+      communityHandle: "test@example.com",
+      thumbnailUrl: "https://example.com/img.jpg",
+      altText: ALT,
+    };
+    const created = draftToCreatePostData(draft);
+    expect(created.altText).toBe(ALT);
+  });
+
+  test("draftToEditPostData outputs altText", () => {
+    const draft: Draft = {
+      type: "media",
+      createdAt: Date.now(),
+      title: "Image post",
+      communityHandle: "test@example.com",
+      apId: "https://example.com/post/1",
+      thumbnailUrl: "https://example.com/img.jpg",
+      altText: ALT,
+    };
+    const edited = draftToEditPostData(draft);
+    expect(edited.altText).toBe(ALT);
+  });
+
+  test("postToDraft → draftToEditPostData preserves altText", () => {
+    const { post } = api.getPost({
+      variant: "image",
+      post: { altText: ALT },
+    });
+    const draft = postToDraft(post);
+    const edited = draftToEditPostData(draft);
+    expect(edited.altText).toBe(ALT);
+  });
+
+  test("postToDraft → draftToEditPostData preserves null altText", () => {
+    const { post } = api.getPost({
+      variant: "image",
+      post: { altText: null },
+    });
+    const draft = postToDraft(post);
+    const edited = draftToEditPostData(draft);
+    expect(edited.altText).toBeNull();
+  });
+});
+
 describe("persisted state snapshot", () => {
   beforeAll(() => {
     vi.useFakeTimers();
