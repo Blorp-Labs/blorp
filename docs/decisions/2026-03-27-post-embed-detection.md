@@ -10,12 +10,9 @@ pattern recognized in embedVideoUrl should be recognized identically in url.
 The field a URL arrives in is an upstream data concern, not something embed
 detection should care about.
 
-urlContentType can disagree with the actual file extension. Detection places
-urlContentType checks before extension checks, so a wrong content type can
-misclassify a URL. A known case: urlContentType=image/gif on an imgur .gifv
-URL causes type=image even though embedUrl gets normalized to .mp4. This is
-a consequence of bad upstream data and is documented in tests rather than
-worked around in code.
+We first try and parse post.url and post.embedVideoUrl, then we fallback
+to urlContentType. For that reason, the url can disagree urlContentType
+and we will still likely be able to parse the data.
 
 .gifv is not a real video format — it is a filename convention invented by
 imgur to signal "this is a video meant to loop like a gif." Imgur guarantees
