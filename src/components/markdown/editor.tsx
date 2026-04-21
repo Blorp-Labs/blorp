@@ -5,16 +5,17 @@ import {
   ReactNodeViewRenderer,
   useEditor,
 } from "@tiptap/react";
+import type { NodeViewRenderer } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
+import { Markdown } from "@tiptap/markdown";
 import {
   DetailsWithMarkdown,
   DetailsContentWithMarkdown,
   DetailsSummaryWithMarkdown,
 } from "./editor-extensions/spoiler-plugin";
-import SubScript from "./editor-extensions/subscript";
-import SupScript from "./editor-extensions/supscript";
+import Subscript from "./editor-extensions/subscript";
+import Superscript from "./editor-extensions/supscript";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
@@ -42,6 +43,87 @@ import { EllipsisActionMenu } from "../adaptable/action-menu";
 import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
+
+/** Strip trailing &nbsp; markers that @tiptap/extension-paragraph emits for empty paragraphs */
+function stripTrailingNbsp(md: string): string {
+  let result = md.replace(/(\n\n&nbsp;)+$/, "");
+  if (result === "&nbsp;") result = "";
+  return result;
+}
+
+export function getMarkdown(editor: Editor): string {
+  return stripTrailingNbsp(editor.getMarkdown());
+}
+
+export function setMarkdown(editor: Editor, md: string): void {
+  editor.commands.setContent(md, { contentType: "markdown" });
+}
+
+/**
+ * Update an existing link in the editor, replacing its text with `description`
+ * and its href with `href`. Non-link marks (bold, italic, etc.) on the first
+ * node of the link are preserved.
+ */
+export function updateLink(
+  editor: Editor,
+  description: string,
+  href: string,
+  linkInfo: NonNullable<ReturnType<typeof getActiveLinkInfo>>,
+): void {
+  const nodeAtStart = editor.state.doc.nodeAt(linkInfo.range.from);
+  const existingMarks = (nodeAtStart?.marks ?? [])
+    .filter((m) => m.type.name !== "link")
+    .map((m) => ({ type: m.type.name, attrs: m.attrs }));
+
+  editor
+    .chain()
+    .focus()
+    .extendMarkRange("link")
+    .insertContent([
+      {
+        type: "text",
+        text: description,
+        marks: [...existingMarks, { type: "link", attrs: { href } }],
+      },
+    ])
+    .run();
+}
+
+/**
+ * Insert a link at the current selection, replacing the selected text with
+ * `description` and applying `href`. Works correctly with both TextSelection
+ * (manual drag) and AllSelection (Ctrl+A).
+ *
+ * AllSelection sets from=0 (a node-boundary position), so arithmetic like
+ * `from + description.length` is off by the paragraph node offset. Instead
+ * we read the actual cursor position after insertContent and back-calculate
+ * the inserted range from there.
+ */
+export function insertLink(
+  editor: Editor,
+  description: string,
+  href: string,
+): void {
+  const { from, to } = editor.state.selection;
+  editor
+    .chain()
+    .focus()
+    .setTextSelection({ from, to })
+    .insertContent(description)
+    .command(({ state, commands }) => {
+      const end = state.selection.from;
+      const start = end - description.length;
+      return commands.setTextSelection({ from: start, to: end });
+    })
+    .setLink({ href })
+    .command(({ state, commands }) =>
+      commands.setTextSelection({
+        from: state.selection.to,
+        to: state.selection.to,
+      }),
+    )
+    .run();
+}
 
 const CustomLink = Link.extend({
   inclusive: false,
@@ -81,7 +163,7 @@ function IconFileInput({ onFiles }: { onFiles: (file: File[]) => void }) {
   );
 }
 
-function getActiveLinkInfo(editor: Editor) {
+export function getActiveLinkInfo(editor: Editor) {
   const { state } = editor;
   const linkType = state.schema.marks["link"];
   const { $from } = state.selection;
@@ -107,9 +189,9 @@ function useRenderOnTipTapChange(editor: Editor | null) {
       return;
     }
     const rerender = () => setSignal((x) => x + 1);
-    editor.on("selectionUpdate", rerender);
+    editor.on("transaction", rerender);
     return () => {
-      editor.off("selectionUpdate", rerender);
+      editor.off("transaction", rerender);
     };
   }, [editor]);
 }
@@ -188,30 +270,10 @@ const MenuBar = ({
 
             if (url.trim() === "") {
               editor.chain().focus().unsetLink().run();
-            } else if (isLinkActive) {
-              editor
-                .chain()
-                .focus()
-                .extendMarkRange("link")
-                .insertContent([
-                  {
-                    type: "text",
-                    text: description,
-                    marks: [{ type: "link", attrs: { href: url } }],
-                  },
-                ])
-                .run();
+            } else if (isLinkActive && linkInfo) {
+              updateLink(editor, description, url, linkInfo);
             } else {
-              const { from } = editor.state.selection;
-              const to = from + description.length;
-              editor
-                .chain()
-                .focus()
-                .insertContent(description)
-                .setTextSelection({ from, to })
-                .setLink({ href: url })
-                .setTextSelection({ from: to, to })
-                .run();
+              insertLink(editor, description, url);
             }
           } catch {}
         }}
@@ -294,14 +356,11 @@ const MenuBar = ({
 
       <EllipsisActionMenu
         aria-label="More formatting options"
+        preventFocusReturnOnClose
         actions={[
           {
             text: "Horizontal Line",
             onClick: () => editor.chain().focus().setHorizontalRule().run(),
-          },
-          {
-            text: "Code",
-            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
           },
           {
             text: "Spoiler",
@@ -316,26 +375,90 @@ const MenuBar = ({
             },
           },
           {
+            text: "Code",
+            checked: editor.isActive("codeBlock"),
+            onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+          },
+          {
             text: "Unordered List",
+            checked: editor.isActive("bulletList"),
             onClick: () => editor.chain().focus().toggleBulletList().run(),
           },
           {
             text: "Ordered List",
+            checked: editor.isActive("orderedList"),
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
           },
           {
             text: "Subscript",
-            onClick: () => editor.chain().focus().toggleMark("subscript").run(),
+            checked: editor.isActive("subscript"),
+            onClick: () => editor.chain().focus().toggleSubscript().run(),
           },
           {
             text: "Superscript",
-            onClick: () => editor.chain().focus().toggleMark("supscript").run(),
+            checked: editor.isActive("superscript"),
+            onClick: () => editor.chain().focus().toggleSuperscript().run(),
           },
         ]}
       />
     </div>
   );
 };
+
+export function getEditorExtensions({
+  placeholder,
+  codeBlockRenderer,
+  mentionSuggestions,
+}: {
+  placeholder?: string;
+  codeBlockRenderer?: NodeViewRenderer;
+  mentionSuggestions?: ReturnType<typeof useMentionSuggestions>;
+} = {}) {
+  return [
+    Markdown,
+    ...(placeholder !== undefined
+      ? [Placeholder.configure({ placeholder })]
+      : []),
+    StarterKit.configure({
+      codeBlock: false,
+      // Disable StarterKit's built-in Link — we register CustomLink below
+      // to avoid the "Duplicate extension names found: ['link']" warning.
+      link: false,
+    }),
+    Image.configure({ inline: true }),
+    codeBlockRenderer
+      ? CodeBlockLowlight.extend({
+          addNodeView() {
+            return codeBlockRenderer;
+          },
+        }).configure({ lowlight })
+      : CodeBlockLowlight.configure({ lowlight }),
+    CustomLink.configure({
+      autolink: true,
+      defaultProtocol: "https",
+    }),
+    TableKit.configure({
+      table: { resizable: true },
+    }),
+    ...(mentionSuggestions
+      ? [
+          Mention.configure({
+            HTMLAttributes: { class: "mention" },
+            suggestions: mentionSuggestions,
+          }),
+        ]
+      : []),
+    Subscript,
+    Superscript,
+    DetailsWithMarkdown.configure({
+      HTMLAttributes: {
+        class: "details",
+      },
+    }),
+    DetailsSummaryWithMarkdown,
+    DetailsContentWithMarkdown,
+  ];
+}
 
 function TipTapEditor({
   autoFocus,
@@ -387,50 +510,13 @@ function TipTapEditor({
         editor.commands.focus("end");
       }
     },
-    content,
-    extensions: [
-      Placeholder.configure({
-        placeholder,
-      }),
-      StarterKit.configure({
-        codeBlock: false,
-      }),
-      Image.configure({ inline: true }),
-      Markdown,
-      CodeBlockLowlight.extend({
-        addNodeView() {
-          return ReactNodeViewRenderer(CodeBlockEditor);
-        },
-      }).configure({
-        lowlight,
-      }),
-      CustomLink.configure({
-        autolink: true,
-        defaultProtocol: "https",
-      }),
-      TableKit.configure({
-        table: { resizable: true },
-      }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestions: mentionSuggestions,
-      }),
-      SubScript,
-      SupScript,
-      DetailsWithMarkdown.configure({
-        HTMLAttributes: {
-          class: "details",
-        },
-      }),
-      DetailsSummaryWithMarkdown,
-      DetailsContentWithMarkdown,
-    ],
+    extensions: getEditorExtensions({
+      placeholder,
+      codeBlockRenderer: ReactNodeViewRenderer(CodeBlockEditor),
+      mentionSuggestions,
+    }),
     onUpdate: ({ editor }) => {
-      // @ts-expect-error types too hard lol
-      const markdown = editor?.storage["markdown"].getMarkdown();
-      onChange(markdown);
+      onChange(getMarkdown(editor));
     },
     onFocus: () => onFocus?.(),
     onBlur,
@@ -521,11 +607,10 @@ function TipTapEditor({
   });
 
   useEffect(() => {
-    // @ts-expect-error types also too hard
-    if (editor?.storage["markdown"].getMarkdown() !== content) {
-      editor?.commands.setContent(content);
+    if (getMarkdown(editor) !== content) {
+      setMarkdown(editor, content);
     }
-  }, [content]);
+  }, [content, editor]);
 
   return (
     <>
