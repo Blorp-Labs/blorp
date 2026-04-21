@@ -156,6 +156,35 @@ describe("alt text", () => {
     expect(created.altText).toBe(ALT);
   });
 
+  test("draftToCreatePostData omits altText when no image", () => {
+    const draft: Draft = {
+      type: "media",
+      createdAt: Date.now(),
+      title: "Image post",
+      communityHandle: "test@example.com",
+      apId: "https://example.com/post/1",
+      altText: ALT,
+    };
+    const edited = draftToCreatePostData(draft);
+    expect(edited.altText).toBeNull();
+  });
+
+  test.each(["text", "poll"] as const)(
+    "draftToCreatePostData omits altText when %s post",
+    (type) => {
+      const draft: Draft = {
+        type,
+        createdAt: Date.now(),
+        title: "Image post",
+        communityHandle: "test@example.com",
+        apId: "https://example.com/post/1",
+        altText: ALT,
+      };
+      const edited = draftToCreatePostData(draft);
+      expect(edited.altText).toBeNull();
+    },
+  );
+
   test("draftToEditPostData outputs altText", () => {
     const draft: Draft = {
       type: "media",
@@ -189,6 +218,35 @@ describe("alt text", () => {
     const edited = draftToEditPostData(draft);
     expect(edited.altText).toBeNull();
   });
+
+  test("draftToEditPostData omits altText when no image", () => {
+    const draft: Draft = {
+      type: "media",
+      createdAt: Date.now(),
+      title: "Image post",
+      communityHandle: "test@example.com",
+      apId: "https://example.com/post/1",
+      altText: ALT,
+    };
+    const edited = draftToEditPostData(draft);
+    expect(edited.altText).toBeNull();
+  });
+
+  test.each(["text", "poll"] as const)(
+    "draftToEditPostData omits altText when %s post",
+    (type) => {
+      const draft: Draft = {
+        type,
+        createdAt: Date.now(),
+        title: "Image post",
+        communityHandle: "test@example.com",
+        apId: "https://example.com/post/1",
+        altText: ALT,
+      };
+      const edited = draftToEditPostData(draft);
+      expect(edited.altText).toBeNull();
+    },
+  );
 });
 
 describe("persisted state snapshot", () => {

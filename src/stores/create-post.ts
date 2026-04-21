@@ -146,6 +146,7 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
     case "text":
       post.url = null;
       post.thumbnailUrl = null;
+      post.altText = null;
       break;
     case "media":
       post.url = post.thumbnailUrl;
@@ -154,6 +155,7 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
       // PieFed will drop poll if url exists
       post.url = null;
       post.thumbnailUrl = null;
+      post.altText = null;
       if (post.poll) {
         post.poll = {
           ...post.poll,
@@ -171,6 +173,7 @@ export function draftToEditPostData(draft: Draft): Forms.EditPost {
   }
   if (!post.thumbnailUrl) {
     post.thumbnailUrl = null;
+    post.altText = null;
   }
 
   return post;
@@ -199,6 +202,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
     case "text":
       post.url = null;
       post.thumbnailUrl = null;
+      post.altText = null;
       break;
     case "media":
       post.url = post.thumbnailUrl;
@@ -207,6 +211,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
       // PieFed will drop poll if url exists
       post.url = null;
       post.thumbnailUrl = null;
+      post.altText = null;
       if (post.poll) {
         post.poll = {
           ...post.poll,
@@ -227,6 +232,7 @@ export function draftToCreatePostData(draft: Draft): Forms.CreatePost {
   }
   if (!post.thumbnailUrl) {
     post.thumbnailUrl = null;
+    post.altText = null;
   }
 
   return post;
