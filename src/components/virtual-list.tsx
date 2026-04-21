@@ -3,16 +3,12 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import {
-  useVirtualizer,
-  VirtualItem,
-  defaultRangeExtractor,
-  Range,
-  Virtualizer,
-} from "@tanstack/react-virtual";
+import { Virtualizer, VirtualizerHandle } from "virtua";
 import {
   IonRefresher,
   IonRefresherContent,
@@ -25,7 +21,7 @@ import { useElementHasFocus, useIsInAppBrowserOpen, useMedia } from "../hooks";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";
-import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
+// import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 import { useSettingsStore } from "../stores/settings";
 
 export function useScrollToTopEvents({
@@ -63,47 +59,44 @@ export function useScrollToTopEvents({
 }
 
 /**
- * This is a hack that prevents the virtualizer from shifting the
- * scroll for 50ms after a comment is expanded/collapsed
+ * Prevents the scroll container from jumping when a comment is
+ * expanded/collapsed by freezing scrollTop for 50ms after the event.
  */
-function usePreventScrollJumpingOnCommentCollapse({
-  container,
-  virtualizer,
-}: {
-  container: HTMLDivElement | null;
-  virtualizer: Virtualizer<HTMLDivElement, Element>;
-}) {
-  useEffect(() => {
-    let shouldAdjust = true;
-    if (!container) {
-      return;
-    }
-
-    const { shouldAdjustScrollPositionOnItemSizeChange } = virtualizer;
-    virtualizer.shouldAdjustScrollPositionOnItemSizeChange = (...args) => {
-      if (!shouldAdjust) {
-        return false;
-      }
-      return shouldAdjustScrollPositionOnItemSizeChange?.(...args) ?? false;
-    };
-
-    let timeoutId: undefined | number;
-    const onToggle = () => {
-      window.clearTimeout(timeoutId);
-      shouldAdjust = false;
-      timeoutId = window.setTimeout(() => {
-        shouldAdjust = true;
-      }, 50);
-    };
-
-    container.addEventListener(COMMENT_COLLAPSE_EVENT, onToggle);
-    return () => {
-      container.removeEventListener(COMMENT_COLLAPSE_EVENT, onToggle);
-      virtualizer.shouldAdjustScrollPositionOnItemSizeChange =
-        shouldAdjustScrollPositionOnItemSizeChange;
-    };
-  }, [container]);
-}
+// function usePreventScrollJumpingOnCommentCollapse({
+//   container,
+// }: {
+//   container: HTMLDivElement | null;
+// }) {
+//   useEffect(() => {
+//     if (!container) return;
+//
+//     let timeoutId: number | undefined;
+//     let frozenScrollTop: number | undefined;
+//
+//     const onScroll = () => {
+//       if (frozenScrollTop !== undefined) {
+//         container.scrollTop = frozenScrollTop;
+//       }
+//     };
+//
+//     const onToggle = () => {
+//       frozenScrollTop = container.scrollTop;
+//       container.addEventListener("scroll", onScroll, { passive: false });
+//       window.clearTimeout(timeoutId);
+//       timeoutId = window.setTimeout(() => {
+//         container.removeEventListener("scroll", onScroll);
+//         frozenScrollTop = undefined;
+//       }, 50);
+//     };
+//
+//     container.addEventListener(COMMENT_COLLAPSE_EVENT, onToggle);
+//     return () => {
+//       container.removeEventListener(COMMENT_COLLAPSE_EVENT, onToggle);
+//       container.removeEventListener("scroll", onScroll);
+//       window.clearTimeout(timeoutId);
+//     };
+//   }, [container]);
+// }
 
 function useRouterSafe() {
   try {
@@ -150,189 +143,183 @@ function VirtualListInternal<T>({
   noItemsComponent?: ReactNode;
   paginationControls?: ReactNode;
 }) {
-  const index = useRef(0);
-  const offset = useRef(0);
-  const cache = useRef<VirtualItem[]>([]);
-
   const scrollRef = ref;
-
-  const initialItem = cache.current?.[index.current];
+  const virtualizerRef = useRef<VirtualizerHandle>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const dataLen = data?.length;
-
-  const activeStickyIndexRef = useRef(-1);
-
-  const isActiveSticky = (index: number) =>
-    activeStickyIndexRef.current === index;
-
-  const overscan =
-    drawDistance && estimatedItemSize
-      ? Math.round(drawDistance / estimatedItemSize)
-      : undefined;
-
   const focused = useElementHasFocus(scrollRef);
 
   const onFocusChangeEffectEvent = useEffectEvent(onFocusChange ?? _.noop);
   useEffect(() => onFocusChangeEffectEvent?.(focused), [focused]);
 
+  // Measure header height so Virtualizer can correctly determine visible items
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) {
+      return;
+    }
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) {
+        setHeaderHeight(entry.contentRect.height);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Map keepMounted items/indices to virtualizer indices
+  const keepMountedIndices = useMemo(() => {
+    return keepMounted
+      ?.map((item) => {
+        if (_.isNumber(item)) {
+          return numColumns && numColumns > 1
+            ? Math.floor(item / numColumns)
+            : item;
+        }
+        if (_.isNil(item) || !data) {
+          return undefined;
+        }
+        const dataIndex = data.indexOf(item);
+        if (dataIndex < 0) {
+          return undefined;
+        }
+        return numColumns && numColumns > 1
+          ? Math.floor(dataIndex / numColumns)
+          : dataIndex;
+      })
+      .filter(isNotNil);
+  }, [keepMounted, data, numColumns]);
+
+  // Chunk data into rows for multi-column layout
+  const rows = useMemo(() => {
+    if (!numColumns || numColumns <= 1 || !data) {
+      return null;
+    }
+    const result: T[][] = [];
+    for (let i = 0; i < data.length; i += numColumns) {
+      result.push(Array.from(data).slice(i, i + numColumns) as T[]);
+    }
+    return result;
+  }, [data, numColumns]);
+
   const showPaginationControls = paginationControls && !noItems;
-  const headerLen = header?.length ?? 0;
-  // noItems takes priority over data/placeholders: render exactly one slot for noItemsComponent
   const baseDataCount = noItems
     ? 1
     : dataLen || (placeholder ? numPlaceholders : 0);
-  const count = headerLen + baseDataCount + (showPaginationControls ? 1 : 0);
-  const rowVirtualizer = useVirtualizer({
-    count,
-    overscan,
-    lanes: numColumns === 1 ? undefined : numColumns,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: (index) => cache.current?.[index]?.size ?? estimatedItemSize,
-    onChange: (instance) => {
-      if (
-        scrollRef.current &&
-        scrollRef.current?.getBoundingClientRect().height > 0
-      ) {
-        cache.current = instance.measurementsCache;
-        const scrollOffset = instance?.scrollOffset ?? 0;
-        const firstItem = instance
-          .getVirtualItems()
-          .find((item) => item.start >= scrollOffset);
+  const count =
+    (rows?.length ?? baseDataCount) + (showPaginationControls ? 1 : 0);
 
-        index.current = firstItem?.index ?? 0;
-        offset.current = firstItem ? scrollOffset - firstItem.start : 0;
-      }
-    },
-    initialMeasurementsCache: cache.current,
-    initialOffset: initialItem ? initialItem.start + offset.current : 0,
-    enabled: focused,
-    rangeExtractor: useCallback(
-      (range: Range) => {
-        if (!stickyIndicies) {
-          return defaultRangeExtractor(range);
-        }
+  // Sentinel array for placeholder slots
+  const placeholderArr = useMemo(
+    () =>
+      placeholder
+        ? Array.from({ length: numPlaceholders }, () => null as null)
+        : null,
+    [placeholder, numPlaceholders],
+  );
 
-        activeStickyIndexRef.current =
-          [...stickyIndicies]
-            .reverse()
-            .find((index) => range.startIndex >= index) ?? -1;
+  const virtuaData = noItems
+    ? ([null] satisfies null[])
+    : ((rows ?? data ?? placeholderArr ?? []) as
+        | T[]
+        | readonly T[]
+        | T[][]
+        | null[]);
 
-        const keepMountedIndices = keepMounted
-          ?.map((item) => {
-            if (_.isNumber(item)) {
-              return item;
-            }
-            if (_.isNil(item) || !data) {
-              return undefined;
-            }
+  // Use a ref so handleVirtuaScroll stays stable without onEndReached as a dep
+  const onEndReachedRef = useRef(onEndReached);
+  onEndReachedRef.current = onEndReached;
 
-            const dataIndex = data.indexOf(item);
-            if (dataIndex >= 0) {
-              return dataIndex + headerLen;
-            }
+  // Detect end of list via scroll position
+  const handleVirtuaScroll = useCallback(() => {
+    const v = virtualizerRef.current;
+    if (!v || _.isNil(dataLen) || dataLen === 0) {
+      return;
+    }
+    const THRESHOLD = estimatedItemSize * 2;
+    if (v.scrollOffset + v.viewportSize >= v.scrollSize - THRESHOLD) {
+      onEndReachedRef.current?.();
+    }
+  }, [dataLen, estimatedItemSize]);
 
-            return undefined;
-          })
-          .filter(isNotNil);
-
-        const headerIndicies = Array.from({ length: headerLen }).map(
-          (_, i) => i,
-        );
-
-        const all = new Set<number>([
-          ...headerIndicies,
-          ...(stickyIndicies ?? []),
-          ...(keepMountedIndices ?? []),
-          ...defaultRangeExtractor(range),
-        ]);
-
-        return Array.from(all).sort((a, b) => a - b);
-      },
-      [stickyIndicies, keepMounted, data, headerLen],
-    ),
-  });
-
-  const scrollToOffset = rowVirtualizer.scrollToOffset;
   useScrollToTopEvents({
     focused,
     listKey,
     scrollToTop: useCallback(() => {
-      scrollToOffset(0, { behavior: "auto" });
-    }, [scrollToOffset]),
+      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    }, [scrollRef]),
   });
 
-  usePreventScrollJumpingOnCommentCollapse({
-    container: scrollRef.current,
-    virtualizer: rowVirtualizer,
-  });
-
-  useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
-    if (!lastItem || _.isNil(dataLen)) {
-      return;
-    }
-    if (lastItem.index >= dataLen - 1) {
-      onEndReached?.();
-    }
-  }, [dataLen, rowVirtualizer.getVirtualItems(), onEndReached]);
+  // usePreventScrollJumpingOnCommentCollapse({
+  //   container: scrollRef.current,
+  // });
 
   const colWidth = 100 / (numColumns ?? 1);
 
   return (
-    <div
-      style={{
-        height: `${rowVirtualizer.getTotalSize()}px`,
-        width: "100%",
-        position: "relative",
-      }}
-    >
-      {/* Only the visible items in the virtualizer, manually positioned to be in view */}
-      {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-        const showHeader = header && virtualItem.index < headerLen;
-        const isPaginationItem =
-          !!paginationControls &&
-          virtualItem.index === headerLen + baseDataCount;
-        const localIndex = virtualItem.index - headerLen;
-        const item =
-          !showHeader && !isPaginationItem ? data?.[localIndex] : undefined;
-
-        const isStuck = isActiveSticky(virtualItem.index);
-
-        return (
-          <div
-            key={virtualItem.key}
-            data-index={virtualItem.index}
-            data-is-sticky-header={isStuck}
-            ref={rowVirtualizer.measureElement}
-            className={cn(isStuck && "max-md:bg-background")}
-            style={
-              isStuck
-                ? {
-                    position: "sticky",
-                    zIndex: 1,
-                    top: 0,
-                  }
-                : {
-                    position: "absolute",
-                    top: 0,
-                    left: `${colWidth * virtualItem.lane}%`,
-                    width: `${colWidth}%`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }
-            }
-          >
-            {showHeader
-              ? header[virtualItem.index]
-              : isPaginationItem
-                ? paginationControls
-                : noItems
-                  ? noItemsComponent
-                  : item
-                    ? renderItem({ item, index: localIndex })
-                    : placeholder}
-          </div>
-        );
-      })}
+    <div style={{ width: "100%" }}>
+      {header && header.length > 0 && (
+        <div ref={headerRef}>
+          {header.map((h, i) => (
+            <div
+              key={i}
+              data-is-sticky-header={
+                stickyIndicies?.includes(i) ? "true" : "false"
+              }
+              className={cn(
+                stickyIndicies?.includes(i) && "max-md:bg-background",
+              )}
+              style={
+                stickyIndicies?.includes(i)
+                  ? { position: "sticky", top: 0, zIndex: 1 }
+                  : undefined
+              }
+            >
+              {h}
+            </div>
+          ))}
+        </div>
+      )}
+      <Virtualizer
+        ref={virtualizerRef}
+        scrollRef={scrollRef}
+        startMargin={headerHeight}
+        itemSize={estimatedItemSize}
+        bufferSize={drawDistance}
+        keepMounted={keepMountedIndices ?? undefined}
+        onScroll={handleVirtuaScroll}
+        data={virtuaData as any}
+      >
+        {(item: unknown, index: number) => {
+          if (noItems) {
+            return <>{noItemsComponent}</>;
+          }
+          if (showPaginationControls && index === count - 1) {
+            return <>{paginationControls}</>;
+          }
+          if (rows) {
+            const rowItems = item as T[];
+            return (
+              <div style={{ display: "flex", width: "100%" }}>
+                {rowItems.map((col, colIndex) => (
+                  <div key={colIndex} style={{ width: `${colWidth}%` }}>
+                    {renderItem({
+                      item: col,
+                      index: index * numColumns! + colIndex,
+                    })}
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          if (item === null) {
+            return <>{placeholder}</>;
+          }
+          return <>{renderItem({ item: item as T, index })}</>;
+        }}
+      </Virtualizer>
     </div>
   );
 }
