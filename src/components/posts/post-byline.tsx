@@ -95,6 +95,7 @@ export function usePostActions({
           route: resolveRoute(`${linkCtx.root}posts/:post`, {
             post: encodeApId(post.apId),
           }),
+          body: post.body,
         }
       : null,
   );

@@ -278,6 +278,7 @@ export type ShareEntityContext =
       id: number;
       apId: string;
       route: string;
+      body?: string | null;
     }
   | {
       type: "comment";
@@ -285,6 +286,7 @@ export type ShareEntityContext =
       commentId: number;
       apId: string;
       route: string;
+      body?: string;
     }
   | { type: "community"; apId: string; handle: string; route: string }
   | { type: "person"; apId: string; handle: string; route: string }
