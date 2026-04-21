@@ -22,11 +22,13 @@ export function ToolbarTitle({
   children,
   className,
   numRightIcons,
+  ...rest
 }: {
   children: string;
   className?: string;
   numRightIcons: number;
-} & VariantProps<typeof titleVariants>) {
+} & VariantProps<typeof titleVariants> &
+  React.HTMLAttributes<HTMLSpanElement>) {
   const media = useMedia();
   return (
     <span
@@ -37,6 +39,7 @@ export function ToolbarTitle({
           ? `calc(100vw - 65px - ${35 * numRightIcons}px)`
           : 500,
       }}
+      {...rest}
     >
       {children}
     </span>

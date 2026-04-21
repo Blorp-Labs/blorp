@@ -73,7 +73,7 @@ const EXAMPLE_PERSON = {
   local: true,
 } satisfies Person;
 
-const TV_POST = {
+const TEXT_POST = {
   id: 23863920,
   name: "What TV shows are you watching and would recommend?",
   creator_id: 1001,
@@ -90,7 +90,7 @@ const TV_POST = {
   featured_local: false,
 } satisfies Post;
 
-const TV_POST_COUNTS = {
+const TEXT_POST_COUNTS = {
   post_id: 23863920,
   comments: 42,
   score: 150,
@@ -100,15 +100,15 @@ const TV_POST_COUNTS = {
   newest_comment_time: "2024-01-15T18:00:00.000000Z",
 } satisfies PostAggregates;
 
-export const TV_POST_VIEW = {
-  post: TV_POST,
+export const TEXT_POST_VIEW = {
+  post: TEXT_POST,
   creator: EXAMPLE_PERSON,
   community: ASKLEMMY_COMMUNITY,
   creator_banned_from_community: false,
   banned_from_community: false,
   creator_is_moderator: false,
   creator_is_admin: false,
-  counts: TV_POST_COUNTS,
+  counts: TEXT_POST_COUNTS,
   subscribed: "NotSubscribed" as const,
   saved: false,
   read: false,
@@ -116,6 +116,82 @@ export const TV_POST_VIEW = {
   creator_blocked: false,
   unread_comments: 42,
 } satisfies PostView;
+
+/** @deprecated Use TEXT_POST_VIEW */
+export const TV_POST_VIEW = TEXT_POST_VIEW;
+
+// ---------------------------------------------------------------------------
+// Image post fixtures for lightbox tests
+// ---------------------------------------------------------------------------
+
+function makeImagePost(
+  id: number,
+  name: string,
+  imgId: number,
+): { post: Post; counts: PostAggregates; view: PostView } {
+  const post = {
+    id,
+    name,
+    creator_id: 1001,
+    community_id: 1,
+    ap_id: `https://lemmy.world/post/${id}`,
+    published: "2024-01-15T12:00:00.000000Z",
+    removed: false,
+    locked: false,
+    deleted: false,
+    nsfw: false,
+    local: true,
+    language_id: 37,
+    featured_community: false,
+    featured_local: false,
+    url: `https://picsum.photos/id/${imgId}/800/600`,
+    thumbnail_url: `https://picsum.photos/id/${imgId}/200/150`,
+    url_content_type: "image/jpeg",
+  } satisfies Post;
+
+  const counts = {
+    post_id: id,
+    comments: 5,
+    score: 20,
+    upvotes: 22,
+    downvotes: 2,
+    published: "2024-01-15T12:00:00.000000Z",
+    newest_comment_time: "2024-01-15T18:00:00.000000Z",
+  } satisfies PostAggregates;
+
+  const view = {
+    post,
+    creator: EXAMPLE_PERSON,
+    community: ASKLEMMY_COMMUNITY,
+    creator_banned_from_community: false,
+    banned_from_community: false,
+    creator_is_moderator: false,
+    creator_is_admin: false,
+    counts,
+    subscribed: "NotSubscribed" as const,
+    saved: false,
+    read: false,
+    hidden: false,
+    creator_blocked: false,
+    unread_comments: 5,
+  } satisfies PostView;
+
+  return { post, counts, view };
+}
+
+const IMAGE_1 = makeImagePost(
+  100001,
+  "Beautiful sunset over the mountains",
+  10,
+);
+const IMAGE_2 = makeImagePost(100002, "City skyline at night", 20);
+const IMAGE_3 = makeImagePost(100003, "Ocean waves crashing", 30);
+const MISSING_IMAGE = makeImagePost(200001, "Hidden gem photograph", 40);
+
+export const IMAGE_POST_VIEW_1 = IMAGE_1.view;
+export const IMAGE_POST_VIEW_2 = IMAGE_2.view;
+export const IMAGE_POST_VIEW_3 = IMAGE_3.view;
+export const MISSING_IMAGE_POST_VIEW = MISSING_IMAGE.view;
 
 export const ASKLEMMY_COMMUNITY_VIEW = {
   community: ASKLEMMY_COMMUNITY,
@@ -130,7 +206,7 @@ export const ASKLEMMY_COMMUNITY_VIEW = {
 // ---------------------------------------------------------------------------
 
 export const RESOLVE_POST_RES = {
-  post: TV_POST_VIEW,
+  post: TEXT_POST_VIEW,
 } satisfies ResolveObjectResponse;
 
 // ---------------------------------------------------------------------------
@@ -138,7 +214,7 @@ export const RESOLVE_POST_RES = {
 // ---------------------------------------------------------------------------
 
 export const GET_POST_RES = {
-  post_view: TV_POST_VIEW,
+  post_view: TEXT_POST_VIEW,
   community_view: ASKLEMMY_COMMUNITY_VIEW,
   moderators: [],
   cross_posts: [],
@@ -147,9 +223,9 @@ export const GET_POST_RES = {
 // POST /post/like — returned after a successful vote
 export const POST_LIKE_RES = {
   post_view: {
-    ...TV_POST_VIEW,
+    ...TEXT_POST_VIEW,
     my_vote: 1,
-    counts: { ...TV_POST_COUNTS, score: 151, upvotes: 156 },
+    counts: { ...TEXT_POST_COUNTS, score: 151, upvotes: 156 },
   },
 } satisfies PostResponse;
 
@@ -158,14 +234,14 @@ export const POST_LIKE_RES = {
 // ---------------------------------------------------------------------------
 
 export const GET_POSTS_RES = {
-  posts: [TV_POST_VIEW],
+  posts: [TEXT_POST_VIEW],
 } satisfies GetPostsResponse;
 
 // ---------------------------------------------------------------------------
 // GET /comment/list
 // ---------------------------------------------------------------------------
 
-export const TV_COMMENT_VIEW = {
+export const TEXT_COMMENT_VIEW = {
   comment: {
     id: 9001,
     creator_id: 2001,
@@ -181,7 +257,7 @@ export const TV_COMMENT_VIEW = {
     language_id: 37,
   },
   creator: EXAMPLE_PERSON,
-  post: TV_POST,
+  post: TEXT_POST,
   community: ASKLEMMY_COMMUNITY,
   counts: {
     comment_id: 9001,
@@ -200,8 +276,11 @@ export const TV_COMMENT_VIEW = {
   creator_blocked: false,
 } satisfies CommentView;
 
+/** @deprecated Use TEXT_COMMENT_VIEW */
+export const TV_COMMENT_VIEW = TEXT_COMMENT_VIEW;
+
 export const GET_COMMENTS_RES = {
-  comments: [TV_COMMENT_VIEW],
+  comments: [TEXT_COMMENT_VIEW],
 } satisfies GetCommentsResponse;
 
 // ---------------------------------------------------------------------------
@@ -258,7 +337,7 @@ export const GET_COMMUNITIES_RES = {
 
 export const GET_PERSON_DETAILS_RES = {
   person_view: PICARD_PERSON_VIEW,
-  posts: [TV_POST_VIEW],
+  posts: [TEXT_POST_VIEW],
   comments: [],
   moderates: [],
 } satisfies GetPersonDetailsResponse;
@@ -402,3 +481,30 @@ export const SITE_WITH_USER = {
   custom_emojis: [],
   blocked_urls: [],
 } satisfies GetSiteResponse;
+
+// ---------------------------------------------------------------------------
+// Lightbox test fixtures
+// ---------------------------------------------------------------------------
+
+/** Feed with a mix of image and text posts — lightbox should filter to images only */
+export const GET_IMAGE_POSTS_RES = {
+  posts: [
+    IMAGE_POST_VIEW_1,
+    TEXT_POST_VIEW,
+    IMAGE_POST_VIEW_2,
+    IMAGE_POST_VIEW_3,
+  ],
+} satisfies GetPostsResponse;
+
+/** Single-post response for an image post not present in the feed */
+export const GET_MISSING_IMAGE_POST_RES = {
+  post_view: MISSING_IMAGE_POST_VIEW,
+  community_view: ASKLEMMY_COMMUNITY_VIEW,
+  moderators: [],
+  cross_posts: [],
+} satisfies GetPostResponse;
+
+/** Resolve response for the missing image post (Lemmy v3 getPost calls resolveObject first) */
+export const RESOLVE_MISSING_IMAGE_POST_RES = {
+  post: MISSING_IMAGE_POST_VIEW,
+} satisfies ResolveObjectResponse;

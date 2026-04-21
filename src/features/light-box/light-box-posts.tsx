@@ -145,8 +145,8 @@ const Post = memo(
         active,
         onZoom,
         imageAspectRatio: ar,
-        paddingTop: paddingTop,
-        paddingBottom: paddingBottom,
+        paddingTop,
+        paddingBottom,
       },
       [embed?.fullResThumbnail, img],
     );
@@ -409,7 +409,11 @@ export default function LightBoxPosts() {
         >
           <ToolbarButtons side="left">
             <ToolbarBackButton />
-            <ToolbarTitle size="sm" numRightIcons={1}>
+            <ToolbarTitle
+              size="sm"
+              numRightIcons={1}
+              data-testid="lightbox-toolbar-title"
+            >
               {post?.title ?? "Loading..."}
             </ToolbarTitle>
           </ToolbarButtons>
