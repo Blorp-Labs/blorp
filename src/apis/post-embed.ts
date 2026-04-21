@@ -133,7 +133,12 @@ export function getPostEmbed(post: Schemas.Post) {
     : null;
 
   const fromUrl = post.url
-    ? getEmbedFromUrl(post.url, { ignore: ["peertube"] })
+    ? getEmbedFromUrl(post.url, {
+        // TODO: given the ambiguity of peertube urls, we
+        // may not want to match them from post.url if thats
+        // not enough indication that the url is a video.
+        // ignore: ["peertube"],
+      })
     : null;
 
   if (fromEmbedVideo) {

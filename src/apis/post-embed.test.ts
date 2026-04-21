@@ -551,11 +551,8 @@ describe("peertube", () => {
     "https://video.blahaj.zone/w/abc123xyz?start=1m30s",
   ];
 
-  // TODO: given the ambiguity of peertube urls, we
-  // may not want to match them from post.url if thats
-  // not enough indication that the url is a video.
-  describe.todo("via url", () => {
-    test.each(peertubeUrls)("url=%s → type=bandcamp", (url) => {
+  describe("via url", () => {
+    test.each(peertubeUrls)("url=%s → type=peertube", (url) => {
       const { post } = api.getPost({
         post: {
           url,
