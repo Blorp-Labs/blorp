@@ -27,8 +27,7 @@ export function ToolbarTitle({
   children: string;
   className?: string;
   numRightIcons: number;
-} & VariantProps<typeof titleVariants> &
-  React.HTMLAttributes<HTMLSpanElement>) {
+} & VariantProps<typeof titleVariants>) {
   const media = useMedia();
   return (
     <span
