@@ -483,9 +483,10 @@ function PostCommentInner({
       : undefined,
   );
 
-  const sorted = _.entries(_.omit(rest, ["sort", "imediateChildren"])).sort(
-    ([_id1, a], [_id2, b]) => a.sort - b.sort,
+  const children = _.entries(
+    _.omit(rest, ["sort", "imediateChildren", "pruned"]),
   );
+  const sorted = children.sort(([_id1, a], [_id2, b]) => a.sort - b.sort);
 
   let color = "red";
   if (_.isNumber(level)) {
@@ -769,7 +770,8 @@ function PostCommentInner({
             </div>
           )}
 
-          {(sorted.length > 0 ||
+          {(commentTree.pruned ||
+            sorted.length > 0 ||
             rest.imediateChildren > 0 ||
             (replyState && media.md)) && (
             <div
@@ -779,7 +781,6 @@ function PostCommentInner({
               {replyState && (
                 <InlineCommentReply state={replyState} autoFocus />
               )}
-
               {sorted.map(([id, map]) => (
                 <PostComment
                   postApId={postApId}
@@ -795,7 +796,8 @@ function PostCommentInner({
                 />
               ))}
 
-              {commentView && sorted.length < rest.imediateChildren ? (
+              {commentView &&
+              (sorted.length < rest.imediateChildren || commentTree.pruned) ? (
                 <Link
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{
