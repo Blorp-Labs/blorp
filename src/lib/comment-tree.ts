@@ -50,7 +50,7 @@ export function buildCommentTree(
 
   let i = 0;
 
-  for (const view of commentViews) {
+  for (const view of _.uniqBy(commentViews, (c) => c.id)) {
     let loc: CommentTreeTopLevel | CommentTree = map;
 
     let viewPath = view.path;
