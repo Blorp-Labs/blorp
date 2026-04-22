@@ -1,6 +1,18 @@
 import _ from "lodash";
+import { exhaustiveList } from "./utils";
 
-const DATA_KEYS = ["sort", "comment", "imediateChildren", "pruned"] as const;
+type DataKey = "sort" | "comment" | "imediateChildren" | "pruned";
+
+export const DATA_KEYS = exhaustiveList<DataKey>()([
+  "sort",
+  "comment",
+  "imediateChildren",
+  "pruned",
+]);
+
+export function isDataKey(key: string): key is DataKey {
+  return DATA_KEYS.includes(key as any);
+}
 
 export interface CommentTree {
   comment?: {
@@ -109,10 +121,12 @@ export function buildCommentTree(
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   function pruneNode(node: CommentTree) {
-    if (node.pruned) {
-      for (const key in node) {
-        if (!DATA_KEYS.includes(key as any)) {
+    for (const key in node) {
+      if (!isDataKey(key)) {
+        if (node.pruned) {
           delete node[key];
+        } else if (node[key]) {
+          pruneNode(node[key]);
         }
       }
     }
