@@ -234,6 +234,7 @@ function CommentReport({
                     comment: commentView,
                     imediateChildren: 0,
                     sort: 0,
+                    pruned: false,
                   }}
                   canMod
                   standalone
