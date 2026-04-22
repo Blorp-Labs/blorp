@@ -54,8 +54,8 @@ import {
   CollapsibleContent,
 } from "../ui/collapsible";
 import { create } from "zustand";
-import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
 import { useMedia, useInputAlert, useRequireAuth } from "@/src/hooks";
+// import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -659,11 +659,11 @@ function PostCommentInner({
         onOpenChange={() => {
           if (commentView) {
             setOpen(commentView.apId, !open);
-            ref.current?.dispatchEvent(
-              new CustomEvent<boolean>(COMMENT_COLLAPSE_EVENT, {
-                bubbles: true,
-              }),
-            );
+            // ref.current?.dispatchEvent(
+            //   new CustomEvent<boolean>(COMMENT_COLLAPSE_EVENT, {
+            //     bubbles: true,
+            //   }),
+            // );
           }
         }}
       >
