@@ -95,14 +95,14 @@ export function buildCommentTree(
 
     const front: keyof typeof loc = path.shift()! as any;
 
-    const parentPageCursor =
-      "comment" in loc && loc.comment ? loc.comment.pageCursor : undefined;
-    if (
-      parentPageCursor !== undefined &&
-      parentPageCursor !== view.pageCursor
-    ) {
-      (loc as CommentTree).pruned = true;
-    }
+    // const parentPageCursor =
+    //   "comment" in loc && loc.comment ? loc.comment.pageCursor : undefined;
+    // if (
+    //   parentPageCursor !== undefined &&
+    //   parentPageCursor !== view.pageCursor
+    // ) {
+    //   (loc as CommentTree).pruned = true;
+    // }
 
     loc[front] = {
       ...loc[front],
@@ -121,12 +121,20 @@ export function buildCommentTree(
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   function pruneNode(node: CommentTree) {
+    const pageCursor = node.comment?.pageCursor;
+    if (_.isNil(pageCursor)) {
+      return;
+    }
+
     for (const key in node) {
       if (!isDataKey(key)) {
-        if (node.pruned) {
+        const child = node[key];
+        const childPageCursor = child?.comment?.pageCursor;
+        if (!_.isNil(childPageCursor) && childPageCursor !== pageCursor) {
+          node.pruned = true;
           delete node[key];
-        } else if (node[key]) {
-          pruneNode(node[key]);
+        } else if (child) {
+          pruneNode(child);
         }
       }
     }
