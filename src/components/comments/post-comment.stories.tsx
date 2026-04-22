@@ -77,6 +77,127 @@ const childOnDifferentPageTree = buildCommentTree([
   { ...childOnDifferentPageChild, pageCursor: 1 },
 ]);
 
+// — MixedPrunedAndVisible —
+// Parent has two direct children: one on the same page (shown), one on a
+// different page (pruned). Parent should be marked pruned: true.
+
+const mixedParentId = 4001;
+const mixedVisibleChildId = 4002;
+const mixedPrunedChildId = 4003;
+
+const mixedParent = api.getComment({
+  id: mixedParentId,
+  path: `0.${mixedParentId}`,
+  body: "This parent has one visible child and one pruned child.",
+  childCount: 2,
+  creatorId: creators[0]!.id,
+  creatorApId: creators[0]!.apId,
+  creatorHandle: creators[0]!.handle,
+});
+
+const mixedVisibleChild = api.getComment({
+  id: mixedVisibleChildId,
+  postId: mixedParent.postId,
+  path: `0.${mixedParentId}.${mixedVisibleChildId}`,
+  body: "This child is on the same page as the parent — it is visible.",
+  childCount: 0,
+  creatorId: creators[1]!.id,
+  creatorApId: creators[1]!.apId,
+  creatorHandle: creators[1]!.handle,
+});
+
+const mixedPrunedChild = api.getComment({
+  id: mixedPrunedChildId,
+  postId: mixedParent.postId,
+  path: `0.${mixedParentId}.${mixedPrunedChildId}`,
+  body: "This child is on a different page — it is pruned.",
+  childCount: 0,
+  creatorId: creators[2]!.id,
+  creatorApId: creators[2]!.apId,
+  creatorHandle: creators[2]!.handle,
+});
+
+const mixedPrunedAndVisibleTree = buildCommentTree([
+  { ...mixedParent, pageCursor: 0 },
+  { ...mixedVisibleChild, pageCursor: 0 },
+  { ...mixedPrunedChild, pageCursor: 1 },
+]);
+
+// — MaxDepth —
+// A 7-level deep chain. The 7th level is cut off by maxDepth=6, leaving the
+// 6th level with imediateChildren > 0 to indicate more exist.
+
+const maxDepthComments = [
+  api.getComment({
+    id: 2010,
+    path: "0.2010",
+    body: "Depth 1.",
+    childCount: 1,
+    creatorId: creators[0]!.id,
+    creatorApId: creators[0]!.apId,
+    creatorHandle: creators[0]!.handle,
+  }),
+  api.getComment({
+    id: 2011,
+    path: "0.2010.2011",
+    body: "Depth 2.",
+    childCount: 1,
+    creatorId: creators[1]!.id,
+    creatorApId: creators[1]!.apId,
+    creatorHandle: creators[1]!.handle,
+  }),
+  api.getComment({
+    id: 2012,
+    path: "0.2010.2011.2012",
+    body: "Depth 3.",
+    childCount: 1,
+    creatorId: creators[2]!.id,
+    creatorApId: creators[2]!.apId,
+    creatorHandle: creators[2]!.handle,
+  }),
+  api.getComment({
+    id: 2013,
+    path: "0.2010.2011.2012.2013",
+    body: "Depth 4.",
+    childCount: 1,
+    creatorId: creators[3]!.id,
+    creatorApId: creators[3]!.apId,
+    creatorHandle: creators[3]!.handle,
+  }),
+  api.getComment({
+    id: 2014,
+    path: "0.2010.2011.2012.2013.2014",
+    body: "Depth 5.",
+    childCount: 1,
+    creatorId: creators[0]!.id,
+    creatorApId: creators[0]!.apId,
+    creatorHandle: creators[0]!.handle,
+  }),
+  api.getComment({
+    id: 2015,
+    path: "0.2010.2011.2012.2013.2014.2015",
+    body: "Depth 6 — the last visible level.",
+    childCount: 1,
+    creatorId: creators[1]!.id,
+    creatorApId: creators[1]!.apId,
+    creatorHandle: creators[1]!.handle,
+  }),
+  // Depth 7 — cut off by maxDepth=6, never added to the tree
+  api.getComment({
+    id: 2016,
+    path: "0.2010.2011.2012.2013.2014.2015.2016",
+    body: "Depth 7 — cut off.",
+    childCount: 0,
+    creatorId: creators[2]!.id,
+    creatorApId: creators[2]!.apId,
+    creatorHandle: creators[2]!.handle,
+  }),
+];
+
+const maxDepthTree = buildCommentTree(
+  maxDepthComments.map((c) => ({ ...c, pageCursor: 0 })),
+);
+
 // —
 
 async function loadData() {
@@ -94,6 +215,10 @@ async function loadData() {
       parentMissingMiddleChildChild,
       childOnDifferentPageParent,
       childOnDifferentPageChild,
+      mixedParent,
+      mixedVisibleChild,
+      mixedPrunedChild,
+      ...maxDepthComments,
     ]);
 }
 
@@ -120,6 +245,24 @@ export const ChildOnDifferentPage: Story = {
     postApId: childOnDifferentPageParent.postApId,
     postLocked: false,
     commentTree: childOnDifferentPageTree[childOnDifferentPageParentId]!,
+    level: 0,
+  },
+};
+
+export const MixedPrunedAndVisible: Story = {
+  args: {
+    postApId: mixedParent.postApId,
+    postLocked: false,
+    commentTree: mixedPrunedAndVisibleTree[mixedParentId]!,
+    level: 0,
+  },
+};
+
+export const MaxDepth: Story = {
+  args: {
+    postApId: maxDepthComments[0]!.postApId,
+    postLocked: false,
+    commentTree: maxDepthTree[2010]!,
     level: 0,
   },
 };
