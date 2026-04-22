@@ -1,16 +1,18 @@
 import _ from "lodash";
 
+const DATA_KEYS = ["sort", "comment", "imediateChildren", "pruned"] as const;
+
 export interface CommentTree {
   comment?: {
     id: number;
     postApId: string;
     childCount: number;
     path: string;
-    pageCursor: string | number;
+    pageCursor?: string | number;
   };
   imediateChildren: number;
   sort: number;
-  defaultCollapsed: boolean;
+  pruned: boolean;
   [key: number]: CommentTree;
 }
 
@@ -74,30 +76,60 @@ export function buildCommentTree(
       loc[front] = loc[front] ?? {
         sort: 0,
         imediateChildren: 0,
+        pruned: false,
       };
       loc = loc[front];
     }
 
     const front: keyof typeof loc = path.shift()! as any;
 
+    const parentPageCursor =
+      "comment" in loc && loc.comment ? loc.comment.pageCursor : undefined;
+    if (
+      parentPageCursor !== undefined &&
+      parentPageCursor !== view.pageCursor
+    ) {
+      (loc as CommentTree).pruned = true;
+    }
+
     loc[front] = {
       ...loc[front],
       sort: i,
       comment: view,
       imediateChildren: 0,
+      pruned: false,
     };
     i++;
   }
 
   countImediateChildre(map);
 
-  return map;
+  return pruneCommentTree(map);
+}
+
+function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
+  function pruneNode(node: CommentTree) {
+    if (node.pruned) {
+      for (const key in node) {
+        if (!DATA_KEYS.includes(key as any)) {
+          delete node[key];
+        }
+      }
+    }
+  }
+
+  for (const key in tree) {
+    const node = tree[key];
+    if (node) {
+      pruneNode(node);
+    }
+  }
+
+  return tree;
 }
 
 function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
-  const children = _.values(
-    _.omit(node as CommentTree, ["sort", "comment", "imediateChildren"]),
-  );
+  const children = _.values(_.omit(node as CommentTree, DATA_KEYS));
   let grandChildren = 0;
   for (const child of children) {
     if (child.comment) {

@@ -292,18 +292,35 @@ export default function Post() {
     [comments.data?.pages, parentComment.status, isReady],
   );
 
+  const pathToCursor = useMemo(() => {
+    const result = new Map<string, string | number>();
+    if (comments.data?.pages && parentComment.status === "success" && isReady) {
+      comments.data.pages.forEach((p, i) => {
+        const cursor = comments.data!.pageParams[i] as string | number;
+        p.comments.forEach((path) => result.set(path, cursor));
+      });
+    }
+    return result;
+  }, [comments.data?.pages, parentComment.status, isReady]);
+
   const allComments = useCommentsByPaths(allCommentPaths);
 
   const structured = useMemo(() => {
     if (!isReady) {
       return null;
     }
-    const map = buildCommentTree(allComments, parentComment.commentId);
+    const map = buildCommentTree(
+      allComments.map((c) => ({
+        ...c,
+        pageCursor: pathToCursor.get(c.path) ?? 0,
+      })),
+      parentComment.commentId,
+    );
     const topLevelItems = _.entries(map).sort(
       ([_id1, a], [_id2, b]) => a.sort - b.sort,
     );
     return { map, topLevelItems };
-  }, [allComments, isReady, parentComment.commentId]);
+  }, [allComments, isReady, parentComment.commentId, pathToCursor]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
