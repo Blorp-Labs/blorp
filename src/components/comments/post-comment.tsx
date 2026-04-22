@@ -21,7 +21,7 @@ import {
   useSaveCommentMutation,
   useSoftware,
 } from "@/src/queries/index";
-import { CommentTree } from "@/src/lib/comment-tree";
+import { CommentTree, DATA_KEYS } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import {
@@ -483,9 +483,8 @@ function PostCommentInner({
       : undefined,
   );
 
-  const children = _.entries(
-    _.omit(rest, ["sort", "imediateChildren", "pruned"]),
-  );
+  const filterKeys = DATA_KEYS.filter((k) => k !== "comment");
+  const children = _.entries(_.omit(rest, filterKeys));
   const sorted = children.sort(([_id1, a], [_id2, b]) => a.sort - b.sort);
 
   let color = "red";
