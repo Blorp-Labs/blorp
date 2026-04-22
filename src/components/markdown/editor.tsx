@@ -47,7 +47,9 @@ import { useMentionSuggestions } from "./editor-extensions/mention";
 /** Strip trailing &nbsp; markers that @tiptap/extension-paragraph emits for empty paragraphs */
 function stripTrailingNbsp(md: string): string {
   let result = md.replace(/(\n\n&nbsp;)+$/, "");
-  if (result === "&nbsp;") result = "";
+  if (result === "&nbsp;") {
+    result = "";
+  }
   return result;
 }
 
@@ -200,10 +202,12 @@ const MenuBar = ({
   editor,
   onFiles,
   className,
+  onActionMenuOpenChange,
 }: {
   editor: Editor | null;
   onFiles: (file: File[]) => void;
   className?: string;
+  onActionMenuOpenChange?: (open: boolean) => void;
 }) => {
   const [alrt] = useIonAlert();
 
@@ -212,6 +216,7 @@ const MenuBar = ({
   if (!editor) {
     return null;
   }
+
   return (
     <div className={cn("flex flex-row items-center gap-1.5", className)}>
       <IconFileInput onFiles={onFiles} />
@@ -357,6 +362,19 @@ const MenuBar = ({
       <EllipsisActionMenu
         aria-label="More formatting options"
         preventFocusReturnOnClose
+        onOpenChange={(open) => {
+          if (open) {
+            onActionMenuOpenChange?.(true);
+            return;
+          }
+
+          requestAnimationFrame(() => {
+            editor.commands.focus();
+            requestAnimationFrame(() => {
+              onActionMenuOpenChange?.(false);
+            });
+          });
+        }}
         actions={[
           {
             text: "Horizontal Line",
@@ -484,6 +502,8 @@ function TipTapEditor({
   hideMenu?: boolean;
 }) {
   const uploadImage = useUploadImageMutation();
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const shouldHideMenu = hideMenu && !isActionMenuOpen;
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -617,12 +637,13 @@ function TipTapEditor({
       <div
         className={cn(
           "flex flex-row justify-between py-1.5 px-2 pb-0 max-md:hidden",
-          hideMenu && "hidden",
+          shouldHideMenu && "hidden",
         )}
         onMouseDown={(e) => e.preventDefault()}
       >
         <MenuBar
           editor={editor}
+          onActionMenuOpenChange={setIsActionMenuOpen}
           onFiles={(files) => {
             for (const file of files) {
               handleFile(file).then(({ url }) => {
@@ -669,13 +690,14 @@ function TipTapEditor({
       <div
         className={cn(
           "flex flex-row justify-between px-2 py-1 md:hidden sticky bottom-0 bg-background/50 backdrop-blur",
-          hideMenu && "hidden",
+          shouldHideMenu && "hidden",
         )}
         onMouseDown={(e) => e.preventDefault()}
       >
         <MenuBar
           className="gap-2.5"
           editor={editor}
+          onActionMenuOpenChange={setIsActionMenuOpen}
           onFiles={(files) => {
             for (const file of files) {
               handleFile(file).then(({ url }) => {

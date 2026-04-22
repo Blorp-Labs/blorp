@@ -68,6 +68,7 @@ export interface ActionMenuProps<V = string>
   align?: "start" | "end";
   showCancel?: boolean;
   preventFocusReturnOnClose?: boolean;
+  onOpenChange?: (open: boolean) => any;
 }
 
 export function ActionMenu<V extends string>({
@@ -79,6 +80,7 @@ export function ActionMenu<V extends string>({
   showCancel,
   selectedValue,
   preventFocusReturnOnClose,
+  onOpenChange,
   ...props
 }: ActionMenuProps<V>) {
   const media = useMedia();
@@ -159,7 +161,14 @@ export function ActionMenu<V extends string>({
 
   if (media.md) {
     return (
-      <DropdownMenu onOpenChange={(open) => open && onOpen?.()}>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          onOpenChange?.(open);
+          if (open) {
+            onOpen?.();
+          }
+        }}
+      >
         <DropdownMenuTrigger asChild={triggerAsChild} className="text-left">
           {trigger}
         </DropdownMenuTrigger>
@@ -320,12 +329,15 @@ export function ActionMenu<V extends string>({
               }
             }
           }}
-          // Only fires for cancel/backdrop — sub-section pushes unmount this
-          // sheet (via key change) before onDidDismiss can run.
-          onDidDismiss={() => setSubStack([])}
           onWillPresent={(e) => {
             props.onWillPresent?.(e);
             onOpen?.();
+            onOpenChange?.(true);
+          }}
+          onDidDismiss={(e) => {
+            props.onDidDismiss?.(e);
+            setSubStack([]);
+            onOpenChange?.(false);
           }}
         />
       )}
@@ -350,6 +362,11 @@ export function ActionMenu<V extends string>({
         onWillPresent={(e) => {
           props.onWillPresent?.(e);
           onOpen?.();
+          onOpenChange?.(true);
+        }}
+        onDidDismiss={(e) => {
+          props.onDidDismiss?.(e);
+          onOpenChange?.(false);
         }}
       />
     </>
