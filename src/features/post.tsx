@@ -292,23 +292,27 @@ export default function Post() {
     [comments.data?.pages, parentComment.status, isReady],
   );
 
+  const commentsData = comments.data;
   const pathToCursor = useMemo(() => {
     const result = new Map<string, string | number>();
-    if (comments.data?.pages && parentComment.status === "success" && isReady) {
-      comments.data.pages.forEach((p, i) => {
-        const cursor = comments.data!.pageParams[i] as string | number;
-        p.comments.forEach((path) => result.set(path, cursor));
+    if (commentsData?.pages) {
+      commentsData.pages.forEach((p, i) => {
+        const cursor = commentsData.pageParams[i] as string | number;
+        p.comments.forEach((path) => {
+          // We want to find the first occurance,
+          // so checking has is really important
+          if (!result.has(path)) {
+            result.set(path, cursor);
+          }
+        });
       });
     }
     return result;
-  }, [comments.data?.pages, parentComment.status, isReady]);
+  }, [commentsData]);
 
   const allComments = useCommentsByPaths(allCommentPaths);
 
   const structured = useMemo(() => {
-    if (!isReady) {
-      return null;
-    }
     const map = buildCommentTree(
       allComments.map((c) => ({
         ...c,
@@ -320,7 +324,7 @@ export default function Post() {
       ([_id1, a], [_id2, b]) => a.sort - b.sort,
     );
     return { map, topLevelItems };
-  }, [allComments, isReady, parentComment.commentId, pathToCursor]);
+  }, [allComments, parentComment.commentId, pathToCursor]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
