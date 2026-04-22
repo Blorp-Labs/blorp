@@ -703,6 +703,10 @@ function PostCommentInner({
               <div {...doubleTapLike}>{bodyRenderer}</div>
             ))}
 
+          {!commentView && (
+            <span className="block italic mb-2">missing comment</span>
+          )}
+
           {/* Editing */}
           {editingState && (
             <InlineCommentReply state={editingState} autoFocus />
@@ -796,6 +800,7 @@ function PostCommentInner({
               ))}
 
               {commentView &&
+              !(singleCommentThread && level === 0) &&
               (sorted.length < rest.imediateChildren || commentTree.pruned) ? (
                 <Link
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
