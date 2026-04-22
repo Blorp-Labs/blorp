@@ -1,5 +1,6 @@
 When writing/editing md files in this folder (docs/decisions/):
 
+- Docs should primarily exist to explain why a decision was made. If it's just reexplaining what the tests already describe, it's bloat.
 - Don't use any special formatting.
 - Everything should be plain markdown paragraphs
 - You can ask the dev if they want to use a simple # (h1) heading if documents get more than a few paragraphs
