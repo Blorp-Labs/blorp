@@ -1,52 +1,29 @@
-name: PR Quality
+name: Commit Message Quality
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
 permissions:
-  pull-requests: write
+  contents: read
 
 jobs:
-  check-title:
-    name: Title Check
+  check-commits:
+    name: Commit Message Check
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      TITLE: ${{ github.event.pull_request.title }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Enforce capital first letter
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce conventional commit subjects
         run: |
-          if [[ ! "$TITLE" =~ ^[A-Z] ]]; then
-            echo "PR title must start with a capital letter."
-            exit 1
-          fi
-
-      - name: Spell check PR title
-        run: |
-          # Find existing bot comment
-          COMMENT_ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            --jq '[.[] | select(.body | startswith("<!-- pr-title-spellcheck -->"))] | first | .id // empty')
-
-          # Spell check the title
-          echo "$TITLE" > /tmp/title.txt
-          MISSPELLED=$(npx --yes cspell /tmp/title.txt --no-summary 2>&1 \
-            | grep -oP 'Unknown word \(\K[^)]+' || true)
-
-          if [ -n "$MISSPELLED" ]; then
-            WORD_LIST=$(echo "$MISSPELLED" | sed 's/^/- `/;s/$/`/')
-            BODY=$(printf '<!-- pr-title-spellcheck -->\n**Possible spelling issue(s) in PR title:**\n\n%s\n\n_If intentional (technical terms, proper nouns), ignore this. Add to `.cspell.json` to silence it._' \
-              "$WORD_LIST")
-
-            if [ -n "$COMMENT_ID" ]; then
-              gh api "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" \
-                -X PATCH -f body="$BODY"
-            else
-              gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                -f body="$BODY"
-            fi
-          elif [ -n "$COMMENT_ID" ]; then
-            # No issues — delete the previous warning comment
-            gh api "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -X DELETE
-          fi
+          pnpm exec commitlint \
+            --config commitlint.config.js \
+            --from "${BASE_SHA}" \
+            --to "${HEAD_SHA}" \
+            --verbose
