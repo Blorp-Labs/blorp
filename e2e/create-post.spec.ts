@@ -41,6 +41,14 @@ async function expectFocused(page: Page, locator: Locator) {
     .toBe(true);
 }
 
+async function expectSelectedText(page: Page, expected: string) {
+  await expect
+    .poll(async () =>
+      page.evaluate(() => window.getSelection()?.toString() ?? ""),
+    )
+    .toBe(expected);
+}
+
 async function seedDrafts(
   page: Page,
   drafts: Record<string, { type: string; createdAt: number; title?: string }>,
@@ -166,5 +174,37 @@ test.describe("create post — draft initialization", () => {
     await outside.click();
     await expectFocused(page, outside);
     await expect(toolbar).toBeHidden();
+  });
+
+  test("clicking bold preserves the editor selection", async ({
+    page,
+  }, testInfo: TestInfo) => {
+    test.skip(testInfo.project.name.includes("Mobile"));
+
+    await setup(page);
+    await page.goto("/create_post");
+
+    const editor = page
+      .getByTestId("markdown-editor-content")
+      .locator('[contenteditable="true"]');
+    const boldButton = page.getByRole("button", { name: "Bold" });
+    const toolbar = page.getByTestId("markdown-editor-desktop-toolbar");
+
+    await editor.click();
+    await expectFocused(page, editor);
+    await page.keyboard.type("hello world");
+
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press("Shift+ArrowLeft");
+    }
+
+    await expectSelectedText(page, "world");
+    await expect(toolbar).toBeVisible();
+
+    await boldButton.click();
+
+    await expectFocused(page, editor);
+    await expect(toolbar).toBeVisible();
+    await expectSelectedText(page, "world");
   });
 });
