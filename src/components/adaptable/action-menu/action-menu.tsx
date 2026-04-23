@@ -69,7 +69,7 @@ type MobileStackEntry<V extends string> = {
 function isSubmenuAction<V extends string>(
   action: Action<V>,
 ): action is Extract<Action<V>, { actions: Action<V>[] }> {
-  return !_.isString(action) && "actions" in action;
+  return !_.isString(action) && Array.isArray(action.actions);
 }
 
 function renderDropdownAction<V extends string>(
