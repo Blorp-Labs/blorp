@@ -1,5 +1,5 @@
 import { IonActionSheet } from "@ionic/react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -23,44 +23,32 @@ import { ThemeComponent } from "../../theme-components";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { useSettingsStore } from "@/src/stores/settings";
 
-export type SubAction<V = string> =
-  | { text: string; onClick: () => any; value?: V; danger?: boolean }
-  | {
+export type Action<V = string> =
+  | "DIVIDER"
+  | ({
       text: string;
-      onClick?: undefined;
-      value?: string;
-      actions: {
-        text: string;
-        onClick: () => any;
-        value?: V;
-        danger?: boolean;
-      }[];
-      danger?: undefined;
-    };
+      value?: V;
+      danger?: boolean;
+      checked?: boolean;
+    } & (
+      | {
+          onClick: () => any;
+          actions?: undefined;
+        }
+      | {
+          onClick?: undefined;
+          actions: Action<V>[];
+        }
+    ));
+
+export type SubAction<V = string> = Action<V>;
 
 export interface ActionMenuProps<V = string>
   extends Omit<
     React.ComponentProps<typeof IonActionSheet>,
     "buttons" | "trigger"
   > {
-  actions: (
-    | "DIVIDER"
-    | {
-        text: string;
-        value?: V;
-        onClick: () => any;
-        actions?: undefined;
-        danger?: boolean;
-        checked?: boolean;
-      }
-    | {
-        text: string;
-        value?: string;
-        onClick?: undefined;
-        actions: SubAction<V>[];
-        danger?: undefined;
-      }
-  )[];
+  actions: Action<V>[];
   selectedValue?: V;
   trigger: React.ReactNode;
   triggerAsChild?: boolean;
@@ -69,6 +57,76 @@ export interface ActionMenuProps<V = string>
   showCancel?: boolean;
   preventFocusReturnOnClose?: boolean;
   onOpenChange?: (open: boolean) => void;
+}
+
+type MobileStackEntry<V extends string> = {
+  title: string;
+  parentTitle?: string;
+  actions: Action<V>[];
+  isRoot?: boolean;
+};
+
+function isSubmenuAction<V extends string>(
+  action: Action<V>,
+): action is Extract<Action<V>, { actions: Action<V>[] }> {
+  return !_.isString(action) && "actions" in action;
+}
+
+function renderDropdownAction<V extends string>(
+  action: Action<V>,
+  indexKey: string,
+  selectedValue?: V,
+) {
+  if (_.isString(action)) {
+    return <DropdownMenuSeparator key={indexKey} />;
+  }
+
+  if (isSubmenuAction(action)) {
+    return (
+      <DropdownMenuSub key={indexKey}>
+        <DropdownMenuSubTrigger>{action.text}</DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            {action.actions.map((child, index) =>
+              renderDropdownAction(
+                child,
+                `${indexKey}-${index}`,
+                selectedValue,
+              ),
+            )}
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
+    );
+  }
+
+  if (action.checked !== undefined) {
+    return (
+      <DropdownMenuCheckboxItem
+        key={indexKey}
+        checked={action.checked}
+        onCheckedChange={action.onClick}
+        className={cn(action.danger && "text-destructive!")}
+      >
+        {action.text}
+      </DropdownMenuCheckboxItem>
+    );
+  }
+
+  return (
+    <DropdownMenuItem
+      key={indexKey}
+      onClick={action.onClick}
+      className={cn(
+        _.isString(action.value) &&
+          action.value === selectedValue &&
+          "font-bold",
+        action.danger && "text-destructive!",
+      )}
+    >
+      {action.text}
+    </DropdownMenuItem>
+  );
 }
 
 export function ActionMenu<V extends string>({
@@ -84,88 +142,98 @@ export function ActionMenu<V extends string>({
   ...props
 }: ActionMenuProps<V>) {
   const media = useMedia();
-  const id = useId();
 
   // Mobile uses IonActionSheet, which only supports a flat list of buttons.
   // To render nested sections (tier 2) and sub-sections (tier 3), we maintain
-  // a navigation stack of sub-sheets. Each entry holds the title and actions
+  // a navigation stack in React state. Each entry holds the title and actions
   // for one level. The top of the stack is what's currently displayed.
-  const [subStack, setSubStack] = useState<
-    { title: string; actions: SubAction[] }[]
-  >([]);
-  const currentSub = subStack[subStack.length - 1];
+  const [mobileStack, setMobileStack] = useState<MobileStackEntry<V>[]>([]);
+  const currentMobileSheet = mobileStack[mobileStack.length - 1];
   const mobileMenuOpenRef = useRef(false);
-  mobileMenuOpenRef.current = subStack.length > 0;
-  const isNavigatingSubSheetRef = useRef(false);
+  const isNavigatingMobileSheetRef = useRef(false);
   const emitMobileOpenChange = (nextOpen: boolean) => {
     if (nextOpen !== mobileMenuOpenRef.current) {
+      mobileMenuOpenRef.current = nextOpen;
       onOpenChange?.(nextOpen);
     }
   };
 
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
-  const buttons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
-    useMemo(
-      () => [
-        // Store the original index in `data` (not the post-filter index) so
-        // that onWillDismiss can look up the action in `actions` correctly even
-        // when dividers are present — dividers shift post-filter indices.
-        ...actions.flatMap((a, originalIndex) =>
-          _.isString(a)
-            ? []
-            : [
-                {
-                  text: a.text,
-                  data: originalIndex,
-                  cssClass: a.actions ? "detail" : undefined,
-                  role: a.danger
-                    ? "destructive"
-                    : (_.isString(a.value) && a.value === selectedValue) ||
-                        ("checked" in a && a.checked === true)
-                      ? "selected"
-                      : undefined,
-                },
-              ],
-        ),
-        ...(showCancel
-          ? [
+  const mobileButtons: React.ComponentProps<typeof IonActionSheet>["buttons"] =
+    useMemo(() => {
+      if (!currentMobileSheet) {
+        return [];
+      }
+
+      const btns: NonNullable<
+        React.ComponentProps<typeof IonActionSheet>["buttons"]
+      > = currentMobileSheet.actions.flatMap((action, originalIndex) =>
+        _.isString(action)
+          ? []
+          : [
               {
-                text: "Cancel",
-                role: "cancel",
+                text: action.text,
+                data: originalIndex,
+                cssClass: "actions" in action ? "detail" : undefined,
+                role: action.danger
+                  ? "destructive"
+                  : (_.isString(action.value) &&
+                        action.value === selectedValue) ||
+                      ("checked" in action && action.checked === true)
+                    ? "selected"
+                    : undefined,
               },
-            ]
-          : []),
-      ],
-      [actions, showCancel, selectedValue],
-    );
+            ],
+      );
 
-  const subActionButtons:
-    | React.ComponentProps<typeof IonActionSheet>["buttons"]
-    | null = useMemo(() => {
-    if (!currentSub) {
-      return null;
+      if (showCancel) {
+        btns.push({ text: "Cancel", role: "cancel" });
+      }
+
+      return btns;
+    }, [currentMobileSheet, selectedValue, showCancel]);
+
+  const openMobileRootSheet = () => {
+    if (!disableHaptics) {
+      Haptics.impact({ style: ImpactStyle.Medium });
     }
 
-    const btns: NonNullable<
-      React.ComponentProps<typeof IonActionSheet>["buttons"]
-    > = currentSub.actions.map((a, index) => ({
-      text: a.text,
-      data: index,
-      cssClass: "actions" in a ? "detail" : undefined,
-      role: a.danger
-        ? "destructive"
-        : _.isString(a.value) && a.value === selectedValue
-          ? "selected"
-          : undefined,
-    }));
+    setMobileStack([
+      {
+        title: props.header ?? "",
+        actions,
+        isRoot: true,
+      },
+    ]);
+    emitMobileOpenChange(true);
+    onOpen?.();
+  };
 
-    if (showCancel) {
-      btns.push({ text: "Cancel", role: "cancel" });
+  const pushMobileSubSheet = (
+    action: Extract<Action<V>, { actions: Action<V>[] }>,
+    currentSheet: MobileStackEntry<V>,
+  ) => {
+    if (!disableHaptics) {
+      Haptics.impact({ style: ImpactStyle.Medium });
     }
 
-    return btns;
-  }, [currentSub, showCancel, selectedValue]);
+    setMobileStack((prev) => [
+      ...prev,
+      {
+        title: action.text,
+        parentTitle: currentSheet.isRoot
+          ? currentSheet.title || props.header
+          : currentSheet.title,
+        actions: action.actions,
+      },
+    ]);
+  };
+
+  const closeMobileSheets = () => {
+    setMobileStack([]);
+    emitMobileOpenChange(false);
+  };
 
   if (media.md) {
     return (
@@ -200,88 +268,10 @@ export function ActionMenu<V extends string>({
               if (isFirstItem || isLastItem) {
                 return null;
               }
-              return <DropdownMenuSeparator key={index} />;
+              return null;
             }
 
-            if (a.actions) {
-              return (
-                <DropdownMenuSub key={a.text + index}>
-                  <DropdownMenuSubTrigger>{a.text}</DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      {a.actions.map((sa, saIndex) =>
-                        "actions" in sa ? (
-                          <DropdownMenuSub key={sa.text + saIndex}>
-                            <DropdownMenuSubTrigger>
-                              {sa.text}
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent>
-                                {sa.actions.map((leaf, leafIndex) => (
-                                  <DropdownMenuItem
-                                    key={leaf.text + leafIndex}
-                                    onClick={leaf.onClick}
-                                    className={cn(
-                                      _.isString(sa.value) &&
-                                        leaf.value === selectedValue &&
-                                        "font-bold",
-                                      leaf.danger && "text-destructive!",
-                                    )}
-                                  >
-                                    {leaf.text}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-                        ) : (
-                          <DropdownMenuItem
-                            key={sa.text + saIndex}
-                            onClick={sa.onClick}
-                            className={cn(
-                              _.isString(a.value) &&
-                                sa.value === selectedValue &&
-                                "font-bold",
-                              sa.danger && "text-destructive!",
-                            )}
-                          >
-                            {sa.text}
-                          </DropdownMenuItem>
-                        ),
-                      )}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              );
-            }
-
-            if (a.checked !== undefined) {
-              return (
-                <DropdownMenuCheckboxItem
-                  key={a.text + index}
-                  checked={a.checked}
-                  onCheckedChange={a.onClick}
-                  className={cn(a.danger && "text-destructive!")}
-                >
-                  {a.text}
-                </DropdownMenuCheckboxItem>
-              );
-            }
-
-            return (
-              <DropdownMenuItem
-                key={a.text + index}
-                onClick={a.onClick}
-                className={cn(
-                  _.isString(a.value) &&
-                    a.value === selectedValue &&
-                    "font-bold",
-                  a.danger && "text-destructive!",
-                )}
-              >
-                {a.text}
-              </DropdownMenuItem>
-            );
+            return renderDropdownAction(a, `${index}`, selectedValue);
           })}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -295,96 +285,56 @@ export function ActionMenu<V extends string>({
       <Button
         data-theme-component={ThemeComponent.Button}
         data-variant="ghost"
-        id={id}
-        onClick={() => {
-          if (!disableHaptics) {
-            Haptics.impact({ style: ImpactStyle.Medium });
-          }
-        }}
+        onClick={openMobileRootSheet}
       >
         {trigger}
       </Button>
-      {currentSub && (
+      {currentMobileSheet && (
         <IonActionSheet
-          key={subStack.length}
+          key={mobileStack.length}
           {...props}
-          header={
-            subStack.length > 1
-              ? subStack[subStack.length - 2]?.title
-              : props.header
+          header={currentMobileSheet.parentTitle}
+          subHeader={
+            currentMobileSheet.isRoot ? undefined : currentMobileSheet.title
           }
-          subHeader={currentSub.title}
           isOpen
-          buttons={subActionButtons ?? []}
-          onWillDismiss={({ detail }) => {
-            const index = _.isNumber(detail.data) ? detail.data : null;
-            if (index !== null && currentSub.actions[index]) {
-              const action = currentSub.actions[index];
-              if ("onClick" in action && action.onClick) {
-                action.onClick();
-                setSubStack([]);
-              } else if ("actions" in action) {
-                // Push immediately so the new sheet mounts (via key change)
-                // while the old one is still animating out, overlapping the
-                // dismiss/present animations for a snappier transition.
-                if (!disableHaptics) {
-                  Haptics.impact({ style: ImpactStyle.Medium });
-                }
-                isNavigatingSubSheetRef.current = true;
-                setSubStack((prev) => [
-                  ...prev,
-                  { title: action.text, actions: action.actions },
-                ]);
-              }
-            }
-          }}
+          buttons={mobileButtons}
           onWillPresent={(e) => {
-            isNavigatingSubSheetRef.current = false;
+            isNavigatingMobileSheetRef.current = false;
             props.onWillPresent?.(e);
-            onOpen?.();
-            emitMobileOpenChange(true);
           }}
-          onDidDismiss={(e) => {
-            // In practice only fires for cancel/backdrop — sub-section pushes
-            // unmount this sheet via key change before onDidDismiss can run.
-            // Guard added in case Ionic's behavior ever changes.
-            if (isNavigatingSubSheetRef.current) {
+          onWillDismiss={(e) => {
+            const index = _.isNumber(e.detail.data) ? e.detail.data : null;
+            if (index === null) {
+              closeMobileSheets();
               return;
             }
+
+            const action = currentMobileSheet.actions[index];
+            if (!action || _.isString(action)) {
+              closeMobileSheets();
+              return;
+            }
+
+            if (isSubmenuAction(action)) {
+              isNavigatingMobileSheetRef.current = true;
+              pushMobileSubSheet(action, currentMobileSheet);
+              return;
+            }
+
+            action.onClick();
+            closeMobileSheets();
+          }}
+          onDidDismiss={(e) => {
+            if (isNavigatingMobileSheetRef.current) {
+              return;
+            }
+
             props.onDidDismiss?.(e);
-            setSubStack([]);
             emitMobileOpenChange(false);
           }}
         />
       )}
-      <IonActionSheet
-        {...props}
-        trigger={id}
-        buttons={buttons}
-        onWillDismiss={({ detail }) => {
-          const index = _.isNumber(detail.data) ? detail.data : null;
-          if (index !== null && actions[index]) {
-            const action = actions[index];
-            if (_.isObject(action) && action.onClick) {
-              action.onClick();
-            } else if (_.isObject(action) && action.actions) {
-              if (!disableHaptics) {
-                Haptics.impact({ style: ImpactStyle.Medium });
-              }
-              setSubStack([{ title: action.text, actions: action.actions }]);
-            }
-          }
-        }}
-        onWillPresent={(e) => {
-          props.onWillPresent?.(e);
-          onOpen?.();
-          emitMobileOpenChange(true);
-        }}
-        onDidDismiss={(e) => {
-          props.onDidDismiss?.(e);
-          emitMobileOpenChange(false);
-        }}
-      />
     </>
   );
 }
