@@ -370,9 +370,7 @@ const MenuBar = ({
 
           requestAnimationFrame(() => {
             editor.commands.focus();
-            requestAnimationFrame(() => {
-              onActionMenuOpenChange?.(false);
-            });
+            onActionMenuOpenChange?.(false);
           });
         }}
         actions={[

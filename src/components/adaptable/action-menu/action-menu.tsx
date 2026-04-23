@@ -222,17 +222,18 @@ export function ActionMenu<V extends string>({
       ...prev,
       {
         title: action.text,
-        parentTitle: currentSheet.isRoot
-          ? currentSheet.title || props.header
-          : currentSheet.title,
+        parentTitle: currentSheet.isRoot ? props.header : currentSheet.title,
         actions: action.actions,
       },
     ]);
   };
 
   const closeMobileSheets = () => {
-    setMobileStack([]);
     emitMobileOpenChange(false);
+  };
+
+  const resetMobileStack = () => {
+    setMobileStack([]);
   };
 
   if (media.md) {
@@ -293,7 +294,11 @@ export function ActionMenu<V extends string>({
         <IonActionSheet
           key={mobileStack.length}
           {...props}
-          header={currentMobileSheet.parentTitle}
+          header={
+            currentMobileSheet.isRoot
+              ? props.header
+              : currentMobileSheet.parentTitle
+          }
           subHeader={
             currentMobileSheet.isRoot ? undefined : currentMobileSheet.title
           }
@@ -330,6 +335,7 @@ export function ActionMenu<V extends string>({
               return;
             }
 
+            resetMobileStack();
             props.onDidDismiss?.(e);
             emitMobileOpenChange(false);
           }}

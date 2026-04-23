@@ -35,7 +35,7 @@ async function setup(page: Page) {
   );
 }
 
-async function expectFocused(page: Page, locator: Locator) {
+async function expectFocused(locator: Locator) {
   await expect
     .poll(async () => locator.evaluate((el) => el === document.activeElement))
     .toBe(true);
@@ -155,7 +155,7 @@ test.describe("create post — draft initialization", () => {
     await expect(toolbar).toBeHidden();
 
     await editor.click();
-    await expectFocused(page, editor);
+    await expectFocused(editor);
     await expect(toolbar).toBeVisible();
 
     await moreActionsButton.click();
@@ -168,11 +168,11 @@ test.describe("create post — draft initialization", () => {
     await expect(
       page.getByRole("menu", { name: "More formatting options" }),
     ).toBeHidden();
-    await expectFocused(page, editor);
+    await expectFocused(editor);
     await expect(toolbar).toBeVisible();
 
     await outside.click();
-    await expectFocused(page, outside);
+    await expectFocused(outside);
     await expect(toolbar).toBeHidden();
   });
 
@@ -191,7 +191,7 @@ test.describe("create post — draft initialization", () => {
     const toolbar = page.getByTestId("markdown-editor-desktop-toolbar");
 
     await editor.click();
-    await expectFocused(page, editor);
+    await expectFocused(editor);
     await page.keyboard.type("hello world");
 
     for (let i = 0; i < 5; i++) {
@@ -203,7 +203,7 @@ test.describe("create post — draft initialization", () => {
 
     await boldButton.click();
 
-    await expectFocused(page, editor);
+    await expectFocused(editor);
     await expect(toolbar).toBeVisible();
     await expectSelectedText(page, "world");
   });
