@@ -268,7 +268,7 @@ export function ActionMenu<V extends string>({
               if (isFirstItem || isLastItem) {
                 return null;
               }
-              return null;
+              return renderDropdownAction(a, `${index}`, selectedValue);
             }
 
             return renderDropdownAction(a, `${index}`, selectedValue);
