@@ -1,5 +1,5 @@
 import { IonActionSheet } from "@ionic/react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -68,7 +68,7 @@ export interface ActionMenuProps<V = string>
   align?: "start" | "end";
   showCancel?: boolean;
   preventFocusReturnOnClose?: boolean;
-  onOpenChange?: (open: boolean) => any;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ActionMenu<V extends string>({
@@ -94,9 +94,10 @@ export function ActionMenu<V extends string>({
     { title: string; actions: SubAction[] }[]
   >([]);
   const currentSub = subStack[subStack.length - 1];
-  const mobileMenuOpen = subStack.length > 0;
+  const mobileMenuOpenRef = useRef(false);
+  mobileMenuOpenRef.current = subStack.length > 0;
   const emitMobileOpenChange = (nextOpen: boolean) => {
-    if (nextOpen !== mobileMenuOpen) {
+    if (nextOpen !== mobileMenuOpenRef.current) {
       onOpenChange?.(nextOpen);
     }
   };
@@ -342,11 +343,10 @@ export function ActionMenu<V extends string>({
           }}
           onDidDismiss={(e) => {
             props.onDidDismiss?.(e);
+            // Only fires for cancel/backdrop — sub-section pushes unmount this
+            // sheet (via key change) before onDidDismiss can run.
             setSubStack([]);
-            // During sub-sheet navigation, the next sheet is already in the
-            // stack before the current one dismisses, so the overall mobile
-            // menu remains open.
-            emitMobileOpenChange(subStack.length > 1);
+            emitMobileOpenChange(false);
           }}
         />
       )}
