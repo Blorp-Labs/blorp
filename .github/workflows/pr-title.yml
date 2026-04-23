@@ -1,29 +1,30 @@
-name: Commit Message Quality
+name: PR Title
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
 permissions:
-  contents: read
+  pull-requests: read
 
 jobs:
-  check-commits:
-    name: Commit Message Check
+  semantic-pr-title:
+    name: Semantic PR Title
     runs-on: ubuntu-latest
-    env:
-      BASE_SHA: ${{ github.event.pull_request.base.sha }}
-      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          fetch-depth: 0
-
-      - name: Enforce conventional commit subjects
-        run: |
-          pnpm exec commitlint \
-            --config commitlint.config.js \
-            --from "${BASE_SHA}" \
-            --to "${HEAD_SHA}" \
-            --verbose
+          types: |
+            feat
+            fix
+            chore
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            revert
