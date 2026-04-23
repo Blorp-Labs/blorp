@@ -1,4 +1,10 @@
-import { test, expect, type Page } from "@playwright/test";
+import {
+  test,
+  expect,
+  type Locator,
+  type Page,
+  type TestInfo,
+} from "@playwright/test";
 import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
@@ -27,6 +33,20 @@ async function setup(page: Page) {
   await page.route("**/api/v3/site*", (route) =>
     jsonRoute(route, SITE_WITH_USER),
   );
+}
+
+async function expectFocused(locator: Locator) {
+  await expect
+    .poll(async () => locator.evaluate((el) => el === document.activeElement))
+    .toBe(true);
+}
+
+async function expectSelectedText(page: Page, expected: string) {
+  await expect
+    .poll(async () =>
+      page.evaluate(() => window.getSelection()?.toString() ?? ""),
+    )
+    .toBe(expected);
 }
 
 async function seedDrafts(
@@ -108,5 +128,83 @@ test.describe("create post — draft initialization", () => {
     await expect(page.getByTestId("create-post-title")).toHaveValue(
       "Newer Draft",
     );
+  });
+
+  test("link-post body toolbar stays visible through action menu and refocuses editor on close", async ({
+    page,
+  }, testInfo: TestInfo) => {
+    test.skip(testInfo.project.name.includes("Mobile"));
+
+    await setup(page);
+    await page.goto("/create_post");
+
+    const postTypeLink = page.getByRole("radio", { name: "Link" });
+    await postTypeLink.click();
+    await expect(postTypeLink).toBeChecked();
+    await expect(page.getByPlaceholder("Link")).toBeVisible();
+
+    const editor = page
+      .getByTestId("markdown-editor-content")
+      .locator('[contenteditable="true"]');
+    const outside = page.getByTestId("create-post-title");
+    const toolbar = page.getByTestId("markdown-editor-desktop-toolbar");
+    const moreActionsButton = page.getByRole("button", {
+      name: "More formatting options",
+    });
+
+    await expect(toolbar).toBeHidden();
+
+    await editor.click();
+    await expectFocused(editor);
+    await expect(toolbar).toBeVisible();
+
+    await moreActionsButton.click();
+    await expect(
+      page.getByRole("menu", { name: "More formatting options" }),
+    ).toBeVisible();
+    await expect(toolbar).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(
+      page.getByRole("menu", { name: "More formatting options" }),
+    ).toBeHidden();
+    await expectFocused(editor);
+    await expect(toolbar).toBeVisible();
+
+    await outside.click();
+    await expectFocused(outside);
+    await expect(toolbar).toBeHidden();
+  });
+
+  test("clicking bold preserves the editor selection", async ({
+    page,
+  }, testInfo: TestInfo) => {
+    test.skip(testInfo.project.name.includes("Mobile"));
+
+    await setup(page);
+    await page.goto("/create_post");
+
+    const editor = page
+      .getByTestId("markdown-editor-content")
+      .locator('[contenteditable="true"]');
+    const boldButton = page.getByRole("button", { name: "Bold" });
+    const toolbar = page.getByTestId("markdown-editor-desktop-toolbar");
+
+    await editor.click();
+    await expectFocused(editor);
+    await page.keyboard.type("hello world");
+
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press("Shift+ArrowLeft");
+    }
+
+    await expectSelectedText(page, "world");
+    await expect(toolbar).toBeVisible();
+
+    await boldButton.click();
+
+    await expectFocused(editor);
+    await expect(toolbar).toBeVisible();
+    await expectSelectedText(page, "world");
   });
 });
