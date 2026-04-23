@@ -1,5 +1,5 @@
 import { IonActionSheet } from "@ionic/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import _ from "lodash";
 import { Slot } from "@radix-ui/react-slot";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -157,6 +157,16 @@ export function ActionMenu<V extends string>({
       onOpenChange?.(nextOpen);
     }
   };
+
+  const effectOnOpenChange = useEffectEvent(emitMobileOpenChange);
+
+  useEffect(() => {
+    if (!media.md) {
+      return;
+    }
+    setMobileStack([]);
+    effectOnOpenChange(false);
+  }, [media.md]);
 
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
