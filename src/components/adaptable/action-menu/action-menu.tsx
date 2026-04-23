@@ -94,6 +94,12 @@ export function ActionMenu<V extends string>({
     { title: string; actions: SubAction[] }[]
   >([]);
   const currentSub = subStack[subStack.length - 1];
+  const mobileMenuOpen = subStack.length > 0;
+  const emitMobileOpenChange = (nextOpen: boolean) => {
+    if (nextOpen !== mobileMenuOpen) {
+      onOpenChange?.(nextOpen);
+    }
+  };
 
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
@@ -332,12 +338,15 @@ export function ActionMenu<V extends string>({
           onWillPresent={(e) => {
             props.onWillPresent?.(e);
             onOpen?.();
-            onOpenChange?.(true);
+            emitMobileOpenChange(true);
           }}
           onDidDismiss={(e) => {
             props.onDidDismiss?.(e);
             setSubStack([]);
-            onOpenChange?.(false);
+            // During sub-sheet navigation, the next sheet is already in the
+            // stack before the current one dismisses, so the overall mobile
+            // menu remains open.
+            emitMobileOpenChange(subStack.length > 1);
           }}
         />
       )}
@@ -362,11 +371,11 @@ export function ActionMenu<V extends string>({
         onWillPresent={(e) => {
           props.onWillPresent?.(e);
           onOpen?.();
-          onOpenChange?.(true);
+          emitMobileOpenChange(true);
         }}
         onDidDismiss={(e) => {
           props.onDidDismiss?.(e);
-          onOpenChange?.(false);
+          emitMobileOpenChange(false);
         }}
       />
     </>
