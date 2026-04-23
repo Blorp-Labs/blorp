@@ -96,6 +96,7 @@ export function ActionMenu<V extends string>({
   const currentSub = subStack[subStack.length - 1];
   const mobileMenuOpenRef = useRef(false);
   mobileMenuOpenRef.current = subStack.length > 0;
+  const isNavigatingSubSheetRef = useRef(false);
   const emitMobileOpenChange = (nextOpen: boolean) => {
     if (nextOpen !== mobileMenuOpenRef.current) {
       onOpenChange?.(nextOpen);
@@ -329,6 +330,7 @@ export function ActionMenu<V extends string>({
                 if (!disableHaptics) {
                   Haptics.impact({ style: ImpactStyle.Medium });
                 }
+                isNavigatingSubSheetRef.current = true;
                 setSubStack((prev) => [
                   ...prev,
                   { title: action.text, actions: action.actions },
@@ -337,14 +339,19 @@ export function ActionMenu<V extends string>({
             }
           }}
           onWillPresent={(e) => {
+            isNavigatingSubSheetRef.current = false;
             props.onWillPresent?.(e);
             onOpen?.();
             emitMobileOpenChange(true);
           }}
           onDidDismiss={(e) => {
+            // In practice only fires for cancel/backdrop — sub-section pushes
+            // unmount this sheet via key change before onDidDismiss can run.
+            // Guard added in case Ionic's behavior ever changes.
+            if (isNavigatingSubSheetRef.current) {
+              return;
+            }
             props.onDidDismiss?.(e);
-            // Only fires for cancel/backdrop — sub-section pushes unmount this
-            // sheet (via key change) before onDidDismiss can run.
             setSubStack([]);
             emitMobileOpenChange(false);
           }}
