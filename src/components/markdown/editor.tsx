@@ -635,6 +635,7 @@ function TipTapEditor({
   return (
     <>
       <div
+        data-testid="markdown-editor-desktop-toolbar"
         className={cn(
           "flex flex-row justify-between py-1.5 px-2 pb-0 max-md:hidden",
           shouldHideMenu && "hidden",
@@ -684,6 +685,7 @@ function TipTapEditor({
       </div>
       <EditorContent
         id={id}
+        data-testid="markdown-editor-content"
         className="markdown-content flex-1 max-w-full leading-normal py-2 px-3 md:px-3.5"
         editor={editor}
       />

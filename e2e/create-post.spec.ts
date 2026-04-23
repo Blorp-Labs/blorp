@@ -1,4 +1,10 @@
-import { test, expect, type Page } from "@playwright/test";
+import {
+  test,
+  expect,
+  type Locator,
+  type Page,
+  type TestInfo,
+} from "@playwright/test";
 import { SITE_WITH_USER } from "../test-utils/lemmy-api-fixtures";
 import { seedAuth, mockNodeinfo, jsonRoute } from "./test-utils";
 import { DB_NAME, DB_VERSION, TABLE_NAME } from "@/src/lib/db-constants";
@@ -27,6 +33,12 @@ async function setup(page: Page) {
   await page.route("**/api/v3/site*", (route) =>
     jsonRoute(route, SITE_WITH_USER),
   );
+}
+
+async function expectFocused(page: Page, locator: Locator) {
+  await expect
+    .poll(async () => locator.evaluate((el) => el === document.activeElement))
+    .toBe(true);
 }
 
 async function seedDrafts(
@@ -108,5 +120,51 @@ test.describe("create post — draft initialization", () => {
     await expect(page.getByTestId("create-post-title")).toHaveValue(
       "Newer Draft",
     );
+  });
+
+  test("link-post body toolbar stays visible through action menu and refocuses editor on close", async ({
+    page,
+  }, testInfo: TestInfo) => {
+    test.skip(testInfo.project.name.includes("Mobile"));
+
+    await setup(page);
+    await page.goto("/create_post");
+
+    const postTypeLink = page.getByRole("radio", { name: "Link" });
+    await postTypeLink.click();
+    await expect(postTypeLink).toBeChecked();
+    await expect(page.getByPlaceholder("Link")).toBeVisible();
+
+    const editor = page
+      .getByTestId("markdown-editor-content")
+      .locator('[contenteditable="true"]');
+    const outside = page.getByTestId("create-post-title");
+    const toolbar = page.getByTestId("markdown-editor-desktop-toolbar");
+    const moreActionsButton = page.getByRole("button", {
+      name: "More formatting options",
+    });
+
+    await expect(toolbar).toBeHidden();
+
+    await editor.click();
+    await expectFocused(page, editor);
+    await expect(toolbar).toBeVisible();
+
+    await moreActionsButton.click();
+    await expect(
+      page.getByRole("menu", { name: "More formatting options" }),
+    ).toBeVisible();
+    await expect(toolbar).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(
+      page.getByRole("menu", { name: "More formatting options" }),
+    ).toBeHidden();
+    await expectFocused(page, editor);
+    await expect(toolbar).toBeVisible();
+
+    await outside.click();
+    await expectFocused(page, outside);
+    await expect(toolbar).toBeHidden();
   });
 });
