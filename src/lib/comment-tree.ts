@@ -237,15 +237,11 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
 
 function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
   const children = _.values(node.children);
-  let grandChildren = 0;
   for (const child of children) {
-    if (child.comment) {
-      grandChildren += child.comment.childCount;
-    }
     countImediateChildre(child);
   }
   if ("comment" in node && node.comment) {
-    node.meta.imediateChildren = node.comment.childCount - grandChildren;
+    node.meta.imediateChildren = node.comment.childCount;
   }
 }
 
