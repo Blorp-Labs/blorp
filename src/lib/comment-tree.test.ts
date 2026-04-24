@@ -266,7 +266,7 @@ describe("buildCommentTree", () => {
     test("marks a parent pruned when a direct child has a different pageCursor", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1", 1), commentView(2, "0.1.2")],
-        { getCommentPageCursor: (id) => (id === 2 ? 2 : 1) },
+        { getCommentPageCursor: (c) => (c.id === 2 ? 2 : 1) },
       );
 
       expect(getNodeByKey(tree, 1).meta.pruned).toBe(true);
@@ -275,7 +275,7 @@ describe("buildCommentTree", () => {
     test("removes direct children loaded from a different page", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1", 1), commentView(2, "0.1.2")],
-        { getCommentPageCursor: (id) => (id === 2 ? 2 : 1) },
+        { getCommentPageCursor: (c) => (c.id === 2 ? 2 : 1) },
       );
 
       expect(getNodeByKey(tree, 1).children[2]).toBeUndefined();
@@ -288,7 +288,7 @@ describe("buildCommentTree", () => {
           commentView(2, "0.1.2", 1),
           commentView(3, "0.1.2.3"),
         ],
-        { getCommentPageCursor: (id) => (id === 1 ? 1 : 2) },
+        { getCommentPageCursor: (c) => (c.id === 1 ? 1 : 2) },
       );
 
       const node1 = getNodeByKey(tree, 1);
@@ -309,7 +309,7 @@ describe("buildCommentTree", () => {
     test("does not prune top-level comments regardless of pageCursor", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1"), commentView(2, "0.2"), commentView(3, "0.3")],
-        { getCommentPageCursor: (id) => id },
+        { getCommentPageCursor: (c) => c.id },
       );
 
       expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
@@ -320,7 +320,7 @@ describe("buildCommentTree", () => {
     test("preserves descendants loaded on an earlier page when a later-page comment hydrates their placeholder ancestor", () => {
       const tree = buildCommentTree(
         [commentView(3, "0.1.2.3"), commentView(2, "0.1.2", 1)],
-        { getCommentPageCursor: (id) => (id === 3 ? 1 : 2) },
+        { getCommentPageCursor: (c) => (c.id === 3 ? 1 : 2) },
       );
 
       const node1 = getNodeByKey(tree, 1);
@@ -336,7 +336,7 @@ describe("buildCommentTree", () => {
           commentView(2, "0.1.2", 1),
           commentView(3, "0.1.2.3"),
         ],
-        { getCommentPageCursor: (id) => (id === 3 ? 2 : 1) },
+        { getCommentPageCursor: (c) => (c.id === 3 ? 2 : 1) },
       );
 
       const node1 = getNodeByKey(tree, 1);
@@ -349,7 +349,7 @@ describe("buildCommentTree", () => {
     test("clips a cross-page branch when the new comment does not hydrate an existing placeholder", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1", 1), commentView(2, "0.1.2")],
-        { getCommentPageCursor: (id) => (id === 2 ? 2 : 1) },
+        { getCommentPageCursor: (c) => (c.id === 2 ? 2 : 1) },
       );
 
       const node1 = getNodeByKey(tree, 1);
@@ -377,7 +377,7 @@ describe("buildCommentTree", () => {
     test("does not prune a child when getCommentPageCursor returns undefined for it", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1", 1), commentView(2, "0.1.2")],
-        { getCommentPageCursor: (id) => (id === 1 ? 1 : undefined) },
+        { getCommentPageCursor: (c) => (c.id === 1 ? 1 : undefined) },
       );
 
       const node1 = getNodeByKey(tree, 1);
@@ -418,7 +418,7 @@ describe("buildCommentTree", () => {
     test("retains missing-child count after pruning removes direct children", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1", 3), commentView(2, "0.1.2", 0)],
-        { getCommentPageCursor: (id) => (id === 2 ? 2 : 1) },
+        { getCommentPageCursor: (c) => (c.id === 2 ? 2 : 1) },
       );
 
       const node1 = getNodeByKey(tree, 1);
