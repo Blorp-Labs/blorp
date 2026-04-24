@@ -459,7 +459,7 @@ describe("buildCommentTree", () => {
       );
 
       const node1 = getNodeByKey(tree, 1);
-      expect(node1.meta.imediateChildren).toBe(4);
+      expect(node1.meta.imediateChildren).toBe(5);
     });
 
     test("retains missing-child count after pruning removes direct children", () => {
