@@ -5,7 +5,7 @@ export type CommentKey = number;
 
 type CommentTreeMeta = {
   pageCursor?: string | number;
-  imediateChildren: number;
+  immediateChildren: number;
   sort: number;
   pruned: boolean;
 };
@@ -40,7 +40,7 @@ const getEmptyCommentTree = () => {
 export function shouldShowMore(node: CommentTree): boolean {
   return (
     node.meta.pruned ||
-    _.keys(node.children).length < node.meta.imediateChildren
+    _.keys(node.children).length < node.meta.immediateChildren
   );
 }
 
@@ -112,7 +112,7 @@ export function buildCommentTree(
       loc.children[front] = loc.children[front] ?? {
         meta: {
           sort: 0,
-          imediateChildren: 0,
+          immediateChildren: 0,
           pruned: false,
         },
         children: {},
@@ -129,7 +129,7 @@ export function buildCommentTree(
       meta: {
         ...loc.children[front]?.meta,
         sort: i,
-        imediateChildren: 0,
+        immediateChildren: 0,
         pruned: false,
         pageCursor: getCommentPageCursor?.(view),
       },
@@ -137,7 +137,7 @@ export function buildCommentTree(
     i++;
   }
 
-  countImediateChildre(map);
+  countImnediateChildre(map);
 
   const out = pruneCommentTree(map);
   if (context.commentPath) {
@@ -235,13 +235,13 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   return tree;
 }
 
-function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
+function countImnediateChildre(node: CommentTree | CommentTreeTopLevel) {
   const children = _.values(node.children);
   for (const child of children) {
-    countImediateChildre(child);
+    countImnediateChildre(child);
   }
   if ("comment" in node && node.comment) {
-    node.meta.imediateChildren = node.comment.childCount;
+    node.meta.immediateChildren = node.comment.childCount;
   }
 }
 

@@ -225,7 +225,7 @@ function CommentReport({
                   commentTree={{
                     comment: commentView,
                     meta: {
-                      imediateChildren: 0,
+                      immediateChildren: 0,
                       sort: 0,
                       pruned: false,
                     },
