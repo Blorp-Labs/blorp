@@ -38,7 +38,7 @@ describe("buildCommentTree", () => {
       "creates intermediate placeholder nodes when middle comments are missing",
     );
     test.todo(
-      "hydrates a top-level placeholder when the real comment later arrives without disturbing sibling order",
+      "hydrates a top-level placeholder and preserves relative order of unrelated siblings",
     );
     test.todo(
       "hydrates an intermediate placeholder when the real comment later arrives and preserves its existing descendants",
@@ -60,6 +60,9 @@ describe("buildCommentTree", () => {
     test.todo(
       "creates placeholders only within the requested subtree when ancestors inside it are missing",
     );
+    test.todo(
+      "does not match sibling paths that share a numeric prefix with commentPath",
+    );
   });
 
   describe("max depth", () => {
@@ -78,7 +81,7 @@ describe("buildCommentTree", () => {
     test.todo("does not prune a child when it shares the parent's pageCursor");
     test.todo("does not prune top-level comments regardless of pageCursor");
     test.todo(
-      "does not prune a branch when a new comment hydrates an existing placeholder",
+      "preserves descendants loaded on an earlier page when a later-page comment hydrates their placeholder ancestor",
     );
     test.todo("compares pageCursor against the immediate parent, not the root");
     test.todo(
