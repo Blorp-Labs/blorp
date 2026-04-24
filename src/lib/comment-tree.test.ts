@@ -4,19 +4,14 @@ import {
   CommentTree,
   getCommentChildren,
   shouldShowMore,
-  CommentKey,
   CommentTreeTopLevel,
 } from "./comment-tree";
-
-function makeCommentKey(key: number): CommentKey {
-  return key as any;
-}
 
 function getNodeByKey(
   tree: CommentTreeTopLevel | CommentTree,
   key: number,
 ): CommentTree {
-  const node = tree.children[key as CommentKey];
+  const node = tree.children[key];
   if (!node) {
     throw new Error(`Expected node ${key} to exist`);
   }
@@ -142,64 +137,107 @@ describe("shouldShowMore", () => {
   });
 
   test("returns true when a node is pruned", () => {
-    const tree = buildCommentTree(
-      [
-        { path: "0.1234", childCount: 1, postApId, id: 1234 },
-        { path: "0.1234.5678", childCount: 0, postApId, id: 5678 },
-      ],
-      {
-        getCommentPageCursor: (commentId) => (commentId === 1234 ? 0 : 1),
+    const node = {
+      meta: {
+        sort: 0,
+        imediateChildren: 1,
+        pruned: true,
       },
-    );
+      comment: {
+        id: 1234,
+        path: "0.1234",
+        childCount: 1,
+        postApId,
+      },
+      children: {},
+    } satisfies CommentTree;
 
-    expect(shouldShowMore(getNodeByKey(tree, 1234))).toBe(true);
+    expect(shouldShowMore(node)).toBe(true);
   });
 
   test("returns true when maxDepth truncates direct children from the visible tree", () => {
-    const tree = buildCommentTree(
-      [
-        { path: "0.1234", childCount: 1, postApId, id: 1234 },
-        {
-          path: "0.1234.5678",
-          childCount: 0,
-          postApId,
-          id: 5678,
-        },
-      ],
-      { maxDepth: 1, getCommentPageCursor: () => 0 },
-    );
+    const node = {
+      meta: {
+        sort: 0,
+        imediateChildren: 1,
+        pruned: false,
+      },
+      comment: {
+        id: 1234,
+        path: "0.1234",
+        childCount: 1,
+        postApId,
+      },
+      children: {},
+    } satisfies CommentTree;
 
-    expect(shouldShowMore(getNodeByKey(tree, 1234))).toBe(true);
+    expect(shouldShowMore(node)).toBe(true);
   });
 
   test("returns false when all direct children are already visible", () => {
-    const tree = buildCommentTree(
-      [
-        { path: "0.1234", childCount: 1, postApId, id: 1234 },
-        { path: "0.1234.5678", childCount: 0, postApId, id: 5678 },
-      ],
-      { getCommentPageCursor: () => 0 },
-    );
+    const node = {
+      meta: {
+        sort: 0,
+        imediateChildren: 1,
+        pruned: false,
+      },
+      comment: {
+        id: 1234,
+        path: "0.1234",
+        childCount: 1,
+        postApId,
+      },
+      children: {
+        5678: {
+          meta: {
+            sort: 1,
+            imediateChildren: 0,
+            pruned: false,
+          },
+          comment: {
+            id: 5678,
+            path: "0.1234.5678",
+            childCount: 0,
+            postApId,
+          },
+          children: {},
+        },
+      },
+    } satisfies CommentTree;
 
-    expect(shouldShowMore(getNodeByKey(tree, 1234))).toBe(false);
+    expect(shouldShowMore(node)).toBe(false);
   });
 
   test("returns false for a leaf node with no hidden children", () => {
-    const tree = buildCommentTree(
-      [{ path: "0.1234", childCount: 0, postApId, id: 1234 }],
-      { getCommentPageCursor: () => 0 },
-    );
+    const tree = {
+      meta: {
+        sort: 0,
+        imediateChildren: 0,
+        pruned: false,
+      },
+      comment: {
+        id: 1234,
+        path: "0.1234",
+        childCount: 0,
+        postApId,
+      },
+      children: {},
+    } satisfies CommentTree;
 
-    expect(shouldShowMore(getNodeByKey(tree, 1234))).toBe(false);
+    expect(shouldShowMore(tree)).toBe(false);
   });
 
   test("returns false for a placeholder node that is not pruned", () => {
-    const tree = buildCommentTree(
-      [{ path: "0.1234.5678", childCount: 0, postApId, id: 5678 }],
-      { getCommentPageCursor: () => 0 },
-    );
+    const tree = {
+      meta: {
+        sort: 0,
+        imediateChildren: 0,
+        pruned: false,
+      },
+      children: {},
+    } satisfies CommentTree;
 
-    expect(shouldShowMore(getNodeByKey(tree, 1234))).toBe(false);
+    expect(shouldShowMore(tree)).toBe(false);
   });
 });
 
@@ -216,7 +254,7 @@ describe("getCommentChildren", () => {
         pruned: false,
       },
       children: {
-        [makeCommentKey(5678)]: {
+        5678: {
           meta: {
             sort: 2,
             imediateChildren: 0,
@@ -230,7 +268,7 @@ describe("getCommentChildren", () => {
             postApId,
           },
         },
-        [makeCommentKey(9101)]: {
+        9101: {
           meta: {
             sort: 0,
             imediateChildren: 0,
@@ -244,7 +282,7 @@ describe("getCommentChildren", () => {
             postApId,
           },
         },
-        [makeCommentKey(1121)]: {
+        1121: {
           meta: {
             sort: 1,
             imediateChildren: 0,
@@ -266,7 +304,7 @@ describe("getCommentChildren", () => {
     ]);
   });
 
-  test("does not return the comment or meta fields as children", () => {
+  test("returns only entries from the children map", () => {
     const node = {
       meta: {
         sort: 0,
@@ -280,7 +318,7 @@ describe("getCommentChildren", () => {
         postApId,
       },
       children: {
-        [makeCommentKey(5678)]: {
+        5678: {
           meta: {
             sort: 0,
             imediateChildren: 0,
