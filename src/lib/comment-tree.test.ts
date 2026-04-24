@@ -21,61 +21,14 @@ function getNodeByKey(
 const postApId = "https://blorpblorp.xyz/p/123456";
 
 describe("buildCommentTree", () => {
-  describe("when a missing ancestor later arrives", () => {
-    test.todo(
-      "hydrates the placeholder without removing already-visible descendants",
-    );
-  });
-
-  describe("when a later page adds a new unseen child", () => {
-    test.todo(
-      "prunes the new branch and keeps previously visible siblings in place",
-    );
-  });
-
-  describe("when a missing top-level comment later arrives", () => {
-    test.todo(
-      "hydrates the top-level placeholder without changing the visible branch order",
-    );
-  });
-
-  describe("when a placeholder is hydrated after descendants are already visible", () => {
-    test.todo(
-      "preserves the existing descendant subtree under the hydrated node",
-    );
-  });
-
-  describe("when the same comment appears again after a placeholder was created", () => {
-    test.todo(
-      "hydrates the existing node instead of creating a duplicate branch",
-    );
-  });
-
-  describe("when rendering a requested subtree with missing ancestors", () => {
-    test.todo(
-      "creates placeholders only within the requested subtree and preserves visible descendants",
-    );
-  });
-
-  describe("when deeper replies are hidden by maxDepth", () => {
-    test.todo("keeps show-more state on the last visible node");
-  });
-
   describe("deduplication", () => {
     test.todo(
       "keeps the first occurrence when duplicate comment ids are present",
     );
   });
 
-  describe("path filtering", () => {
-    test.todo(
-      "returns only the requested subtree when commentPath is provided",
-    );
-    test.todo("keeps comments exactly at the requested subtree root");
-    test.todo("ignores comments outside the requested subtree");
-  });
-
   describe("tree construction", () => {
+    test.todo("returns an empty top-level when no comments are provided");
     test.todo("builds nested nodes from comment paths");
     test.todo("preserves insertion order through sort values");
     test.todo(
@@ -85,13 +38,27 @@ describe("buildCommentTree", () => {
       "creates intermediate placeholder nodes when middle comments are missing",
     );
     test.todo(
-      "hydrates a top-level placeholder when the real comment later arrives",
+      "hydrates a top-level placeholder when the real comment later arrives without disturbing sibling order",
     );
     test.todo(
-      "hydrates an intermediate placeholder when the real comment later arrives",
+      "hydrates an intermediate placeholder when the real comment later arrives and preserves its existing descendants",
     );
     test.todo(
       "does not overwrite an existing real ancestor when later descendants reuse it",
+    );
+  });
+
+  describe("path filtering", () => {
+    test.todo(
+      "returns only the requested subtree when commentPath is provided",
+    );
+    test.todo("keeps comments exactly at the requested subtree root");
+    test.todo("ignores comments outside the requested subtree");
+    test.todo(
+      "re-roots matching deep paths so the requested subtree appears at top-level",
+    );
+    test.todo(
+      "creates placeholders only within the requested subtree when ancestors inside it are missing",
     );
   });
 
@@ -111,11 +78,15 @@ describe("buildCommentTree", () => {
     test.todo("does not prune a child when it shares the parent's pageCursor");
     test.todo("does not prune top-level comments regardless of pageCursor");
     test.todo(
-      "does not prune placeholder nodes that are later hydrated by a real comment",
+      "does not prune a branch when a new comment hydrates an existing placeholder",
     );
     test.todo("compares pageCursor against the immediate parent, not the root");
     test.todo(
       "clips a cross-page branch when the new comment does not hydrate an existing placeholder",
+    );
+    test.todo("does not prune when getCommentPageCursor is not provided");
+    test.todo(
+      "does not prune a child when getCommentPageCursor returns undefined for it",
     );
   });
 
@@ -127,21 +98,10 @@ describe("buildCommentTree", () => {
     test.todo(
       "retains missing-child count after pruning removes direct children",
     );
-    test.todo(
-      "retains missing-child count when maxDepth truncates descendants",
-    );
   });
 });
 
 describe("shouldShowMore", () => {
-  describe("when a branch is fully visible", () => {
-    test.todo("returns false when no children are hidden");
-  });
-
-  describe("when a branch has hidden descendants", () => {
-    test.todo("returns true when children are pruned or missing from the visible tree");
-  });
-
   test("returns true when a node is pruned", () => {
     const node = {
       meta: {
@@ -248,10 +208,6 @@ describe("shouldShowMore", () => {
 });
 
 describe("getCommentChildren", () => {
-  describe("when rendering a branch with placeholders and real comments", () => {
-    test.todo("returns placeholder and real children in stable sort order");
-  });
-
   test("returns child entries sorted by sort ascending", () => {
     const node = {
       meta: {
