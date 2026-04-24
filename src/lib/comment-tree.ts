@@ -1,19 +1,13 @@
 import _ from "lodash";
-import { exhaustiveList } from "./utils";
 
-type DataKey = "sort" | "comment" | "imediateChildren" | "pruned";
 export type CommentKey = number & { __brand: "commentKey" };
 
-export const DATA_KEYS = exhaustiveList<DataKey>()([
-  "sort",
-  "comment",
-  "imediateChildren",
-  "pruned",
-]);
-
-export function isDataKey(key: string): key is DataKey {
-  return DATA_KEYS.includes(key as any);
-}
+type CommentTreeMeta = {
+  pageCursor?: string | number;
+  imediateChildren: number;
+  sort: number;
+  pruned: boolean;
+};
 
 export interface CommentTree {
   comment?: {
@@ -21,16 +15,13 @@ export interface CommentTree {
     postApId: string;
     childCount: number;
     path: string;
-    pageCursor?: string | number;
   };
-  imediateChildren: number;
-  sort: number;
-  pruned: boolean;
-  [key: CommentKey]: CommentTree;
+  meta: CommentTreeMeta;
+  children: Record<CommentKey, CommentTree>;
 }
 
 export interface CommentTreeTopLevel {
-  [key: CommentKey]: CommentTree;
+  children: Record<CommentKey, CommentTree>;
 }
 
 export function shouldShowMore(node: CommentTree): boolean {
@@ -56,12 +47,18 @@ export function buildCommentTree(
     postApId: string;
     childCount: number;
     path: string;
-    pageCursor: string | number;
   }[],
-  commentPath?: string,
-  maxDepth = 6,
+  context: {
+    commentPath?: string;
+    maxDepth?: number;
+    getCommentPageCursor?: (commentId: number) => number | string | undefined;
+  },
 ) {
-  const map: CommentTreeTopLevel = {};
+  const { maxDepth = 6, commentPath } = context;
+
+  const map: CommentTreeTopLevel = {
+    children: {},
+  };
 
   const firstCommentInPath = commentPath?.split(".")?.[0];
 
@@ -90,22 +87,29 @@ export function buildCommentTree(
 
     while (path.length > 1) {
       const front: CommentKey = path.shift()! satisfies string as any;
-      loc[front] = loc[front] ?? {
-        sort: 0,
-        imediateChildren: 0,
-        pruned: false,
+      loc.children[front] = loc.children[front] ?? {
+        meta: {
+          sort: 0,
+          imediateChildren: 0,
+          pruned: false,
+        },
+        children: {},
       };
-      loc = loc[front];
+      loc = loc.children[front];
     }
 
-    const front: keyof typeof loc = path.shift()! as any;
+    const front: keyof typeof loc.children = path.shift()! as any;
 
-    loc[front] = {
-      ...loc[front],
-      sort: i,
+    loc.children[front] = {
+      children: {},
+      ...loc.children[front],
       comment: view,
-      imediateChildren: 0,
-      pruned: false,
+      meta: {
+        ...loc.children[front]?.meta,
+        sort: i,
+        imediateChildren: 0,
+        pruned: false,
+      },
     };
     i++;
   }
@@ -117,17 +121,17 @@ export function buildCommentTree(
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   function pruneNode(node: CommentTree) {
-    const pageCursor = node.comment?.pageCursor;
+    const pageCursor = node.meta.pageCursor;
     if (_.isNil(pageCursor)) {
       return;
     }
 
     for (const key of getCommentChildrenKeys(node)) {
-      const child = node[key];
-      const childPageCursor = child?.comment?.pageCursor;
+      const child = node.children[key];
+      const childPageCursor = child?.meta.pageCursor;
       if (!_.isNil(childPageCursor) && childPageCursor !== pageCursor) {
-        node.pruned = true;
-        delete node[key];
+        node.meta.pruned = true;
+        delete node.children[key];
       } else if (child) {
         pruneNode(child);
       }
@@ -135,7 +139,7 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   }
 
   for (const key of getCommentChildrenKeys(tree)) {
-    const node = tree[key];
+    const node = tree.children[key];
     if (node) {
       pruneNode(node);
     }
@@ -145,7 +149,7 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
 }
 
 function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
-  const children = _.values(_.omit(node as CommentTree, DATA_KEYS));
+  const children = _.values(node.children);
   let grandChildren = 0;
   for (const child of children) {
     if (child.comment) {
@@ -154,14 +158,14 @@ function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
     countImediateChildre(child);
   }
   if ("comment" in node && node.comment) {
-    node.imediateChildren = node.comment.childCount - grandChildren;
+    node.meta.imediateChildren = node.comment.childCount - grandChildren;
   }
 }
 
 function getCommentChildrenKeys(
   node: CommentTree | CommentTreeTopLevel,
 ): CommentKey[] {
-  return _.keys(_.omit(node, DATA_KEYS)) satisfies string[] as never;
+  return _.keys(node.children) satisfies string[] as never;
 }
 
 export function getCommentChildren(
@@ -169,7 +173,9 @@ export function getCommentChildren(
 ): (readonly [CommentKey, CommentTree])[] {
   const keys = getCommentChildrenKeys(node);
   const comments = _.compact(
-    keys.map((key) => (node[key] ? ([key, node[key]] as const) : undefined)),
+    keys.map((key) =>
+      node.children[key] ? ([key, node.children[key]] as const) : undefined,
+    ),
   );
-  return comments.sort(([_id1, a], [_id2, b]) => a.sort - b.sort);
+  return comments.sort(([_id1, a], [_id2, b]) => a.meta.sort - b.meta.sort);
 }
