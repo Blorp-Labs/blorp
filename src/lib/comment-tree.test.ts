@@ -270,21 +270,25 @@ describe("buildCommentTree", () => {
       expect(node2.meta.imediateChildren).toBeGreaterThan(0);
     });
 
-    test("respects maxDepth when commentPath is also set", () => {
+    test("respects maxDepth relative to the commentPath root", () => {
+      // depths relative to commentPath "0.1": node1=0, node2=1, node3=2, node4=3
       const tree = buildCommentTree(
         [
           commentView(1, "0.1"),
           commentView(2, "0.1.2"),
           commentView(3, "0.1.2.3"),
+          commentView(4, "0.1.2.3.4"),
         ],
         { commentPath: "0.1", maxDepth: 2 },
       );
 
-      expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
-      expect(getNodeByKey(getNodeByKey(tree, 1), 2).comment?.id).toBe(2);
-      expect(
-        getNodeByKey(getNodeByKey(tree, 1), 2).children[3],
-      ).toBeUndefined();
+      const node1 = getNodeByKey(tree, 1);
+      const node2 = getNodeByKey(node1, 2);
+      const node3 = getNodeByKey(node2, 3);
+      expect(node1.comment?.id).toBe(1);
+      expect(node2.comment?.id).toBe(2);
+      expect(node3.comment?.id).toBe(3);
+      expect(node3.children[4]).toBeUndefined();
     });
   });
 

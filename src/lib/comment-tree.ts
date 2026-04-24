@@ -1,4 +1,3 @@
-import { exists } from "@tauri-apps/plugin-fs";
 import _ from "lodash";
 import { isNotNil } from "./utils";
 
@@ -25,8 +24,18 @@ export interface CommentTree {
 }
 
 export interface CommentTreeTopLevel {
+  comment: undefined;
+  meta: undefined;
   children: Record<CommentKey, CommentTree>;
 }
+
+const getEmptyCommentTree = () => {
+  return {
+    comment: undefined,
+    meta: undefined,
+    children: {},
+  } satisfies CommentTreeTopLevel;
+};
 
 export function shouldShowMore(node: CommentTree): boolean {
   return (
@@ -62,14 +71,14 @@ export function buildCommentTree(
       comment: CommentTreeComment,
     ) => number | string | undefined;
   },
-) {
-  const { maxDepth = 6, commentPath, getCommentPageCursor } = context;
+): CommentTree | CommentTreeTopLevel {
+  const { maxDepth = 6, getCommentPageCursor } = context;
 
-  const map: CommentTreeTopLevel = {
-    children: {},
-  };
+  const map: CommentTreeTopLevel = getEmptyCommentTree();
 
-  const firstCommentInPath = commentPath?.split(".")?.[0];
+  const commentPathStr = context.commentPath;
+  const commentPath = commentPathStr?.split(".");
+  const firstCommentInPath = commentPath?.[0];
 
   let i = 0;
 
@@ -83,14 +92,18 @@ export function buildCommentTree(
         "0." + viewPath.substring(viewPath.indexOf(firstCommentInPath));
     }
 
-    if (commentPath && viewPath.length > commentPath.length) {
-      if (viewPath.indexOf(commentPath) === -1) {
+    // TODO: what does this do? Optimization?
+    if (commentPathStr && viewPath.length > commentPathStr.length) {
+      if (viewPath.indexOf(commentPathStr) === -1) {
         continue;
       }
     }
 
     const [_, ...path] = viewPath.split(".");
-    if (path.length > maxDepth) {
+    const relativePathLength = commentPath
+      ? path.length - commentPath.length
+      : path.length;
+    if (relativePathLength > maxDepth) {
       continue;
     }
 
@@ -128,7 +141,7 @@ export function buildCommentTree(
 
   const out = pruneCommentTree(map);
   if (context.commentPath) {
-    return getNodeAtPath(map, context.commentPath)!;
+    return getNodeAtPath(map, context.commentPath) ?? getEmptyCommentTree();
   }
   return out;
 }
@@ -148,15 +161,19 @@ function getNodeAtPath(
   }
   const edge = path.shift();
   const child = isNotNil(edge) ? tree.children[edge] : undefined;
-  return {
-    ...tree,
-    children:
-      isNotNil(edge) && child
+
+  if (isNotNil(edge)) {
+    return {
+      ...tree,
+      children: child
         ? {
             [edge]: child,
           }
-        : tree.children,
-  };
+        : {},
+    };
+  }
+
+  return tree;
 }
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
