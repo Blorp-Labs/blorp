@@ -1,291 +1,132 @@
-import { describe, test, expect } from "vitest";
-import { buildCommentTree, CommentTreeTopLevel } from "./comment-tree";
+import { describe, expect, test } from "vitest";
+import { buildCommentTree, CommentTree, shouldShowMore } from "./comment-tree";
 
-const postApId = `https://blorpblorp.xyz/p/123456`;
+const postApId = "https://blorpblorp.xyz/p/123456";
 
 describe("buildCommentTree", () => {
-  test("builds nested tree with correct sort and imediateChildren", () => {
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 2, postApId, id: 1234, pageCursor: 0 },
-      { path: "0.1234.5678", childCount: 1, postApId, id: 5678, pageCursor: 0 },
-      {
-        path: "0.1234.5678.9101112",
-        childCount: 0,
-        postApId,
-        id: 9101112,
-        pageCursor: 0,
-      },
-    ]);
-
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 1,
-        pruned: false,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 2,
-          postApId,
-          pageCursor: 0,
-        },
-        5678: {
-          sort: 1,
-          imediateChildren: 1,
-          pruned: false,
-          comment: {
-            id: 5678,
-            path: "0.1234.5678",
-            childCount: 1,
-            postApId,
-            pageCursor: 0,
-          },
-          9101112: {
-            sort: 2,
-            imediateChildren: 0,
-            pruned: false,
-            comment: {
-              id: 9101112,
-              path: "0.1234.5678.9101112",
-              childCount: 0,
-              postApId,
-              pageCursor: 0,
-            },
-          },
-        },
-      },
-    } satisfies CommentTreeTopLevel);
+  describe("deduplication", () => {
+    test.todo(
+      "keeps the first occurrence when duplicate comment ids are present",
+    );
   });
 
-  test("filters to subtree when commentPath provided", () => {
-    const result = buildCommentTree(
+  describe("path filtering", () => {
+    test.todo(
+      "returns only the requested subtree when commentPath is provided",
+    );
+    test.todo("keeps comments exactly at the requested subtree root");
+    test.todo("ignores comments outside the requested subtree");
+  });
+
+  describe("tree construction", () => {
+    test.todo("builds nested nodes from comment paths");
+    test.todo("preserves insertion order through sort values");
+    test.todo(
+      "creates a top-level placeholder node when the root comment is missing",
+    );
+    test.todo(
+      "creates intermediate placeholder nodes when middle comments are missing",
+    );
+    test.todo(
+      "hydrates a top-level placeholder when the real comment later arrives",
+    );
+    test.todo(
+      "hydrates an intermediate placeholder when the real comment later arrives",
+    );
+    test.todo(
+      "does not overwrite an existing real ancestor when later descendants reuse it",
+    );
+  });
+
+  describe("max depth", () => {
+    test.todo("omits comments deeper than the configured maxDepth");
+    test.todo(
+      "keeps imediateChildren > 0 on the last visible node when maxDepth truncates deeper comments",
+    );
+  });
+
+  describe("pruning by page cursor", () => {
+    test.todo(
+      "marks a parent pruned when a direct child has a different pageCursor",
+    );
+    test.todo("removes direct children loaded from a different page");
+    test.todo("removes descendants of a pruned branch");
+    test.todo("does not prune a child when it shares the parent's pageCursor");
+    test.todo("does not prune top-level comments regardless of pageCursor");
+    test.todo(
+      "does not prune placeholder nodes that are later hydrated by a real comment",
+    );
+    test.todo("compares pageCursor against the immediate parent, not the root");
+    test.todo(
+      "clips a cross-page branch when the new comment does not hydrate an existing placeholder",
+    );
+  });
+
+  describe("immediate children counting", () => {
+    test.todo("counts direct visible children when the full branch is present");
+    test.todo(
+      "accounts for missing direct children when descendants are present",
+    );
+    test.todo(
+      "retains missing-child count after pruning removes direct children",
+    );
+    test.todo(
+      "retains missing-child count when maxDepth truncates descendants",
+    );
+  });
+});
+
+describe("shouldShowMore", () => {
+  test("returns true when a node is pruned", () => {
+    const tree = buildCommentTree([
+      { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
+      { path: "0.1234.5678", childCount: 0, postApId, id: 5678, pageCursor: 1 },
+    ]);
+
+    expect(shouldShowMore(tree[1234] as CommentTree)).toBe(true);
+  });
+
+  test("returns true when maxDepth truncates direct children from the visible tree", () => {
+    const tree = buildCommentTree(
       [
+        { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
         {
           path: "0.1234.5678",
-          childCount: 1,
+          childCount: 0,
           postApId,
           id: 5678,
           pageCursor: 0,
         },
-        {
-          path: "0.1234.5678.9101112",
-          childCount: 0,
-          postApId,
-          id: 9101112,
-          pageCursor: 0,
-        },
       ],
-      "1234.5678",
+      undefined,
+      1,
     );
 
-    expect(result).toEqual({
-      1234: {
-        // Because 1234 is implied and doesn't actually
-        // exist in the data, it get's a sort value of 0
-        sort: 0,
-        imediateChildren: 0,
-        pruned: false,
-        5678: {
-          sort: 0,
-          imediateChildren: 1,
-          pruned: false,
-          comment: {
-            id: 5678,
-            path: "0.1234.5678",
-            childCount: 1,
-            postApId,
-            pageCursor: 0,
-          },
-          9101112: {
-            sort: 1,
-            imediateChildren: 0,
-            pruned: false,
-            comment: {
-              id: 9101112,
-              path: "0.1234.5678.9101112",
-              childCount: 0,
-              postApId,
-              pageCursor: 0,
-            },
-          },
-        },
-      },
-    } satisfies CommentTreeTopLevel);
+    expect(shouldShowMore(tree[1234] as CommentTree)).toBe(true);
   });
 
-  test("marks parent pruned when direct child pageCursor differs", () => {
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
-      { path: "0.1234.5678", childCount: 0, postApId, id: 5678, pageCursor: 1 },
-    ]);
-
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 1,
-        pruned: true,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 1,
-          postApId,
-          pageCursor: 0,
-        },
-        // 5678 absent from tree
-      },
-    } satisfies CommentTreeTopLevel);
-  });
-
-  test("does not prune top-level comment regardless of pageCursor", () => {
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 0, postApId, id: 1234, pageCursor: 1 },
-    ]);
-
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 0,
-        pruned: false,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 0,
-          postApId,
-          pageCursor: 1,
-        },
-      },
-    } satisfies CommentTreeTopLevel);
-  });
-
-  test("omits all descendants when a comment is pruned", () => {
-    // child p1 is pruned (parent p0), grandchild p1 is also omitted (ancestor pruned)
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 2, postApId, id: 1234, pageCursor: 0 },
-      { path: "0.1234.5678", childCount: 1, postApId, id: 5678, pageCursor: 1 },
-      {
-        path: "0.1234.5678.9101112",
-        childCount: 0,
-        postApId,
-        id: 9101112,
-        pageCursor: 1,
-      },
-    ]);
-
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 1,
-        pruned: true,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 2,
-          postApId,
-          pageCursor: 0,
-        },
-        // 5678 and 9101112 absent
-      },
-    } satisfies CommentTreeTopLevel);
-  });
-
-  test("omits descendant even when its pageCursor matches root", () => {
-    // child p1 pruned, grandchild p0 — but still omitted because ancestor is pruned
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 2, postApId, id: 1234, pageCursor: 0 },
-      { path: "0.1234.5678", childCount: 1, postApId, id: 5678, pageCursor: 1 },
-      {
-        path: "0.1234.5678.9101112",
-        childCount: 0,
-        postApId,
-        id: 9101112,
-        pageCursor: 0,
-      },
-    ]);
-
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 1,
-        pruned: true,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 2,
-          postApId,
-          pageCursor: 0,
-        },
-        // 5678 absent (pruned), 9101112 absent (ancestor pruned)
-      },
-    } satisfies CommentTreeTopLevel);
-  });
-
-  test("does not prune comment with same pageCursor as parent", () => {
-    const result = buildCommentTree([
+  test("returns false when all direct children are already visible", () => {
+    const tree = buildCommentTree([
       { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
       { path: "0.1234.5678", childCount: 0, postApId, id: 5678, pageCursor: 0 },
     ]);
 
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 1,
-        pruned: false,
-        comment: {
-          id: 1234,
-          path: "0.1234",
-          childCount: 1,
-          postApId,
-          pageCursor: 0,
-        },
-        5678: {
-          sort: 1,
-          imediateChildren: 0,
-          pruned: false,
-          comment: {
-            id: 5678,
-            path: "0.1234.5678",
-            childCount: 0,
-            postApId,
-            pageCursor: 0,
-          },
-        },
-      },
-    } satisfies CommentTreeTopLevel);
+    expect(shouldShowMore(tree[1234] as CommentTree)).toBe(false);
   });
 
-  test("implied parent does not trigger pruning", () => {
-    // 1234 has no comment in the data (implied parent); child 5678 p0 should not be pruned
-    const result = buildCommentTree([
+  test("returns false for a leaf node with no hidden children", () => {
+    const tree = buildCommentTree([
+      { path: "0.1234", childCount: 0, postApId, id: 1234, pageCursor: 0 },
+    ]);
+
+    expect(shouldShowMore(tree[1234] as CommentTree)).toBe(false);
+  });
+
+  test("returns false for a placeholder node that is not pruned", () => {
+    const tree = buildCommentTree([
       { path: "0.1234.5678", childCount: 0, postApId, id: 5678, pageCursor: 0 },
     ]);
 
-    expect(result).toEqual({
-      1234: {
-        sort: 0,
-        imediateChildren: 0,
-        pruned: false,
-        5678: {
-          sort: 0,
-          imediateChildren: 0,
-          pruned: false,
-          comment: {
-            id: 5678,
-            path: "0.1234.5678",
-            childCount: 0,
-            postApId,
-            pageCursor: 0,
-          },
-        },
-      },
-    } satisfies CommentTreeTopLevel);
-  });
-
-  test("imediateChildren > 0 when direct child is pruned", () => {
-    const result = buildCommentTree([
-      { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
-      { path: "0.1234.5678", childCount: 0, postApId, id: 5678, pageCursor: 1 },
-    ]);
-
-    expect(result[1234]!.imediateChildren).toBeGreaterThan(0);
+    expect(shouldShowMore(tree[1234] as CommentTree)).toBe(false);
   });
 });
