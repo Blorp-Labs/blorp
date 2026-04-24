@@ -32,6 +32,10 @@ export interface CommentTreeTopLevel {
   [key: number]: CommentTree;
 }
 
+export function shouldShowMore(node: CommentTree): boolean {
+  return false;
+}
+
 /**
  * Lemmy returns us an array of comments, but what we really
  * need is a tree where child comments are attached to their
