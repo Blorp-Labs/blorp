@@ -42,10 +42,10 @@ const parentMissingMiddleChildChild = api.getComment({
   creatorHandle: creators[1]!.handle,
 });
 
-const parentMissingMiddleChildTree = buildCommentTree([
-  { ...parentMissingMiddleChildParent, pageCursor: 0 },
-  { ...parentMissingMiddleChildChild, pageCursor: 0 },
-]);
+const parentMissingMiddleChildTree = buildCommentTree(
+  [parentMissingMiddleChildParent, parentMissingMiddleChildChild],
+  { getCommentPageCursor: () => 0 },
+);
 
 // — ChildOnDifferentPage —
 
@@ -72,10 +72,12 @@ const childOnDifferentPageChild = api.getComment({
   creatorHandle: creators[3]!.handle,
 });
 
-const childOnDifferentPageTree = buildCommentTree([
-  { ...childOnDifferentPageParent, pageCursor: 0 },
-  { ...childOnDifferentPageChild, pageCursor: 1 },
-]);
+const childOnDifferentPageTree = buildCommentTree(
+  [childOnDifferentPageParent, childOnDifferentPageChild],
+  {
+    getCommentPageCursor: (c) => (c.id === childOnDifferentPageChildId ? 1 : 0),
+  },
+);
 
 // — MixedPrunedAndVisible —
 // Parent has two direct children: one on the same page (shown), one on a
@@ -117,11 +119,12 @@ const mixedPrunedChild = api.getComment({
   creatorHandle: creators[2]!.handle,
 });
 
-const mixedPrunedAndVisibleTree = buildCommentTree([
-  { ...mixedParent, pageCursor: 0 },
-  { ...mixedVisibleChild, pageCursor: 0 },
-  { ...mixedPrunedChild, pageCursor: 1 },
-]);
+const mixedPrunedAndVisibleTree = buildCommentTree(
+  [mixedParent, mixedVisibleChild, mixedPrunedChild],
+  {
+    getCommentPageCursor: (c) => (c.id === mixedPrunedChildId ? 1 : 0),
+  },
+);
 
 // — MaxDepth —
 // A 7-level deep chain. The 7th level is cut off by maxDepth=6, leaving the
@@ -194,9 +197,9 @@ const maxDepthComments = [
   }),
 ];
 
-const maxDepthTree = buildCommentTree(
-  maxDepthComments.map((c) => ({ ...c, pageCursor: 0 })),
-);
+const maxDepthTree = buildCommentTree(maxDepthComments, {
+  getCommentPageCursor: () => 0,
+});
 
 // —
 
@@ -235,7 +238,7 @@ export const ParentMissingMiddleChild: Story = {
     postApId: parentMissingMiddleChildParent.postApId,
     postLocked: false,
     commentTree:
-      parentMissingMiddleChildTree[parentMissingMiddleChildParentId]!,
+      parentMissingMiddleChildTree.children[parentMissingMiddleChildParentId]!,
     level: 0,
   },
 };
@@ -244,7 +247,8 @@ export const ChildOnDifferentPage: Story = {
   args: {
     postApId: childOnDifferentPageParent.postApId,
     postLocked: false,
-    commentTree: childOnDifferentPageTree[childOnDifferentPageParentId]!,
+    commentTree:
+      childOnDifferentPageTree.children[childOnDifferentPageParentId]!,
     level: 0,
   },
 };
@@ -253,7 +257,7 @@ export const MixedPrunedAndVisible: Story = {
   args: {
     postApId: mixedParent.postApId,
     postLocked: false,
-    commentTree: mixedPrunedAndVisibleTree[mixedParentId]!,
+    commentTree: mixedPrunedAndVisibleTree.children[mixedParentId]!,
     level: 0,
   },
 };
@@ -262,7 +266,7 @@ export const MaxDepth: Story = {
   args: {
     postApId: maxDepthComments[0]!.postApId,
     postLocked: false,
-    commentTree: maxDepthTree[2010]!,
+    commentTree: maxDepthTree.children[2010]!,
     level: 0,
   },
 };

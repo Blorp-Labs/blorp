@@ -9,13 +9,15 @@ type CommentTreeMeta = {
   pruned: boolean;
 };
 
+type CommentTreeComment = {
+  id: number;
+  postApId: string;
+  childCount: number;
+  path: string;
+};
+
 export interface CommentTree {
-  comment?: {
-    id: number;
-    postApId: string;
-    childCount: number;
-    path: string;
-  };
+  comment?: CommentTreeComment;
   meta: CommentTreeMeta;
   children: Record<CommentKey, CommentTree>;
 }
@@ -25,7 +27,10 @@ export interface CommentTreeTopLevel {
 }
 
 export function shouldShowMore(node: CommentTree): boolean {
-  return false;
+  return (
+    node.meta.pruned ||
+    _.keys(node.children).length < node.meta.imediateChildren
+  );
 }
 
 /**
@@ -51,7 +56,9 @@ export function buildCommentTree(
   context: {
     commentPath?: string;
     maxDepth?: number;
-    getCommentPageCursor?: (commentId: number) => number | string | undefined;
+    getCommentPageCursor?: (
+      comment: CommentTreeComment,
+    ) => number | string | undefined;
   },
 ) {
   const { maxDepth = 6, commentPath } = context;

@@ -313,13 +313,10 @@ export default function Post() {
   const allComments = useCommentsByPaths(allCommentPaths);
 
   const structured = useMemo(() => {
-    const map = buildCommentTree(
-      allComments.map((c) => ({
-        ...c,
-        pageCursor: pathToCursor.get(c.path) ?? 0,
-      })),
-      parentComment.commentId,
-    );
+    const map = buildCommentTree(allComments, {
+      commentPath: parentComment.commentId,
+      getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
+    });
     const topLevelItems = _.entries(map).sort(
       ([_id1, a], [_id2, b]) => a.sort - b.sort,
     );

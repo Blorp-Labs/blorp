@@ -21,7 +21,11 @@ import {
   useSaveCommentMutation,
   useSoftware,
 } from "@/src/queries/index";
-import { CommentTree, DATA_KEYS } from "@/src/lib/comment-tree";
+import {
+  CommentTree,
+  getCommentChildren,
+  shouldShowMore,
+} from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import {
@@ -483,9 +487,7 @@ function PostCommentInner({
       : undefined,
   );
 
-  const filterKeys = DATA_KEYS.filter((k) => k !== "comment");
-  const children = _.entries(_.omit(rest, filterKeys));
-  const sorted = children.sort(([_id1, a], [_id2, b]) => a.sort - b.sort);
+  const sorted = getCommentChildren(commentTree);
 
   let color = "red";
   if (_.isNumber(level)) {
@@ -702,16 +704,13 @@ function PostCommentInner({
             ) : (
               <div {...doubleTapLike}>{bodyRenderer}</div>
             ))}
-
           {!commentView && (
             <span className="block italic mb-2">missing comment</span>
           )}
-
           {/* Editing */}
           {editingState && (
             <InlineCommentReply state={editingState} autoFocus />
           )}
-
           {commentView && (
             <div
               className={cn(
@@ -773,9 +772,8 @@ function PostCommentInner({
             </div>
           )}
 
-          {(commentTree.pruned ||
+          {(shouldShowMore(commentTree) ||
             sorted.length > 0 ||
-            rest.imediateChildren > 0 ||
             (replyState && media.md)) && (
             <div
               className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-lg mb-2"
@@ -801,7 +799,7 @@ function PostCommentInner({
 
               {commentView &&
               !(singleCommentThread && level === 0) &&
-              (sorted.length < rest.imediateChildren || commentTree.pruned) ? (
+              shouldShowMore(commentTree) ? (
                 <Link
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{
