@@ -1,5 +1,5 @@
 import { PostComment } from "@/src/components/comments/post-comment";
-import { buildCommentTree } from "../lib/comment-tree";
+import { buildCommentTree, getCommentChildren } from "../lib/comment-tree";
 import { useEffect, memo, useMemo, useState } from "react";
 import {
   usePostQuery,
@@ -317,9 +317,7 @@ export default function Post() {
       commentPath: parentComment.commentId,
       getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
     });
-    const topLevelItems = _.entries(map).sort(
-      ([_id1, a], [_id2, b]) => a.sort - b.sort,
-    );
+    const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
   }, [allComments, parentComment.commentId, pathToCursor]);
 
@@ -350,7 +348,7 @@ export default function Post() {
 
   const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
   const replyingToItem = data.find(
-    ([path]) => commentReplyParent?.includes(path) ?? false,
+    ([path]) => commentReplyParent?.includes(String(path)) ?? false,
   );
 
   const postCreatorId = post?.creatorId;

@@ -19,7 +19,11 @@ function c(i: number) {
 }
 
 function makeTree(comment: ReturnType<typeof api.getComment>): CommentTree {
-  return { comment, sort: 0, imediateChildren: 0, pruned: false };
+  return {
+    comment,
+    meta: { sort: 0, imediateChildren: 0, pruned: false },
+    children: {},
+  };
 }
 
 const deleted = api.getComment({

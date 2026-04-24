@@ -471,7 +471,7 @@ function PostCommentInner({
 
   const linkCtx = useLinkContext();
 
-  const { comment, ...rest } = commentTree;
+  const { comment } = commentTree;
 
   const [commentView] = useCommentsByPaths(comment ? [comment.path] : []);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
