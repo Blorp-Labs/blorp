@@ -255,7 +255,7 @@ describe("buildCommentTree", () => {
       expect(node2.children[3]).toBeUndefined();
     });
 
-    test("keeps imediateChildren > 0 on the last visible node when maxDepth truncates deeper comments", () => {
+    test("keeps immediateChildren > 0 on the last visible node when maxDepth truncates deeper comments", () => {
       const tree = buildCommentTree(
         [
           commentView(1, "0.1", 2),
@@ -267,7 +267,7 @@ describe("buildCommentTree", () => {
 
       const node1 = getNodeByKey(tree, 1);
       const node2 = getNodeByKey(node1, 2);
-      expect(node2.meta.imediateChildren).toBeGreaterThan(0);
+      expect(node2.meta.immediateChildren).toBeGreaterThan(0);
     });
 
     test("respects maxDepth relative to the commentPath root", () => {
@@ -445,7 +445,7 @@ describe("buildCommentTree", () => {
       );
 
       const node1 = getNodeByKey(tree, 1);
-      expect(node1.meta.imediateChildren).toBe(2);
+      expect(node1.meta.immediateChildren).toBe(2);
     });
 
     test("accounts for missing direct children when descendants are present", () => {
@@ -459,7 +459,7 @@ describe("buildCommentTree", () => {
       );
 
       const node1 = getNodeByKey(tree, 1);
-      expect(node1.meta.imediateChildren).toBe(5);
+      expect(node1.meta.immediateChildren).toBe(5);
     });
 
     test("retains missing-child count after pruning removes direct children", () => {
@@ -469,7 +469,7 @@ describe("buildCommentTree", () => {
       );
 
       const node1 = getNodeByKey(tree, 1);
-      expect(node1.meta.imediateChildren).toBe(3);
+      expect(node1.meta.immediateChildren).toBe(3);
       expect(node1.meta.pruned).toBe(true);
     });
 
@@ -495,7 +495,7 @@ describe("shouldShowMore", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 1,
+        immediateChildren: 1,
         pruned: true,
       },
       comment: {
@@ -514,7 +514,7 @@ describe("shouldShowMore", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 1,
+        immediateChildren: 1,
         pruned: false,
       },
       comment: {
@@ -533,7 +533,7 @@ describe("shouldShowMore", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 1,
+        immediateChildren: 1,
         pruned: false,
       },
       comment: {
@@ -546,7 +546,7 @@ describe("shouldShowMore", () => {
         5678: {
           meta: {
             sort: 1,
-            imediateChildren: 0,
+            immediateChildren: 0,
             pruned: false,
           },
           comment: {
@@ -567,7 +567,7 @@ describe("shouldShowMore", () => {
     const tree = {
       meta: {
         sort: 0,
-        imediateChildren: 0,
+        immediateChildren: 0,
         pruned: false,
       },
       comment: {
@@ -586,7 +586,7 @@ describe("shouldShowMore", () => {
     const tree = {
       meta: {
         sort: 0,
-        imediateChildren: 0,
+        immediateChildren: 0,
         pruned: false,
       },
       children: {},
@@ -601,14 +601,14 @@ describe("getCommentChildren", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 2,
+        immediateChildren: 2,
         pruned: false,
       },
       children: {
         5678: {
           meta: {
             sort: 2,
-            imediateChildren: 0,
+            immediateChildren: 0,
             pruned: false,
           },
           children: {},
@@ -622,7 +622,7 @@ describe("getCommentChildren", () => {
         9101: {
           meta: {
             sort: 0,
-            imediateChildren: 0,
+            immediateChildren: 0,
             pruned: false,
           },
           children: {},
@@ -636,7 +636,7 @@ describe("getCommentChildren", () => {
         1121: {
           meta: {
             sort: 1,
-            imediateChildren: 0,
+            immediateChildren: 0,
             pruned: false,
           },
           children: {},
@@ -659,7 +659,7 @@ describe("getCommentChildren", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 1,
+        immediateChildren: 1,
         pruned: true,
       },
       comment: {
@@ -672,7 +672,7 @@ describe("getCommentChildren", () => {
         5678: {
           meta: {
             sort: 0,
-            imediateChildren: 0,
+            immediateChildren: 0,
             pruned: false,
           },
           children: {},
@@ -694,7 +694,7 @@ describe("getCommentChildren", () => {
     const node = {
       meta: {
         sort: 0,
-        imediateChildren: 0,
+        immediateChildren: 0,
         pruned: false,
       },
       comment: {

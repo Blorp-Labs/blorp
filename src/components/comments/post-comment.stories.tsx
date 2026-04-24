@@ -128,7 +128,7 @@ const mixedPrunedAndVisibleTree = buildCommentTree(
 
 // — MaxDepth —
 // A 7-level deep chain. The 7th level is cut off by maxDepth=6, leaving the
-// 6th level with imediateChildren > 0 to indicate more exist.
+// 6th level with immediateChildren > 0 to indicate more exist.
 
 const maxDepthComments = [
   api.getComment({

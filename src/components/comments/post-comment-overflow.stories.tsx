@@ -17,7 +17,7 @@ function c(i: number) {
 function makeTree(comment: ReturnType<typeof api.getComment>): CommentTree {
   return {
     comment,
-    meta: { sort: 0, imediateChildren: 0, pruned: false },
+    meta: { sort: 0, immediateChildren: 0, pruned: false },
     children: {},
   };
 }
