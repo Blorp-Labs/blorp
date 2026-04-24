@@ -1,4 +1,6 @@
+import { exists } from "@tauri-apps/plugin-fs";
 import _ from "lodash";
+import { isNotNil } from "./utils";
 
 export type CommentKey = number;
 
@@ -61,7 +63,7 @@ export function buildCommentTree(
     ) => number | string | undefined;
   },
 ) {
-  const { maxDepth = 6, commentPath } = context;
+  const { maxDepth = 6, commentPath, getCommentPageCursor } = context;
 
   const map: CommentTreeTopLevel = {
     children: {},
@@ -116,6 +118,7 @@ export function buildCommentTree(
         sort: i,
         imediateChildren: 0,
         pruned: false,
+        pageCursor: getCommentPageCursor?.(view),
       },
     };
     i++;
@@ -127,28 +130,58 @@ export function buildCommentTree(
 }
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
-  function pruneNode(node: CommentTree) {
+  /**
+   *
+   */
+  function pruneNode(
+    node: CommentTree,
+    rootCursor: string | number,
+  ): undefined | "pruning" | "done" {
     const pageCursor = node.meta.pageCursor;
     if (_.isNil(pageCursor)) {
-      return;
+      return "done";
     }
 
+    // Breath First Search
+    // Scan children eagerly
+    const childComments = getCommentChildren(node);
+    const results = childComments.map(([_, child]) =>
+      pruneNode(child, rootCursor),
+    );
+
+    // If any of the children hit a stop case
+    // return done to prevent any further pruning
+    if (results.includes("done")) {
+      // Return early to prevent further pruning
+      return "done";
+    }
+
+    // We have to scan the children one more time
+    // to see if node needs to be pruned
     for (const key of getCommentChildrenKeys(node)) {
-      const child = node.children[key];
-      const childPageCursor = child?.meta.pageCursor;
-      if (!_.isNil(childPageCursor) && childPageCursor !== pageCursor) {
+      const childCursor = node.children[key]?.meta.pageCursor;
+      if (isNotNil(childCursor) && childCursor !== rootCursor) {
         node.meta.pruned = true;
         delete node.children[key];
-      } else if (child) {
-        pruneNode(child);
       }
     }
+
+    // If any of the children were pruning, and
+    // the current node matches the root node's cursor,
+    // stop pruning to prevent node from being clipped
+    // off further up the tree
+    if (results.includes("pruning")) {
+      // Return early to prevent further pruning
+      return pageCursor === rootCursor ? "done" : "pruning";
+    }
+
+    return node.meta.pruned ? "pruning" : undefined;
   }
 
   for (const key of getCommentChildrenKeys(tree)) {
     const node = tree.children[key];
-    if (node) {
-      pruneNode(node);
+    if (node && node.meta.pageCursor) {
+      pruneNode(node, node.meta.pageCursor);
     }
   }
 
