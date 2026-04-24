@@ -185,7 +185,7 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
     rootCursor: string | number,
   ): undefined | "pruning" | "done" {
     const pageCursor = node.meta.pageCursor;
-    if (_.isNil(pageCursor)) {
+    if (node.comment && _.isNil(pageCursor)) {
       return "done";
     }
 
