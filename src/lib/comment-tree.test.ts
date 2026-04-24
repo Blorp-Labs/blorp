@@ -431,6 +431,21 @@ describe("buildCommentTree", () => {
       expect(node1.meta.pruned).toBe(true);
       expect(node1.children[4]).toBeUndefined();
     });
+
+    test("prunes a cross-page comment that arrives through a placeholder ancestor", () => {
+      // node 2 never loaded, so it becomes a placeholder
+      // node 3 (cursor=2) arrives on a different page than node 1 (cursor=1)
+      // the placeholder must not shield node 3 from pruning
+      const tree = buildCommentTree(
+        [commentView(1, "0.1", 1), commentView(3, "0.1.2.3")],
+        { getCommentPageCursor: (c) => (c.id === 1 ? 1 : 2) },
+      );
+
+      const node1 = getNodeByKey(tree, 1);
+      const placeholder2 = getNodeByKey(node1, 2);
+      expect(placeholder2.comment).toBeUndefined();
+      expect(placeholder2.children[3]).toBeUndefined();
+    });
   });
 
   describe("immediate children counting", () => {
