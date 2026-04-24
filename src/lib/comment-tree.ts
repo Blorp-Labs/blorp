@@ -126,7 +126,37 @@ export function buildCommentTree(
 
   countImediateChildre(map);
 
-  return pruneCommentTree(map);
+  const out = pruneCommentTree(map);
+  if (context.commentPath) {
+    return getNodeAtPath(map, context.commentPath)!;
+  }
+  return out;
+}
+
+function getNodeAtPath(
+  tree: CommentTreeTopLevel | CommentTree,
+  pathStr: string,
+) {
+  const path = pathStr.split(".").map(Number);
+  while (path.length >= 2) {
+    const edge = path.shift();
+    const child = isNotNil(edge) ? tree.children[edge] : undefined;
+    if (!child) {
+      return undefined;
+    }
+    tree = child;
+  }
+  const edge = path.shift();
+  const child = isNotNil(edge) ? tree.children[edge] : undefined;
+  return {
+    ...tree,
+    children:
+      isNotNil(edge) && child
+        ? {
+            [edge]: child,
+          }
+        : tree.children,
+  };
 }
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {

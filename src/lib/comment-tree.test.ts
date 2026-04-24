@@ -228,6 +228,15 @@ describe("buildCommentTree", () => {
       expect(tree.children[12]).toBeUndefined();
       expect(tree.children[10]).toBeUndefined();
     });
+
+    test("returns empty children when commentPath targets a comment not in the list", () => {
+      const tree = buildCommentTree(
+        [commentView(1, "0.1"), commentView(2, "0.1.2")],
+        { commentPath: "0.999" },
+      );
+
+      expect(tree.children).toEqual({});
+    });
   });
 
   describe("max depth", () => {
@@ -259,6 +268,23 @@ describe("buildCommentTree", () => {
       const node1 = getNodeByKey(tree, 1);
       const node2 = getNodeByKey(node1, 2);
       expect(node2.meta.imediateChildren).toBeGreaterThan(0);
+    });
+
+    test("respects maxDepth when commentPath is also set", () => {
+      const tree = buildCommentTree(
+        [
+          commentView(1, "0.1"),
+          commentView(2, "0.1.2"),
+          commentView(3, "0.1.2.3"),
+        ],
+        { commentPath: "0.1", maxDepth: 2 },
+      );
+
+      expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
+      expect(getNodeByKey(getNodeByKey(tree, 1), 2).comment?.id).toBe(2);
+      expect(
+        getNodeByKey(getNodeByKey(tree, 1), 2).children[3],
+      ).toBeUndefined();
     });
   });
 
@@ -384,6 +410,23 @@ describe("buildCommentTree", () => {
       expect(node1.meta.pruned).toBe(false);
       expect(getNodeByKey(node1, 2).comment?.id).toBe(2);
     });
+
+    test("prunes a cross-page direct child even when a placeholder sibling is present", () => {
+      // node 2 is missing, creating a placeholder; node 4 is a direct child of node 1
+      // on a different page. The placeholder must not short-circuit pruning of node 4.
+      const tree = buildCommentTree(
+        [
+          commentView(1, "0.1", 2),
+          commentView(3, "0.1.2.3"),
+          commentView(4, "0.1.4"),
+        ],
+        { getCommentPageCursor: (c) => (c.id === 1 ? 1 : 2) },
+      );
+
+      const node1 = getNodeByKey(tree, 1);
+      expect(node1.meta.pruned).toBe(true);
+      expect(node1.children[4]).toBeUndefined();
+    });
   });
 
   describe("immediate children counting", () => {
@@ -424,6 +467,21 @@ describe("buildCommentTree", () => {
       const node1 = getNodeByKey(tree, 1);
       expect(node1.meta.imediateChildren).toBe(3);
       expect(node1.meta.pruned).toBe(true);
+    });
+
+    test("reports a hidden sibling correctly when visible children have childCounts that sum to the parent's childCount", () => {
+      const tree = buildCommentTree(
+        [
+          commentView(1, "0.1", 3),
+          commentView(2, "0.1.2", 2),
+          commentView(3, "0.1.3", 1),
+          // fourth direct child of node 1 is missing
+        ],
+        {},
+      );
+
+      const node1 = getNodeByKey(tree, 1);
+      expect(shouldShowMore(node1)).toBe(true);
     });
   });
 });
