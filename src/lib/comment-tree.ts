@@ -196,13 +196,6 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
       pruneNode(child, rootCursor),
     );
 
-    // If any of the children hit a stop case
-    // return done to prevent any further pruning
-    if (results.includes("done")) {
-      // Return early to prevent further pruning
-      return "done";
-    }
-
     // We have to scan the children one more time
     // to see if node needs to be pruned
     for (const key of getCommentChildrenKeys(node)) {
@@ -211,6 +204,13 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
         node.meta.pruned = true;
         delete node.children[key];
       }
+    }
+
+    // If any of the children hit a stop case
+    // return done to prevent any further pruning
+    if (results.includes("done")) {
+      // Return early to prevent further pruning
+      return "done";
     }
 
     // If any of the children were pruning, and
