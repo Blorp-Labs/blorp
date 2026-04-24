@@ -26,6 +26,40 @@ function getNodeByKey(
 const postApId = "https://blorpblorp.xyz/p/123456";
 
 describe("buildCommentTree", () => {
+  describe("when a missing ancestor later arrives", () => {
+    test.todo(
+      "hydrates the placeholder without removing already-visible descendants",
+    );
+  });
+
+  describe("when a later page adds a new unseen child", () => {
+    test.todo(
+      "prunes the new branch and keeps previously visible siblings in place",
+    );
+  });
+
+  describe("when a missing top-level comment later arrives", () => {
+    test.todo(
+      "hydrates the top-level placeholder without changing the visible branch order",
+    );
+  });
+
+  describe("when a placeholder is hydrated after descendants are already visible", () => {
+    test.todo(
+      "preserves the existing descendant subtree under the hydrated node",
+    );
+  });
+
+  describe("when rendering a requested subtree with missing ancestors", () => {
+    test.todo(
+      "creates placeholders only within the requested subtree and preserves visible descendants",
+    );
+  });
+
+  describe("when deeper replies are hidden by maxDepth", () => {
+    test.todo("keeps show-more state on the last visible node");
+  });
+
   describe("deduplication", () => {
     test.todo(
       "keeps the first occurrence when duplicate comment ids are present",
@@ -99,6 +133,14 @@ describe("buildCommentTree", () => {
 });
 
 describe("shouldShowMore", () => {
+  describe("when a branch is fully visible", () => {
+    test.todo("returns false");
+  });
+
+  describe("when a branch has hidden descendants", () => {
+    test.todo("returns true");
+  });
+
   test("returns true when a node is pruned", () => {
     const tree = buildCommentTree([
       { path: "0.1234", childCount: 1, postApId, id: 1234, pageCursor: 0 },
@@ -154,6 +196,10 @@ describe("shouldShowMore", () => {
 });
 
 describe("getCommentChildren", () => {
+  describe("when rendering a branch with placeholders and real comments", () => {
+    test.todo("returns children in stable sort order");
+  });
+
   test("returns child entries sorted by sort ascending", () => {
     const node = {
       sort: 0,
