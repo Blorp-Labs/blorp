@@ -45,6 +45,12 @@ describe("buildCommentTree", () => {
     );
   });
 
+  describe("when the same comment appears again after a placeholder was created", () => {
+    test.todo(
+      "hydrates the existing node instead of creating a duplicate branch",
+    );
+  });
+
   describe("when rendering a requested subtree with missing ancestors", () => {
     test.todo(
       "creates placeholders only within the requested subtree and preserves visible descendants",
@@ -129,11 +135,11 @@ describe("buildCommentTree", () => {
 
 describe("shouldShowMore", () => {
   describe("when a branch is fully visible", () => {
-    test.todo("returns false");
+    test.todo("returns false when no children are hidden");
   });
 
   describe("when a branch has hidden descendants", () => {
-    test.todo("returns true");
+    test.todo("returns true when children are pruned or missing from the visible tree");
   });
 
   test("returns true when a node is pruned", () => {
@@ -243,7 +249,7 @@ describe("shouldShowMore", () => {
 
 describe("getCommentChildren", () => {
   describe("when rendering a branch with placeholders and real comments", () => {
-    test.todo("returns children in stable sort order");
+    test.todo("returns placeholder and real children in stable sort order");
   });
 
   test("returns child entries sorted by sort ascending", () => {
