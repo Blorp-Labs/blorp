@@ -224,9 +224,12 @@ function CommentReport({
                   postLocked={false}
                   commentTree={{
                     comment: commentView,
-                    imediateChildren: 0,
-                    sort: 0,
-                    pruned: false,
+                    meta: {
+                      imediateChildren: 0,
+                      sort: 0,
+                      pruned: false,
+                    },
+                    children: {},
                   }}
                   canMod
                   standalone
