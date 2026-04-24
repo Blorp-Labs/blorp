@@ -2,6 +2,7 @@ import _ from "lodash";
 import { exhaustiveList } from "./utils";
 
 type DataKey = "sort" | "comment" | "imediateChildren" | "pruned";
+type CommentKey = number & { __brand: "commentKey" };
 
 export const DATA_KEYS = exhaustiveList<DataKey>()([
   "sort",
@@ -25,11 +26,11 @@ export interface CommentTree {
   imediateChildren: number;
   sort: number;
   pruned: boolean;
-  [key: number]: CommentTree;
+  [key: CommentKey]: CommentTree;
 }
 
 export interface CommentTreeTopLevel {
-  [key: number]: CommentTree;
+  [key: CommentKey]: CommentTree;
 }
 
 export function shouldShowMore(node: CommentTree): boolean {
@@ -166,4 +167,20 @@ function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
   if ("comment" in node && node.comment) {
     node.imediateChildren = node.comment.childCount - grandChildren;
   }
+}
+
+function getCommentChildrenKeys(node: CommentTree | CommentTreeTopLevel) {
+  return _.keys(
+    _.omit(node, DATA_KEYS),
+  ) satisfies string[] as never as CommentKey[];
+}
+
+export function getCommentChildren(
+  node: CommentTree | CommentTreeTopLevel,
+): (readonly [CommentKey, CommentTree])[] {
+  const keys = getCommentChildrenKeys(node);
+  const comments = _.compact(
+    keys.map((key) => (node[key] ? ([key, node[key]] as const) : undefined)),
+  );
+  return comments.sort(([_id1, a], [_id2, b]) => a.sort - b.sort);
 }
