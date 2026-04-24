@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-export type CommentKey = number & { __brand: "commentKey" };
+export type CommentKey = number;
 
 type CommentTreeMeta = {
   pageCursor?: string | number;
@@ -86,7 +86,7 @@ export function buildCommentTree(
     }
 
     while (path.length > 1) {
-      const front: CommentKey = path.shift()! satisfies string as any;
+      const front: CommentKey = +path.shift()!;
       loc.children[front] = loc.children[front] ?? {
         meta: {
           sort: 0,
@@ -98,7 +98,7 @@ export function buildCommentTree(
       loc = loc.children[front];
     }
 
-    const front: keyof typeof loc.children = path.shift()! as any;
+    const front: CommentKey = +path.shift()!;
 
     loc.children[front] = {
       children: {},
@@ -165,7 +165,7 @@ function countImediateChildre(node: CommentTree | CommentTreeTopLevel) {
 function getCommentChildrenKeys(
   node: CommentTree | CommentTreeTopLevel,
 ): CommentKey[] {
-  return _.keys(node.children) satisfies string[] as never;
+  return _.keys(node.children).map(Number);
 }
 
 export function getCommentChildren(
