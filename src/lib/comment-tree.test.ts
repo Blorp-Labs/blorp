@@ -156,7 +156,7 @@ describe("buildCommentTree", () => {
           commentView(5, "0.5"),
           commentView(6, "0.5.6"),
         ],
-        { commentPath: "0.1" },
+        { threadRootId: "0.1" },
       );
 
       expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
@@ -167,7 +167,7 @@ describe("buildCommentTree", () => {
     test("keeps comments exactly at the requested subtree root", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1"), commentView(2, "0.1.2")],
-        { commentPath: "0.1" },
+        { threadRootId: "0.1" },
       );
 
       expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
@@ -177,7 +177,7 @@ describe("buildCommentTree", () => {
     test("ignores comments outside the requested subtree", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1"), commentView(5, "0.5"), commentView(6, "0.5.6")],
-        { commentPath: "0.1" },
+        { threadRootId: "0.1" },
       );
 
       expect(tree.children[5]).toBeUndefined();
@@ -190,7 +190,7 @@ describe("buildCommentTree", () => {
           commentView(7890, "0.3456.7890"),
           commentView(11111, "0.3456.7890.11111"),
         ],
-        { commentPath: "0.3456.7890" },
+        { threadRootId: "0.3456.7890" },
       );
 
       expect(getNodeByKey(tree, 7890).comment?.id).toBe(7890);
@@ -202,7 +202,7 @@ describe("buildCommentTree", () => {
 
     test("creates placeholders only within the requested subtree when ancestors inside it are missing", () => {
       const tree = buildCommentTree([commentView(5, "0.1.2.3.4.5")], {
-        commentPath: "0.1.2.3",
+        threadRootId: "0.1.2.3",
       });
 
       const node3 = getNodeByKey(tree, 3);
@@ -221,7 +221,7 @@ describe("buildCommentTree", () => {
           commentView(12, "0.12"),
           commentView(10, "0.10"),
         ],
-        { commentPath: "0.1" },
+        { threadRootId: "0.1" },
       );
 
       expect(getNodeByKey(tree, 1).comment?.id).toBe(1);
@@ -232,7 +232,7 @@ describe("buildCommentTree", () => {
     test("returns empty children when commentPath targets a comment not in the list", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1"), commentView(2, "0.1.2")],
-        { commentPath: "0.999" },
+        { threadRootId: "0.999" },
       );
 
       expect(tree.children).toEqual({});
@@ -246,7 +246,7 @@ describe("buildCommentTree", () => {
           commentView(2, "0.1.2"),
           commentView(1, "0.1"),
         ],
-        { commentPath: "1", highlightCommentId: "2" },
+        { threadRootId: "1", selectedCommentId: "2" },
       );
 
       const parentNode = getNodeByKey(tree, 1);
@@ -295,7 +295,7 @@ describe("buildCommentTree", () => {
           commentView(3, "0.1.2.3"),
           commentView(4, "0.1.2.3.4"),
         ],
-        { commentPath: "0.1", maxDepth: 2 },
+        { threadRootId: "0.1", maxDepth: 2 },
       );
 
       const node1 = getNodeByKey(tree, 1);
