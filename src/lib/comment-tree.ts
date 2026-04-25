@@ -55,17 +55,34 @@ export function shouldShowMore(node: CommentTree): boolean {
 }
 
 /**
- * Lemmy returns us an array of comments, but what we really
- * need is a tree where child comments are attached to their
- * parent. We have all the information we need in the list to
- * build this tree. This function transforms the array into a tree.
+ * Transforms a flat array of comments into a nested tree.
+ *
+ * @param options.threadRootId - When set, the returned tree is rooted at this
+ *   comment rather than the post root. Only comments in that subtree are
+ *   included.
+ * @param options.selectedCommentId - When set, this comment is assigned
+ *   sort=-1 so it floats to the top of its siblings.
+ * @param options.getCommentPageCursor - Maps a comment to the page cursor it
+ *   was fetched on. Prevents layout shift when additional pages load: new
+ *   children are hydrated into branches already visible, but entirely new
+ *   branches (whose cursor differs from the root's) are pruned and replaced
+ *   with a `pruned=true` marker. The UI renders a "load more" affordance there
+ *   rather than inserting new content above what the user has already scrolled.
  *
  * @example
- *   cosnt comments = useCommentsQuery();
+ *   // pathToCursor records which page each comment path arrived on.
+ *   // We record the first occurrence so that re-fetches don't change the cursor.
+ *   const pathToCursor = new Map<string, string | number>();
+ *   pages.forEach((page, i) => {
+ *     page.comments.forEach((path) => {
+ *       if (!pathToCursor.has(path)) pathToCursor.set(path, pageParams[i]);
+ *     });
+ *   });
  *
- *   const tree = buildCommentTree(comments);
- *
- *   // Render tree recursivly
+ *   const tree = buildCommentTree(comments, {
+ *     getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
+ *   });
+ *   // Render tree recursively
  */
 export function buildCommentTree(
   commentViews: {
@@ -74,22 +91,22 @@ export function buildCommentTree(
     childCount: number;
     path: string;
   }[],
-  context: {
-    commentPath?: string;
-    highlightCommentId?: string;
+  options: {
+    threadRootId?: string;
+    selectedCommentId?: string;
     maxDepth?: number;
     getCommentPageCursor?: (
       comment: CommentTreeComment,
     ) => number | string | undefined;
   },
 ): CommentTree | CommentTreeTopLevel {
-  const { maxDepth = 6, getCommentPageCursor } = context;
+  const { maxDepth = 6, getCommentPageCursor } = options;
 
   const map: CommentTreeTopLevel = getEmptyCommentTree();
 
-  const commentPathStr = context.commentPath;
-  const commentPath = commentPathStr?.split(".");
-  const firstCommentInPath = commentPath?.[0];
+  const threadRootId = options.threadRootId;
+  const threadRootPath = threadRootId?.split(".");
+  const threadRootStart = threadRootPath?.[0];
 
   let i = 0;
 
@@ -98,21 +115,22 @@ export function buildCommentTree(
 
     let viewPath = view.path;
 
-    if (firstCommentInPath && viewPath.indexOf(firstCommentInPath) > -1) {
-      viewPath =
-        "0." + viewPath.substring(viewPath.indexOf(firstCommentInPath));
+    if (threadRootStart && viewPath.indexOf(threadRootStart) > -1) {
+      viewPath = "0." + viewPath.substring(viewPath.indexOf(threadRootStart));
     }
 
-    // TODO: what does this do? Optimization?
-    if (commentPathStr && viewPath.length > commentPathStr.length) {
-      if (viewPath.indexOf(commentPathStr) === -1) {
+    // Skip comments that cannot be descendants of the thread root.
+    // A path shorter than threadRootId can't contain it as a suffix,
+    // so we only check when the path is long enough to potentially match.
+    if (threadRootId && viewPath.length > threadRootId.length) {
+      if (viewPath.indexOf(threadRootId) === -1) {
         continue;
       }
     }
 
     const [_, ...path] = viewPath.split(".");
-    const relativePathLength = commentPath
-      ? path.length - commentPath.length
+    const relativePathLength = threadRootPath
+      ? path.length - threadRootPath.length
       : path.length;
     if (relativePathLength > maxDepth) {
       continue;
@@ -139,7 +157,7 @@ export function buildCommentTree(
       comment: view,
       meta: {
         ...loc.children[front]?.meta,
-        sort: view.id === Number(context.highlightCommentId) ? -1 : i,
+        sort: view.id === Number(options.selectedCommentId) ? -1 : i,
         immediateChildren: 0,
         pruned: false,
         pageCursor: getCommentPageCursor?.(view),
@@ -148,11 +166,11 @@ export function buildCommentTree(
     i++;
   }
 
-  countImnediateChildre(map);
+  countImmediateChildren(map);
 
   const out = pruneCommentTree(map);
-  if (context.commentPath) {
-    return getNodeAtPath(map, context.commentPath) ?? getEmptyCommentTree();
+  if (options.threadRootId) {
+    return getNodeAtPath(map, options.threadRootId) ?? getEmptyCommentTree();
   }
   return out;
 }
@@ -188,9 +206,6 @@ function getNodeAtPath(
 }
 
 function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
-  /**
-   *
-   */
   function pruneNode(
     node: CommentTree,
     rootCursor: string | number,
@@ -200,15 +215,13 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
       return "done";
     }
 
-    // Breath First Search
-    // Scan children eagerly
+    // Depth-first scan of children
     const childComments = getCommentChildren(node);
     const results = childComments.map(([_, child]) =>
       pruneNode(child, rootCursor),
     );
 
-    // We have to scan the children one more time
-    // to see if node needs to be pruned
+    // Remove children whose cursor belongs to a different page
     for (const key of getCommentChildrenKeys(node)) {
       const childCursor = node.children[key]?.meta.pageCursor;
       if (isNotNil(childCursor) && childCursor !== rootCursor) {
@@ -217,19 +230,14 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
       }
     }
 
-    // If any of the children hit a stop case
-    // return done to prevent any further pruning
+    // If any child reached a complete comment, stop pruning up the tree
     if (results.includes("done")) {
-      // Return early to prevent further pruning
       return "done";
     }
 
-    // If any of the children were pruning, and
-    // the current node matches the root node's cursor,
-    // stop pruning to prevent node from being clipped
-    // off further up the tree
+    // If children are pruning and this node matches the root cursor,
+    // anchor here so the node isn't clipped further up
     if (results.includes("pruning")) {
-      // Return early to prevent further pruning
       return pageCursor === rootCursor ? "done" : "pruning";
     }
 
@@ -246,10 +254,10 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   return tree;
 }
 
-function countImnediateChildre(node: CommentTree | CommentTreeTopLevel) {
+function countImmediateChildren(node: CommentTree | CommentTreeTopLevel) {
   const children = _.values(node.children);
   for (const child of children) {
-    countImnediateChildre(child);
+    countImmediateChildren(child);
   }
   if ("comment" in node && node.comment) {
     node.meta.immediateChildren = node.comment.childCount;
