@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStorage, sync } from "./storage";
-import { isTest } from "../lib/device";
+import { isCapacitor, isTest, isTauri } from "../lib/device";
 import _ from "lodash";
 import { env, lightThemeSchema, darkThemeSchema } from "../env";
 import z from "zod";
@@ -72,7 +72,13 @@ export const SHARE_LINK_TYPE_OPTIONS: {
   label: string;
   value: ShareLinkType;
 }[] = [
-  { value: "blorp", label: `${env.REACT_APP_NAME} (${window.location.host})` },
+  {
+    value: "blorp",
+    label:
+      isCapacitor() || isTauri()
+        ? env.REACT_APP_NAME
+        : `${env.REACT_APP_NAME} (${window.location.host})`,
+  },
   { value: "threadiverse.link", label: "threadiverse.link" },
   { value: "instance", label: "My Instance" },
   { value: "content-instance", label: "Content Instance" },
