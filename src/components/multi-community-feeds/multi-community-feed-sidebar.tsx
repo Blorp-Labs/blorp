@@ -172,7 +172,7 @@ function useMultiCommunityActions({
 }): ActionMenuProps["actions"] {
   const linkCtx = useLinkContext();
   const route = resolveRoute(`${linkCtx.root}f/:apId`, {
-    apId,
+    apId: encodeURIComponent(apId),
   });
   const shareActions = useShareActions("feed", {
     type: "multi-community-feed",

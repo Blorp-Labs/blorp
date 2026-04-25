@@ -298,10 +298,7 @@ function resolveShareUrl(
   account?: Account,
 ): string {
   const instance = account ? parseAccountInfo(account).instance : null;
-  const blorpUrl =
-    entity.type === "multi-community-feed" && entity.apId
-      ? `${origin}${entity.route.replace(entity.apId, encodeURIComponent(entity.apId))}`
-      : `${origin}${entity.route}`;
+  const blorpUrl = `${origin}${entity.route}`;
 
   switch (mode) {
     case "blorp":
