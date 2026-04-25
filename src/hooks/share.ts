@@ -321,7 +321,7 @@ function resolveShareUrl(
         return `https://${instance}/post/${entity.id}`;
       }
       if (entity.type === "comment") {
-        return `https://${instance}/post/${entity.postId}/${entity.commentId}`;
+        return `https://${instance}/comment/${entity.commentId}`;
       }
       return blorpUrl;
     }
