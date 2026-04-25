@@ -339,6 +339,9 @@ function resolveShareUrl(
       if (entity.type === "person") {
         return `https://threadiverse.link/u/${entity.handle}`;
       }
+      if (!instance) {
+        return blorpUrl;
+      }
       if (entity.type === "post") {
         return `https://threadiverse.link/${instance}/post/${entity.id}`;
       }
