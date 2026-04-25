@@ -17,10 +17,10 @@ import {
   ImgHTMLAttributes,
   useContext,
   useMemo,
+  createContext,
 } from "react";
 import { cn } from "@/src/lib/utils";
 import DOMPurify from "dompurify";
-import { createContext } from "react";
 import { RoutePath } from "@/src/routing/routes";
 import footnotePlugin from "markdown-it-footnote";
 // @ts-expect-error pkg doesn't have types
@@ -51,11 +51,11 @@ function DisableAltTooltip({ children }: { children: React.ReactNode }) {
 
 export function registerSpoilerPlugin(md: MarkdownIt) {
   md.use(markdownitContainer, "spoiler", {
-    validate: function (params) {
+    validate(params) {
       return /^spoiler\s+(.*)$/.test(params.trim());
     },
 
-    render: function (tokens: Token[], idx: number) {
+    render(tokens: Token[], idx: number) {
       const m = tokens[idx]!.info.trim().match(/^spoiler\s+(.*)$/);
       const summary = m?.[1] ? md.utils.escapeHtml(m[1]) : "";
 
@@ -220,6 +220,16 @@ const options: (
     if (domNode.type === "tag" && domNode.name === "img") {
       return <Image {...domNode.attribs} />;
     }
+
+    if (domNode.type === "tag" && domNode.name === "table") {
+      return (
+        <div className="overflow-x-auto">
+          <table {...domNode.attribs}>
+            {domToReact(domNode.children as DOMNode[], options(root))}
+          </table>
+        </div>
+      );
+    }
   },
 });
 
@@ -237,7 +247,7 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
   md.linkify.add("!", {
     // The validate function checks that the text starting at position pos
     // matches our desired lemmy link pattern.
-    validate: function (text, pos) {
+    validate(text, pos) {
       // Attempt to match the pattern: !community@host
       const tail = text.slice(pos);
       const match = tail.match(/^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
@@ -248,7 +258,7 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
       return 0;
     },
     // The normalize function lets us customize how the matched text becomes a URL.
-    normalize: function (match) {
+    normalize(match) {
       match.url = `${root}c/${match.raw.substring(1)}`;
     },
   });
@@ -256,7 +266,7 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
   md.linkify.add("@", {
     // The validate function checks that the text starting at position pos
     // matches our desired lemmy link pattern.
-    validate: function (text, pos) {
+    validate(text, pos) {
       // Attempt to match the pattern: @user@host
       const tail = text.slice(pos);
       const match = tail.match(/^([\w-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
@@ -267,7 +277,7 @@ function createMd(root: ReturnType<typeof useLinkContext>["root"]) {
       return 0;
     },
     // The normalize function lets us customize how the matched text becomes a URL.
-    normalize: function (match) {
+    normalize(match) {
       match.url = `${root}u/${match.raw.substring(1)}`;
     },
   });
