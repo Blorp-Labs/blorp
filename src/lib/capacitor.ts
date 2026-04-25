@@ -34,6 +34,11 @@ function registerSafeArea() {
   );
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
+      // iOS dismisses the keyboard when the app is backgrounded, but
+      // keyboardDidHide never fires while in the background, so reset
+      // keyboard state on return to foreground to avoid stuck insets.
+      keyboardShowing = false;
+      document.body.style.setProperty("--keyboard-height", "0");
       debouncedUpdateInset();
     }
   });
