@@ -314,13 +314,18 @@ export default function Post() {
 
   const structured = useMemo(() => {
     const map = buildCommentTree(allComments, {
-      commentPath: parentComment.commentId,
-      highlightCommentId: parentComment.highlightCommentId,
+      threadRootId: parentComment.commentId,
+      selectedCommentId: parentComment.highlightCommentId,
       getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
     });
     const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
-  }, [allComments, parentComment.commentId, pathToCursor]);
+  }, [
+    allComments,
+    parentComment.commentId,
+    parentComment.highlightCommentId,
+    pathToCursor,
+  ]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
