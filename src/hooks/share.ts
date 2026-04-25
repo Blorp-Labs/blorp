@@ -292,27 +292,24 @@ export type ShareEntityContext =
   | { type: "person"; apId: string; handle: string; route: string }
   | { type: "multi-community-feed"; route: string; apId: string };
 
-function contentInstanceUrl(entity: ShareEntityContext): string {
-  return entity.apId || `${origin}${entity.route}`;
-}
-
 function resolveShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
   account?: Account,
-): string | null {
+): string {
   const instance = account ? parseAccountInfo(account).instance : null;
+  const blorpUrl = `${origin}${entity.route}`;
 
   switch (mode) {
     case "blorp":
-      return `${origin}${entity.route}`;
+      return blorpUrl;
 
     case "instance": {
       if (entity.type === "multi-community-feed") {
-        return entity.apId;
+        return entity.apId || blorpUrl;
       }
       if (!instance) {
-        return null;
+        return blorpUrl;
       }
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.handle}`;
@@ -326,15 +323,15 @@ function resolveShareUrl(
       if (entity.type === "comment") {
         return `https://${instance}/post/${entity.postId}/${entity.commentId}`;
       }
-      break;
+      return blorpUrl;
     }
 
     case "content-instance":
-      return contentInstanceUrl(entity);
+      return entity.apId || blorpUrl;
 
     case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
-        return entity.apId;
+        return entity.apId || blorpUrl;
       }
       if (entity.type === "community") {
         return `https://threadiverse.link/c/${entity.handle}`;
@@ -348,11 +345,9 @@ function resolveShareUrl(
       if (entity.type === "comment") {
         return `https://threadiverse.link/${instance}/comment/${entity.commentId}`;
       }
-      break;
+      return blorpUrl;
     }
   }
-
-  return null;
 }
 
 export function getShareUrl(
@@ -360,10 +355,7 @@ export function getShareUrl(
   entity: ShareEntityContext,
   account?: Account,
 ): string {
-  return (
-    resolveShareUrl(mode, entity, account) ??
-    resolveShareUrl("blorp", entity, account)!
-  );
+  return resolveShareUrl(mode, entity, account);
 }
 
 export function useCanShare() {
