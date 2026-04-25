@@ -325,6 +325,10 @@ function resolveShareUrl(
       break;
     }
 
+    case "content-instance": {
+      return entity.apId || null;
+    }
+
     case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
         return entity.apId;
