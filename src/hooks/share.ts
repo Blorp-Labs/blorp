@@ -295,9 +295,9 @@ export type ShareEntityContext =
 function resolveShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
-  account?: Account,
+  account: Account,
 ): string {
-  const instance = account ? parseAccountInfo(account).instance : null;
+  const instance = parseAccountInfo(account).instance;
   const blorpUrl = `${origin}${entity.route}`;
 
   switch (mode) {
@@ -307,9 +307,6 @@ function resolveShareUrl(
     case "instance": {
       if (entity.type === "multi-community-feed") {
         return entity.apId || blorpUrl;
-      }
-      if (!instance) {
-        return blorpUrl;
       }
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.handle}`;
@@ -339,9 +336,6 @@ function resolveShareUrl(
       if (entity.type === "person") {
         return `https://threadiverse.link/u/${entity.handle}`;
       }
-      if (!instance) {
-        return blorpUrl;
-      }
       if (entity.type === "post") {
         return `https://threadiverse.link/${instance}/post/${entity.id}`;
       }
@@ -356,7 +350,7 @@ function resolveShareUrl(
 export function getShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
-  account?: Account,
+  account: Account,
 ): string {
   return resolveShareUrl(mode, entity, account);
 }

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getShareUrl, normalizeFilename, getFileName } from "./share";
-import type { ShareEntityContext } from "./share";
+import { normalizeFilename, getFileName } from "./share";
 
 describe("normalizeFilename", () => {
   it("strips https:// scheme", () => {
@@ -93,37 +92,6 @@ describe("getFileName", () => {
     const blob = new Blob([], { type: "image/jpeg" });
     expect(getFileName(blob, "https://example.com/image.jpg?size=large")).toBe(
       "examplecom-image.jpg",
-    );
-  });
-});
-
-describe("getShareUrl threadiverse.link edge cases", () => {
-  const post: ShareEntityContext = {
-    type: "post",
-    id: 42,
-    apId: "https://lemmy.world/post/42",
-    route: "/post/42",
-    body: null,
-  };
-
-  const comment: ShareEntityContext = {
-    type: "comment",
-    postId: 10,
-    commentId: 99,
-    apId: "https://lemmy.world/comment/99",
-    route: "/post/10/99",
-    body: null,
-  };
-
-  it("falls back to blorp URL for post when no account is provided", () => {
-    expect(getShareUrl("threadiverse.link", post)).toBe(
-      getShareUrl("blorp", post),
-    );
-  });
-
-  it("falls back to blorp URL for comment when no account is provided", () => {
-    expect(getShareUrl("threadiverse.link", comment)).toBe(
-      getShareUrl("blorp", comment),
     );
   });
 });
