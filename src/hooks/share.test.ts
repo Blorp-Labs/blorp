@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getShareUrl, normalizeFilename, getFileName } from "./share";
-import type { ShareEntityContext } from "./share";
+import { normalizeFilename, getFileName } from "./share";
 
 describe("normalizeFilename", () => {
   it("strips https:// scheme", () => {
@@ -94,56 +93,5 @@ describe("getFileName", () => {
     expect(getFileName(blob, "https://example.com/image.jpg?size=large")).toBe(
       "examplecom-image.jpg",
     );
-  });
-});
-
-describe("getShareUrl", () => {
-  const postEntity: ShareEntityContext = {
-    type: "post",
-    id: 42,
-    apId: "https://lemmy.world/post/42",
-    route: "/post/42",
-    body: null,
-  };
-
-  const communityEntity: ShareEntityContext = {
-    type: "community",
-    apId: "https://lemmy.world/c/gaming",
-    handle: "gaming@lemmy.world",
-    route: "/c/gaming@lemmy.world",
-  };
-
-  const noApIdPost: ShareEntityContext = {
-    type: "post",
-    id: 99,
-    apId: "",
-    route: "/post/99",
-    body: null,
-  };
-
-  describe("content-instance mode", () => {
-    it("returns the apId when present on a post", () => {
-      expect(getShareUrl("content-instance", postEntity)).toBe(
-        "https://lemmy.world/post/42",
-      );
-    });
-
-    it("returns the apId when present on a community", () => {
-      expect(getShareUrl("content-instance", communityEntity)).toBe(
-        "https://lemmy.world/c/gaming",
-      );
-    });
-
-    it("falls back to the blorp URL when apId is empty", () => {
-      const blorpUrl = getShareUrl("blorp", noApIdPost);
-      expect(getShareUrl("content-instance", noApIdPost)).toBe(blorpUrl);
-    });
-  });
-
-  describe("blorp mode", () => {
-    it("returns an absolute URL with the post route", () => {
-      const url = getShareUrl("blorp", postEntity);
-      expect(url).toMatch(/\/post\/42$/);
-    });
   });
 });

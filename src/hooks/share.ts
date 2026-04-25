@@ -292,6 +292,10 @@ export type ShareEntityContext =
   | { type: "person"; apId: string; handle: string; route: string }
   | { type: "multi-community-feed"; route: string; apId: string };
 
+function contentInstanceUrl(entity: ShareEntityContext): string {
+  return entity.apId || `${origin}${entity.route}`;
+}
+
 function resolveShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
@@ -325,9 +329,8 @@ function resolveShareUrl(
       break;
     }
 
-    case "content-instance": {
-      return entity.apId || `${origin}${entity.route}`;
-    }
+    case "content-instance":
+      return contentInstanceUrl(entity);
 
     case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
