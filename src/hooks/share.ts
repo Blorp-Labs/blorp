@@ -326,7 +326,7 @@ function resolveShareUrl(
     }
 
     case "content-instance": {
-      return entity.apId || null;
+      return entity.apId || `${origin}${entity.route}`;
     }
 
     case "threadiverse.link": {
