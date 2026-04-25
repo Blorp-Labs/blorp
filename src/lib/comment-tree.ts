@@ -37,6 +37,16 @@ const getEmptyCommentTree = () => {
   } satisfies CommentTreeTopLevel;
 };
 
+export function getCommentDepth(path: string): number {
+  let depth = -1;
+  for (let i = 0; i < path.length; i++) {
+    if (path[i] === ".") {
+      depth++;
+    }
+  }
+  return depth;
+}
+
 export function shouldShowMore(node: CommentTree): boolean {
   return (
     node.meta.pruned ||
