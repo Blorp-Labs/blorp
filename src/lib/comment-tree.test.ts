@@ -237,6 +237,22 @@ describe("buildCommentTree", () => {
 
       expect(tree.children).toEqual({});
     });
+
+    test("sorts highlightCommentId to top among siblings", () => {
+      // node 3 inserted before node 2, so without highlighting node 2 gets sort=1
+      const tree = buildCommentTree(
+        [
+          commentView(3, "0.1.3"),
+          commentView(2, "0.1.2"),
+          commentView(1, "0.1"),
+        ],
+        { commentPath: "1", highlightCommentId: "2" },
+      );
+
+      const parentNode = getNodeByKey(tree, 1);
+      expect(getNodeByKey(parentNode, 2).meta.sort).toBe(-1);
+      expect(getNodeByKey(parentNode, 3).meta.sort).not.toBe(-1);
+    });
   });
 
   describe("max depth", () => {
