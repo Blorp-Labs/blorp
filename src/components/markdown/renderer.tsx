@@ -220,6 +220,16 @@ const options: (
     if (domNode.type === "tag" && domNode.name === "img") {
       return <Image {...domNode.attribs} />;
     }
+
+    if (domNode.type === "tag" && domNode.name === "table") {
+      return (
+        <div className="overflow-x-auto">
+          <table {...domNode.attribs}>
+            {domToReact(domNode.children as DOMNode[], options(root))}
+          </table>
+        </div>
+      );
+    }
   },
 });
 
