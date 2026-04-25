@@ -101,7 +101,7 @@
 }
 
 .markdown-content table {
-  @apply block overflow-x-auto table-auto border-collapse;
+  @apply block overflow-x-auto table-auto border-collapse min-w-full;
 }
 
 .markdown-content table th {
