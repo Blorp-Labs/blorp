@@ -315,6 +315,7 @@ export default function Post() {
   const structured = useMemo(() => {
     const map = buildCommentTree(allComments, {
       commentPath: parentComment.commentId,
+      highlightCommentId: parentComment.highlightCommentId,
       getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
     });
     const topLevelItems = getCommentChildren(map);

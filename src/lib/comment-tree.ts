@@ -76,6 +76,7 @@ export function buildCommentTree(
   }[],
   context: {
     commentPath?: string;
+    highlightCommentId?: string;
     maxDepth?: number;
     getCommentPageCursor?: (
       comment: CommentTreeComment,
@@ -138,7 +139,7 @@ export function buildCommentTree(
       comment: view,
       meta: {
         ...loc.children[front]?.meta,
-        sort: i,
+        sort: view.id === Number(context.highlightCommentId) ? -1 : i,
         immediateChildren: 0,
         pruned: false,
         pageCursor: getCommentPageCursor?.(view),
