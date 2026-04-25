@@ -24,6 +24,7 @@ import {
 import {
   CommentTree,
   getCommentChildren,
+  getCommentDepth,
   shouldShowMore,
 } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
@@ -489,9 +490,10 @@ function PostCommentInner({
 
   const sorted = getCommentChildren(commentTree);
 
+  const colorLevel = comment ? getCommentDepth(comment?.path) : null;
   let color = "red";
-  if (_.isNumber(level)) {
-    switch (level % 6) {
+  if (_.isNumber(colorLevel)) {
+    switch (colorLevel % 6) {
       case 0:
         color = "#FF2A33";
         break;
