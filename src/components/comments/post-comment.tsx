@@ -21,7 +21,12 @@ import {
   useSaveCommentMutation,
   useSoftware,
 } from "@/src/queries/index";
-import { CommentTree } from "@/src/lib/comment-tree";
+import {
+  CommentTree,
+  getCommentChildren,
+  getCommentDepth,
+  shouldShowMore,
+} from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import {
@@ -467,7 +472,7 @@ function PostCommentInner({
 
   const linkCtx = useLinkContext();
 
-  const { comment, ...rest } = commentTree;
+  const { comment } = commentTree;
 
   const [commentView] = useCommentsByPaths(comment ? [comment.path] : []);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
@@ -483,13 +488,12 @@ function PostCommentInner({
       : undefined,
   );
 
-  const sorted = _.entries(_.omit(rest, ["sort", "imediateChildren"])).sort(
-    ([_id1, a], [_id2, b]) => a.sort - b.sort,
-  );
+  const sorted = getCommentChildren(commentTree);
 
+  const colorLevel = comment ? getCommentDepth(comment?.path) : null;
   let color = "red";
-  if (_.isNumber(level)) {
-    switch (level % 6) {
+  if (_.isNumber(colorLevel)) {
+    switch (colorLevel % 6) {
       case 0:
         color = "#FF2A33";
         break;
@@ -702,12 +706,13 @@ function PostCommentInner({
             ) : (
               <div {...doubleTapLike}>{bodyRenderer}</div>
             ))}
-
+          {!commentView && (
+            <span className="block italic mb-2">missing comment</span>
+          )}
           {/* Editing */}
           {editingState && (
             <InlineCommentReply state={editingState} autoFocus />
           )}
-
           {commentView && (
             <div
               className={cn(
@@ -769,8 +774,8 @@ function PostCommentInner({
             </div>
           )}
 
-          {(sorted.length > 0 ||
-            rest.imediateChildren > 0 ||
+          {(shouldShowMore(commentTree) ||
+            sorted.length > 0 ||
             (replyState && media.md)) && (
             <div
               className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-lg mb-2"
@@ -779,7 +784,6 @@ function PostCommentInner({
               {replyState && (
                 <InlineCommentReply state={replyState} autoFocus />
               )}
-
               {sorted.map(([id, map]) => (
                 <PostComment
                   postApId={postApId}
@@ -795,7 +799,9 @@ function PostCommentInner({
                 />
               ))}
 
-              {commentView && sorted.length < rest.imediateChildren ? (
+              {commentView &&
+              !(singleCommentThread && level === 0) &&
+              shouldShowMore(commentTree) ? (
                 <Link
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{

@@ -1,5 +1,5 @@
 import { PostComment } from "@/src/components/comments/post-comment";
-import { buildCommentTree } from "../lib/comment-tree";
+import { buildCommentTree, getCommentChildren } from "../lib/comment-tree";
 import { useEffect, memo, useMemo, useState } from "react";
 import {
   usePostQuery,
@@ -292,18 +292,35 @@ export default function Post() {
     [comments.data?.pages, parentComment.status, isReady],
   );
 
+  const commentsData = comments.data;
+  const pathToCursor = useMemo(() => {
+    const result = new Map<string, string | number>();
+    if (commentsData?.pages) {
+      commentsData.pages.forEach((p, i) => {
+        const cursor = commentsData.pageParams[i] as string | number;
+        p.comments.forEach((path) => {
+          // We want to find the first occurance,
+          // so checking has is really important
+          if (!result.has(path)) {
+            result.set(path, cursor);
+          }
+        });
+      });
+    }
+    return result;
+  }, [commentsData]);
+
   const allComments = useCommentsByPaths(allCommentPaths);
 
   const structured = useMemo(() => {
-    if (!isReady) {
-      return null;
-    }
-    const map = buildCommentTree(allComments, parentComment.commentId);
-    const topLevelItems = _.entries(map).sort(
-      ([_id1, a], [_id2, b]) => a.sort - b.sort,
-    );
+    const map = buildCommentTree(allComments, {
+      commentPath: parentComment.commentId,
+      highlightCommentId: parentComment.highlightCommentId,
+      getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
+    });
+    const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
-  }, [allComments, isReady, parentComment.commentId]);
+  }, [allComments, parentComment.commentId, pathToCursor]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
@@ -332,7 +349,7 @@ export default function Post() {
 
   const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
   const replyingToItem = data.find(
-    ([path]) => commentReplyParent?.includes(path) ?? false,
+    ([path]) => commentReplyParent?.includes(String(path)) ?? false,
   );
 
   const postCreatorId = post?.creatorId;
