@@ -295,20 +295,18 @@ export type ShareEntityContext =
 function resolveShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
-  account?: Account,
-): string | null {
-  const instance = account ? parseAccountInfo(account).instance : null;
+  account: Account,
+): string {
+  const instance = parseAccountInfo(account).instance;
+  const blorpUrl = `${origin}${entity.route}`;
 
   switch (mode) {
     case "blorp":
-      return `${origin}${entity.route}`;
+      return blorpUrl;
 
     case "instance": {
       if (entity.type === "multi-community-feed") {
-        return entity.apId;
-      }
-      if (!instance) {
-        return null;
+        return entity.apId || blorpUrl;
       }
       if (entity.type === "community") {
         return `https://${instance}/c/${entity.handle}`;
@@ -320,14 +318,17 @@ function resolveShareUrl(
         return `https://${instance}/post/${entity.id}`;
       }
       if (entity.type === "comment") {
-        return `https://${instance}/post/${entity.postId}/${entity.commentId}`;
+        return `https://${instance}/comment/${entity.commentId}`;
       }
-      break;
+      return blorpUrl;
     }
+
+    case "content-instance":
+      return entity.apId || blorpUrl;
 
     case "threadiverse.link": {
       if (entity.type === "multi-community-feed") {
-        return entity.apId;
+        return entity.apId || blorpUrl;
       }
       if (entity.type === "community") {
         return `https://threadiverse.link/c/${entity.handle}`;
@@ -341,22 +342,17 @@ function resolveShareUrl(
       if (entity.type === "comment") {
         return `https://threadiverse.link/${instance}/comment/${entity.commentId}`;
       }
-      break;
+      return blorpUrl;
     }
   }
-
-  return null;
 }
 
 export function getShareUrl(
   mode: ShareLinkType,
   entity: ShareEntityContext,
-  account?: Account,
+  account: Account,
 ): string {
-  return (
-    resolveShareUrl(mode, entity, account) ??
-    resolveShareUrl("blorp", entity, account)!
-  );
+  return resolveShareUrl(mode, entity, account);
 }
 
 export function useCanShare() {
