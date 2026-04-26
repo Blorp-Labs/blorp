@@ -462,6 +462,28 @@ describe("buildCommentTree", () => {
       expect(placeholder2.comment).toBeUndefined();
       expect(placeholder2.children[3]).toBeUndefined();
     });
+
+    test("prunes only the first cross-page node in a deep chain, leaving ancestors intact", () => {
+      // 1→2→3→4, all page 1 except node 4 (page 2)
+      // node 3 should be pruned and node 4 removed; nodes 1 and 2 unaffected
+      const tree = buildCommentTree(
+        [
+          commentView(1, "0.1", 1),
+          commentView(2, "0.1.2", 1),
+          commentView(3, "0.1.2.3", 1),
+          commentView(4, "0.1.2.3.4"),
+        ],
+        { getCommentPageCursor: (c) => (c.id === 4 ? 2 : 1) },
+      );
+
+      const node1 = getNodeByKey(tree, 1);
+      const node2 = getNodeByKey(node1, 2);
+      const node3 = getNodeByKey(node2, 3);
+      expect(node1.meta.pruned).toBe(false);
+      expect(node2.meta.pruned).toBe(false);
+      expect(node3.meta.pruned).toBe(true);
+      expect(node3.children[4]).toBeUndefined();
+    });
   });
 
   describe("immediate children counting", () => {
