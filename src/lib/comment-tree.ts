@@ -8,6 +8,7 @@ type CommentTreeMeta = {
   immediateChildren: number;
   sort: number;
   pruned: boolean;
+  colorIndex: number;
 };
 
 type CommentTreeComment = {
@@ -36,6 +37,15 @@ const getEmptyCommentTree = () => {
     children: {},
   } satisfies CommentTreeTopLevel;
 };
+
+export const COMMENT_COLOR_PALETTE = [
+  "#FF2A33",
+  "#F98C1D",
+  "#DAB84D",
+  "#459E6F",
+  "#3088C1",
+  "purple",
+] as const;
 
 export function getCommentDepth(path: string): number {
   let depth = -1;
@@ -95,6 +105,7 @@ export function buildCommentTree(
     threadRootId?: string;
     selectedCommentId?: string;
     maxDepth?: number;
+    colorIndexOffset?: number;
     getCommentPageCursor?: (
       comment: CommentTreeComment,
     ) => number | string | undefined;
@@ -143,6 +154,7 @@ export function buildCommentTree(
           sort: 0,
           immediateChildren: 0,
           pruned: false,
+          colorIndex: 0,
         },
         children: {},
       };
@@ -160,13 +172,14 @@ export function buildCommentTree(
         sort: view.id === Number(options.selectedCommentId) ? -1 : i,
         immediateChildren: 0,
         pruned: false,
+        colorIndex: 0,
         pageCursor: getCommentPageCursor?.(view),
       },
     };
     i++;
   }
 
-  countImmediateChildren(map);
+  updateMeta(map, -1, options.colorIndexOffset ?? 0);
 
   const out = pruneCommentTree(map);
   if (options.threadRootId) {
@@ -246,7 +259,7 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
 
   for (const key of getCommentChildrenKeys(tree)) {
     const node = tree.children[key];
-    if (node && node.meta.pageCursor) {
+    if (node && isNotNil(node.meta.pageCursor)) {
       pruneNode(node, node.meta.pageCursor);
     }
   }
@@ -254,13 +267,18 @@ function pruneCommentTree(tree: CommentTreeTopLevel): CommentTreeTopLevel {
   return tree;
 }
 
-function countImmediateChildren(node: CommentTree | CommentTreeTopLevel) {
-  const children = _.values(node.children);
-  for (const child of children) {
-    countImmediateChildren(child);
-  }
-  if ("comment" in node && node.comment) {
-    node.meta.immediateChildren = node.comment.childCount;
+function updateMeta(
+  node: CommentTree | CommentTreeTopLevel,
+  recursionDepth: number,
+  colorIndexOffset: number,
+) {
+  for (const child of _.values(node.children)) {
+    const depth = recursionDepth + 1;
+    child.meta.colorIndex = depth + colorIndexOffset;
+    if (child.comment) {
+      child.meta.immediateChildren = child.comment.childCount;
+    }
+    updateMeta(child, depth, colorIndexOffset);
   }
 }
 
