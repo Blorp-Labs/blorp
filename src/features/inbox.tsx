@@ -228,6 +228,7 @@ function CommentReport({
                       immediateChildren: 0,
                       sort: 0,
                       pruned: false,
+                      colorIndex: 0,
                     },
                     children: {},
                   }}

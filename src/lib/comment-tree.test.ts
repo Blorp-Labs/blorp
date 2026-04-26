@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   buildCommentTree,
+  COMMENT_COLOR_PALETTE,
   CommentTree,
   getCommentChildren,
   shouldShowMore,
@@ -550,6 +551,7 @@ describe("shouldShowMore", () => {
         sort: 0,
         immediateChildren: 1,
         pruned: true,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -569,6 +571,7 @@ describe("shouldShowMore", () => {
         sort: 0,
         immediateChildren: 1,
         pruned: false,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -588,6 +591,7 @@ describe("shouldShowMore", () => {
         sort: 0,
         immediateChildren: 1,
         pruned: false,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -601,6 +605,7 @@ describe("shouldShowMore", () => {
             sort: 1,
             immediateChildren: 0,
             pruned: false,
+            colorIndex: 0,
           },
           comment: {
             id: 5678,
@@ -622,6 +627,7 @@ describe("shouldShowMore", () => {
         sort: 0,
         immediateChildren: 0,
         pruned: false,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -641,6 +647,7 @@ describe("shouldShowMore", () => {
         sort: 0,
         immediateChildren: 0,
         pruned: false,
+        colorIndex: 0,
       },
       children: {},
     } satisfies CommentTree;
@@ -656,6 +663,7 @@ describe("getCommentChildren", () => {
         sort: 0,
         immediateChildren: 2,
         pruned: false,
+        colorIndex: 0,
       },
       children: {
         5678: {
@@ -663,6 +671,7 @@ describe("getCommentChildren", () => {
             sort: 2,
             immediateChildren: 0,
             pruned: false,
+            colorIndex: 0,
           },
           children: {},
           comment: {
@@ -677,6 +686,7 @@ describe("getCommentChildren", () => {
             sort: 0,
             immediateChildren: 0,
             pruned: false,
+            colorIndex: 0,
           },
           children: {},
           comment: {
@@ -691,6 +701,7 @@ describe("getCommentChildren", () => {
             sort: 1,
             immediateChildren: 0,
             pruned: false,
+            colorIndex: 0,
           },
           children: {},
           comment: {
@@ -714,6 +725,7 @@ describe("getCommentChildren", () => {
         sort: 0,
         immediateChildren: 1,
         pruned: true,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -727,6 +739,7 @@ describe("getCommentChildren", () => {
             sort: 0,
             immediateChildren: 0,
             pruned: false,
+            colorIndex: 0,
           },
           children: {},
           comment: {
@@ -749,6 +762,7 @@ describe("getCommentChildren", () => {
         sort: 0,
         immediateChildren: 0,
         pruned: false,
+        colorIndex: 0,
       },
       comment: {
         id: 1234,
@@ -788,5 +802,88 @@ describe("getCommentChildren", () => {
     expect(getCommentChildren(tree).map(([key]) => Number(key))).toEqual([
       3000, 1000, 2000,
     ]);
+  });
+});
+
+describe("colorIndex", () => {
+  test("top-level node gets colorIndex 0", () => {
+    const tree = buildCommentTree([commentView(1, "0.1")], {});
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(0);
+  });
+
+  test("nested nodes increment colorIndex by 1 per level", () => {
+    const tree = buildCommentTree(
+      [
+        commentView(1, "0.1"),
+        commentView(2, "0.1.2"),
+        commentView(3, "0.1.2.3"),
+      ],
+      {},
+    );
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(0);
+    expect(getNodeByKey(getNodeByKey(tree, 1), 2).meta.colorIndex).toBe(1);
+    expect(
+      getNodeByKey(getNodeByKey(getNodeByKey(tree, 1), 2), 3).meta.colorIndex,
+    ).toBe(2);
+  });
+
+  test("placeholder chain gets consecutive colorIndex values — no adjacent match mod 6", () => {
+    // only comment 3 present; placeholders at 1 and 2 fill the ancestors
+    const tree = buildCommentTree([commentView(3, "0.1.2.3")], {});
+    const p1 = getNodeByKey(tree, 1);
+    const p2 = getNodeByKey(p1, 2);
+    const n3 = getNodeByKey(p2, 3);
+    expect(p1.comment).toBeUndefined();
+    expect(p2.comment).toBeUndefined();
+    expect(p1.meta.colorIndex).toBe(0);
+    expect(p2.meta.colorIndex).toBe(1);
+    expect(n3.meta.colorIndex).toBe(2);
+    const n = COMMENT_COLOR_PALETTE.length;
+    expect(p1.meta.colorIndex % n).not.toBe(p2.meta.colorIndex % n);
+    expect(p2.meta.colorIndex % n).not.toBe(n3.meta.colorIndex % n);
+  });
+
+  test("hydrating a placeholder leaves colorIndex unchanged", () => {
+    // insert descendant first to create placeholder at 1, then hydrate
+    const tree = buildCommentTree(
+      [commentView(2, "0.1.2"), commentView(1, "0.1")],
+      {},
+    );
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(0);
+  });
+
+  test("with threadRootId and no offset, thread root gets colorIndex 0", () => {
+    const tree = buildCommentTree(
+      [commentView(1, "0.1"), commentView(2, "0.1.2")],
+      { threadRootId: "1" },
+    );
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(0);
+    expect(getNodeByKey(getNodeByKey(tree, 1), 2).meta.colorIndex).toBe(1);
+  });
+
+  test("colorIndexOffset shifts every node by the offset", () => {
+    const tree = buildCommentTree(
+      [commentView(1, "0.1"), commentView(2, "0.1.2")],
+      { colorIndexOffset: 3 },
+    );
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(3);
+    expect(getNodeByKey(getNodeByKey(tree, 1), 2).meta.colorIndex).toBe(4);
+  });
+
+  test("colorIndexOffset with threadRootId anchors thread colors to absolute depth", () => {
+    // thread root has absolute depth 2 in the full tree; caller passes offset=2
+    const tree = buildCommentTree(
+      [
+        commentView(1, "0.1"),
+        commentView(2, "0.1.2"),
+        commentView(3, "0.1.2.3"),
+      ],
+      { threadRootId: "1", colorIndexOffset: 2 },
+    );
+    expect(getNodeByKey(tree, 1).meta.colorIndex).toBe(2);
+    expect(getNodeByKey(getNodeByKey(tree, 1), 2).meta.colorIndex).toBe(3);
+    expect(
+      getNodeByKey(getNodeByKey(getNodeByKey(tree, 1), 2), 3).meta.colorIndex,
+    ).toBe(4);
   });
 });
