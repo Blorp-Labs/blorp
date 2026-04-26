@@ -4,7 +4,7 @@ import {
   getCommentChildren,
   getCommentDepth,
 } from "../lib/comment-tree";
-import { useEffect, memo, useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   usePostQuery,
   useCommentsQuery,
@@ -61,15 +61,6 @@ function SafeAreaBottom() {
 const MemoedPostComment = memo(PostComment);
 
 const EMPTY_ARR: never[] = [];
-
-function useDelayedReady(delay: number) {
-  const [isReady, setIsReady] = useState(false);
-  useEffect(() => {
-    const id = setTimeout(() => setIsReady(true), delay);
-    return () => clearTimeout(id);
-  }, [delay]);
-  return isReady;
-}
 
 const MemoedPostCard = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -286,14 +277,12 @@ export default function Post() {
       ? false
       : parentComment.status === "pending" || comments.isPending;
 
-  const isReady = useDelayedReady(500);
-
   const allCommentPaths = useMemo(
     () =>
-      comments.data?.pages && parentComment.status === "success" && isReady
+      comments.data?.pages && parentComment.status === "success"
         ? comments.data.pages.map((p) => p.comments).flat()
         : EMPTY_ARR,
-    [comments.data?.pages, parentComment.status, isReady],
+    [comments.data?.pages, parentComment.status],
   );
 
   const commentsData = comments.data;
@@ -341,7 +330,7 @@ export default function Post() {
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
-    if (refreshing || !isReady) {
+    if (refreshing) {
       return;
     }
     setRefreshing(true);
@@ -494,7 +483,7 @@ export default function Post() {
                 </>
               )}
               placeholder={
-                isPending || !isReady ? (
+                isPending ? (
                   <ContentGutters className="px-0">
                     <CommentSkeleton />
                     <></>
