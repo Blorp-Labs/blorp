@@ -294,6 +294,25 @@ function getCommentChildrenKeys(
   return _.keys(node.children).map(Number);
 }
 
+interface DebugTree {
+  [key: string]: DebugTree;
+}
+
+export function debugCommentTree(
+  tree: CommentTree | CommentTreeTopLevel,
+  pathPrefix = "0",
+): DebugTree {
+  const result: DebugTree = {};
+  for (const key of Object.keys(tree.children)) {
+    const child = tree.children[Number(key)]!;
+    const path = `${pathPrefix}.${key}`;
+    const cursor = child.meta?.pageCursor;
+    const label = isNotNil(cursor) ? `${cursor}_${path}` : path;
+    result[label] = debugCommentTree(child, path);
+  }
+  return result;
+}
+
 export function getCommentChildren(
   node: CommentTree | CommentTreeTopLevel,
 ): (readonly [CommentKey, CommentTree])[] {
