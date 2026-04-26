@@ -1,5 +1,9 @@
 import { PostComment } from "@/src/components/comments/post-comment";
-import { buildCommentTree, getCommentChildren } from "../lib/comment-tree";
+import {
+  buildCommentTree,
+  getCommentChildren,
+  getCommentDepth,
+} from "../lib/comment-tree";
 import { useEffect, memo, useMemo, useState } from "react";
 import {
   usePostQuery,
@@ -311,12 +315,20 @@ export default function Post() {
   }, [commentsData]);
 
   const allComments = useCommentsByPaths(allCommentPaths);
-
   const structured = useMemo(() => {
+    const parentCommentId = parentComment.commentId;
+    const parentCommentView = _.isNil(parentCommentId)
+      ? undefined
+      : allComments.find((c) => c.id === +parentCommentId);
+    const colorIndexOffset = parentCommentView
+      ? getCommentDepth(parentCommentView.path)
+      : 0;
+
     const map = buildCommentTree(allComments, {
       threadRootId: parentComment.commentId,
       selectedCommentId: parentComment.highlightCommentId,
       getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
+      colorIndexOffset,
     });
     const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
