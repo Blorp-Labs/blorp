@@ -22,9 +22,9 @@ import {
   useSoftware,
 } from "@/src/queries/index";
 import {
+  COMMENT_COLOR_PALETTE,
   CommentTree,
   getCommentChildren,
-  getCommentDepth,
   shouldShowMore,
 } from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
@@ -490,30 +490,10 @@ function PostCommentInner({
 
   const sorted = getCommentChildren(commentTree);
 
-  const colorLevel = comment ? getCommentDepth(comment?.path) : null;
-  let color = "red";
-  if (_.isNumber(colorLevel)) {
-    switch (colorLevel % 6) {
-      case 0:
-        color = "#FF2A33";
-        break;
-      case 1:
-        color = "#F98C1D";
-        break;
-      case 2:
-        color = "#DAB84D";
-        break;
-      case 3:
-        color = "#459E6F";
-        break;
-      case 4:
-        color = "#3088C1";
-        break;
-      case 5:
-        color = "purple";
-        break;
-    }
-  }
+  const color =
+    COMMENT_COLOR_PALETTE[
+      commentTree.meta.colorIndex % COMMENT_COLOR_PALETTE.length
+    ]!;
 
   const collapseThreshold = useCommentCollapseThreshold();
   const hideThreshold = useCommentHideThreshold();
