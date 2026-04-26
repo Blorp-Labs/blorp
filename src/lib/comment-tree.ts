@@ -147,6 +147,8 @@ export function buildCommentTree(
       continue;
     }
 
+    const viewCursor = getCommentPageCursor?.(view);
+
     while (path.length > 1) {
       const front: CommentKey = +path.shift()!;
       loc.children[front] = loc.children[front] ?? {
@@ -155,6 +157,7 @@ export function buildCommentTree(
           immediateChildren: 0,
           pruned: false,
           colorIndex: 0,
+          pageCursor: viewCursor,
         },
         children: {},
       };
@@ -173,7 +176,10 @@ export function buildCommentTree(
         immediateChildren: 0,
         pruned: false,
         colorIndex: 0,
-        pageCursor: getCommentPageCursor?.(view),
+        // Use the placeholder's cursor if it was created by an earlier fetch —
+        // cursor tracks when the branch first became visible, not when this
+        // specific comment arrived.
+        pageCursor: loc.children[front]?.meta?.pageCursor ?? viewCursor,
       },
     };
     i++;

@@ -450,18 +450,44 @@ describe("buildCommentTree", () => {
     });
 
     test("prunes a cross-page comment that arrives through a placeholder ancestor", () => {
-      // node 2 never loaded, so it becomes a placeholder
+      // node 2 never loaded — becomes a placeholder with cursor=2 (inherited from node 3)
       // node 3 (cursor=2) arrives on a different page than node 1 (cursor=1)
-      // the placeholder must not shield node 3 from pruning
+      // placeholder's cursor (2) differs from parent's cursor (1), so the whole
+      // placeholder branch is removed
       const tree = buildCommentTree(
         [commentView(1, "0.1", 1), commentView(3, "0.1.2.3")],
         { getCommentPageCursor: (c) => (c.id === 1 ? 1 : 2) },
       );
 
       const node1 = getNodeByKey(tree, 1);
-      const placeholder2 = getNodeByKey(node1, 2);
+      expect(node1.children[2]).toBeUndefined();
+    });
+
+    test("placeholder created by a descendant inherits that descendant's cursor", () => {
+      const tree = buildCommentTree([commentView(3, "0.1.2.3")], {
+        getCommentPageCursor: () => 5,
+      });
+
+      const placeholder1 = getNodeByKey(tree, 1);
+      const placeholder2 = getNodeByKey(placeholder1, 2);
+      expect(placeholder1.comment).toBeUndefined();
+      expect(placeholder1.meta.pageCursor).toBe(5);
       expect(placeholder2.comment).toBeUndefined();
-      expect(placeholder2.children[3]).toBeUndefined();
+      expect(placeholder2.meta.pageCursor).toBe(5);
+    });
+
+    test("comment hydrating a placeholder inherits the placeholder's cursor", () => {
+      // comment 2 (cursor=2) arrives first, creating placeholder 1 with cursor=2
+      // comment 1 (cursor=3) arrives later to hydrate the placeholder
+      // comment 1 should get cursor=2 (when the branch first became visible), not cursor=3
+      const tree = buildCommentTree(
+        [commentView(2, "0.1.2"), commentView(1, "0.1")],
+        { getCommentPageCursor: (c) => (c.id === 2 ? 2 : 3) },
+      );
+
+      const node1 = getNodeByKey(tree, 1);
+      expect(node1.comment?.id).toBe(1);
+      expect(node1.meta.pageCursor).toBe(2);
     });
 
     test("prunes only the first cross-page node in a deep chain, leaving ancestors intact", () => {
