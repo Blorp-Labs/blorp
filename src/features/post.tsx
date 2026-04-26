@@ -497,6 +497,7 @@ export default function Post() {
               }
               onEndReached={loadMore}
               estimatedItemSize={450}
+              drawDistance={600}
               stickyIndicies={[1]}
               refresh={refresh}
             />
