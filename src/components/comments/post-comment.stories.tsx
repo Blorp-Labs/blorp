@@ -205,10 +205,6 @@ const maxDepthTree = buildCommentTree(maxDepthComments, {
 
 async function loadData() {
   await waitForHydration(useAuth, useProfilesStore, useCommentsStore);
-  useAuth.getState().updateSelectedAccount({
-    site: api.getSite(),
-    jwt: "story-jwt",
-  });
   const prefixer = useAuth.getState().getCachePrefixer();
   useProfilesStore.getState().cacheProfiles(prefixer, creators);
   useCommentsStore
