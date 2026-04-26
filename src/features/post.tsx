@@ -319,7 +319,6 @@ export default function Post() {
       getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
       colorIndexOffset,
     });
-    console.log(map);
     const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
   }, [
