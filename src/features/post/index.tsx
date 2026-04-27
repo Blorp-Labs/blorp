@@ -3,7 +3,7 @@ import {
   buildCommentTree,
   getCommentChildren,
   getCommentDepth,
-} from "../lib/comment-tree";
+} from "../../lib/comment-tree";
 import { memo, useMemo, useState } from "react";
 import {
   usePostQuery,
@@ -18,41 +18,42 @@ import {
   PostCardSkeleton,
 } from "@/src/components/posts/post";
 import { CommunitySidebar } from "@/src/components/communities/community-sidebar";
-import { ContentGutters } from "../components/gutters";
+import { ContentGutters } from "../../components/gutters";
 import _ from "lodash";
 import {
   CommentReplyProvider,
   InlineCommentReply,
   useCommentEditingState,
   useLoadCommentIntoEditor,
-} from "../components/comments/comment-reply-modal";
-import { getAccountSite, useAmIAdmin, useAuth } from "../stores/auth";
-import { VirtualList } from "../components/virtual-list";
-import { PostReportProvider } from "../components/posts/post-report";
-import { usePostFromStore } from "../stores/posts";
+} from "../../components/comments/comment-reply-modal";
+import { getAccountSite, useAmIAdmin, useAuth } from "../../stores/auth";
+import { VirtualList } from "../../components/virtual-list";
+import { PostReportProvider } from "../../components/posts/post-report";
+import { usePostFromStore } from "../../stores/posts";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
-import { UserDropdown } from "../components/nav";
-import { PageTitle } from "../components/page-title";
+import { UserDropdown } from "../../components/nav";
+import { PageTitle } from "../../components/page-title";
 import {
   useHideTabBarOnMount,
   useIonPageElement,
   useMedia,
   useTheme,
   useRequireAuth,
-} from "../hooks";
-import { Page } from "../components/page";
-import { CommentSkeleton } from "../components/comments/comment-skeleton";
+} from "../../hooks";
+import { Page } from "../../components/page";
+import { CommentSkeleton } from "../../components/comments/comment-skeleton";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { CommentSortSelect } from "../components/lemmy-sort";
-import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
-import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { cn } from "../lib/utils";
-import { SearchBar } from "./search/search-bar";
-import { useCommentsByPaths } from "../stores/comments";
-import { useCommunityFromStore } from "../stores/communities";
-import { useQueryToast } from "../hooks/use-query-toast";
+import { ToolbarTitle } from "../../components/toolbar/toolbar-title";
+import { CommentSortSelect } from "../../components/lemmy-sort";
+import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
+import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
+import { cn } from "../../lib/utils";
+import { SearchBar } from "../search/search-bar";
+import { useCommentsByPaths } from "../../stores/comments";
+import { useCommunityFromStore } from "../../stores/communities";
+import { useQueryToast } from "../../hooks/use-query-toast";
+import { MissingComment } from "./missing-comment";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -478,6 +479,9 @@ export default function Post() {
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}
+                    renderMissingComment={(path) => (
+                      <MissingComment postApId={decodedApId!} path={path} />
+                    )}
                   />
                   {commentPath && <SafeAreaBottom />}
                 </>

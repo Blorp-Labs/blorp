@@ -9,6 +9,7 @@ type CommentTreeMeta = {
   sort: number;
   pruned: boolean;
   colorIndex: number;
+  path?: string;
 };
 
 type CommentTreeComment = {
@@ -148,9 +149,15 @@ export function buildCommentTree(
     }
 
     const viewCursor = getCommentPageCursor?.(view);
+    const originalSegments = view.path.split(".");
 
     while (path.length > 1) {
       const front: CommentKey = +path.shift()!;
+      const segIdx = originalSegments.indexOf(String(front));
+      const placeholderPath =
+        segIdx >= 0
+          ? originalSegments.slice(0, segIdx + 1).join(".")
+          : undefined;
       loc.children[front] = loc.children[front] ?? {
         meta: {
           sort: i,
@@ -158,6 +165,7 @@ export function buildCommentTree(
           pruned: false,
           colorIndex: 0,
           pageCursor: viewCursor,
+          path: placeholderPath,
         },
         children: {},
       };
@@ -180,6 +188,7 @@ export function buildCommentTree(
         // cursor tracks when the branch first became visible, not when this
         // specific comment arrived.
         pageCursor: loc.children[front]?.meta?.pageCursor ?? viewCursor,
+        path: view.path,
       },
     };
     i++;

@@ -398,9 +398,8 @@ function PostCommentErrorFallback({
   commentTree: CommentTree;
   error: unknown;
 }) {
-  const [commentView] = useCommentsByPaths(
-    commentTree.comment ? [commentTree.comment.path] : [],
-  );
+  const commentPath = commentTree.comment?.path ?? commentTree.meta.path;
+  const [commentView] = useCommentsByPaths(commentPath ? [commentPath] : []);
   const apId = commentView?.apId;
 
   const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
@@ -454,6 +453,7 @@ function PostCommentInner({
   highlightCommentId,
   canMod,
   standalone,
+  renderMissingComment,
 }: {
   postApId: string;
   postLocked: boolean;
@@ -466,6 +466,7 @@ function PostCommentInner({
   highlightCommentId?: string;
   canMod?: boolean;
   standalone?: boolean;
+  renderMissingComment?: (path: string | undefined) => React.ReactNode;
 }) {
   const media = useMedia();
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
@@ -474,7 +475,8 @@ function PostCommentInner({
 
   const { comment } = commentTree;
 
-  const [commentView] = useCommentsByPaths(comment ? [comment.path] : []);
+  const commentPath = commentTree.comment?.path ?? commentTree.meta.path;
+  const [commentView] = useCommentsByPaths(commentPath ? [commentPath] : []);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(
@@ -574,7 +576,6 @@ function PostCommentInner({
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
       {commentView?.removed && <span className="italic text-sm">removed</span>}
-      {!commentView && <span className="italic text-sm">missing comment</span>}
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
@@ -686,9 +687,7 @@ function PostCommentInner({
             ) : (
               <div {...doubleTapLike}>{bodyRenderer}</div>
             ))}
-          {!commentView && (
-            <span className="block italic mb-2">missing comment</span>
-          )}
+          {!commentView && renderMissingComment?.(commentTree.meta.path)}
           {/* Editing */}
           {editingState && (
             <InlineCommentReply state={editingState} autoFocus />
@@ -776,6 +775,7 @@ function PostCommentInner({
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
                   canMod={canMod}
+                  renderMissingComment={renderMissingComment}
                 />
               ))}
 
