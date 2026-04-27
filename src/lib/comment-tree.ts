@@ -110,8 +110,8 @@ export function buildCommentTree(
     path: string;
   }[],
   options: {
-    threadRootId?: string;
-    selectedCommentId?: string;
+    threadRootId?: number;
+    selectedCommentId?: number;
     maxDepth?: number;
     colorIndexOffset?: number;
     getCommentPageCursor?: (
@@ -124,6 +124,7 @@ export function buildCommentTree(
   const map: CommentTreeTopLevel = getEmptyCommentTree();
 
   const threadRootId = options.threadRootId;
+  const threadRootIdString = String(threadRootId);
 
   let i = 0;
 
@@ -136,15 +137,16 @@ export function buildCommentTree(
     // e.g. with threadRootId="100", "0.50.100.200" becomes "0.100.200".
     // Without this, placeholder nodes would be created for every ancestor of
     // the thread root, and depth calculations would be wrong.
-    if (threadRootId && viewPath.indexOf(threadRootId) > -1) {
-      viewPath = "0." + viewPath.substring(viewPath.indexOf(threadRootId));
+    if (threadRootId && viewPath.indexOf(threadRootIdString) > -1) {
+      viewPath =
+        "0." + viewPath.substring(viewPath.indexOf(threadRootIdString));
     }
 
     // Skip comments that cannot be descendants of the thread root.
     // A path shorter than threadRootId can't contain it as a suffix,
     // so we only check when the path is long enough to potentially match.
-    if (threadRootId && viewPath.length > threadRootId.length) {
-      if (viewPath.indexOf(threadRootId) === -1) {
+    if (threadRootId && viewPath.length > threadRootIdString.length) {
+      if (viewPath.indexOf(threadRootIdString) === -1) {
         continue;
       }
     }
@@ -200,7 +202,7 @@ export function buildCommentTree(
 
   const out = pruneCommentTree(map);
   if (options.threadRootId) {
-    return getNodeAtPath(map, options.threadRootId) ?? getEmptyCommentTree();
+    return getNodeAtPath(map, threadRootIdString) ?? getEmptyCommentTree();
   }
   return out;
 }

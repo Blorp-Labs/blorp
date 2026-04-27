@@ -214,7 +214,7 @@ export const Highlighted: Story = {
     postApId,
     postLocked: false,
     commentTree: makeTree(highlighted),
-    highlightCommentId: String(highlighted.id),
+    highlightCommentId: highlighted.id,
   },
 };
 
