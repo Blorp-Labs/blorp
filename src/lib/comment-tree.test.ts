@@ -85,6 +85,18 @@ describe("buildCommentTree", () => {
       expect(getNodeByKey(placeholder, 2).comment?.id).toBe(2);
     });
 
+    test("placeholder sort matches the descendant that created it, not zero", () => {
+      // comment 10 is first (sort=0), comment 2 arrives second (sort=1) and creates
+      // placeholder 1 — placeholder should sort at 1, not 0, so it doesn't jump above
+      // already-visible content
+      const tree = buildCommentTree(
+        [commentView(10, "0.10"), commentView(2, "0.1.2")],
+        {},
+      );
+      expect(getNodeByKey(tree, 10).meta.sort).toBe(0);
+      expect(getNodeByKey(tree, 1).meta.sort).toBe(1);
+    });
+
     test("creates intermediate placeholder nodes when middle comments are missing", () => {
       const tree = buildCommentTree(
         [commentView(1, "0.1"), commentView(3, "0.1.2.3")],
