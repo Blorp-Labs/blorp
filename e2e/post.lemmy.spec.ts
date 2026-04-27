@@ -58,6 +58,43 @@ for (const { name, base } of tabs) {
 }
 
 // ---------------------------------------------------------------------------
+// Legacy comment URL: /posts/:post/comments/:threadRootId
+// and /posts/:post/comments/:threadRootId.:highlightId
+// ---------------------------------------------------------------------------
+
+test("legacy comment path (single id) loads the post and comment", async ({
+  page,
+}) => {
+  await mockPostApis(page);
+  await page.goto(postUrl("/home/") + "/comments/9001");
+
+  await expect(page.getByTestId("post-card")).toBeInViewport();
+  await expect(
+    page
+      .getByText(
+        "Breaking Bad and Better Call Saul are both excellent choices.",
+      )
+      .first(),
+  ).toBeVisible();
+});
+
+test("legacy comment path (threadRootId.highlightId) loads the post and comment", async ({
+  page,
+}) => {
+  await mockPostApis(page);
+  await page.goto(postUrl("/home/") + "/comments/9001.9001");
+
+  await expect(page.getByTestId("post-card")).toBeInViewport();
+  await expect(
+    page
+      .getByText(
+        "Breaking Bad and Better Call Saul are both excellent choices.",
+      )
+      .first(),
+  ).toBeVisible();
+});
+
+// ---------------------------------------------------------------------------
 // Depth: upvote triggers POST /post/like with the correct body (home tab only)
 // ---------------------------------------------------------------------------
 
