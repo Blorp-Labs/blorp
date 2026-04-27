@@ -31,6 +31,13 @@ export interface CommentTreeTopLevel {
   children: Record<CommentKey, CommentTree>;
 }
 
+// Returns the path prefix ending at the first occurrence of `id`, e.g.
+// pathUpTo(["0","50","100","200"], 100) → "0.50.100"
+function pathUpTo(segments: string[], id: number): string | undefined {
+  const idx = segments.indexOf(String(id));
+  return idx >= 0 ? segments.slice(0, idx + 1).join(".") : undefined;
+}
+
 const getEmptyCommentTree = () => {
   return {
     comment: undefined,
@@ -117,8 +124,6 @@ export function buildCommentTree(
   const map: CommentTreeTopLevel = getEmptyCommentTree();
 
   const threadRootId = options.threadRootId;
-  const threadRootPath = threadRootId?.split(".");
-  const threadRootStart = threadRootPath?.[0];
 
   let i = 0;
 
@@ -127,8 +132,12 @@ export function buildCommentTree(
 
     let viewPath = view.path;
 
-    if (threadRootStart && viewPath.indexOf(threadRootStart) > -1) {
-      viewPath = "0." + viewPath.substring(viewPath.indexOf(threadRootStart));
+    // Re-root the path at the thread root so ancestors above it are stripped.
+    // e.g. with threadRootId="100", "0.50.100.200" becomes "0.100.200".
+    // Without this, placeholder nodes would be created for every ancestor of
+    // the thread root, and depth calculations would be wrong.
+    if (threadRootId && viewPath.indexOf(threadRootId) > -1) {
+      viewPath = "0." + viewPath.substring(viewPath.indexOf(threadRootId));
     }
 
     // Skip comments that cannot be descendants of the thread root.
@@ -141,9 +150,7 @@ export function buildCommentTree(
     }
 
     const [_, ...path] = viewPath.split(".");
-    const relativePathLength = threadRootPath
-      ? path.length - threadRootPath.length
-      : path.length;
+    const relativePathLength = threadRootId ? path.length - 1 : path.length;
     if (relativePathLength > maxDepth) {
       continue;
     }
@@ -153,11 +160,6 @@ export function buildCommentTree(
 
     while (path.length > 1) {
       const front: CommentKey = +path.shift()!;
-      const segIdx = originalSegments.indexOf(String(front));
-      const placeholderPath =
-        segIdx >= 0
-          ? originalSegments.slice(0, segIdx + 1).join(".")
-          : undefined;
       loc.children[front] = loc.children[front] ?? {
         meta: {
           sort: i,
@@ -165,7 +167,7 @@ export function buildCommentTree(
           pruned: false,
           colorIndex: 0,
           pageCursor: viewCursor,
-          path: placeholderPath,
+          path: pathUpTo(originalSegments, front),
         },
         children: {},
       };

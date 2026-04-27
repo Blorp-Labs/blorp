@@ -308,7 +308,7 @@ describe("buildCommentTree", () => {
           commentView(3, "0.1.2.3"),
           commentView(4, "0.1.2.3.4"),
         ],
-        { threadRootId: "0.1", maxDepth: 2 },
+        { threadRootId: "1", maxDepth: 2 },
       );
 
       const node1 = getNodeByKey(tree, 1);
