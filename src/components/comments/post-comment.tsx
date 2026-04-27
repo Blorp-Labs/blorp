@@ -463,7 +463,7 @@ function PostCommentInner({
   postCreatorId?: number;
   modApIds?: string[];
   singleCommentThread?: boolean;
-  highlightCommentId?: string;
+  highlightCommentId?: number;
   canMod?: boolean;
   standalone?: boolean;
   renderMissingComment?: (path: string | undefined) => React.ReactNode;

@@ -150,9 +150,13 @@ function CommentSortBar() {
  * ../comment/[comment.child], but moving fowards, they will be resolve
  * via ../comment/[commentApId]
  */
+function strToInt(value: string | undefined): number | undefined {
+  return value !== undefined ? +value : undefined;
+}
+
 function useResolveComment(pathOrApId: string | undefined): {
-  commentId: string | undefined;
-  highlightCommentId: string | undefined;
+  commentId: number | undefined;
+  highlightCommentId: number | undefined;
   status: "pending" | "error" | "success";
 } {
   const decoded = pathOrApId ? decodeURIComponent(pathOrApId) : undefined;
@@ -182,8 +186,8 @@ function useResolveComment(pathOrApId: string | undefined): {
       const highlightCommentId = commentPathArr.at(-1);
       return {
         ...noResult,
-        commentId,
-        highlightCommentId,
+        commentId: strToInt(commentId),
+        highlightCommentId: strToInt(highlightCommentId),
       };
     } catch {}
 
@@ -197,13 +201,15 @@ function useResolveComment(pathOrApId: string | undefined): {
 
   if (apId) {
     const comment = object.data?.comment;
-    const highlightCommentId = comment ? String(comment.id) : null;
+    const highlightCommentId = comment ? comment.id : null;
     const commentId = comment?.path.split(".").at(-2);
     if (highlightCommentId) {
       return {
         highlightCommentId,
         commentId:
-          commentId && commentId !== "0" ? commentId : highlightCommentId,
+          commentId && commentId !== "0"
+            ? strToInt(commentId)
+            : highlightCommentId,
         status: object.status,
       };
     }
