@@ -153,7 +153,7 @@ export function buildCommentTree(
       const front: CommentKey = +path.shift()!;
       loc.children[front] = loc.children[front] ?? {
         meta: {
-          sort: 0,
+          sort: i,
           immediateChildren: 0,
           pruned: false,
           colorIndex: 0,
@@ -307,7 +307,10 @@ export function debugCommentTree(
     const child = tree.children[Number(key)]!;
     const path = `${pathPrefix}.${key}`;
     const cursor = child.meta?.pageCursor;
-    const label = isNotNil(cursor) ? `${cursor}_${path}` : path;
+    const sort = child.meta?.sort;
+    const cursorPart = isNotNil(cursor) ? `c${cursor}` : "c?";
+    const sortPart = isNotNil(sort) ? `s${sort}` : "s?";
+    const label = `${cursorPart}_${sortPart}_${path}`;
     result[label] = debugCommentTree(child, path);
   }
   return result;
