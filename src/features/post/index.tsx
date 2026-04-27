@@ -266,7 +266,7 @@ export default function Post() {
   const locked = post?.optimisticLocked ?? post?.locked ?? false;
 
   const parentId = parentComment.commentId
-    ? +parentComment.commentId
+    ? parentComment.commentId
     : undefined;
 
   const comments = useCommentsQuery(
@@ -315,7 +315,7 @@ export default function Post() {
     const parentCommentId = parentComment.commentId;
     const parentCommentView = _.isNil(parentCommentId)
       ? undefined
-      : allComments.find((c) => c.id === +parentCommentId);
+      : allComments.find((c) => c.id === parentCommentId);
     const colorIndexOffset = parentCommentView
       ? getCommentDepth(parentCommentView.path)
       : 0;
