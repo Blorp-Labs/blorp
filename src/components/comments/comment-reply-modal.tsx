@@ -19,6 +19,10 @@ import { Button } from "@/src/components/ui/button";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { ToolbarButtons } from "../toolbar/toolbar-buttons";
 import { getSelectedAsMarkdownQuote } from "@/src/lib/markdown";
+import { removeMd } from "../markdown/remove-md";
+import { PersonCard } from "../person/person-card";
+import { CommentVoting } from "./comment-buttons";
+import { useCommentsByPaths } from "@/src/stores/comments";
 
 export function useCommentEditingState({
   parent,
@@ -49,6 +53,32 @@ export function useCommentEditingState({
   return isMe ? state : null;
 }
 
+function RepyingToComment({ path }: { path: string }) {
+  const [comment] = useCommentsByPaths([path]);
+  if (!comment) {
+    return null;
+  }
+  return (
+    <div className="p-3 bg-muted flex flex-col gap-2 mb-2">
+      <div className="flex justify-between items-center">
+        <PersonCard
+          actorId={comment.creatorApId}
+          size="xs"
+          disableLink
+          disableHover
+        />
+        <CommentVoting
+          commentView={comment}
+          className="text-muted-foreground"
+        />
+      </div>
+      <p className="line-clamp-3 text-sm text-muted-foreground">
+        {removeMd(comment.body)}
+      </p>
+    </div>
+  );
+}
+
 export function InlineCommentReply({
   state,
   autoFocus,
@@ -75,7 +105,7 @@ export function InlineCommentReply({
           content={state.content || getSelectedAsMarkdownQuote()}
           onChange={(val) => state.setContent(val)}
           autoFocus={autoFocus}
-          placeholder="Add a comment..."
+          placeholder={state.parent ? "Add a reply..." : "Add a comment..."}
           onSubmit={() => state.submit()}
           footer={
             <div className="flex flex-row justify-end p-1.5 pt-0 gap-2">
@@ -127,11 +157,9 @@ export function useLoadCommentIntoEditor() {
 
 export function CommentReplyProvider({
   children,
-  presentingElement,
   onStateChange,
 }: {
   children: React.ReactNode;
-  presentingElement?: HTMLElement;
   onStateChange: (state: State | null) => void;
 }) {
   const [signal, setSignal] = useState(0);
@@ -215,8 +243,10 @@ export function CommentReplyProvider({
         isOpen={state !== null}
         onWillDismiss={() => onCancel()}
         onDidPresent={() => setSignal((s) => s + 1)}
-        presentingElement={presentingElement}
         className="md:hidden"
+        initialBreakpoint={0.8}
+        breakpoints={[0, 0.8, 1]}
+        expandToScroll={true}
       >
         <IonHeader>
           <IonToolbar>
@@ -232,6 +262,7 @@ export function CommentReplyProvider({
           </IonToolbar>
         </IonHeader>
         <IonContent>
+          {parent && <RepyingToComment path={parent.path} />}
           {media.maxMd && (
             <MarkdownEditor
               key={signal}
@@ -239,7 +270,7 @@ export function CommentReplyProvider({
               onChange={(val) => setContent(commentKey, val)}
               className="min-h-full"
               autoFocus
-              placeholder="Add a comment..."
+              placeholder={parent ? "Add reply..." : "Add a comment..."}
             />
           )}
         </IonContent>

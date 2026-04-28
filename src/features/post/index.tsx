@@ -36,7 +36,6 @@ import { UserDropdown } from "../../components/nav";
 import { PageTitle } from "../../components/page-title";
 import {
   useHideTabBarOnMount,
-  useIonPageElement,
   useMedia,
   useTheme,
   useRequireAuth,
@@ -125,7 +124,7 @@ function ReplyToPost({
               )
             }
           >
-            Add a comment
+            Add a comment...
           </button>
         )}
       </div>
@@ -356,8 +355,6 @@ export default function Post() {
     [structured],
   );
 
-  const pageElement = useIonPageElement();
-
   const router = useIonRouter();
 
   const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
@@ -371,7 +368,6 @@ export default function Post() {
 
   return (
     <Page
-      ref={pageElement.ref}
       notFound={!decodedApId || (postQuery.isError && !post)}
       notFoundApId={decodedApId}
     >
@@ -432,7 +428,6 @@ export default function Post() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <CommentReplyProvider
-          presentingElement={pageElement.element}
           onStateChange={(state) => setCommentReplyParent(state?.parent?.path)}
         >
           <PostReportProvider>
