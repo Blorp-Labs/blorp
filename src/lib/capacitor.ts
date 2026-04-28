@@ -8,15 +8,23 @@ import _ from "lodash";
 
 function registerSafeArea() {
   let keyboardShowing = false;
+  let cachedInsets: SafeAreaInsets = {
+    insets: { top: 0, right: 0, bottom: 0, left: 0 },
+  };
 
-  const updateInsets = ({ insets }: SafeAreaInsets) => {
-    for (const [key, value] of Object.entries(insets)) {
+  const applyInsets = () => {
+    for (const [key, value] of Object.entries(cachedInsets.insets)) {
       document.documentElement.style.setProperty(
         `--ion-safe-area-${key}`,
         // if keyboard open, assume no safe area inset
         `${keyboardShowing && key === "bottom" ? 0 : value}px`,
       );
     }
+  };
+
+  const updateInsets = (data: SafeAreaInsets) => {
+    cachedInsets = data;
+    applyInsets();
   };
 
   if (!Capacitor.isNativePlatform()) {
@@ -51,7 +59,9 @@ function registerSafeArea() {
         "--keyboard-height",
         `${info.keyboardHeight}px`,
       );
-      SafeArea.getSafeAreaInsets().then(updateInsets);
+      // Apply synchronously using cached insets — avoids a native bridge
+      // round-trip on the critical keyboard-show path.
+      applyInsets();
     });
 
     Keyboard.addListener("keyboardDidShow", (info) => {
@@ -60,19 +70,19 @@ function registerSafeArea() {
         "--keyboard-height",
         `${info.keyboardHeight}px`,
       );
-      SafeArea.getSafeAreaInsets().then(updateInsets);
+      applyInsets();
     });
 
     Keyboard.addListener("keyboardDidHide", () => {
       keyboardShowing = false;
       document.body.style.setProperty("--keyboard-height", "0");
-      SafeArea.getSafeAreaInsets().then(updateInsets);
+      applyInsets();
     });
 
     Keyboard.addListener("keyboardWillHide", () => {
       keyboardShowing = false;
       document.body.style.setProperty("--keyboard-height", "0");
-      SafeArea.getSafeAreaInsets().then(updateInsets);
+      applyInsets();
     });
   }
 }
