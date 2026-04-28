@@ -1170,7 +1170,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           sort,
           post_id,
           type_: "All",
-          limit: this.limit,
+          // 50 is the max we are allowed to do
+          limit: 50,
           page:
             _.isUndefined(form.pageCursor) ||
             form.pageCursor === INIT_PAGE_TOKEN
@@ -1190,6 +1191,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
             sort,
             post_id,
             type_: "All",
+            // API seems to drop any comments over 300,
+            // even if we set this higher
             limit: 300,
             max_depth: form.maxDepth,
             saved_only: form.savedOnly,
