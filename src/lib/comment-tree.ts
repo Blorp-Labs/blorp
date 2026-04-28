@@ -295,7 +295,14 @@ function updateMeta(
     const depth = recursionDepth + 1;
     child.meta.colorIndex = depth + colorIndexOffset;
     if (child.comment) {
-      child.meta.immediateChildren = child.comment.childCount;
+      // This will sum over null\undefined, but
+      // lodash seems to handle that gracefully
+      const grandchildCount = _.sum(
+        getCommentChildren(child).map(
+          ([_key, node]) => node.comment?.childCount,
+        ),
+      );
+      child.meta.immediateChildren = child.comment.childCount - grandchildCount;
     }
     updateMeta(child, depth, colorIndexOffset);
   }

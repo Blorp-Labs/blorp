@@ -541,6 +541,9 @@ describe("buildCommentTree", () => {
     });
 
     test("accounts for missing direct children when descendants are present", () => {
+      // node1.childCount=5 includes node2 itself (direct) + node2's 1 descendant (node3) +
+      // 3 more direct children of node1 not loaded. immediateChildren subtracts node2.childCount
+      // (1) to exclude indirect descendants, giving 4 direct children total.
       const tree = buildCommentTree(
         [
           commentView(1, "0.1", 5),
@@ -551,7 +554,7 @@ describe("buildCommentTree", () => {
       );
 
       const node1 = getNodeByKey(tree, 1);
-      expect(node1.meta.immediateChildren).toBe(5);
+      expect(node1.meta.immediateChildren).toBe(4);
     });
 
     test("retains missing-child count after pruning removes direct children", () => {
@@ -565,13 +568,16 @@ describe("buildCommentTree", () => {
       expect(node1.meta.pruned).toBe(true);
     });
 
-    test("reports a hidden sibling correctly when visible children have childCounts that sum to the parent's childCount", () => {
+    test("reports a hidden sibling correctly when grandchildren inflate parent childCount", () => {
+      // node1 has 3 direct children: node2 (with 1 grandchild), node3 (leaf), and 1 missing.
+      // node1.childCount=4 = 3 direct + 1 grandchild. Subtracting visible children's childCounts
+      // (1+0=1) yields immediateChildren=3. Only 2 visible direct children, so shouldShowMore.
       const tree = buildCommentTree(
         [
-          commentView(1, "0.1", 3),
-          commentView(2, "0.1.2", 2),
-          commentView(3, "0.1.3", 1),
-          // fourth direct child of node 1 is missing
+          commentView(1, "0.1", 4),
+          commentView(2, "0.1.2", 1),
+          commentView(3, "0.1.3", 0),
+          // third direct child of node 1 is missing
         ],
         {},
       );
