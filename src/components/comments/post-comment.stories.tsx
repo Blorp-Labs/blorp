@@ -224,6 +224,11 @@ async function loadData() {
 const meta: Meta<typeof PostComment> = {
   component: PostComment,
   loaders: [loadData],
+  args: {
+    renderMissingComment: () => (
+      <span className="block italic mb-2">missing comment</span>
+    ),
+  },
 };
 
 export default meta;
