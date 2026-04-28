@@ -43,7 +43,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { cn } from "@/src/lib/utils";
+import { cn, isNotNil } from "@/src/lib/utils";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
@@ -548,9 +548,9 @@ function PostCommentInner({
   const hideContent = commentView?.removed || commentView?.deleted || false;
 
   const highlightComment =
-    _.isString(highlightCommentId) &&
+    isNotNil(highlightCommentId) &&
     commentView &&
-    highlightCommentId === String(commentView.id);
+    highlightCommentId === commentView.id;
 
   const saved = commentView ? getCommentSaved(commentView) : undefined;
 
