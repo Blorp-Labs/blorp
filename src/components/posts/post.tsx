@@ -360,6 +360,7 @@ function LargePostCard({
         post={post}
         creator={creator}
         community={community}
+        flairs={flairs}
         pinned={pinned}
         showCreator={
           (featuredContext !== "user" && featuredContext !== "search") ||
@@ -730,6 +731,7 @@ export function SmallPostCard({
           post={post}
           creator={creator}
           community={community}
+          flairs={flairs}
           pinned={pinned ?? false}
           showCreator={
             (featuredContext !== "user" &&
@@ -793,7 +795,14 @@ export function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
+          {media.maxMd && (
+            <PostActionButtion
+              post={post}
+              canMod={canMod}
+              flairs={flairs}
+              community={community}
+            />
+          )}
           <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
           <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
           <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
@@ -903,6 +912,7 @@ function ExtraSmallPostCard({
             hideImage={media.maxMd}
             className="min-w-0 flex-1 overflow-hidden"
             post={post}
+            flairs={flairs}
             creator={creator}
             community={community}
             pinned={pinned}

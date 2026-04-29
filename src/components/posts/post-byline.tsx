@@ -26,12 +26,10 @@ import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
 import { cn } from "@/src/lib/utils";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { useProfileFromStore } from "@/src/stores/profiles";
-import { useCommunityFromStore } from "@/src/stores/communities";
 import { CakeDay } from "../cake-day";
 import { useCommunityActions } from "@/src/components/communities/community-sidebar";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { Badge } from "../ui/badge";
-import { useFlairs } from "@/src/stores/flairs";
 import { useShowPostRemoveModal } from "./post-remove";
 import { PostCreatorBadge } from "./post-creator-badge";
 import { Bookmark, Lock } from "../icons";
@@ -50,9 +48,13 @@ import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 
 export function usePostActions({
   post,
+  community,
+  flairs,
   canMod,
 }: {
   post: Schemas.Post;
+  flairs: Schemas.Flair[] | undefined;
+  community: Schemas.Community | undefined;
   canMod?: boolean;
 }): ActionMenuProps["actions"] {
   const showReportModal = useShowPostReportModal();
@@ -71,11 +73,10 @@ export function usePostActions({
 
   const myUserId = useAuth((s) => getAccountActorId(s.getSelectedAccount()));
   const isMyPost = post.creatorApId === myUserId;
-  const community = useCommunityFromStore(post.communityHandle);
   const communityActions = useCommunityActions({
-    actorId: community?.communityView.apId ?? null,
+    actorId: community?.apId ?? null,
     communityHandle: post.communityHandle,
-    communityView: community?.communityView,
+    communityView: community,
   });
 
   const author = useProfileFromStore(post.creatorApId);
@@ -98,8 +99,6 @@ export function usePostActions({
   const encodedApId = encodeApId(post.apId);
 
   const saved = getPostSaved(post);
-
-  const flairs = useFlairs(post.flairs?.map((f) => f.id));
 
   const locked = post.optimisticLocked ?? post.locked;
 
@@ -245,12 +244,16 @@ export function usePostActions({
 
 export function PostActionButtion({
   post,
+  community,
+  flairs,
   canMod = false,
 }: {
   post: Schemas.Post;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   canMod?: boolean;
 }) {
-  const actions = usePostActions({ post, canMod });
+  const actions = usePostActions({ post, canMod, flairs, community });
   return (
     <EllipsisActionMenu
       header="Post"
@@ -267,6 +270,7 @@ export function PostByline({
   post,
   creator,
   community,
+  flairs,
   pinned,
   showCommunity,
   showCreator,
@@ -280,6 +284,7 @@ export function PostByline({
   post: Schemas.Post;
   creator: Schemas.Person | undefined;
   community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   pinned: boolean;
   showCommunity?: boolean;
   showCreator?: boolean;
@@ -452,7 +457,14 @@ export function PostByline({
         <Lock className={cn("text-xl text-yellow-500", ABOVE_LINK_OVERLAY)} />
       )}
 
-      {showActions && <PostActionButtion post={post} canMod={canMod} />}
+      {showActions && (
+        <PostActionButtion
+          post={post}
+          canMod={canMod}
+          flairs={flairs}
+          community={community}
+        />
+      )}
     </div>
   );
 }
