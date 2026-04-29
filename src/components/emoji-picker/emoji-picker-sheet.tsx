@@ -13,6 +13,9 @@ import { cn } from "@/src/lib/utils";
 import { Deferred } from "@/src/lib/deferred";
 import { EMOJI_CATEGORIES } from "@/src/lib/emoji-data";
 
+const COLS = 8;
+const MAX_ROWS = 5;
+
 type EmojiPickerContext = {
   open: (deferred: Deferred<string>) => void;
 };
@@ -56,9 +59,8 @@ export function EmojiPickerSheetProvider({
       <IonModal
         isOpen={isOpen}
         onDidDismiss={handleDismiss}
-        breakpoints={[0, 0.5, 0.92]}
-        initialBreakpoint={0.92}
-        handleBehavior="cycle"
+        breakpoints={[0, 0.5]}
+        initialBreakpoint={0.5}
       >
         <div className="flex flex-col h-full">
           <div className="flex flex-row overflow-x-auto border-b bg-background shrink-0">
@@ -87,12 +89,12 @@ export function EmojiPickerSheetProvider({
             className="flex-1 w-full"
           >
             {EMOJI_CATEGORIES.map((cat) => (
-              <SwiperSlide key={cat.id} className="overflow-y-auto h-full">
+              <SwiperSlide key={cat.id}>
                 <p className="px-3 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   {cat.label}
                 </p>
                 <div className="grid grid-cols-8 gap-0 px-2 pb-2">
-                  {cat.emojis.map((emoji) => (
+                  {cat.emojis.slice(0, COLS * MAX_ROWS).map((emoji) => (
                     <button
                       key={emoji}
                       onClick={() => handleEmojiSelect(emoji)}
@@ -103,7 +105,6 @@ export function EmojiPickerSheetProvider({
                     </button>
                   ))}
                 </div>
-                <div className="h-[var(--ion-safe-area-bottom,0px)]" />
               </SwiperSlide>
             ))}
           </Swiper>
