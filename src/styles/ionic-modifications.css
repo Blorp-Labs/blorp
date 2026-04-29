@@ -23,6 +23,7 @@ ion-toggle {
 }
 
 .sc-ion-action-sheet-ios-h {
+  --background: var(--shad-background);
   --button-color: var(--color-foreground);
 }
 
@@ -54,10 +55,11 @@ ion-action-sheet
   .action-sheet-button-inner:after {
   right: 30px;
 }
-@media (prefers-color-scheme: dark) {
-  ion-action-sheet .action-sheet-selected .action-sheet-button-inner:after {
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="%23ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>');
-  }
+html[data-dark-mode="dark"]
+  ion-action-sheet
+  .action-sheet-selected
+  .action-sheet-button-inner:after {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="%23ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>');
 }
 
 /* Inrease header toolbar min height on large screen sizes */
