@@ -237,6 +237,9 @@ importers:
       dompurify:
         specifier: 3.3.3
         version: 3.3.3
+      emojilib:
+        specifier: 4.0.3
+        version: 4.0.3
       franc:
         specifier: 6.2.0
         version: 6.2.0
@@ -372,6 +375,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      unicode-emoji-json:
+        specifier: 0.9.0
+        version: 0.9.0
       use-context-selector:
         specifier: 2.0.0
         version: 2.0.0(react@19.2.0)(scheduler@0.27.0)
@@ -8069,6 +8075,12 @@ packages:
         integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==,
       }
 
+  emojilib@4.0.3:
+    resolution:
+      {
+        integrity: sha512-KbWiYre9aRSaPbHrHZIz9zmoM+21LAsK1VFJtnTh1VCtWE/rNMDviGhQTmselFl95dhqtGlY22iH0leG5BuW0g==,
+      }
+
   empathic@2.0.0:
     resolution:
       {
@@ -13141,6 +13153,12 @@ packages:
         integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==,
       }
     engines: { node: ">=4" }
+
+  unicode-emoji-json@0.9.0:
+    resolution:
+      {
+        integrity: sha512-HdrQW/7SdbXUsTd8uTATv7LvQJkCSgbAgRCDCtOhQ6xn3EAx+xZHQtRniOXWJK3ywIqPegkNhP4U4EbuFsiQng==,
+      }
 
   unicode-match-property-ecmascript@2.0.0:
     resolution:
@@ -18987,6 +19005,8 @@ snapshots:
 
   emoji-regex@8.0.0: {}
 
+  emojilib@4.0.3: {}
+
   empathic@2.0.0: {}
 
   encodeurl@2.0.0: {}
@@ -22123,6 +22143,8 @@ snapshots:
   undici-types@7.18.2: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
+
+  unicode-emoji-json@0.9.0: {}
 
   unicode-match-property-ecmascript@2.0.0:
     dependencies:
