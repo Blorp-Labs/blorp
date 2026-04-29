@@ -109,7 +109,7 @@ function PostReport({
   noBorder?: boolean;
 }) {
   const postView = usePostFromStore(postReport.postApId);
-  const creator = useProfileFromStore(postReport.creatorApId);
+  const creator = useProfileFromStore(postView?.creatorApId);
   const community = useCommunityFromStore(postView?.communityHandle);
   const flairs = useFlairs(postView?.flairs?.map((f) => f.id));
   const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
