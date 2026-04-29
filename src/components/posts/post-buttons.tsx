@@ -110,7 +110,7 @@ export function PostEmojiReactions({
   const addReactionEmoji = useAddPostReactionEmojiMutation();
   const requireAuth = useRequireAuth();
 
-  const allReactions = post ? getPostEmojiReactions(post) : [];
+  const allReactions = getPostEmojiReactions(post);
   const reactions = allReactions.slice(0, MAX_REACTIONS);
   if (reactions.length === 0) {
     return null;
@@ -181,16 +181,14 @@ export function PostEmojiReactions({
           variant="outline"
           className="px-2 bg-transparent"
           onClick={() => {
-            if (post) {
-              requireAuth().then(() =>
-                addReactionEmoji.mutate({
-                  postApId: post.apId,
-                  postId: post.id,
-                  emoji: emoji.token,
-                  score: getPostMyVote(post) || undefined,
-                }),
-              );
-            }
+            requireAuth().then(() =>
+              addReactionEmoji.mutate({
+                postApId: post.apId,
+                postId: post.id,
+                emoji: emoji.token,
+                score: getPostMyVote(post) || undefined,
+              }),
+            );
           }}
         >
           {emoji.url ? (
@@ -219,7 +217,7 @@ export function PostVoting({
   variant?: "outline" | "ghost";
 }) {
   const id = useId();
-  const apId = post?.apId ?? "";
+  const apId = post.apId;
 
   const voting = usePostVoting(post);
 
@@ -396,7 +394,7 @@ export function PostCommentsButton({
   variant?: "outline" | "ghost";
 }): React.ReactNode {
   const linkCtx = useLinkContext();
-  if (!onClick && post?.communityHandle && post?.apId) {
+  if (!onClick) {
     return (
       <Button
         size="sm"
@@ -417,21 +415,18 @@ export function PostCommentsButton({
       </Button>
     );
   }
-  if (onClick) {
-    return (
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={onClick}
-        className={cn("text-md font-normal bg-transparent", className)}
-      >
-        <TbMessageCirclePlus className="scale-115" />
-        {post?.commentsCount}
-        <span className="sr-only">comments</span>
-      </Button>
-    );
-  }
-  return null;
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={onClick}
+      className={cn("text-md font-normal bg-transparent", className)}
+    >
+      <TbMessageCirclePlus className="scale-115" />
+      {post.commentsCount}
+      <span className="sr-only">comments</span>
+    </Button>
+  );
 }
 
 function usePostShareActions({
@@ -439,30 +434,25 @@ function usePostShareActions({
 }: {
   post: Schemas.Post;
 }): ActionMenuProps<string>["actions"] {
-  const embed = post ? getPostEmbed(post) : null;
+  const embed = getPostEmbed(post);
 
   const linkCtx = useLinkContext();
 
-  const shareActions = useShareActions(
-    "post",
-    post
-      ? {
-          type: "post",
-          id: post.id,
-          apId: post.apId,
-          route: resolveRoute(`${linkCtx.root}posts/:post`, {
-            post: encodeApId(post.apId),
-          }),
-          body: post.body,
-        }
-      : null,
-  );
+  const shareActions = useShareActions("post", {
+    type: "post",
+    id: post.id,
+    apId: post.apId,
+    route: resolveRoute(`${linkCtx.root}posts/:post`, {
+      post: encodeApId(post.apId),
+    }),
+    body: post.body,
+  });
 
-  const thumbnailUrl = embed?.thumbnail;
+  const thumbnailUrl = embed.thumbnail;
 
   return [
     ...(shareActions[0]?.actions ?? []),
-    ...(post && thumbnailUrl && embed.type === "image"
+    ...(thumbnailUrl && embed.type === "image"
       ? [
           {
             text: "Share image",
@@ -470,7 +460,7 @@ function usePostShareActions({
           },
         ]
       : []),
-    ...(post && thumbnailUrl && embed.type === "image"
+    ...(thumbnailUrl && embed.type === "image"
       ? [
           {
             text: "Download image",

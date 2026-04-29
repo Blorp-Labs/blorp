@@ -27,6 +27,13 @@ const SRC_FOLDERS = [
   "tanstack-query",
 ];
 
+const TYPE_AWARE_FILES = [
+  "src/**/*.ts",
+  "src/**/*.tsx",
+  "test-utils/**/*.ts",
+  "test-utils/**/*.tsx",
+];
+
 function buildRestrictedSrcZone(target, from) {
   if (!SRC_FOLDERS.includes(target)) {
     throw new Error(`Invalid src target folder "${target}"`);
@@ -94,6 +101,22 @@ export default tseslint.config(
           argsIgnorePattern: "^_",
         },
       ],
+    },
+  },
+  {
+    files: TYPE_AWARE_FILES,
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    files: TYPE_AWARE_FILES,
+    plugins: { local },
+    rules: {
+      "@typescript-eslint/no-unnecessary-condition": "warn",
     },
   },
   {
