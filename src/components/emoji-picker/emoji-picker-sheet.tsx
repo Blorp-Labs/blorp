@@ -7,9 +7,6 @@ import {
   useState,
 } from "react";
 import { IonModal } from "@ionic/react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Swiper as SwiperType } from "swiper/types";
-import "swiper/css";
 import fuzzysort from "fuzzysort";
 import emojilib from "emojilib";
 import emojiData from "unicode-emoji-json/data-by-group.json";
@@ -20,8 +17,9 @@ import { Button } from "../ui/button";
 import { cn } from "@/src/lib/utils";
 import _ from "lodash";
 
-const COLS = 8;
 const MAX_ROWS = 5;
+const EMOJI_PX = 40; // matches Button size="icon" (h-10 w-10)
+const SEARCH_LIMIT = 40;
 
 type EmojiPickerContext = {
   open: (deferred: Deferred<string>) => void;
@@ -40,7 +38,8 @@ export function EmojiPickerSheetProvider({
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredRef = useRef<Deferred<string> | null>(null);
-  const swiperRef = useRef<SwiperType | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const recentlyUsed = useEmojiReactionStore((s) => s.recentlyUsed);
   const addRecentEmoji = useEmojiReactionStore((s) => s.addRecentEmoji);
 
@@ -67,6 +66,28 @@ export function EmojiPickerSheetProvider({
     setIsOpen(false);
   };
 
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) {
+      return;
+    }
+    const { scrollLeft } = container;
+    let activeIdx = 0;
+    sectionRefs.current.forEach((el, i) => {
+      if (el && el.offsetLeft <= scrollLeft + 1) {
+        activeIdx = i;
+      }
+    });
+    setActiveCategoryIndex(activeIdx);
+  }, []);
+
+  const scrollToCategory = useCallback((i: number) => {
+    const el = sectionRefs.current[i];
+    if (el && scrollRef.current) {
+      scrollRef.current.scrollTo({ left: el.offsetLeft, behavior: "smooth" });
+    }
+  }, []);
+
   const searchResults = useMemo(() => {
     if (!searchQuery) {
       return [];
@@ -80,7 +101,7 @@ export function EmojiPickerSheetProvider({
         })),
         {
           key: "name",
-          limit: COLS * MAX_ROWS,
+          limit: SEARCH_LIMIT,
         },
       )
       .map((r) => r.obj.emoji);
@@ -111,7 +132,7 @@ export function EmojiPickerSheetProvider({
               {emojiData.map((cat, i) => (
                 <button
                   key={cat.slug}
-                  onClick={() => swiperRef.current?.slideTo(i)}
+                  onClick={() => scrollToCategory(i)}
                   className={cn(
                     "flex-shrink-0 px-3 py-2 text-xl transition-colors",
                     activeCategoryIndex === i
@@ -133,7 +154,14 @@ export function EmojiPickerSheetProvider({
                   No emoji found
                 </p>
               ) : (
-                <div className="grid grid-cols-8 gap-0 px-2 py-2">
+                <div
+                  className="grid gap-0 px-2 py-2"
+                  style={{
+                    gridTemplateColumns: `repeat(${Math.ceil(searchResults.length / MAX_ROWS)}, ${EMOJI_PX}px)`,
+                    gridTemplateRows: `repeat(${MAX_ROWS}, ${EMOJI_PX}px)`,
+                    gridAutoFlow: "column",
+                  }}
+                >
                   {searchResults.map((emoji) => (
                     <button
                       key={emoji}
@@ -148,46 +176,57 @@ export function EmojiPickerSheetProvider({
               )}
             </div>
           ) : (
-            <Swiper
-              onSwiper={(s) => {
-                swiperRef.current = s;
-              }}
-              onActiveIndexChange={(s) => setActiveCategoryIndex(s.activeIndex)}
-              className="flex-1 w-full min-h-0"
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="flex-1 flex flex-row overflow-x-auto ion-content-scroll-host min-h-0"
             >
-              {emojiData.map((cat) => {
+              {emojiData.map((cat, i) => {
                 const emojis =
                   cat.slug === "frequent"
-                    ? [...recentlyUsed].slice(0, COLS * MAX_ROWS)
+                    ? ([...recentlyUsed] satisfies string[])
                     : cat.emojis;
+                const cols = Math.max(4, Math.ceil(emojis.length / MAX_ROWS));
                 return (
-                  <SwiperSlide key={cat.slug} className="h-full">
-                    <div className="h-full overflow-y-auto ion-content-scroll-host">
-                      <p className="px-3 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {cat.name}
-                      </p>
-                      <div className="grid grid-cols-8 gap-0 px-2 pb-2">
-                        {emojis.map((item) => {
-                          const emoji = _.isString(item) ? item : item.emoji;
-                          return (
-                            <Button
-                              key={emoji}
-                              onClick={() => handleEmojiSelect(emoji)}
-                              className="text-2xl mx-auto"
-                              aria-label={emoji}
-                              size="icon"
-                              variant="ghost"
-                            >
-                              {emoji}
-                            </Button>
-                          );
-                        })}
-                      </div>
+                  <div
+                    key={cat.slug}
+                    ref={(el) => {
+                      sectionRefs.current[i] = el;
+                    }}
+                    className="flex flex-col shrink-0 px-2"
+                    style={{ width: `${cols * EMOJI_PX}px` }}
+                  >
+                    <p className="pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">
+                      {cat.name}
+                    </p>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateRows: `repeat(${MAX_ROWS}, ${EMOJI_PX}px)`,
+                        gridAutoFlow: "column",
+                        gridAutoColumns: `${EMOJI_PX}px`,
+                      }}
+                    >
+                      {emojis.map((item) => {
+                        const emoji = _.isString(item) ? item : item.emoji;
+                        return (
+                          <Button
+                            key={emoji}
+                            onClick={() => handleEmojiSelect(emoji)}
+                            className="text-2xl mx-auto"
+                            aria-label={emoji}
+                            size="icon"
+                            variant="ghost"
+                          >
+                            {emoji}
+                          </Button>
+                        );
+                      })}
                     </div>
-                  </SwiperSlide>
+                  </div>
                 );
               })}
-            </Swiper>
+            </div>
           )}
         </div>
       </IonModal>
