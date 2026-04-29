@@ -1,7 +1,7 @@
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useShowPostReportModal } from "./post-report";
 import { useAuth, getAccountActorId, useIsAdmin } from "@/src/stores/auth";
-import { useShouldBlurNsfw, useRequireAuth, useInputAlert } from "@/src/hooks";
+import { useShouldBlurNsfw, useRequireAuth } from "@/src/hooks";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
 import { COMMUNITY_NSFW_ICON_BLUR_CLASS } from "@/src/components/communities/utils";
 import { Link, resolveRoute } from "@/src/routing/index";
@@ -14,12 +14,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import {
-  encodeApId,
-  getPostMyVote,
-  getPostSaved,
-  parseHandle,
-} from "@/src/apis/utils";
+import { encodeApId, getPostSaved, parseHandle } from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
@@ -42,7 +37,7 @@ import {
 } from "@/src/queries/post-mutations";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useSoftware } from "@/src/queries/index";
-import { QUICK_REACTION_EMOJIS } from "@/src/components/comments/post-comment";
+import { usePickEmoji } from "@/src/components/emoji-picker/emoji-picker-sheet";
 import { usePersonActions } from "../person/person-action-menu";
 import { useShareActions } from "@/src/components/adaptable/action-menu/hooks";
 
@@ -65,7 +60,7 @@ export function usePostActions({
   const showPostRemoveModal = useShowPostRemoveModal();
   const savePost = useSavePostMutation();
   const addReactionEmoji = useAddPostReactionEmojiMutation();
-  const inputAlert = useInputAlert();
+  const pickEmoji = usePickEmoji();
   const { software } = useSoftware();
 
   const router = useIonRouter();
@@ -153,37 +148,17 @@ export function usePostActions({
       ? [
           {
             text: "React",
-            actions: [
-              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
-                text: emoji,
-                onClick: () =>
-                  requireAuth().then(() =>
-                    addReactionEmoji.mutate({
-                      postApId: post.apId,
-                      postId: post.id,
-                      emoji,
-                      score: getPostMyVote(post) || undefined,
-                    }),
-                  ),
-              })),
-              {
-                text: "Other...",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const emoji = await inputAlert({
-                      header: "React with emoji",
-                      placeholder: "Enter an emoji",
-                    });
-                    addReactionEmoji.mutate({
-                      postApId: post.apId,
-                      postId: post.id,
-                      emoji,
-                    });
-                  } catch {}
-                },
-              },
-            ],
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const emoji = await pickEmoji();
+                addReactionEmoji.mutate({
+                  postApId: post.apId,
+                  postId: post.id,
+                  emoji,
+                });
+              } catch {}
+            },
           },
         ]
       : []),

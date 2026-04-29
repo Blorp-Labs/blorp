@@ -60,7 +60,8 @@ import {
 } from "../ui/collapsible";
 import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
-import { useMedia, useInputAlert, useRequireAuth } from "@/src/hooks";
+import { useMedia, useRequireAuth } from "@/src/hooks";
+import { usePickEmoji } from "@/src/components/emoji-picker/emoji-picker-sheet";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -94,8 +95,6 @@ const useDetailsStore = create<StoreState>((set) => ({
   },
 }));
 
-export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
-
 export function useCommentActions({
   commentView,
   canMod,
@@ -114,7 +113,7 @@ export function useCommentActions({
   const saveComment = useSaveCommentMutation(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswerMutation();
   const addReactionEmoji = useAddCommentReactionEmojiMutation();
-  const inputAlert = useInputAlert();
+  const pickEmoji = usePickEmoji();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -207,37 +206,17 @@ export function useCommentActions({
       ? [
           {
             text: "React",
-            actions: [
-              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
-                text: emoji,
-                onClick: () =>
-                  requireAuth().then(() =>
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                      score: getCommentMyVote(commentView) ?? undefined,
-                    }),
-                  ),
-              })),
-              {
-                text: "Other...",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const emoji = await inputAlert({
-                      header: "React with emoji",
-                      placeholder: "Enter an emoji",
-                    });
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                    });
-                  } catch {}
-                },
-              },
-            ],
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const emoji = await pickEmoji();
+                addReactionEmoji.mutate({
+                  path: commentView.path,
+                  commentId: commentView.id,
+                  emoji,
+                });
+              } catch {}
+            },
           },
         ]
       : []),

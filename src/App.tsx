@@ -17,6 +17,7 @@ import { TanstackDevtools } from "@tanstack/react-devtools";
 import { TanstackQueryProvider } from "./tanstack-query/index";
 import { AuthProvider } from "./features/auth";
 import { PostRemoveProvider } from "./components/posts/post-remove";
+import { EmojiPickerSheetProvider } from "./components/emoji-picker/emoji-picker-sheet";
 import { Toaster } from "./components/ui/sonner";
 
 updateTauri();
@@ -69,19 +70,21 @@ export default function App() {
       <TanstackQueryProvider>
         <AuthProvider>
           <PostRemoveProvider>
-            <RefreshNotificationCount />
-            <InstanceFavicon />
-            <Router />
-            {isDev() && (
-              <TanstackDevtools
-                plugins={[
-                  {
-                    name: "Tanstack Query",
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                ]}
-              />
-            )}
+            <EmojiPickerSheetProvider>
+              <RefreshNotificationCount />
+              <InstanceFavicon />
+              <Router />
+              {isDev() && (
+                <TanstackDevtools
+                  plugins={[
+                    {
+                      name: "Tanstack Query",
+                      render: <ReactQueryDevtoolsPanel />,
+                    },
+                  ]}
+                />
+              )}
+            </EmojiPickerSheetProvider>
           </PostRemoveProvider>
         </AuthProvider>
         <Toaster />
