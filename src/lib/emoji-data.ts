@@ -5,12 +5,14 @@ export type EmojiCategory = {
   emojis: string[];
 };
 
+export const FREQUENT_PLACEHOLDER_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
+
 export const EMOJI_CATEGORIES = [
   {
     id: "frequent",
     label: "Frequently Used",
     icon: "🕐",
-    emojis: ["👍", "❤️", "😂", "😮", "😢"],
+    emojis: FREQUENT_PLACEHOLDER_EMOJIS,
   },
   {
     id: "smileys",

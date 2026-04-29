@@ -11,7 +11,11 @@ import { Swiper as SwiperType } from "swiper/types";
 import "swiper/css";
 import { cn } from "@/src/lib/utils";
 import { Deferred } from "@/src/lib/deferred";
-import { EMOJI_CATEGORIES } from "@/src/lib/emoji-data";
+import {
+  EMOJI_CATEGORIES,
+  FREQUENT_PLACEHOLDER_EMOJIS,
+} from "@/src/lib/emoji-data";
+import { useEmojiReactionStore } from "@/src/stores/emoji-reactions";
 
 const COLS = 8;
 const MAX_ROWS = 5;
@@ -33,6 +37,8 @@ export function EmojiPickerSheetProvider({
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const deferredRef = useRef<Deferred<string> | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
+  const recentlyUsed = useEmojiReactionStore((s) => s.recentlyUsed);
+  const addRecentEmoji = useEmojiReactionStore((s) => s.addRecentEmoji);
 
   const open = useCallback((deferred: Deferred<string>) => {
     deferredRef.current = deferred;
@@ -41,6 +47,7 @@ export function EmojiPickerSheetProvider({
   }, []);
 
   const handleEmojiSelect = (emoji: string) => {
+    addRecentEmoji(emoji);
     deferredRef.current?.resolve(emoji);
     deferredRef.current = null;
     setIsOpen(false);
@@ -88,25 +95,34 @@ export function EmojiPickerSheetProvider({
             onActiveIndexChange={(s) => setActiveCategoryIndex(s.activeIndex)}
             className="flex-1 w-full"
           >
-            {EMOJI_CATEGORIES.map((cat) => (
-              <SwiperSlide key={cat.id}>
-                <p className="px-3 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  {cat.label}
-                </p>
-                <div className="grid grid-cols-8 gap-0 px-2 pb-2">
-                  {cat.emojis.slice(0, COLS * MAX_ROWS).map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => handleEmojiSelect(emoji)}
-                      className="text-2xl p-1.5 rounded-md hover:bg-accent active:bg-accent flex items-center justify-center leading-none"
-                      aria-label={emoji}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </SwiperSlide>
-            ))}
+            {EMOJI_CATEGORIES.map((cat) => {
+              const emojis =
+                cat.id === "frequent"
+                  ? [...recentlyUsed, ...FREQUENT_PLACEHOLDER_EMOJIS].slice(
+                      0,
+                      COLS * MAX_ROWS,
+                    )
+                  : cat.emojis.slice(0, COLS * MAX_ROWS);
+              return (
+                <SwiperSlide key={cat.id}>
+                  <p className="px-3 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {cat.label}
+                  </p>
+                  <div className="grid grid-cols-8 gap-0 px-2 pb-2">
+                    {emojis.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => handleEmojiSelect(emoji)}
+                        className="text-2xl p-1.5 rounded-md hover:bg-accent active:bg-accent flex items-center justify-center leading-none"
+                        aria-label={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </div>
       </IonModal>
