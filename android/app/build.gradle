@@ -7,8 +7,8 @@ android {
         applicationId "xyz.blorpblorp.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1776128916
-        versionName "1.12.4"
+        versionCode 1777466859
+        versionName "1.13.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
