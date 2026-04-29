@@ -272,6 +272,26 @@ describe("persisted state snapshot", () => {
   });
 });
 
+describe("flairs", () => {
+  test("postToDraft → draftToEditPostData preserves flairs", () => {
+    const { post } = api.getPost({
+      post: { apId: "https://example.com/post/1" },
+    });
+    const flair = api.getFlair({ title: "Round-trip Flair" });
+    const draft = postToDraft(post, [flair]);
+    const editData = draftToEditPostData(draft);
+    expect(editData.flairs).toEqual([flair]);
+  });
+
+  test("postToDraft → draftToCreatePostData preserves flairs", () => {
+    const { post } = api.getPost();
+    const flair = api.getFlair({ title: "Create Flair" });
+    const draft = postToDraft(post, [flair]);
+    const createData = draftToCreatePostData(draft);
+    expect(createData.flairs).toEqual([flair]);
+  });
+});
+
 // ─── migration ──────────────────────────────────────────────────────────────
 
 describe("migrateCreatePostStore", () => {
