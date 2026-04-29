@@ -16,7 +16,7 @@ import { abbriviateNumber, abbriviateNumberParts } from "@/src/lib/format";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { Share } from "../icons";
-import { usePostFromStore } from "@/src/stores/posts";
+import { Schemas } from "@/src/apis/api-blueprint";
 import {
   useShareActions,
   useImageShareActions,
@@ -35,7 +35,6 @@ import {
   HoverCardContent,
 } from "../ui/hover-card";
 import { useDoubleTap } from "use-double-tap";
-import { Schemas } from "@/src/apis/api-blueprint";
 import { useMedia, useRequireAuth } from "@/src/hooks";
 import {
   useAddPostReactionEmojiMutation,
@@ -47,9 +46,7 @@ import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 import { downloadImage, shareImage } from "@/src/hooks/share";
 
-export function usePostVoting(apId?: string) {
-  const postView = usePostFromStore(apId);
-
+export function usePostVoting(post?: Schemas.Post) {
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
   const scoreDisplay = useScoreDisplay();
 
@@ -68,7 +65,7 @@ export function usePostVoting(apId?: string) {
     [requireAuth, mutateVote, voteHaptics],
   );
 
-  if (!postView) {
+  if (!post) {
     return null;
   }
 
@@ -78,7 +75,7 @@ export function usePostVoting(apId?: string) {
     displayScore,
     isUpvoted,
     isDownvoted,
-  } = resolveVoteCounts(postView);
+  } = resolveVoteCounts(post);
 
   return {
     displayScore,
@@ -89,32 +86,27 @@ export function usePostVoting(apId?: string) {
     vote,
     enableDownvotes,
     scoreDisplay,
-    postId: postView.id,
+    postId: post.id,
   };
 }
 
-export function useDoubleTapPostLike(config?: {
-  postApId: string;
-  postId: number;
-  score: -1 | 0 | 1;
-}) {
+export function useDoubleTapPostLike(post?: Schemas.Post) {
   const media = useMedia();
-  const voting = usePostVoting(config?.postApId);
+  const voting = usePostVoting(post);
   return useDoubleTap(() => {
-    if (config && media.maxMd) {
-      voting?.vote(config);
+    if (post && media.maxMd) {
+      voting?.vote({ postApId: post.apId, postId: post.id, score: 1 });
     }
   });
 }
 
 export function PostEmojiReactions({
-  apId,
+  post,
   className,
 }: {
-  apId: string;
+  post?: Schemas.Post;
   className?: string;
 }) {
-  const post = usePostFromStore(apId);
   const addReactionEmoji = useAddPostReactionEmojiMutation();
   const requireAuth = useRequireAuth();
 
@@ -192,7 +184,7 @@ export function PostEmojiReactions({
             if (post) {
               requireAuth().then(() =>
                 addReactionEmoji.mutate({
-                  postApId: apId,
+                  postApId: post.apId,
                   postId: post.id,
                   emoji: emoji.token,
                   score: getPostMyVote(post) || undefined,
@@ -218,17 +210,18 @@ export function PostEmojiReactions({
 }
 
 export function PostVoting({
-  apId,
+  post,
   className,
   variant = "outline",
 }: {
-  apId: string;
+  post?: Schemas.Post;
   className?: string;
   variant?: "outline" | "ghost";
 }) {
   const id = useId();
+  const apId = post?.apId ?? "";
 
-  const voting = usePostVoting(apId);
+  const voting = usePostVoting(post);
 
   if (!voting) {
     return null;
@@ -392,20 +385,18 @@ export function PostVoting({
 }
 
 export function PostCommentsButton({
-  postApId,
+  post,
   onClick,
   className,
   variant = "outline",
 }: {
-  postApId: string;
+  post?: Schemas.Post;
   onClick?: () => void;
   className?: string;
   variant?: "outline" | "ghost";
 }): React.ReactNode {
-  const postView = usePostFromStore(postApId);
-
   const linkCtx = useLinkContext();
-  if (!onClick && postView?.communityHandle && postApId) {
+  if (!onClick && post?.communityHandle && post?.apId) {
     return (
       <Button
         size="sm"
@@ -416,11 +407,11 @@ export function PostCommentsButton({
         <Link
           to={`${linkCtx.root}posts/:post`}
           params={{
-            post: encodeApId(postApId),
+            post: encodeApId(post.apId),
           }}
         >
           <TbMessageCircle className="scale-115" />
-          {abbriviateNumber(postView.commentsCount)}
+          {abbriviateNumber(post.commentsCount)}
           <span className="sr-only">comments</span>
         </Link>
       </Button>
@@ -435,7 +426,7 @@ export function PostCommentsButton({
         className={cn("text-md font-normal bg-transparent", className)}
       >
         <TbMessageCirclePlus className="scale-115" />
-        {postView?.commentsCount}
+        {post?.commentsCount}
         <span className="sr-only">comments</span>
       </Button>
     );
@@ -491,14 +482,12 @@ function usePostShareActions({
 }
 
 export function PostShareButton({
-  postApId,
+  post,
   className,
 }: {
-  postApId: string;
+  post?: Schemas.Post;
   className?: string;
 }): React.ReactNode {
-  const post = usePostFromStore(postApId);
-
   const actions = usePostShareActions({ post });
 
   return (

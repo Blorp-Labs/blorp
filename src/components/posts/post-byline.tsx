@@ -265,6 +265,8 @@ export function PostActionButtion({
 
 export function PostByline({
   post,
+  creator,
+  community,
   pinned,
   showCommunity,
   showCreator,
@@ -276,6 +278,8 @@ export function PostByline({
   detailView,
 }: {
   post: Schemas.Post;
+  creator?: Schemas.Person;
+  community?: Schemas.Community;
   pinned: boolean;
   showCommunity?: boolean;
   showCreator?: boolean;
@@ -290,8 +294,6 @@ export function PostByline({
 
   const tag = useTagUserStore((s) => s.userTags[post.creatorHandle]);
 
-  const creator = useProfileFromStore(post.creatorApId);
-  const community = useCommunityFromStore(post.communityHandle);
   const blurNsfw = useShouldBlurNsfw();
   const isRevealed = useNsfwRevealedPostsStore(
     (s) => !!(detailView && s.isRevealed(post.apId)),
@@ -335,10 +337,10 @@ export function PostByline({
           aria-hidden
         >
           <AvatarImage
-            src={community?.communityView.icon ?? undefined}
+            src={community?.icon ?? undefined}
             className={cn(
               "object-cover",
-              community?.communityView.nsfw &&
+              community?.nsfw &&
                 blurNsfw &&
                 !isRevealed &&
                 COMMUNITY_NSFW_ICON_BLUR_CLASS,

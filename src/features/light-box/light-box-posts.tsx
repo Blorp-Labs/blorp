@@ -295,7 +295,7 @@ export default function LightBoxPosts() {
 
   useUpdateRecentCommunity(community?.communityView);
 
-  const voting = usePostVoting(postApId);
+  const voting = usePostVoting(post);
   const { vote, isUpvoted, isDownvoted } = voting ?? {};
 
   useKeyboardShortcut(
@@ -498,11 +498,8 @@ export default function LightBoxPosts() {
         >
           <ContentGutters className="h-full">
             <div className="flex flex-row items-center gap-3">
-              {postApId && (
-                <PostShareButton
-                  postApId={postApId}
-                  className="bg-transparent"
-                />
+              {post && (
+                <PostShareButton post={post} className="bg-transparent" />
               )}
               <div className="flex-1" />
               <Button
@@ -520,13 +517,10 @@ export default function LightBoxPosts() {
                 <BiHelpCircle />
               </Button>
               <div className="flex-1" />
-              {postApId && (
-                <PostCommentsButton
-                  postApId={postApId}
-                  className="bg-transparent"
-                />
+              {post && (
+                <PostCommentsButton post={post} className="bg-transparent" />
               )}
-              {postApId && <PostVoting key={postApId} apId={postApId} />}
+              {post && <PostVoting key={post.apId} post={post} />}
             </div>
           </ContentGutters>
         </div>

@@ -31,7 +31,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldShowNsfw, useRequireAuth } from "@/src/hooks";
+import { useShouldShowNsfw, useMedia } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -40,7 +40,6 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
-import { useMedia } from "@/src/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
@@ -50,6 +49,7 @@ import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import { useReportError } from "@/src/components/use-report-error";
@@ -276,6 +276,9 @@ function CrossPosts({
 
 function LargePostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
@@ -283,6 +286,9 @@ function LargePostCard({
   apId,
 }: {
   post?: Schemas.Post;
+  creator?: Schemas.Person;
+  community?: Schemas.Community;
+  flairs?: Schemas.Flair[];
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
@@ -305,19 +311,9 @@ function LargePostCard({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
-
   const patchPost = usePostsStore((s) => s.patchPost);
 
-  const doubeTapLike = useDoubleTapPostLike(
-    post
-      ? {
-          postId: post.id,
-          postApId: apId,
-          score: 1,
-        }
-      : undefined,
-  );
+  const doubeTapLike = useDoubleTapPostLike(post);
 
   const id = useId();
 
@@ -362,6 +358,8 @@ function LargePostCard({
 
       <PostByline
         post={post}
+        creator={creator}
+        community={community}
         pinned={pinned}
         showCreator={
           (featuredContext !== "user" && featuredContext !== "search") ||
@@ -588,11 +586,11 @@ function LargePostCard({
           leftHandedMode && "flex-row-reverse",
         )}
       >
-        <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostShareButton post={post} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
-        <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
-        <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
       </div>
     </article>
   );
@@ -600,6 +598,9 @@ function LargePostCard({
 
 export function SmallPostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
@@ -608,6 +609,9 @@ export function SmallPostCard({
   className,
 }: {
   post?: Schemas.Post;
+  creator?: Schemas.Person;
+  community?: Schemas.Community;
+  flairs?: Schemas.Flair[];
   detailView?: boolean;
   featuredContext?: PostProps["featuredContext"];
   pinned?: boolean;
@@ -632,8 +636,6 @@ export function SmallPostCard({
   const linkCtx = useLinkContext();
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
-
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const patchPost = usePostsStore((s) => s.patchPost);
 
@@ -726,6 +728,8 @@ export function SmallPostCard({
       >
         <PostByline
           post={post}
+          creator={creator}
+          community={community}
           pinned={pinned ?? false}
           showCreator={
             (featuredContext !== "user" &&
@@ -790,9 +794,9 @@ export function SmallPostCard({
           )}
         >
           {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
-          <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
-          <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
-          <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
+          <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
     </article>
@@ -801,6 +805,9 @@ export function SmallPostCard({
 
 function ExtraSmallPostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
@@ -808,6 +815,9 @@ function ExtraSmallPostCard({
   apId,
 }: {
   post?: Schemas.Post;
+  creator?: Schemas.Person;
+  community?: Schemas.Community;
+  flairs?: Schemas.Flair[];
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
@@ -825,8 +835,6 @@ function ExtraSmallPostCard({
   const linkCtx = useLinkContext();
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
-
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const id = useId();
 
@@ -895,6 +903,8 @@ function ExtraSmallPostCard({
             hideImage={media.maxMd}
             className="min-w-0 flex-1 overflow-hidden"
             post={post}
+            creator={creator}
+            community={community}
             pinned={pinned}
             showCreator={
               (featuredContext !== "user" &&
@@ -915,12 +925,12 @@ function ExtraSmallPostCard({
           />
 
           <PostCommentsButton
-            postApId={apId}
+            post={post}
             variant="ghost"
             className={ABOVE_LINK_OVERLAY}
           />
           <PostVoting
-            apId={apId}
+            post={post}
             variant="ghost"
             className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
           />
@@ -974,27 +984,100 @@ function PostCardErrorFallback({
   );
 }
 
-function PostCardInner(props: PostProps) {
-  const showNsfw = useShouldShowNsfw();
+export interface PostCardViewProps {
+  post?: Schemas.Post;
+  creator?: Schemas.Person;
+  community?: Schemas.Community;
+  flairs?: Schemas.Flair[];
+  detailView?: boolean;
+  featuredContext?: PostProps["featuredContext"];
+  modApIds?: string[];
+  postCardStyle?: PostCardStyle;
+}
 
+export function PostCardView({
+  post,
+  creator,
+  community,
+  flairs,
+  detailView,
+  featuredContext,
+  modApIds,
+  postCardStyle: postCardStyleProp,
+}: PostCardViewProps): React.ReactNode {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
-  const postCardStyle = props.postCardStyle ?? globalPostCardStyle;
-
-  const post = usePostFromStore(props.apId);
+  const postCardStyle = postCardStyleProp ?? globalPostCardStyle;
 
   const featuredCommunity =
     post?.optimisticFeaturedCommunity ?? post?.featuredCommunity ?? false;
   const featuredLocal =
     post?.optimisticFeaturedLocal ?? post?.featuredLocal ?? false;
   const pinned =
-    props.featuredContext === "community"
+    featuredContext === "community"
       ? featuredCommunity
-      : props.featuredContext === "home"
+      : featuredContext === "home"
         ? featuredLocal
         : false;
 
-  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+  const apId = post?.apId ?? "";
+
+  if (detailView || postCardStyle === "large") {
+    return (
+      <LargePostCard
+        post={post}
+        creator={creator}
+        community={community}
+        flairs={flairs}
+        detailView={detailView}
+        featuredContext={featuredContext}
+        pinned={pinned}
+        modApIds={modApIds}
+        apId={apId}
+      />
+    );
+  }
+
+  switch (postCardStyle) {
+    case "small":
+      return (
+        <SmallPostCard
+          post={post}
+          creator={creator}
+          community={community}
+          flairs={flairs}
+          detailView={detailView}
+          featuredContext={featuredContext}
+          pinned={pinned}
+          modApIds={modApIds}
+          apId={apId}
+        />
+      );
+    case "extra-small":
+      return (
+        <ExtraSmallPostCard
+          post={post}
+          creator={creator}
+          community={community}
+          flairs={flairs}
+          detailView={detailView}
+          featuredContext={featuredContext}
+          pinned={pinned}
+          modApIds={modApIds}
+          apId={apId}
+        />
+      );
+  }
+}
+
+function PostCardInner(props: PostProps) {
+  const showNsfw = useShouldShowNsfw();
+
+  const post = usePostFromStore(props.apId);
   const creator = useProfileFromStore(post?.creatorApId);
+  const communityData = useCommunityFromStore(post?.communityHandle);
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
+
+  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
 
@@ -1020,43 +1103,18 @@ function PostCardInner(props: PostProps) {
     ) : null;
   }
 
-  if (props.detailView || postCardStyle === "large") {
-    return (
-      <LargePostCard
-        post={post}
-        detailView={props.detailView}
-        featuredContext={props.featuredContext}
-        pinned={pinned}
-        modApIds={props.modApIds}
-        apId={props.apId}
-      />
-    );
-  }
-
-  switch (postCardStyle) {
-    case "small":
-      return (
-        <SmallPostCard
-          post={post}
-          detailView={props.detailView}
-          featuredContext={props.featuredContext}
-          pinned={pinned}
-          modApIds={props.modApIds}
-          apId={props.apId}
-        />
-      );
-    case "extra-small":
-      return (
-        <ExtraSmallPostCard
-          post={post}
-          detailView={props.detailView}
-          featuredContext={props.featuredContext}
-          pinned={pinned}
-          modApIds={props.modApIds}
-          apId={props.apId}
-        />
-      );
-  }
+  return (
+    <PostCardView
+      post={post}
+      creator={creator}
+      community={communityData?.communityView}
+      flairs={flairs ?? undefined}
+      detailView={props.detailView}
+      featuredContext={props.featuredContext}
+      modApIds={props.modApIds}
+      postCardStyle={props.postCardStyle}
+    />
+  );
 }
 
 export function PostCard(props: PostProps) {
