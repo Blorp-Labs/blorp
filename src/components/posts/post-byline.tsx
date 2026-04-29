@@ -278,8 +278,8 @@ export function PostByline({
   detailView,
 }: {
   post: Schemas.Post;
-  creator?: Schemas.Person;
-  community?: Schemas.Community;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
   pinned: boolean;
   showCommunity?: boolean;
   showCreator?: boolean;

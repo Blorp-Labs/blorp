@@ -85,7 +85,7 @@ export function isEmptyDraft(draft: Draft) {
 
 export function postToDraft(
   post: Schemas.Post,
-  flairs?: Schemas.Flair[] | null,
+  flairs: Schemas.Flair[] | undefined,
 ): Draft {
   return {
     title: post.title,

@@ -285,10 +285,10 @@ function LargePostCard({
   modApIds,
   apId,
 }: {
-  post?: Schemas.Post;
-  creator?: Schemas.Person;
-  community?: Schemas.Community;
-  flairs?: Schemas.Flair[];
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
@@ -608,10 +608,10 @@ export function SmallPostCard({
   apId,
   className,
 }: {
-  post?: Schemas.Post;
-  creator?: Schemas.Person;
-  community?: Schemas.Community;
-  flairs?: Schemas.Flair[];
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext?: PostProps["featuredContext"];
   pinned?: boolean;
@@ -814,10 +814,10 @@ function ExtraSmallPostCard({
   modApIds,
   apId,
 }: {
-  post?: Schemas.Post;
-  creator?: Schemas.Person;
-  community?: Schemas.Community;
-  flairs?: Schemas.Flair[];
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
@@ -985,10 +985,10 @@ function PostCardErrorFallback({
 }
 
 export interface PostCardViewProps {
-  post?: Schemas.Post;
-  creator?: Schemas.Person;
-  community?: Schemas.Community;
-  flairs?: Schemas.Flair[];
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext?: PostProps["featuredContext"];
   modApIds?: string[];
@@ -1108,7 +1108,7 @@ function PostCardInner(props: PostProps) {
       post={post}
       creator={creator}
       community={communityData?.communityView}
-      flairs={flairs ?? undefined}
+      flairs={flairs}
       detailView={props.detailView}
       featuredContext={props.featuredContext}
       modApIds={props.modApIds}

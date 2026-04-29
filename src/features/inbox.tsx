@@ -63,6 +63,9 @@ import { SmallPostCard } from "../components/posts/post";
 import { getAccountSite, useAuth } from "../stores/auth";
 import { Checkbox } from "../components/ui/checkbox";
 import { PersonHoverCard } from "../components/person/person-hover-card";
+import { useProfileFromStore } from "../stores/profiles";
+import { useCommunityFromStore } from "../stores/communities";
+import { useFlairs } from "../stores/flairs";
 
 type Item =
   | { id: string; reply: Schemas.Reply }
@@ -106,6 +109,9 @@ function PostReport({
   noBorder?: boolean;
 }) {
   const postView = usePostFromStore(postReport.postApId);
+  const creator = useProfileFromStore(postReport.creatorApId);
+  const community = useCommunityFromStore(postView?.communityHandle);
+  const flairs = useFlairs(postView?.flairs?.map((f) => f.id));
   const me = useAuth((s) => getAccountSite(s.getSelectedAccount())?.me);
   const resolvePostReport = useResolvePostReportMutation();
   return (
@@ -143,6 +149,9 @@ function PostReport({
                     url: postReport.originalPostUrl,
                     body: postReport.originalPostBody,
                   }}
+                  creator={creator}
+                  community={community?.communityView}
+                  flairs={flairs}
                   modApIds={me ? [me.apId] : undefined}
                   apId={postReport.postApId}
                   className="border-b-0"

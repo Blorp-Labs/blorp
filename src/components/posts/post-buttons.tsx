@@ -46,7 +46,7 @@ import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 import { downloadImage, shareImage } from "@/src/hooks/share";
 
-export function usePostVoting(post?: Schemas.Post) {
+export function usePostVoting(post: Schemas.Post | undefined) {
   const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
   const scoreDisplay = useScoreDisplay();
 
@@ -90,7 +90,7 @@ export function usePostVoting(post?: Schemas.Post) {
   };
 }
 
-export function useDoubleTapPostLike(post?: Schemas.Post) {
+export function useDoubleTapPostLike(post: Schemas.Post | undefined) {
   const media = useMedia();
   const voting = usePostVoting(post);
   return useDoubleTap(() => {
@@ -104,7 +104,7 @@ export function PostEmojiReactions({
   post,
   className,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post;
   className?: string;
 }) {
   const addReactionEmoji = useAddPostReactionEmojiMutation();
@@ -214,7 +214,7 @@ export function PostVoting({
   className,
   variant = "outline",
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post;
   className?: string;
   variant?: "outline" | "ghost";
 }) {
@@ -390,7 +390,7 @@ export function PostCommentsButton({
   className,
   variant = "outline",
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post;
   onClick?: () => void;
   className?: string;
   variant?: "outline" | "ghost";
@@ -437,7 +437,7 @@ export function PostCommentsButton({
 function usePostShareActions({
   post,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post;
 }): ActionMenuProps<string>["actions"] {
   const embed = post ? getPostEmbed(post) : null;
 
@@ -485,7 +485,7 @@ export function PostShareButton({
   post,
   className,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post;
   className?: string;
 }): React.ReactNode {
   const actions = usePostShareActions({ post });

@@ -129,7 +129,7 @@ export function useFlairs(flairIds?: number[]) {
         ? flairIds
             .map((id) => s.flairs[getCachePrefixer()(id)]?.data)
             .filter(isNotNil)
-        : null,
+        : undefined,
     ),
   );
 }
