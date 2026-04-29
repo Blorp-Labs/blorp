@@ -2111,7 +2111,7 @@ export function useInstancesQuery() {
           ({ url }) => url,
         );
       } catch {
-        return undefined;
+        return null;
       }
     },
   });
