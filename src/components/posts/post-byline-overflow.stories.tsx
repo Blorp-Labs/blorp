@@ -36,6 +36,8 @@ type Story = StoryObj<typeof PostByline>;
 export const LongCreatorName: Story = {
   args: {
     post: longCreatorNamePost.post,
+    creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
     showCreator: true,
     showCommunity: false,
     pinned: false,
@@ -45,6 +47,8 @@ export const LongCreatorName: Story = {
 export const LongCommunityName: Story = {
   args: {
     post: longCommunityNamePost.post,
+    creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
     showCreator: false,
     showCommunity: true,
     pinned: false,

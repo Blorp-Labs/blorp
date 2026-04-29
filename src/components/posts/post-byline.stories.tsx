@@ -16,6 +16,7 @@ export const Byline: Story = {
   args: {
     post: postView.post,
     creator: postView.creator,
+    community: postView.community,
     showCommunity: true,
     showCreator: true,
   },

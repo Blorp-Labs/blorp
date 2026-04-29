@@ -126,6 +126,8 @@ export const UnbrokenTitleLarge: Story = {
   args: {
     post: unbrokenTitlePost.post,
     creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -135,6 +137,8 @@ export const UnbrokenTitleSmall: Story = {
   args: {
     post: unbrokenTitlePost.post,
     creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -144,6 +148,8 @@ export const UnbrokenTitleExtraSmall: Story = {
   args: {
     post: unbrokenTitlePost.post,
     creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -155,6 +161,8 @@ export const LoremTitleLarge: Story = {
   args: {
     post: loremTitlePost.post,
     creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -164,6 +172,8 @@ export const LoremTitleSmall: Story = {
   args: {
     post: loremTitlePost.post,
     creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -173,6 +183,8 @@ export const LoremTitleExtraSmall: Story = {
   args: {
     post: loremTitlePost.post,
     creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -184,6 +196,8 @@ export const LongCreatorNameLarge: Story = {
   args: {
     post: longCreatorNamePost.post,
     creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -193,6 +207,8 @@ export const LongCreatorNameSmall: Story = {
   args: {
     post: longCreatorNamePost.post,
     creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -202,6 +218,8 @@ export const LongCreatorNameExtraSmall: Story = {
   args: {
     post: longCreatorNamePost.post,
     creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -213,6 +231,8 @@ export const LongCommunityNameLarge: Story = {
   args: {
     post: longCommunityNamePost.post,
     creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "large",
   },
@@ -222,6 +242,8 @@ export const LongCommunityNameSmall: Story = {
   args: {
     post: longCommunityNamePost.post,
     creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "small",
   },
@@ -231,6 +253,8 @@ export const LongCommunityNameExtraSmall: Story = {
   args: {
     post: longCommunityNamePost.post,
     creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "extra-small",
   },
@@ -242,6 +266,7 @@ export const ManyFlairsLarge: Story = {
   args: {
     post: manyFlairsPost.post,
     creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
     flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "large",
@@ -252,6 +277,7 @@ export const ManyFlairsSmall: Story = {
   args: {
     post: manyFlairsPost.post,
     creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
     flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "small",
@@ -262,6 +288,7 @@ export const ManyFlairsExtraSmall: Story = {
   args: {
     post: manyFlairsPost.post,
     creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
     flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "extra-small",
@@ -274,6 +301,8 @@ export const LongCrossPostCommunity: Story = {
   args: {
     post: longCrossPostCommunityPost.post,
     creator: longCrossPostCommunityPost.creator,
+    community: longCrossPostCommunityPost.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },
@@ -283,6 +312,8 @@ export const ManyCrossPosts: Story = {
   args: {
     post: manyCrossPostsPost.post,
     creator: manyCrossPostsPost.creator,
+    community: manyCrossPostsPost.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },

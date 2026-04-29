@@ -147,6 +147,8 @@ export const TextLarge: Story = {
   args: {
     post: textPost.post,
     creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -155,6 +157,8 @@ export const TextSmall: Story = {
   args: {
     post: textPost.post,
     creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
@@ -163,6 +167,8 @@ export const TextExtraSmall: Story = {
   args: {
     post: textPost.post,
     creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "extra-small",
   },
 };
@@ -171,6 +177,8 @@ export const ImageLarge: Story = {
   args: {
     post: imgPost.post,
     creator: imgPost.creator,
+    community: imgPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -179,6 +187,8 @@ export const ImageSmall: Story = {
   args: {
     post: imgPost.post,
     creator: imgPost.creator,
+    community: imgPost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
@@ -187,6 +197,8 @@ export const ArticleLarge: Story = {
   args: {
     post: articlePost.post,
     creator: articlePost.creator,
+    community: articlePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -195,6 +207,8 @@ export const ArticleSmall: Story = {
   args: {
     post: articlePost.post,
     creator: articlePost.creator,
+    community: articlePost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
@@ -203,6 +217,8 @@ export const YouTube: Story = {
   args: {
     post: youtubePost.post,
     creator: youtubePost.creator,
+    community: youtubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -211,6 +227,8 @@ export const SoundCloud: Story = {
   args: {
     post: soundcloudPost.post,
     creator: soundcloudPost.creator,
+    community: soundcloudPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -219,6 +237,8 @@ export const VideoPost: Story = {
   args: {
     post: videoPost.post,
     creator: videoPost.creator,
+    community: videoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -227,6 +247,8 @@ export const LoopsPost: Story = {
   args: {
     post: loopsPost.post,
     creator: loopsPost.creator,
+    community: loopsPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -235,6 +257,8 @@ export const VimeoPost: Story = {
   args: {
     post: vimeoPost.post,
     creator: vimeoPost.creator,
+    community: vimeoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -243,6 +267,8 @@ export const PeerTube: Story = {
   args: {
     post: peertubePost.post,
     creator: peertubePost.creator,
+    community: peertubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -251,6 +277,8 @@ export const Spotify: Story = {
   args: {
     post: spotifyPost.post,
     creator: spotifyPost.creator,
+    community: spotifyPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -259,6 +287,8 @@ export const Bandcamp: Story = {
   args: {
     post: bandcampPost.post,
     creator: bandcampPost.creator,
+    community: bandcampPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -267,6 +297,8 @@ export const Poll: Story = {
   args: {
     post: pollPost.post,
     creator: pollPost.creator,
+    community: pollPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -275,6 +307,7 @@ export const WithFlairsLarge: Story = {
   args: {
     post: postWithFlairs.post,
     creator: postWithFlairs.creator,
+    community: postWithFlairs.community,
     flairs: postFlairs,
     postCardStyle: "large",
   },
@@ -284,6 +317,7 @@ export const WithFlairsSmall: Story = {
   args: {
     post: postWithFlairs.post,
     creator: postWithFlairs.creator,
+    community: postWithFlairs.community,
     flairs: postFlairs,
     postCardStyle: "small",
   },
@@ -293,6 +327,8 @@ export const WithCrossPostsLarge: Story = {
   args: {
     post: postWithCrossPosts.post,
     creator: postWithCrossPosts.creator,
+    community: postWithCrossPosts.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },
@@ -302,6 +338,8 @@ export const WithSingleReaction: Story = {
   args: {
     post: postWithSingleReaction.post,
     creator: postWithSingleReaction.creator,
+    community: postWithSingleReaction.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -310,6 +348,8 @@ export const WithManyReactionsTruncated: Story = {
   args: {
     post: postWithManyReactions.post,
     creator: postWithManyReactions.creator,
+    community: postWithManyReactions.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -318,6 +358,8 @@ export const NsfwImage: Story = {
   args: {
     post: nsfwImagePost.post,
     creator: nsfwImagePost.creator,
+    community: nsfwImagePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -326,6 +368,8 @@ export const NsfwArticle: Story = {
   args: {
     post: nsfwArticlePost.post,
     creator: nsfwArticlePost.creator,
+    community: nsfwArticlePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -334,6 +378,8 @@ export const NsfwVideo: Story = {
   args: {
     post: nsfwVideoPost.post,
     creator: nsfwVideoPost.creator,
+    community: nsfwVideoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -342,6 +388,8 @@ export const NsfwLoops: Story = {
   args: {
     post: nsfwLoopsPost.post,
     creator: nsfwLoopsPost.creator,
+    community: nsfwLoopsPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -350,6 +398,8 @@ export const NsfwRedGif: Story = {
   args: {
     post: nsfwRedGifPost.post,
     creator: nsfwRedGifPost.creator,
+    community: nsfwRedGifPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
@@ -358,6 +408,8 @@ export const NsfwPeerTube: Story = {
   args: {
     post: nsfwPeerTubePost.post,
     creator: nsfwPeerTubePost.creator,
+    community: nsfwPeerTubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
