@@ -1,12 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { PostCard } from "./post";
+import { PostCardView } from "./post";
 import * as api from "@/test-utils/api";
-import { usePostsStore } from "@/src/stores/posts";
-import { useAuth } from "@/src/stores/auth";
-import { useProfilesStore } from "@/src/stores/profiles";
-import { useFlairsStore } from "@/src/stores/flairs";
-import { waitForHydration } from "@/test-utils/storybook";
 
 // Long unbroken string — stress-tests break-words / overflow clipping
 const unbrokenTitlePost = api.getPost({
@@ -108,40 +103,8 @@ const manyCrossPostsPost = api.getPost({
   },
 });
 
-const ALL_FLAIRS = manyFlairs;
-
-const POSTS = [
-  unbrokenTitlePost,
-  loremTitlePost,
-  longCreatorNamePost,
-  longCommunityNamePost,
-  manyFlairsPost,
-  longCrossPostCommunityPost,
-  manyCrossPostsPost,
-];
-
-async function loadData() {
-  await waitForHydration(
-    useAuth,
-    usePostsStore,
-    useProfilesStore,
-    useFlairsStore,
-  );
-  const prefixer = useAuth.getState().getCachePrefixer();
-  useProfilesStore.getState().cacheProfiles(
-    prefixer,
-    POSTS.map((p) => p.creator),
-  );
-  usePostsStore.getState().cachePosts(
-    prefixer,
-    POSTS.map((p) => p.post),
-  );
-  useFlairsStore.getState().cacheFlairs(prefixer, ALL_FLAIRS);
-}
-
-const meta: Meta<typeof PostCard> = {
-  component: PostCard,
-  loaders: [loadData],
+const meta: Meta<typeof PostCardView> = {
+  component: PostCardView,
   decorators: (Story) => (
     <>
       <div className="max-w-xs">
@@ -155,13 +118,16 @@ const meta: Meta<typeof PostCard> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PostCard>;
+type Story = StoryObj<typeof PostCardView>;
 
 // ─── Unbroken title ───────────────────────────────────────────────────────────
 
 export const UnbrokenTitleLarge: Story = {
   args: {
-    apId: unbrokenTitlePost.post.apId,
+    post: unbrokenTitlePost.post,
+    creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -169,7 +135,10 @@ export const UnbrokenTitleLarge: Story = {
 
 export const UnbrokenTitleSmall: Story = {
   args: {
-    apId: unbrokenTitlePost.post.apId,
+    post: unbrokenTitlePost.post,
+    creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -177,7 +146,10 @@ export const UnbrokenTitleSmall: Story = {
 
 export const UnbrokenTitleExtraSmall: Story = {
   args: {
-    apId: unbrokenTitlePost.post.apId,
+    post: unbrokenTitlePost.post,
+    creator: unbrokenTitlePost.creator,
+    community: unbrokenTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -187,7 +159,10 @@ export const UnbrokenTitleExtraSmall: Story = {
 
 export const LoremTitleLarge: Story = {
   args: {
-    apId: loremTitlePost.post.apId,
+    post: loremTitlePost.post,
+    creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -195,7 +170,10 @@ export const LoremTitleLarge: Story = {
 
 export const LoremTitleSmall: Story = {
   args: {
-    apId: loremTitlePost.post.apId,
+    post: loremTitlePost.post,
+    creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -203,7 +181,10 @@ export const LoremTitleSmall: Story = {
 
 export const LoremTitleExtraSmall: Story = {
   args: {
-    apId: loremTitlePost.post.apId,
+    post: loremTitlePost.post,
+    creator: loremTitlePost.creator,
+    community: loremTitlePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -213,7 +194,10 @@ export const LoremTitleExtraSmall: Story = {
 
 export const LongCreatorNameLarge: Story = {
   args: {
-    apId: longCreatorNamePost.post.apId,
+    post: longCreatorNamePost.post,
+    creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -221,7 +205,10 @@ export const LongCreatorNameLarge: Story = {
 
 export const LongCreatorNameSmall: Story = {
   args: {
-    apId: longCreatorNamePost.post.apId,
+    post: longCreatorNamePost.post,
+    creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -229,7 +216,10 @@ export const LongCreatorNameSmall: Story = {
 
 export const LongCreatorNameExtraSmall: Story = {
   args: {
-    apId: longCreatorNamePost.post.apId,
+    post: longCreatorNamePost.post,
+    creator: longCreatorNamePost.creator,
+    community: longCreatorNamePost.community,
+    flairs: [],
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -239,7 +229,10 @@ export const LongCreatorNameExtraSmall: Story = {
 
 export const LongCommunityNameLarge: Story = {
   args: {
-    apId: longCommunityNamePost.post.apId,
+    post: longCommunityNamePost.post,
+    creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "large",
   },
@@ -247,7 +240,10 @@ export const LongCommunityNameLarge: Story = {
 
 export const LongCommunityNameSmall: Story = {
   args: {
-    apId: longCommunityNamePost.post.apId,
+    post: longCommunityNamePost.post,
+    creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "small",
   },
@@ -255,7 +251,10 @@ export const LongCommunityNameSmall: Story = {
 
 export const LongCommunityNameExtraSmall: Story = {
   args: {
-    apId: longCommunityNamePost.post.apId,
+    post: longCommunityNamePost.post,
+    creator: longCommunityNamePost.creator,
+    community: longCommunityNamePost.community,
+    flairs: [],
     featuredContext: "user",
     postCardStyle: "extra-small",
   },
@@ -265,7 +264,10 @@ export const LongCommunityNameExtraSmall: Story = {
 
 export const ManyFlairsLarge: Story = {
   args: {
-    apId: manyFlairsPost.post.apId,
+    post: manyFlairsPost.post,
+    creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
+    flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "large",
   },
@@ -273,7 +275,10 @@ export const ManyFlairsLarge: Story = {
 
 export const ManyFlairsSmall: Story = {
   args: {
-    apId: manyFlairsPost.post.apId,
+    post: manyFlairsPost.post,
+    creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
+    flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "small",
   },
@@ -281,7 +286,10 @@ export const ManyFlairsSmall: Story = {
 
 export const ManyFlairsExtraSmall: Story = {
   args: {
-    apId: manyFlairsPost.post.apId,
+    post: manyFlairsPost.post,
+    creator: manyFlairsPost.creator,
+    community: manyFlairsPost.community,
+    flairs: manyFlairs,
     featuredContext: "community",
     postCardStyle: "extra-small",
   },
@@ -291,7 +299,10 @@ export const ManyFlairsExtraSmall: Story = {
 
 export const LongCrossPostCommunity: Story = {
   args: {
-    apId: longCrossPostCommunityPost.post.apId,
+    post: longCrossPostCommunityPost.post,
+    creator: longCrossPostCommunityPost.creator,
+    community: longCrossPostCommunityPost.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },
@@ -299,7 +310,10 @@ export const LongCrossPostCommunity: Story = {
 
 export const ManyCrossPosts: Story = {
   args: {
-    apId: manyCrossPostsPost.post.apId,
+    post: manyCrossPostsPost.post,
+    creator: manyCrossPostsPost.creator,
+    community: manyCrossPostsPost.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },

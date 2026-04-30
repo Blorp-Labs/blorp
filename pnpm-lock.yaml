@@ -490,6 +490,9 @@ importers:
       eslint:
         specifier: 10.0.2
         version: 10.0.2(jiti@2.6.1)
+      eslint-formatter-checkstyle:
+        specifier: 9.0.1
+        version: 9.0.1
       eslint-import-resolver-typescript:
         specifier: 4.4.4
         version: 4.4.4(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.2(jiti@2.6.1)))(eslint@10.0.2(jiti@2.6.1))
@@ -8101,6 +8104,13 @@ packages:
       }
     engines: { node: ">=6.0" }
     hasBin: true
+
+  eslint-formatter-checkstyle@9.0.1:
+    resolution:
+      {
+        integrity: sha512-DeD1XkqFr22ZK+KsREcW3YFUsYtS5hTZb52m+fLVeAHMnTtgtLP9xiA55b5qiNvNxDf/hbTN+9X8lZl9jHH/cQ==,
+      }
+    engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
 
   eslint-import-context@0.1.9:
     resolution:
@@ -18759,6 +18769,8 @@ snapshots:
       esutils: 2.0.3
     optionalDependencies:
       source-map: 0.6.1
+
+  eslint-formatter-checkstyle@9.0.1: {}
 
   eslint-import-context@0.1.9(unrs-resolver@1.11.1):
     dependencies:

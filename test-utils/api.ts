@@ -79,6 +79,7 @@ export function getPost(config?: {
 }): {
   post: Schemas.Post;
   creator: Schemas.Person;
+  community: Schemas.Community;
 } {
   const creator = getPerson();
   const creatorHandle = creator.handle;
@@ -212,6 +213,7 @@ export function getPost(config?: {
   return {
     creator,
     post,
+    community,
   };
 }
 

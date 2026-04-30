@@ -1,12 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { PostCard } from "./post";
+import { PostCardView } from "./post";
 import * as api from "@/test-utils/api";
-import { usePostsStore } from "@/src/stores/posts";
-import { useAuth } from "@/src/stores/auth";
-import { useProfilesStore } from "@/src/stores/profiles";
-import { useFlairsStore } from "@/src/stores/flairs";
-import { waitForHydration } from "@/test-utils/storybook";
 
 const textPost = api.getPost({
   variant: "text",
@@ -141,195 +136,199 @@ const postWithCrossPosts = api.getPost({
   },
 });
 
-const POSTS = [
-  textPost,
-  imgPost,
-  articlePost,
-  youtubePost,
-  soundcloudPost,
-  videoPost,
-  loopsPost,
-  vimeoPost,
-  peertubePost,
-  spotifyPost,
-  bandcampPost,
-  pollPost,
-  postWithFlairs,
-  postWithCrossPosts,
-  postWithSingleReaction,
-  postWithManyReactions,
-  nsfwImagePost,
-  nsfwArticlePost,
-  nsfwVideoPost,
-  nsfwLoopsPost,
-  nsfwRedGifPost,
-  nsfwPeerTubePost,
-];
-
-async function loadData() {
-  await waitForHydration(
-    useAuth,
-    usePostsStore,
-    useProfilesStore,
-    useFlairsStore,
-  );
-  useAuth.getState().updateSelectedAccount({
-    site: api.getSite({
-      showNsfw: true,
-      blurNsfw: true,
-    }),
-    jwt: "123",
-  });
-  const prefixer = useAuth.getState().getCachePrefixer();
-  useProfilesStore.getState().cacheProfiles(
-    prefixer,
-    POSTS.map((p) => p.creator),
-  );
-  usePostsStore.getState().cachePosts(
-    prefixer,
-    POSTS.map((p) => p.post),
-  );
-  useFlairsStore.getState().cacheFlairs(prefixer, postFlairs);
-}
-
-//👇 This default export determines where your story goes in the story list
-const meta: Meta<typeof PostCard> = {
-  component: PostCard,
-  loaders: [loadData],
+const meta: Meta<typeof PostCardView> = {
+  component: PostCardView,
 };
 
 export default meta;
-type Story = StoryObj<typeof PostCard>;
+type Story = StoryObj<typeof PostCardView>;
 
 export const TextLarge: Story = {
   args: {
-    apId: textPost.post.apId,
+    post: textPost.post,
+    creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const TextSmall: Story = {
   args: {
-    apId: textPost.post.apId,
+    post: textPost.post,
+    creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
 
 export const TextExtraSmall: Story = {
   args: {
-    apId: textPost.post.apId,
+    post: textPost.post,
+    creator: textPost.creator,
+    community: textPost.community,
+    flairs: [],
     postCardStyle: "extra-small",
   },
 };
 
 export const ImageLarge: Story = {
   args: {
-    apId: imgPost.post.apId,
+    post: imgPost.post,
+    creator: imgPost.creator,
+    community: imgPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const ImageSmall: Story = {
   args: {
-    apId: imgPost.post.apId,
+    post: imgPost.post,
+    creator: imgPost.creator,
+    community: imgPost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
 
 export const ArticleLarge: Story = {
   args: {
-    apId: articlePost.post.apId,
+    post: articlePost.post,
+    creator: articlePost.creator,
+    community: articlePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const ArticleSmall: Story = {
   args: {
-    apId: articlePost.post.apId,
+    post: articlePost.post,
+    creator: articlePost.creator,
+    community: articlePost.community,
+    flairs: [],
     postCardStyle: "small",
   },
 };
 
 export const YouTube: Story = {
   args: {
-    apId: youtubePost.post.apId,
+    post: youtubePost.post,
+    creator: youtubePost.creator,
+    community: youtubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const SoundCloud: Story = {
   args: {
-    apId: soundcloudPost.post.apId,
+    post: soundcloudPost.post,
+    creator: soundcloudPost.creator,
+    community: soundcloudPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const VideoPost: Story = {
   args: {
-    apId: videoPost.post.apId,
+    post: videoPost.post,
+    creator: videoPost.creator,
+    community: videoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const LoopsPost: Story = {
   args: {
-    apId: loopsPost.post.apId,
+    post: loopsPost.post,
+    creator: loopsPost.creator,
+    community: loopsPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const VimeoPost: Story = {
   args: {
-    apId: vimeoPost.post.apId,
+    post: vimeoPost.post,
+    creator: vimeoPost.creator,
+    community: vimeoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const PeerTube: Story = {
   args: {
-    apId: peertubePost.post.apId,
+    post: peertubePost.post,
+    creator: peertubePost.creator,
+    community: peertubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const Spotify: Story = {
   args: {
-    apId: spotifyPost.post.apId,
+    post: spotifyPost.post,
+    creator: spotifyPost.creator,
+    community: spotifyPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const Bandcamp: Story = {
   args: {
-    apId: bandcampPost.post.apId,
+    post: bandcampPost.post,
+    creator: bandcampPost.creator,
+    community: bandcampPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const Poll: Story = {
   args: {
-    apId: pollPost.post.apId,
+    post: pollPost.post,
+    creator: pollPost.creator,
+    community: pollPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const WithFlairsLarge: Story = {
   args: {
-    apId: postWithFlairs.post.apId,
+    post: postWithFlairs.post,
+    creator: postWithFlairs.creator,
+    community: postWithFlairs.community,
+    flairs: postFlairs,
     postCardStyle: "large",
   },
 };
 
 export const WithFlairsSmall: Story = {
   args: {
-    apId: postWithFlairs.post.apId,
+    post: postWithFlairs.post,
+    creator: postWithFlairs.creator,
+    community: postWithFlairs.community,
+    flairs: postFlairs,
     postCardStyle: "small",
   },
 };
 
 export const WithCrossPostsLarge: Story = {
   args: {
-    apId: postWithCrossPosts.post.apId,
+    post: postWithCrossPosts.post,
+    creator: postWithCrossPosts.creator,
+    community: postWithCrossPosts.community,
+    flairs: [],
     detailView: true,
     postCardStyle: "large",
   },
@@ -337,56 +336,80 @@ export const WithCrossPostsLarge: Story = {
 
 export const WithSingleReaction: Story = {
   args: {
-    apId: postWithSingleReaction.post.apId,
+    post: postWithSingleReaction.post,
+    creator: postWithSingleReaction.creator,
+    community: postWithSingleReaction.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const WithManyReactionsTruncated: Story = {
   args: {
-    apId: postWithManyReactions.post.apId,
+    post: postWithManyReactions.post,
+    creator: postWithManyReactions.creator,
+    community: postWithManyReactions.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwImage: Story = {
   args: {
-    apId: nsfwImagePost.post.apId,
+    post: nsfwImagePost.post,
+    creator: nsfwImagePost.creator,
+    community: nsfwImagePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwArticle: Story = {
   args: {
-    apId: nsfwArticlePost.post.apId,
+    post: nsfwArticlePost.post,
+    creator: nsfwArticlePost.creator,
+    community: nsfwArticlePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwVideo: Story = {
   args: {
-    apId: nsfwVideoPost.post.apId,
+    post: nsfwVideoPost.post,
+    creator: nsfwVideoPost.creator,
+    community: nsfwVideoPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwLoops: Story = {
   args: {
-    apId: nsfwLoopsPost.post.apId,
+    post: nsfwLoopsPost.post,
+    creator: nsfwLoopsPost.creator,
+    community: nsfwLoopsPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwRedGif: Story = {
   args: {
-    apId: nsfwRedGifPost.post.apId,
+    post: nsfwRedGifPost.post,
+    creator: nsfwRedGifPost.creator,
+    community: nsfwRedGifPost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };
 
 export const NsfwPeerTube: Story = {
   args: {
-    apId: nsfwPeerTubePost.post.apId,
+    post: nsfwPeerTubePost.post,
+    creator: nsfwPeerTubePost.creator,
+    community: nsfwPeerTubePost.community,
+    flairs: [],
     postCardStyle: "large",
   },
 };

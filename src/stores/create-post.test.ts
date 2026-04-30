@@ -114,7 +114,7 @@ describe("empty choice filtering", () => {
 describe("poll round trip", () => {
   test("postToDraft → draftToEditPostData preserves choice ids", () => {
     const { post } = api.getPost({ variant: "poll" });
-    const draft = postToDraft(post);
+    const draft = postToDraft(post, []);
     const editData = draftToEditPostData(draft);
     expect(editData.poll?.choices.map((c) => c.id)).toEqual(
       post.poll!.choices.map((c) => c.id),
@@ -123,7 +123,7 @@ describe("poll round trip", () => {
 
   test("postToDraft → draftToEditPostData preserves choice text", () => {
     const { post } = api.getPost({ variant: "poll" });
-    const draft = postToDraft(post);
+    const draft = postToDraft(post, []);
     const editData = draftToEditPostData(draft);
     expect(editData.poll?.choices.map((c) => c.text)).toEqual(
       post.poll!.choices.map((c) => c.text),
@@ -139,7 +139,7 @@ describe("alt text", () => {
       variant: "image",
       post: { altText: ALT },
     });
-    const draft = postToDraft(post);
+    const draft = postToDraft(post, []);
     expect(draft.altText).toBe(ALT);
   });
 
@@ -204,7 +204,7 @@ describe("alt text", () => {
       variant: "image",
       post: { altText: ALT },
     });
-    const draft = postToDraft(post);
+    const draft = postToDraft(post, []);
     const edited = draftToEditPostData(draft);
     expect(edited.altText).toBe(ALT);
   });
@@ -214,7 +214,7 @@ describe("alt text", () => {
       variant: "image",
       post: { altText: null },
     });
-    const draft = postToDraft(post);
+    const draft = postToDraft(post, []);
     const edited = draftToEditPostData(draft);
     expect(edited.altText).toBeNull();
   });
@@ -261,7 +261,7 @@ describe("persisted state snapshot", () => {
 
   test("create post store shape", () => {
     const post = api.getPost({ post: { id: 123 } });
-    const draft = postToDraft(post.post);
+    const draft = postToDraft(post.post, []);
     const { result } = renderHook(() => useCreatePostStore());
 
     act(() => {
@@ -269,6 +269,26 @@ describe("persisted state snapshot", () => {
     });
 
     expect(result.current.drafts).toMatchSnapshot();
+  });
+});
+
+describe("flairs", () => {
+  test("postToDraft → draftToEditPostData preserves flairs", () => {
+    const { post } = api.getPost({
+      post: { apId: "https://example.com/post/1" },
+    });
+    const flair = api.getFlair({ title: "Round-trip Flair" });
+    const draft = postToDraft(post, [flair]);
+    const editData = draftToEditPostData(draft);
+    expect(editData.flairs).toEqual([flair]);
+  });
+
+  test("postToDraft → draftToCreatePostData preserves flairs", () => {
+    const { post } = api.getPost();
+    const flair = api.getFlair({ title: "Create Flair" });
+    const draft = postToDraft(post, [flair]);
+    const createData = draftToCreatePostData(draft);
+    expect(createData.flairs).toEqual([flair]);
   });
 });
 

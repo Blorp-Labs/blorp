@@ -31,7 +31,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldShowNsfw, useRequireAuth } from "@/src/hooks";
+import { useShouldShowNsfw, useMedia } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -40,7 +40,6 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
-import { useMedia } from "@/src/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
@@ -50,6 +49,7 @@ import { ResponsiveTooltip } from "../adaptable/responsive-tooltip";
 import { PostPollEmbed } from "./embeds/post-poll-embed";
 import { ABOVE_LINK_OVERLAY } from "./config";
 import { useProfileFromStore } from "@/src/stores/profiles";
+import { useCommunityFromStore } from "@/src/stores/communities";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import { useReportError } from "@/src/components/use-report-error";
@@ -276,18 +276,22 @@ function CrossPosts({
 
 function LargePostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
   modApIds,
-  apId,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
-  apId: string;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -305,19 +309,9 @@ function LargePostCard({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
-
   const patchPost = usePostsStore((s) => s.patchPost);
 
-  const doubeTapLike = useDoubleTapPostLike(
-    post
-      ? {
-          postId: post.id,
-          postApId: apId,
-          score: 1,
-        }
-      : undefined,
-  );
+  const doubeTapLike = useDoubleTapPostLike(post);
 
   const id = useId();
 
@@ -325,23 +319,25 @@ function LargePostCard({
 
   const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
     post?.nsfw ?? false,
-    { apId, detailView },
+    { apId: post?.apId, detailView },
   );
 
   if (!post) {
     return <PostCardSkeleton />;
   }
 
+  const apId = post.apId;
+
   const encodedApId = encodeApId(apId);
-  const embed = post ? getPostEmbed(post) : null;
+  const embed = getPostEmbed(post);
 
   const showImage =
-    embed?.type === "image" &&
+    embed.type === "image" &&
     !post.deleted &&
     !post.removed &&
     imageStatus !== "error";
   const showArticle =
-    embed?.type === "article" && !post?.deleted && !post.removed;
+    embed.type === "article" && !post.deleted && !post.removed;
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -362,6 +358,9 @@ function LargePostCard({
 
       <PostByline
         post={post}
+        creator={creator}
+        community={community}
+        flairs={flairs}
         pinned={pinned}
         showCreator={
           (featuredContext !== "user" && featuredContext !== "search") ||
@@ -390,8 +389,8 @@ function LargePostCard({
         <div
           className={cn("flex flex-row flex-wrap gap-1", ABOVE_LINK_OVERLAY)}
         >
-          {flairs.map((flair, index) => (
-            <Flair key={flair?.id ?? index} flair={flair} />
+          {flairs.map((flair) => (
+            <Flair key={flair.id} flair={flair} />
           ))}
         </div>
       )}
@@ -419,7 +418,7 @@ function LargePostCard({
           post.body &&
           !post.deleted &&
           !post.removed &&
-          embed?.type === "text" && (
+          embed.type === "text" && (
             <p
               className={cn(
                 "text-sm line-clamp-3 leading-relaxed",
@@ -495,19 +494,19 @@ function LargePostCard({
 
       {showArticle && (
         <PostArticleEmbed
-          url={showArticle ? embed.embedUrl : undefined}
-          thumbnail={showArticle ? embed.thumbnail : null}
+          url={embed.embedUrl}
+          thumbnail={embed.thumbnail}
           nsfw={post.nsfw ?? undefined}
           apId={apId}
           detailView={detailView}
         />
       )}
 
-      {embed?.type === "generic-video" &&
+      {embed.type === "generic-video" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <IFramePostEmbed embedVideoUrl={embed.embedUrl} />}
-      {embed?.type === "peertube" &&
+      {embed.type === "peertube" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -519,16 +518,15 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "soundcloud" &&
+      {embed.type === "soundcloud" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <SoundCloudEmbed url={embed.embedUrl} />}
-      {embed?.type === "spotify" &&
+      {embed.type === "spotify" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <SpotifyEmbed url={embed.embedUrl} />}
-      {embed?.type &&
-        PostVideoEmbed.embedTypes.includes(embed?.type) &&
+      {PostVideoEmbed.embedTypes.includes(embed.type) &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -540,7 +538,7 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "loops" &&
+      {embed.type === "loops" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -553,7 +551,7 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "redgif" &&
+      {embed.type === "redgif" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -566,13 +564,13 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "youtube" && !post.deleted && !post.removed && (
+      {embed.type === "youtube" && !post.deleted && !post.removed && (
         <YouTubeVideoEmbed
           url={embed.embedUrl}
           className={ABOVE_LINK_OVERLAY}
         />
       )}
-      {embed?.type === "bandcamp" &&
+      {embed.type === "bandcamp" &&
         embed.embedUrl &&
         !post.deleted &&
         !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
@@ -588,11 +586,11 @@ function LargePostCard({
           leftHandedMode && "flex-row-reverse",
         )}
       >
-        <PostShareButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostShareButton post={post} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
-        <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
-        <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
+        <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
       </div>
     </article>
   );
@@ -600,26 +598,32 @@ function LargePostCard({
 
 export function SmallPostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
   modApIds,
-  apId,
   className,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext?: PostProps["featuredContext"];
   pinned?: boolean;
   modApIds?: string[];
-  apId: string;
   className?: string;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
 
-  const { blurClassName } = useBlurNsfwState(post?.nsfw ?? false, { apId });
+  const { blurClassName } = useBlurNsfwState(post?.nsfw ?? false, {
+    apId: post?.apId,
+  });
 
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -633,8 +637,6 @@ export function SmallPostCard({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
-
   const patchPost = usePostsStore((s) => s.patchPost);
 
   const id = useId();
@@ -645,16 +647,18 @@ export function SmallPostCard({
     return <SmallPostCardSkeleton />;
   }
 
+  const apId = post.apId;
+
   const encodedApId = encodeApId(apId);
-  const embed = post ? getPostEmbed(post) : null;
+  const embed = getPostEmbed(post);
 
   const showImage =
-    embed?.thumbnail &&
+    embed.thumbnail &&
     !post.deleted &&
     !post.removed &&
     embed.type !== "article";
   const showArticle =
-    !post.deleted && !post.removed && embed?.type === "article";
+    !post.deleted && !post.removed && embed.type === "article";
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
 
@@ -675,7 +679,7 @@ export function SmallPostCard({
         <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
       )}
 
-      {embed?.thumbnail && showImage && (
+      {embed.thumbnail && showImage && (
         <Link
           to={
             featuredContext === "home"
@@ -694,8 +698,8 @@ export function SmallPostCard({
           )}
           <div className="h-32 w-28 md:h-36 md:w-40 shrink-0 overflow-hidden md:rounded-md">
             <ProgressiveImage
-              lowSrc={embed?.thumbnail}
-              highSrc={embed?.fullResThumbnail}
+              lowSrc={embed.thumbnail}
+              highSrc={embed.fullResThumbnail}
               className={cn("h-full w-full md:rounded-md", blurClassName)}
               onAspectRatio={(thumbnailAspectRatio) => {
                 setImageLoaded(true);
@@ -726,6 +730,9 @@ export function SmallPostCard({
       >
         <PostByline
           post={post}
+          creator={creator}
+          community={community}
+          flairs={flairs}
           pinned={pinned ?? false}
           showCreator={
             (featuredContext !== "user" &&
@@ -754,8 +761,8 @@ export function SmallPostCard({
               ABOVE_LINK_OVERLAY,
             )}
           >
-            {flairs.map((flair, index) => (
-              <Flair key={flair?.id ?? index} flair={flair} size="sm" />
+            {flairs.map((flair) => (
+              <Flair key={flair.id} flair={flair} size="sm" />
             ))}
           </div>
         )}
@@ -789,10 +796,17 @@ export function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          {media.maxMd && <PostActionButtion post={post} canMod={canMod} />}
-          <PostCommentsButton postApId={apId} className={ABOVE_LINK_OVERLAY} />
-          <PostEmojiReactions apId={apId} className={ABOVE_LINK_OVERLAY} />
-          <PostVoting apId={apId} className={ABOVE_LINK_OVERLAY} />
+          {media.maxMd && (
+            <PostActionButtion
+              post={post}
+              canMod={canMod}
+              flairs={flairs}
+              community={community}
+            />
+          )}
+          <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
         </div>
       </div>
     </article>
@@ -801,18 +815,22 @@ export function SmallPostCard({
 
 function ExtraSmallPostCard({
   post,
+  creator,
+  community,
+  flairs,
   detailView,
   featuredContext,
   pinned,
   modApIds,
-  apId,
 }: {
-  post?: Schemas.Post;
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
   detailView?: boolean;
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
-  apId: string;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -826,8 +844,6 @@ function ExtraSmallPostCard({
 
   const leftHandedMode = useSettingsStore((s) => s.leftHandedMode);
 
-  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
-
   const id = useId();
 
   const media = useMedia();
@@ -835,6 +851,8 @@ function ExtraSmallPostCard({
   if (!post) {
     return <ExtraSmallPostCardSkeleton />;
   }
+
+  const apId = post.apId;
 
   const encodedApId = encodeApId(apId);
 
@@ -895,6 +913,9 @@ function ExtraSmallPostCard({
             hideImage={media.maxMd}
             className="min-w-0 flex-1 overflow-hidden"
             post={post}
+            flairs={flairs}
+            creator={creator}
+            community={community}
             pinned={pinned}
             showCreator={
               (featuredContext !== "user" &&
@@ -915,12 +936,12 @@ function ExtraSmallPostCard({
           />
 
           <PostCommentsButton
-            postApId={apId}
+            post={post}
             variant="ghost"
             className={ABOVE_LINK_OVERLAY}
           />
           <PostVoting
-            apId={apId}
+            post={post}
             variant="ghost"
             className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
           />
@@ -974,27 +995,95 @@ function PostCardErrorFallback({
   );
 }
 
-function PostCardInner(props: PostProps) {
-  const showNsfw = useShouldShowNsfw();
+interface PostCardViewProps {
+  post: Schemas.Post | undefined;
+  creator: Schemas.Person | undefined;
+  community: Schemas.Community | undefined;
+  flairs: Schemas.Flair[] | undefined;
+  detailView?: boolean;
+  featuredContext?: PostProps["featuredContext"];
+  modApIds?: string[];
+  postCardStyle?: PostCardStyle;
+}
 
+export function PostCardView({
+  post,
+  creator,
+  community,
+  flairs,
+  detailView,
+  featuredContext,
+  modApIds,
+  postCardStyle: postCardStyleProp,
+}: PostCardViewProps): React.ReactNode {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
-  const postCardStyle = props.postCardStyle ?? globalPostCardStyle;
-
-  const post = usePostFromStore(props.apId);
+  const postCardStyle = postCardStyleProp ?? globalPostCardStyle;
 
   const featuredCommunity =
     post?.optimisticFeaturedCommunity ?? post?.featuredCommunity ?? false;
   const featuredLocal =
     post?.optimisticFeaturedLocal ?? post?.featuredLocal ?? false;
   const pinned =
-    props.featuredContext === "community"
+    featuredContext === "community"
       ? featuredCommunity
-      : props.featuredContext === "home"
+      : featuredContext === "home"
         ? featuredLocal
         : false;
 
-  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
+  if (detailView || postCardStyle === "large") {
+    return (
+      <LargePostCard
+        post={post}
+        creator={creator}
+        community={community}
+        flairs={flairs}
+        detailView={detailView}
+        featuredContext={featuredContext}
+        pinned={pinned}
+        modApIds={modApIds}
+      />
+    );
+  }
+
+  switch (postCardStyle) {
+    case "small":
+      return (
+        <SmallPostCard
+          post={post}
+          creator={creator}
+          community={community}
+          flairs={flairs}
+          detailView={detailView}
+          featuredContext={featuredContext}
+          pinned={pinned}
+          modApIds={modApIds}
+        />
+      );
+    case "extra-small":
+      return (
+        <ExtraSmallPostCard
+          post={post}
+          creator={creator}
+          community={community}
+          flairs={flairs}
+          detailView={detailView}
+          featuredContext={featuredContext}
+          pinned={pinned}
+          modApIds={modApIds}
+        />
+      );
+  }
+}
+
+function PostCardInner(props: PostProps) {
+  const showNsfw = useShouldShowNsfw();
+
+  const post = usePostFromStore(props.apId);
   const creator = useProfileFromStore(post?.creatorApId);
+  const communityData = useCommunityFromStore(post?.communityHandle);
+  const flairs = useFlairs(post?.flairs?.map((f) => f.id));
+
+  const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
 
@@ -1020,43 +1109,18 @@ function PostCardInner(props: PostProps) {
     ) : null;
   }
 
-  if (props.detailView || postCardStyle === "large") {
-    return (
-      <LargePostCard
-        post={post}
-        detailView={props.detailView}
-        featuredContext={props.featuredContext}
-        pinned={pinned}
-        modApIds={props.modApIds}
-        apId={props.apId}
-      />
-    );
-  }
-
-  switch (postCardStyle) {
-    case "small":
-      return (
-        <SmallPostCard
-          post={post}
-          detailView={props.detailView}
-          featuredContext={props.featuredContext}
-          pinned={pinned}
-          modApIds={props.modApIds}
-          apId={props.apId}
-        />
-      );
-    case "extra-small":
-      return (
-        <ExtraSmallPostCard
-          post={post}
-          detailView={props.detailView}
-          featuredContext={props.featuredContext}
-          pinned={pinned}
-          modApIds={props.modApIds}
-          apId={props.apId}
-        />
-      );
-  }
+  return (
+    <PostCardView
+      post={post}
+      creator={creator}
+      community={communityData?.communityView}
+      flairs={flairs}
+      detailView={props.detailView}
+      featuredContext={props.featuredContext}
+      modApIds={props.modApIds}
+      postCardStyle={props.postCardStyle}
+    />
+  );
 }
 
 export function PostCard(props: PostProps) {
