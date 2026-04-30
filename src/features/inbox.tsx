@@ -784,15 +784,17 @@ export default function Inbox() {
                 </BadgeCount>
               </ToggleGroup>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => markAllRead.mutate()}
-                  >
-                    <DoubleCheck />
-                  </Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => markAllRead.mutate()}
+                    >
+                      <DoubleCheck />
+                    </Button>
+                  }
+                />
                 <TooltipContent side="bottom" align="end">
                   Mark all replies and mentions as read
                 </TooltipContent>

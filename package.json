@@ -30,6 +30,7 @@
     "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
+    "@base-ui/react": "1.4.1",
     "@blorp-labs/piefed-api-client": "0.0.0-906d602",
     "@capacitor-community/media": "8.0.1",
     "@capacitor/android": "7.5.0",

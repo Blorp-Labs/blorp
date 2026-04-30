@@ -14,14 +14,16 @@ export function ResponsiveTooltip({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          className={className}
-          onClick={() => alrt(content, [{ text: "Close" }])}
-        >
-          {trigger}
-        </button>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <button
+            className={className}
+            onClick={() => alrt(content, [{ text: "Close" }])}
+          >
+            {trigger}
+          </button>
+        }
+      />
       <TooltipContent
         side="top"
         align="end"
