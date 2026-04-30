@@ -2,6 +2,7 @@ import { Robot, Shield, ShieldCheckmark } from "../icons";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMedia } from "@/src/hooks";
+import { ABOVE_LINK_OVERLAY } from "./config";
 
 export function PostCreatorBadge({
   isMod,
@@ -38,7 +39,7 @@ export function PostCreatorBadge({
   if (isAdmin) {
     return compact ? (
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger className={ABOVE_LINK_OVERLAY}>
           <ShieldCheckmark className="text-lg text-brand" />
         </TooltipTrigger>
         <TooltipContent>ADMIN</TooltipContent>
@@ -54,7 +55,7 @@ export function PostCreatorBadge({
   if (isBot) {
     return compact ? (
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger className={ABOVE_LINK_OVERLAY}>
           <Robot className="text-lg text-brand-secondary" />
         </TooltipTrigger>
         <TooltipContent>Bot account</TooltipContent>
@@ -70,7 +71,7 @@ export function PostCreatorBadge({
   if (isMod) {
     return compact ? (
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger className={ABOVE_LINK_OVERLAY}>
           <Shield className="text-lg text-green-500" />
         </TooltipTrigger>
         <TooltipContent>MOD</TooltipContent>
