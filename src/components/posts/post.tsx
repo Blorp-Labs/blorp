@@ -283,7 +283,6 @@ function LargePostCard({
   featuredContext,
   pinned,
   modApIds,
-  apId,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -293,7 +292,6 @@ function LargePostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
-  apId: string;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -321,12 +319,14 @@ function LargePostCard({
 
   const { nsfwHidden, blurClassName, onReveal } = useBlurNsfwState(
     post?.nsfw ?? false,
-    { apId, detailView },
+    { apId: post?.apId, detailView },
   );
 
   if (!post) {
     return <PostCardSkeleton />;
   }
+
+  const apId = post.apId;
 
   const encodedApId = encodeApId(apId);
   const embed = getPostEmbed(post);
@@ -605,7 +605,6 @@ export function SmallPostCard({
   featuredContext,
   pinned,
   modApIds,
-  apId,
   className,
 }: {
   post: Schemas.Post | undefined;
@@ -616,14 +615,15 @@ export function SmallPostCard({
   featuredContext?: PostProps["featuredContext"];
   pinned?: boolean;
   modApIds?: string[];
-  apId: string;
   className?: string;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const revealPost = useNsfwRevealedPostsStore((s) => s.revealPost);
 
-  const { blurClassName } = useBlurNsfwState(post?.nsfw ?? false, { apId });
+  const { blurClassName } = useBlurNsfwState(post?.nsfw ?? false, {
+    apId: post?.apId,
+  });
 
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -646,6 +646,8 @@ export function SmallPostCard({
   if (!post) {
     return <SmallPostCardSkeleton />;
   }
+
+  const apId = post.apId;
 
   const encodedApId = encodeApId(apId);
   const embed = getPostEmbed(post);
@@ -820,7 +822,6 @@ function ExtraSmallPostCard({
   featuredContext,
   pinned,
   modApIds,
-  apId,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -830,7 +831,6 @@ function ExtraSmallPostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
-  apId: string;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -851,6 +851,8 @@ function ExtraSmallPostCard({
   if (!post) {
     return <ExtraSmallPostCardSkeleton />;
   }
+
+  const apId = post.apId;
 
   const encodedApId = encodeApId(apId);
 
@@ -1028,8 +1030,6 @@ export function PostCardView({
         ? featuredLocal
         : false;
 
-  const apId = post?.apId ?? "";
-
   if (detailView || postCardStyle === "large") {
     return (
       <LargePostCard
@@ -1041,7 +1041,6 @@ export function PostCardView({
         featuredContext={featuredContext}
         pinned={pinned}
         modApIds={modApIds}
-        apId={apId}
       />
     );
   }
@@ -1058,7 +1057,6 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
-          apId={apId}
         />
       );
     case "extra-small":
@@ -1072,7 +1070,6 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
-          apId={apId}
         />
       );
   }

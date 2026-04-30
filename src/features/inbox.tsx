@@ -153,7 +153,6 @@ function PostReport({
                   community={community?.communityView}
                   flairs={flairs}
                   modApIds={me ? [me.apId] : undefined}
-                  apId={postReport.postApId}
                   className="border-b-0"
                 />
               </div>
