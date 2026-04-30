@@ -329,15 +329,15 @@ function LargePostCard({
   }
 
   const encodedApId = encodeApId(apId);
-  const embed = post ? getPostEmbed(post) : null;
+  const embed = getPostEmbed(post);
 
   const showImage =
-    embed?.type === "image" &&
+    embed.type === "image" &&
     !post.deleted &&
     !post.removed &&
     imageStatus !== "error";
   const showArticle =
-    embed?.type === "article" && !post?.deleted && !post.removed;
+    embed.type === "article" && !post.deleted && !post.removed;
 
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
@@ -389,8 +389,8 @@ function LargePostCard({
         <div
           className={cn("flex flex-row flex-wrap gap-1", ABOVE_LINK_OVERLAY)}
         >
-          {flairs.map((flair, index) => (
-            <Flair key={flair?.id ?? index} flair={flair} />
+          {flairs.map((flair) => (
+            <Flair key={flair.id} flair={flair} />
           ))}
         </div>
       )}
@@ -418,7 +418,7 @@ function LargePostCard({
           post.body &&
           !post.deleted &&
           !post.removed &&
-          embed?.type === "text" && (
+          embed.type === "text" && (
             <p
               className={cn(
                 "text-sm line-clamp-3 leading-relaxed",
@@ -494,19 +494,19 @@ function LargePostCard({
 
       {showArticle && (
         <PostArticleEmbed
-          url={showArticle ? embed.embedUrl : undefined}
-          thumbnail={showArticle ? embed.thumbnail : null}
+          url={embed.embedUrl}
+          thumbnail={embed.thumbnail}
           nsfw={post.nsfw ?? undefined}
           apId={apId}
           detailView={detailView}
         />
       )}
 
-      {embed?.type === "generic-video" &&
+      {embed.type === "generic-video" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <IFramePostEmbed embedVideoUrl={embed.embedUrl} />}
-      {embed?.type === "peertube" &&
+      {embed.type === "peertube" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -518,16 +518,15 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "soundcloud" &&
+      {embed.type === "soundcloud" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <SoundCloudEmbed url={embed.embedUrl} />}
-      {embed?.type === "spotify" &&
+      {embed.type === "spotify" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && <SpotifyEmbed url={embed.embedUrl} />}
-      {embed?.type &&
-        PostVideoEmbed.embedTypes.includes(embed?.type) &&
+      {PostVideoEmbed.embedTypes.includes(embed.type) &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -539,7 +538,7 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "loops" &&
+      {embed.type === "loops" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -552,7 +551,7 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "redgif" &&
+      {embed.type === "redgif" &&
         !post.deleted &&
         !post.removed &&
         embed.embedUrl && (
@@ -565,13 +564,13 @@ function LargePostCard({
             detailView={detailView}
           />
         )}
-      {embed?.type === "youtube" && !post.deleted && !post.removed && (
+      {embed.type === "youtube" && !post.deleted && !post.removed && (
         <YouTubeVideoEmbed
           url={embed.embedUrl}
           className={ABOVE_LINK_OVERLAY}
         />
       )}
-      {embed?.type === "bandcamp" &&
+      {embed.type === "bandcamp" &&
         embed.embedUrl &&
         !post.deleted &&
         !post.removed && <BandcampEmbed embedVideoUrl={embed.embedUrl} />}
@@ -649,15 +648,15 @@ export function SmallPostCard({
   }
 
   const encodedApId = encodeApId(apId);
-  const embed = post ? getPostEmbed(post) : null;
+  const embed = getPostEmbed(post);
 
   const showImage =
-    embed?.thumbnail &&
+    embed.thumbnail &&
     !post.deleted &&
     !post.removed &&
     embed.type !== "article";
   const showArticle =
-    !post.deleted && !post.removed && embed?.type === "article";
+    !post.deleted && !post.removed && embed.type === "article";
   const titleId = `${id}-title`;
   const bodyId = `${id}-title`;
 
@@ -678,7 +677,7 @@ export function SmallPostCard({
         <div className="absolute inset-y-1 -inset-x-2 rounded-lg group-hover:bg-accent/75 max-md:hidden" />
       )}
 
-      {embed?.thumbnail && showImage && (
+      {embed.thumbnail && showImage && (
         <Link
           to={
             featuredContext === "home"
@@ -697,8 +696,8 @@ export function SmallPostCard({
           )}
           <div className="h-32 w-28 md:h-36 md:w-40 shrink-0 overflow-hidden md:rounded-md">
             <ProgressiveImage
-              lowSrc={embed?.thumbnail}
-              highSrc={embed?.fullResThumbnail}
+              lowSrc={embed.thumbnail}
+              highSrc={embed.fullResThumbnail}
               className={cn("h-full w-full md:rounded-md", blurClassName)}
               onAspectRatio={(thumbnailAspectRatio) => {
                 setImageLoaded(true);
@@ -760,8 +759,8 @@ export function SmallPostCard({
               ABOVE_LINK_OVERLAY,
             )}
           >
-            {flairs.map((flair, index) => (
-              <Flair key={flair?.id ?? index} flair={flair} size="sm" />
+            {flairs.map((flair) => (
+              <Flair key={flair.id} flair={flair} size="sm" />
             ))}
           </div>
         )}
@@ -994,7 +993,7 @@ function PostCardErrorFallback({
   );
 }
 
-export interface PostCardViewProps {
+interface PostCardViewProps {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
   community: Schemas.Community | undefined;
