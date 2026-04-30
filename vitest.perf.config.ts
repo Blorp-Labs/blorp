@@ -20,5 +20,15 @@ export default defineConfig({
     globals: true,
     // Reassure needs measurements written sequentially to a single file.
     fileParallelism: false,
+    // Reassure launches Vitest under Node flags, but Vitest runs tests in
+    // worker processes. Mirror the same flags into Vitest workers so `global.gc`
+    // and related stability settings are available where the perf tests execute.
+    pool: "forks",
+    execArgv: [
+      "--expose-gc",
+      "--no-concurrent-sweeping",
+      "--max-old-space-size=4096",
+      "--max-opt=1",
+    ],
   },
 });
