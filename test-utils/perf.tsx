@@ -64,26 +64,38 @@ export async function expectRenderUnder(
   }
   const med = median(result.samples);
 
+  // BLORP_PERF_MULT scales every threshold, e.g. set to "3" on CI runners that
+  // are ~2-3x slower than dev machines. Defaults to 1 (no scaling) so local
+  // thresholds stay tight enough to catch subtle regressions.
+  const mult = Number.parseFloat(process.env["BLORP_PERF_MULT"] ?? "1");
+  const medianThreshold = thresholds.medianMs * mult;
+  const p99Threshold =
+    thresholds.p99Ms !== undefined ? thresholds.p99Ms * mult : undefined;
+
   if (process.env["BLORP_PERF_LOG"] === "1") {
     const fmt = (n: number) => n.toFixed(3);
+    const multSuffix = mult === 1 ? "" : ` mult=${mult}x`;
     console.log(
       `[perf] ${name.padEnd(28)} median=${fmt(med)}ms ` +
         `mean=${fmt(result.mean)}ms p99=${fmt(result.p99)}ms ` +
         `samples=${result.samples.length} ` +
-        `threshold(median)=${thresholds.medianMs}ms` +
-        (thresholds.p99Ms ? ` threshold(p99)=${thresholds.p99Ms}ms` : ""),
+        `threshold(median)=${medianThreshold}ms` +
+        (p99Threshold !== undefined
+          ? ` threshold(p99)=${p99Threshold}ms`
+          : "") +
+        multSuffix,
     );
   }
 
   expect(
     med,
-    `${name}: median render time ${med.toFixed(2)}ms exceeded threshold ${thresholds.medianMs}ms`,
-  ).toBeLessThan(thresholds.medianMs);
+    `${name}: median render time ${med.toFixed(2)}ms exceeded threshold ${medianThreshold}ms`,
+  ).toBeLessThan(medianThreshold);
 
-  if (thresholds.p99Ms !== undefined) {
+  if (p99Threshold !== undefined) {
     expect(
       result.p99,
-      `${name}: p99 render time ${result.p99.toFixed(2)}ms exceeded threshold ${thresholds.p99Ms}ms`,
-    ).toBeLessThan(thresholds.p99Ms);
+      `${name}: p99 render time ${result.p99.toFixed(2)}ms exceeded threshold ${p99Threshold}ms`,
+    ).toBeLessThan(p99Threshold);
   }
 }

@@ -4,16 +4,17 @@ import * as api from "@/test-utils/api";
 import { PerfProviders } from "@/test-utils/render-providers";
 import { expectRenderUnder, type PerfThresholds } from "@/test-utils/perf";
 
-// Calibrated to ~2x observed CI medians on GitHub-hosted ubuntu-latest runners.
-// Catches ~2x regressions without false positives from CI noise. Run
-// `BLORP_PERF_LOG=1 pnpm test:perf` locally and inspect CI logs to recalibrate.
+// Calibrated to ~2x observed local medians (jsdom on a typical dev machine).
+// Tight enough to catch subtle regressions. CI is noisier than dev hardware —
+// the workflow sets `BLORP_PERF_MULT=3` to scale these up for the CI runner.
+// Run `BLORP_PERF_LOG=1 pnpm test:perf` locally to recalibrate.
 const THRESHOLDS = {
-  largeText: { medianMs: 30 },
-  largeImage: { medianMs: 23 },
-  largeArticle: { medianMs: 20 },
-  smallText: { medianMs: 15 },
-  smallImage: { medianMs: 16 },
-  extraSmallText: { medianMs: 11 },
+  largeText: { medianMs: 11 },
+  largeImage: { medianMs: 9 },
+  largeArticle: { medianMs: 9 },
+  smallText: { medianMs: 8 },
+  smallImage: { medianMs: 8 },
+  extraSmallText: { medianMs: 6 },
 } satisfies Record<string, PerfThresholds>;
 
 const text = api.getPost({ variant: "text" });
