@@ -13,7 +13,12 @@ export default defineConfig({
     environment: "jsdom",
     watch: false,
     setupFiles: ["./test-utils/jsdom-setup.ts"],
-    include: ["**/*.perf.test.{ts,tsx}"],
+    include: ["**/*.perf-test.{ts,tsx}"],
     exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/visual/**"],
+    // Reassure-measure reads `expect.getState().currentTestName` as a global,
+    // following Jest convention.
+    globals: true,
+    // Reassure needs measurements written sequentially to a single file.
+    fileParallelism: false,
   },
 });

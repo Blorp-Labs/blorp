@@ -21,6 +21,7 @@ tsconfig.tsbuildinfo
 
 # Test artifacts
 /coverage/
+/.reassure/
 
 # Misc
 todo.md

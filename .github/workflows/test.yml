@@ -46,12 +46,15 @@ jobs:
   perf:
     name: Performance
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
+      pull-requests: write
     steps:
-      - name: Checkout code
+      - name: Checkout PR base (baseline target)
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
@@ -62,16 +65,59 @@ jobs:
           node-version: "20.x"
           cache: "pnpm"
 
-      - name: Install dependencies
+      - name: Install dependencies (baseline)
         run: pnpm install --frozen-lockfile
 
-      - name: Run performance tests
-        env:
-          # Override in repo settings → Variables → Actions if CI hardware
-          # changes or thresholds need to be tightened/loosened.
-          BLORP_PERF_MULT: ${{ vars.BLORP_PERF_MULT || '3' }}
-          BLORP_PERF_LOG: "1"
+      - name: Measure baseline
+        run: pnpm test:perf:baseline
+
+      - name: Switch to PR head
+        run: |
+          git fetch origin ${{ github.event.pull_request.head.sha }}
+          git checkout ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies (PR head)
+        run: pnpm install --frozen-lockfile
+
+      - name: Measure current and compare
         run: pnpm test:perf
+
+      - name: Comment perf report on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '.reassure/output.md';
+            if (!fs.existsSync(path)) {
+              core.warning('Reassure did not produce output.md — skipping comment.');
+              return;
+            }
+            const body = fs.readFileSync(path, 'utf8');
+            const marker = '<!-- reassure-perf-report -->';
+            const fullBody = `${marker}\n${body}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: fullBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: fullBody,
+              });
+            }
 
   playwright:
     name: E2E

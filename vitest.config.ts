@@ -21,7 +21,7 @@ export default defineConfig({
       "**/dist/**",
       "**/e2e/**",
       "**/visual/**",
-      "**/*.perf.test.*",
+      "**/*.perf-test.*",
     ],
   },
 });
