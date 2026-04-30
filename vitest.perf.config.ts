@@ -1,4 +1,4 @@
-// vitest.config.ts
+// vitest.perf.config.ts
 import { defineConfig } from "vitest/config";
 import path from "path";
 
@@ -12,16 +12,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     watch: false,
-    coverage: {
-      reporter: ["text", "json-summary", "json", "html"],
-      include: ["src/**"],
-    },
-    exclude: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/e2e/**",
-      "**/visual/**",
-      "**/*.perf.test.*",
-    ],
+    setupFiles: ["./test-utils/jsdom-setup.ts"],
+    include: ["**/*.perf.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/visual/**"],
   },
 });
