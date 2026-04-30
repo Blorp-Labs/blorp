@@ -9,12 +9,12 @@ import { expectRenderUnder, type PerfThresholds } from "@/test-utils/perf";
 // the workflow sets `BLORP_PERF_MULT=3` to scale these up for the CI runner.
 // Run `BLORP_PERF_LOG=1 pnpm test:perf` locally to recalibrate.
 const THRESHOLDS = {
-  largeText: { medianMs: 11 },
-  largeImage: { medianMs: 9 },
-  largeArticle: { medianMs: 9 },
-  smallText: { medianMs: 8 },
-  smallImage: { medianMs: 8 },
-  extraSmallText: { medianMs: 6 },
+  largeText: { medianMs: 4 },
+  largeImage: { medianMs: 3.5 },
+  largeArticle: { medianMs: 3.5 },
+  smallText: { medianMs: 2.75 },
+  smallImage: { medianMs: 3 },
+  extraSmallText: { medianMs: 2.25 },
 } satisfies Record<string, PerfThresholds>;
 
 const text = api.getPost({ variant: "text" });
