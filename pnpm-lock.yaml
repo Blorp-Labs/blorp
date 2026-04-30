@@ -532,9 +532,6 @@ importers:
       terser:
         specifier: 5.46.0
         version: 5.46.0
-      tinybench:
-        specifier: 2.9.0
-        version: 2.9.0
       typescript-eslint:
         specifier: 8.56.1
         version: 8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)
