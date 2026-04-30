@@ -60,7 +60,7 @@ function SidebarTabs() {
       {TABS.map((t) => {
         const isActive = pathname.startsWith(t.to);
         return (
-          <Tooltip key={t.id}>
+          <Tooltip key={`${t.id}-${mainSidebarCollapsed}`}>
             <TooltipTrigger
               render={
                 <button
@@ -269,7 +269,7 @@ export function MainSidebar() {
                 )}
               >
                 {fiveRecentCommunities.map((c, index) => (
-                  <Tooltip key={index}>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
                     <TooltipTrigger
                       render={
                         <div>
@@ -326,7 +326,7 @@ export function MainSidebar() {
                 )}
               >
                 {moderatingCommunities.map((c, index) => (
-                  <Tooltip key={index}>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
                     <TooltipTrigger
                       render={
                         <div>
@@ -383,7 +383,7 @@ export function MainSidebar() {
                 )}
               >
                 {subscribedCommunities.map((c, index) => (
-                  <Tooltip key={index}>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
                     <TooltipTrigger
                       render={
                         <div>
