@@ -1,6 +1,10 @@
 import { PostComment } from "@/src/components/comments/post-comment";
-import { buildCommentTree } from "../lib/comment-tree";
-import { useEffect, memo, useMemo, useState } from "react";
+import {
+  buildCommentTree,
+  getCommentChildren,
+  getCommentDepth,
+} from "../../lib/comment-tree";
+import { memo, useMemo, useState } from "react";
 import {
   usePostQuery,
   useCommentsQuery,
@@ -14,41 +18,41 @@ import {
   PostCardSkeleton,
 } from "@/src/components/posts/post";
 import { CommunitySidebar } from "@/src/components/communities/community-sidebar";
-import { ContentGutters } from "../components/gutters";
+import { ContentGutters } from "../../components/gutters";
 import _ from "lodash";
 import {
   CommentReplyProvider,
   InlineCommentReply,
   useCommentEditingState,
   useLoadCommentIntoEditor,
-} from "../components/comments/comment-reply-modal";
-import { getAccountSite, useAmIAdmin, useAuth } from "../stores/auth";
-import { VirtualList } from "../components/virtual-list";
-import { PostReportProvider } from "../components/posts/post-report";
-import { usePostFromStore } from "../stores/posts";
+} from "../../components/comments/comment-reply-modal";
+import { getAccountSite, useAmIAdmin, useAuth } from "../../stores/auth";
+import { VirtualList } from "../../components/virtual-list";
+import { PostReportProvider } from "../../components/posts/post-report";
+import { usePostFromStore } from "../../stores/posts";
 import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { resolveRoute, useParams } from "@/src/routing/index";
-import { UserDropdown } from "../components/nav";
-import { PageTitle } from "../components/page-title";
+import { UserDropdown } from "../../components/nav";
+import { PageTitle } from "../../components/page-title";
 import {
   useHideTabBarOnMount,
-  useIonPageElement,
   useMedia,
   useTheme,
   useRequireAuth,
-} from "../hooks";
-import { Page } from "../components/page";
-import { CommentSkeleton } from "../components/comments/comment-skeleton";
+} from "../../hooks";
+import { Page } from "../../components/page";
+import { CommentSkeleton } from "../../components/comments/comment-skeleton";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
-import { ToolbarTitle } from "../components/toolbar/toolbar-title";
-import { CommentSortSelect } from "../components/lemmy-sort";
-import { ToolbarBackButton } from "../components/toolbar/toolbar-back-button";
-import { ToolbarButtons } from "../components/toolbar/toolbar-buttons";
-import { cn } from "../lib/utils";
-import { SearchBar } from "./search/search-bar";
-import { useCommentsByPaths } from "../stores/comments";
-import { useCommunityFromStore } from "../stores/communities";
-import { useQueryToast } from "../hooks/use-query-toast";
+import { ToolbarTitle } from "../../components/toolbar/toolbar-title";
+import { CommentSortSelect } from "../../components/lemmy-sort";
+import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
+import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
+import { cn } from "../../lib/utils";
+import { SearchBar } from "../search/search-bar";
+import { useCommentsByPaths } from "../../stores/comments";
+import { useCommunityFromStore } from "../../stores/communities";
+import { useQueryToast } from "../../hooks/use-query-toast";
+import { MissingComment } from "./missing-comment";
 
 function SafeAreaBottom() {
   return <div className="h-safe-area-bottom bg-background" />;
@@ -57,15 +61,6 @@ function SafeAreaBottom() {
 const MemoedPostComment = memo(PostComment);
 
 const EMPTY_ARR: never[] = [];
-
-function useDelayedReady(delay: number) {
-  const [isReady, setIsReady] = useState(false);
-  useEffect(() => {
-    const id = setTimeout(() => setIsReady(true), delay);
-    return () => clearTimeout(id);
-  }, [delay]);
-  return isReady;
-}
 
 const MemoedPostCard = memo((props: PostProps) => (
   <ContentGutters className="px-0">
@@ -129,7 +124,7 @@ function ReplyToPost({
               )
             }
           >
-            Add a comment
+            Add a comment...
           </button>
         )}
       </div>
@@ -154,9 +149,13 @@ function CommentSortBar() {
  * ../comment/[comment.child], but moving fowards, they will be resolve
  * via ../comment/[commentApId]
  */
+function strToInt(value: string | undefined): number | undefined {
+  return value !== undefined ? +value : undefined;
+}
+
 function useResolveComment(pathOrApId: string | undefined): {
-  commentId: string | undefined;
-  highlightCommentId: string | undefined;
+  commentId: number | undefined;
+  highlightCommentId: number | undefined;
   status: "pending" | "error" | "success";
 } {
   const decoded = pathOrApId ? decodeURIComponent(pathOrApId) : undefined;
@@ -186,8 +185,8 @@ function useResolveComment(pathOrApId: string | undefined): {
       const highlightCommentId = commentPathArr.at(-1);
       return {
         ...noResult,
-        commentId,
-        highlightCommentId,
+        commentId: strToInt(commentId),
+        highlightCommentId: strToInt(highlightCommentId),
       };
     } catch {}
 
@@ -201,13 +200,15 @@ function useResolveComment(pathOrApId: string | undefined): {
 
   if (apId) {
     const comment = object.data?.comment;
-    const highlightCommentId = comment ? String(comment.id) : null;
+    const highlightCommentId = comment ? comment.id : null;
     const commentId = comment?.path.split(".").at(-2);
     if (highlightCommentId) {
       return {
         highlightCommentId,
         commentId:
-          commentId && commentId !== "0" ? commentId : highlightCommentId,
+          commentId && commentId !== "0"
+            ? strToInt(commentId)
+            : highlightCommentId,
         status: object.status,
       };
     }
@@ -264,7 +265,7 @@ export default function Post() {
   const locked = post?.optimisticLocked ?? post?.locked ?? false;
 
   const parentId = parentComment.commentId
-    ? +parentComment.commentId
+    ? parentComment.commentId
     : undefined;
 
   const comments = useCommentsQuery(
@@ -282,32 +283,60 @@ export default function Post() {
       ? false
       : parentComment.status === "pending" || comments.isPending;
 
-  const isReady = useDelayedReady(500);
-
   const allCommentPaths = useMemo(
     () =>
-      comments.data?.pages && parentComment.status === "success" && isReady
+      comments.data?.pages && parentComment.status === "success"
         ? comments.data.pages.map((p) => p.comments).flat()
         : EMPTY_ARR,
-    [comments.data?.pages, parentComment.status, isReady],
+    [comments.data?.pages, parentComment.status],
   );
 
-  const allComments = useCommentsByPaths(allCommentPaths);
-
-  const structured = useMemo(() => {
-    if (!isReady) {
-      return null;
+  const commentsData = comments.data;
+  const pathToCursor = useMemo(() => {
+    const result = new Map<string, string | number>();
+    if (commentsData?.pages) {
+      commentsData.pages.forEach((p, i) => {
+        const cursor = commentsData.pageParams[i] as string | number;
+        p.comments.forEach((path) => {
+          // We want to find the first occurance,
+          // so checking has is really important
+          if (!result.has(path)) {
+            result.set(path, cursor);
+          }
+        });
+      });
     }
-    const map = buildCommentTree(allComments, parentComment.commentId);
-    const topLevelItems = _.entries(map).sort(
-      ([_id1, a], [_id2, b]) => a.sort - b.sort,
-    );
+    return result;
+  }, [commentsData]);
+
+  const allComments = useCommentsByPaths(allCommentPaths);
+  const structured = useMemo(() => {
+    const parentCommentId = parentComment.commentId;
+    const parentCommentView = _.isNil(parentCommentId)
+      ? undefined
+      : allComments.find((c) => c.id === parentCommentId);
+    const colorIndexOffset = parentCommentView
+      ? getCommentDepth(parentCommentView.path)
+      : 0;
+
+    const map = buildCommentTree(allComments, {
+      threadRootId: parentComment.commentId,
+      selectedCommentId: parentComment.highlightCommentId,
+      getCommentPageCursor: (comment) => pathToCursor.get(comment.path),
+      colorIndexOffset,
+    });
+    const topLevelItems = getCommentChildren(map);
     return { map, topLevelItems };
-  }, [allComments, isReady, parentComment.commentId]);
+  }, [
+    allComments,
+    parentComment.commentId,
+    parentComment.highlightCommentId,
+    pathToCursor,
+  ]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
-    if (refreshing || !isReady) {
+    if (refreshing) {
       return;
     }
     setRefreshing(true);
@@ -326,13 +355,11 @@ export default function Post() {
     [structured],
   );
 
-  const pageElement = useIonPageElement();
-
   const router = useIonRouter();
 
   const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
   const replyingToItem = data.find(
-    ([path]) => commentReplyParent?.includes(path) ?? false,
+    ([path]) => commentReplyParent?.includes(String(path)) ?? false,
   );
 
   const postCreatorId = post?.creatorId;
@@ -341,7 +368,6 @@ export default function Post() {
 
   return (
     <Page
-      ref={pageElement.ref}
       notFound={!decodedApId || (postQuery.isError && !post)}
       notFoundApId={decodedApId}
     >
@@ -402,7 +428,6 @@ export default function Post() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <CommentReplyProvider
-          presentingElement={pageElement.element}
           onStateChange={(state) => setCommentReplyParent(state?.parent?.path)}
         >
           <PostReportProvider>
@@ -455,12 +480,15 @@ export default function Post() {
                     modApIds={modApIds}
                     singleCommentThread={!!commentPath}
                     canMod={canMod}
+                    renderMissingComment={(path) => (
+                      <MissingComment postApId={decodedApId!} path={path} />
+                    )}
                   />
                   {commentPath && <SafeAreaBottom />}
                 </>
               )}
               placeholder={
-                isPending || !isReady ? (
+                isPending ? (
                   <ContentGutters className="px-0">
                     <CommentSkeleton />
                     <></>
