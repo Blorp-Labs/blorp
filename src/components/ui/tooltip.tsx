@@ -3,6 +3,14 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 const DEFAULT_DELAY = 5;
 
+// WARNING: do not mount TooltipProvider in the app tree.
+// TooltipPrimitive.Provider wraps FloatingDelayGroup, which activates an
+// "instant phase": after any tooltip opens, all subsequent triggers get
+// restMs=0. With restMs=0, Base UI opens on mouseenter synchronously
+// (no rest timer), so any cursor passing over a trigger causes an
+// immediate open/close flash. With restMs>0 the trigger only opens via
+// the mousemove rest timer, which naturally debounces quick passes.
+// Global delay is controlled via DEFAULT_DELAY applied to TooltipTrigger.
 function TooltipProvider({
   delay = DEFAULT_DELAY,
   ...props
