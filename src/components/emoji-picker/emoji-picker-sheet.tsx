@@ -134,10 +134,10 @@ export function EmojiPickerSheetProvider({
                   key={cat.slug}
                   onClick={() => scrollToCategory(i)}
                   className={cn(
-                    "flex-shrink-0 px-3 py-2 text-xl transition-colors",
+                    "flex-shrink-0 px-3 py-2 text-xl transition-colors border-b-2",
                     activeCategoryIndex === i
-                      ? "border-b-2 border-primary"
-                      : "text-muted-foreground",
+                      ? "border-primary"
+                      : "border-transparent text-muted-foreground",
                   )}
                   aria-label={cat.name}
                 >
@@ -154,14 +154,7 @@ export function EmojiPickerSheetProvider({
                   No emoji found
                 </p>
               ) : (
-                <div
-                  className="grid gap-0 px-2 py-2"
-                  style={{
-                    gridTemplateColumns: `repeat(${Math.ceil(searchResults.length / MAX_ROWS)}, ${EMOJI_PX}px)`,
-                    gridTemplateRows: `repeat(${MAX_ROWS}, ${EMOJI_PX}px)`,
-                    gridAutoFlow: "column",
-                  }}
-                >
+                <div className="gap-0 px-2 py-2 flex flex-row md:flex-wrap">
                   {searchResults.map((emoji) => (
                     <button
                       key={emoji}
@@ -209,12 +202,13 @@ export function EmojiPickerSheetProvider({
                     >
                       {emojis.map((item) => {
                         const emoji = _.isString(item) ? item : item.emoji;
+                        const ariaLabel = _.isString(item) ? item : item.name;
                         return (
                           <Button
                             key={emoji}
                             onClick={() => handleEmojiSelect(emoji)}
                             className="text-2xl mx-auto"
-                            aria-label={emoji}
+                            aria-label={ariaLabel}
                             size="icon"
                             variant="ghost"
                           >
