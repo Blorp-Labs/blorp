@@ -28,6 +28,7 @@ export type {
 } from "./use-url-search-state";
 
 export * from "./navigation-hooks";
+export { useFullscreenFix } from "./use-fullscreen-fix";
 
 export function useElementHasFocus<T extends HTMLElement | null>(
   ref: RefObject<T>,
