@@ -16,6 +16,12 @@ export default defineConfig({
       reporter: ["text", "json-summary", "json", "html"],
       include: ["src/**"],
     },
-    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/visual/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/e2e/**",
+      "**/visual/**",
+      "**/*.perf-test.*",
+    ],
   },
 });

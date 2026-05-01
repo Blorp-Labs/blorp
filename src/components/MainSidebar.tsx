@@ -60,48 +60,50 @@ function SidebarTabs() {
       {TABS.map((t) => {
         const isActive = pathname.startsWith(t.to);
         return (
-          <Tooltip key={t.id}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => {
-                  const tab = document.querySelector(
-                    `ion-tab-button[tab=${t.id}]`,
-                  );
-                  if (tab && "click" in tab && _.isFunction(tab.click)) {
-                    tab.click();
-                  }
-                }}
-                className={twMerge(
-                  "text-md hover:bg-accent relative flex flex-row items-center rounded-md px-3 py-2 max-md:hidden",
-                  isActive ? "bg-accent" : "text-muted-foreground",
-                  mainSidebarCollapsed && "mx-auto",
-                )}
-              >
-                <BadgeCount
-                  showBadge={
-                    t.id === "inbox"
-                      ? !!inboxCount
-                      : t.id === "messages"
-                        ? !!messageCount
-                        : false
-                  }
-                >
-                  <IonIcon
-                    icon={t.icon(isActive)}
-                    key={isActive ? "active" : "inactive"}
-                    className="text-2xl"
-                  />
-                </BadgeCount>
-                <span
-                  className={cn(
-                    "ml-2 text-sm",
-                    mainSidebarCollapsed && "sr-only",
+          <Tooltip key={`${t.id}-${mainSidebarCollapsed}`}>
+            <TooltipTrigger
+              render={
+                <button
+                  onClick={() => {
+                    const tab = document.querySelector(
+                      `ion-tab-button[tab=${t.id}]`,
+                    );
+                    if (tab && "click" in tab && _.isFunction(tab.click)) {
+                      tab.click();
+                    }
+                  }}
+                  className={twMerge(
+                    "text-md hover:bg-accent relative flex flex-row items-center rounded-md px-3 py-2 max-md:hidden",
+                    isActive ? "bg-accent" : "text-muted-foreground",
+                    mainSidebarCollapsed && "mx-auto",
                   )}
                 >
-                  {t.label}
-                </span>
-              </button>
-            </TooltipTrigger>
+                  <BadgeCount
+                    showBadge={
+                      t.id === "inbox"
+                        ? !!inboxCount
+                        : t.id === "messages"
+                          ? !!messageCount
+                          : false
+                    }
+                  >
+                    <IonIcon
+                      icon={t.icon(isActive)}
+                      key={isActive ? "active" : "inactive"}
+                      className="text-2xl"
+                    />
+                  </BadgeCount>
+                  <span
+                    className={cn(
+                      "ml-2 text-sm",
+                      mainSidebarCollapsed && "sr-only",
+                    )}
+                  >
+                    {t.label}
+                  </span>
+                </button>
+              }
+            />
             {mainSidebarCollapsed && (
               <TooltipContent side="right">{t.label}</TooltipContent>
             )}
@@ -267,25 +269,27 @@ export function MainSidebar() {
                 )}
               >
                 {fiveRecentCommunities.map((c, index) => (
-                  <Tooltip key={index}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <IonMenuToggle
-                          menu={LEFT_SIDEBAR_MENU_ID}
-                          autoHide={false}
-                        >
-                          <CommunityCard
-                            communityHandle={c.handle}
-                            size="sm"
-                            className={cn(
-                              "hover:bg-accent h-10 px-3 md:rounded-md",
-                              mainSidebarCollapsed && "px-2",
-                            )}
-                            hideText={mainSidebarCollapsed}
-                          />
-                        </IonMenuToggle>
-                      </div>
-                    </TooltipTrigger>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
+                    <TooltipTrigger
+                      render={
+                        <div>
+                          <IonMenuToggle
+                            menu={LEFT_SIDEBAR_MENU_ID}
+                            autoHide={false}
+                          >
+                            <CommunityCard
+                              communityHandle={c.handle}
+                              size="sm"
+                              className={cn(
+                                "hover:bg-accent h-10 px-3 md:rounded-md",
+                                mainSidebarCollapsed && "px-2",
+                              )}
+                              hideText={mainSidebarCollapsed}
+                            />
+                          </IonMenuToggle>
+                        </div>
+                      }
+                    />
                     {mainSidebarCollapsed && (
                       <TooltipContent side="right">{c.handle}</TooltipContent>
                     )}
@@ -322,25 +326,27 @@ export function MainSidebar() {
                 )}
               >
                 {moderatingCommunities.map((c, index) => (
-                  <Tooltip key={index}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <IonMenuToggle
-                          menu={LEFT_SIDEBAR_MENU_ID}
-                          autoHide={false}
-                        >
-                          <CommunityCard
-                            communityHandle={c}
-                            size="sm"
-                            className={cn(
-                              "hover:bg-accent h-10 px-3 md:rounded-md",
-                              mainSidebarCollapsed && "px-2",
-                            )}
-                            hideText={mainSidebarCollapsed}
-                          />
-                        </IonMenuToggle>
-                      </div>
-                    </TooltipTrigger>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
+                    <TooltipTrigger
+                      render={
+                        <div>
+                          <IonMenuToggle
+                            menu={LEFT_SIDEBAR_MENU_ID}
+                            autoHide={false}
+                          >
+                            <CommunityCard
+                              communityHandle={c}
+                              size="sm"
+                              className={cn(
+                                "hover:bg-accent h-10 px-3 md:rounded-md",
+                                mainSidebarCollapsed && "px-2",
+                              )}
+                              hideText={mainSidebarCollapsed}
+                            />
+                          </IonMenuToggle>
+                        </div>
+                      }
+                    />
                     {mainSidebarCollapsed && (
                       <TooltipContent side="right">{c}</TooltipContent>
                     )}
@@ -377,25 +383,27 @@ export function MainSidebar() {
                 )}
               >
                 {subscribedCommunities.map((c, index) => (
-                  <Tooltip key={index}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <IonMenuToggle
-                          menu={LEFT_SIDEBAR_MENU_ID}
-                          autoHide={false}
-                        >
-                          <CommunityCard
-                            communityHandle={c}
-                            size="sm"
-                            className={cn(
-                              "hover:bg-accent h-10 px-3 md:rounded-md",
-                              mainSidebarCollapsed && "px-2",
-                            )}
-                            hideText={mainSidebarCollapsed}
-                          />
-                        </IonMenuToggle>
-                      </div>
-                    </TooltipTrigger>
+                  <Tooltip key={`${index}-${mainSidebarCollapsed}`}>
+                    <TooltipTrigger
+                      render={
+                        <div>
+                          <IonMenuToggle
+                            menu={LEFT_SIDEBAR_MENU_ID}
+                            autoHide={false}
+                          >
+                            <CommunityCard
+                              communityHandle={c}
+                              size="sm"
+                              className={cn(
+                                "hover:bg-accent h-10 px-3 md:rounded-md",
+                                mainSidebarCollapsed && "px-2",
+                              )}
+                              hideText={mainSidebarCollapsed}
+                            />
+                          </IonMenuToggle>
+                        </div>
+                      }
+                    />
                     {mainSidebarCollapsed && (
                       <TooltipContent side="right">{c}</TooltipContent>
                     )}

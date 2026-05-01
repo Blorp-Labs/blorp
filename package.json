@@ -18,6 +18,8 @@
     "beta:android": "dotenvx run -- ./scripts/beta-android.sh",
     "cp-package-json": "cp ./package.json ./dist/package.json",
     "test": "vitest --coverage",
+    "test:perf": "TEST_RUNNER_PATH=$PWD/node_modules/vitest/vitest.mjs TEST_RUNNER_ARGS='run --config vitest.perf.config.ts' reassure",
+    "test:perf:baseline": "TEST_RUNNER_PATH=$PWD/node_modules/vitest/vitest.mjs TEST_RUNNER_ARGS='run --config vitest.perf.config.ts' reassure --baseline",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --watch --coverage --ui",
     "test:e2e": "playwright test",
@@ -28,6 +30,7 @@
     "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
+    "@base-ui/react": "1.4.1",
     "@blorp-labs/piefed-api-client": "0.0.0-906d602",
     "@capacitor-community/media": "8.0.1",
     "@capacitor/android": "7.5.0",
@@ -197,8 +200,10 @@
     "fetch-mock": "12.6.0",
     "husky": "9.1.7",
     "jsdom": "26.1.0",
+    "jsdom-testing-mocks": "1.16.0",
     "lint-staged": "15.5.2",
     "prettier": "3.4.1",
+    "reassure": "1.4.1",
     "storybook": "10.2.14",
     "terser": "5.46.0",
     "typescript-eslint": "8.56.1",

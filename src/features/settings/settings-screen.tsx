@@ -224,7 +224,7 @@ function CacheSection() {
                           opacity:
                             (cacheSizes.length - index) / cacheSizes.length,
                         }}
-                      ></TooltipTrigger>
+                      />
                       <TooltipContent>
                         {key}: {formatSize(size)}
                       </TooltipContent>
