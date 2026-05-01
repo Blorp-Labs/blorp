@@ -24,11 +24,7 @@ export default defineConfig({
     // worker processes. Mirror the same flags into Vitest workers so `global.gc`
     // and related stability settings are available where the perf tests execute.
     pool: "forks",
-    execArgv: [
-      "--expose-gc",
-      "--no-concurrent-sweeping",
-      "--max-old-space-size=4096",
-      "--max-opt=1",
-    ],
+    // Reassure passes node flags in, but we need to forard them here
+    execArgv: process.execArgv,
   },
 });
