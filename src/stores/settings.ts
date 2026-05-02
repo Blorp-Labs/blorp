@@ -91,6 +91,7 @@ const persistedSchema = z.object({
   disableHaptics: z.boolean(),
   showMarkdown: z.boolean(),
   hideRead: z.boolean(),
+  hideSubscribedFromLocalAll: z.boolean(),
   hideBotPosts: z.boolean(),
   shareLinkType: z
     .enum(["blorp", "instance", "content-instance", "threadiverse.link"])
@@ -121,6 +122,7 @@ type SettingsStore = {
   setDisableHaptics: (newVal: boolean) => any;
   setShowMarkdown: (newVal: boolean) => any;
   setHideRead: (newVal: boolean) => any;
+  setHideSubscribedFromLocalAll: (newVal: boolean) => any;
   setHideBotPosts: (newVal: boolean) => any;
   setShareLinkType: (newVal: ShareLinkType) => any;
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
@@ -150,6 +152,7 @@ const INIT_STATE: z.infer<typeof persistedSchema> = {
   disableHaptics: false,
   showMarkdown: false,
   hideRead: false,
+  hideSubscribedFromLocalAll: false,
   hideBotPosts: false,
   shareLinkType: null,
   filterKeywords: [],
@@ -179,6 +182,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setDisableHaptics: (disableHaptics) => set({ disableHaptics }),
       setShowMarkdown: (showMarkdown) => set({ showMarkdown }),
       setHideRead: (hideRead) => set({ hideRead }),
+      setHideSubscribedFromLocalAll: (hideSubscribedFromLocalAll) =>
+        set({ hideSubscribedFromLocalAll }),
       setHideBotPosts: (hideBotPosts) => set({ hideBotPosts }),
       setShareLinkType: (shareLinkType) => set({ shareLinkType }),
       setFilterKeywords: (update) => {

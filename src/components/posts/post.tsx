@@ -31,7 +31,7 @@ import {
   useAuth,
   useIsInstanceBlocked,
 } from "@/src/stores/auth";
-import { useShouldShowNsfw, useRequireAuth } from "@/src/hooks";
+import { useShouldShowNsfw, useMedia } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
 import { Schemas } from "@/src/apis/api-blueprint";
 import { Separator } from "../ui/separator";
@@ -40,7 +40,6 @@ import { SoundCloudEmbed } from "./embeds/soundcloud-embed";
 import { PeerTubeEmbed } from "./embeds/peertube-embed";
 import { IFramePostEmbed } from "./embeds/generic-video-embed";
 import { ProgressiveImage } from "../progressive-image";
-import { useMedia } from "@/src/hooks";
 import { useFlairs } from "@/src/stores/flairs";
 import { Flair } from "../flair";
 import { BandcampEmbed } from "./embeds/bandcamp-embed";
@@ -55,6 +54,7 @@ import { Button } from "../ui/button";
 import { useReportError } from "@/src/components/use-report-error";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
+import { useSubscribedCommunities } from "@/src/queries";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -70,6 +70,7 @@ export interface PostProps {
   featuredContext?: "community" | "home" | "user" | "search" | "feed";
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
+  hideIfSubscribed?: boolean;
 }
 
 export function PostCardSkeleton(props: {
@@ -997,6 +998,7 @@ function PostCardInner(props: PostProps) {
   const creator = useProfileFromStore(post?.creatorApId);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
+  const subscribedCommunities = useSubscribedCommunities();
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
@@ -1017,6 +1019,16 @@ function PostCardInner(props: PostProps) {
   if (isInstanceBlocked) {
     return props.detailView ? (
       <Notice>Hidden due to blocked instance</Notice>
+    ) : null;
+  }
+
+  if (
+    props.hideIfSubscribed &&
+    post?.communityHandle &&
+    subscribedCommunities.includes(post.communityHandle)
+  ) {
+    return props.detailView ? (
+      <Notice>Hidden subscribed community post</Notice>
     ) : null;
   }
 

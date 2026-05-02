@@ -297,6 +297,13 @@ export default function SettingsPage() {
   const hideRead = useSettingsStore((s) => s.hideRead);
   const setHideRead = useSettingsStore((s) => s.setHideRead);
 
+  const hideSubscribedFromLocalAll = useSettingsStore(
+    (s) => s.hideSubscribedFromLocalAll,
+  );
+  const setHideSubscribedFromLocalAll = useSettingsStore(
+    (s) => s.setHideSubscribedFromLocalAll,
+  );
+
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const setHideBotPosts = useSettingsStore((s) => s.setHideBotPosts);
 
@@ -584,6 +591,17 @@ export default function SettingsPage() {
                   onIonChange={(e) => setHideBotPosts(e.detail.checked)}
                 >
                   Hide bot posts
+                </IonToggle>
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={hideSubscribedFromLocalAll}
+                  onIonChange={(e) =>
+                    setHideSubscribedFromLocalAll(e.detail.checked)
+                  }
+                >
+                  Hide subscribed posts from Local/All
                 </IonToggle>
               </SectionItem>
             </Section>
