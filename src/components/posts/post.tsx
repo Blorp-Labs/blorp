@@ -30,6 +30,7 @@ import {
   useAmIAdmin,
   useAuth,
   useIsInstanceBlocked,
+  useIsSubscribedToCommunity,
 } from "@/src/stores/auth";
 import { useShouldShowNsfw, useMedia } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
@@ -55,7 +56,6 @@ import { Button } from "../ui/button";
 import { useReportError } from "@/src/components/use-report-error";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
-import { useSubscribedCommunities } from "@/src/queries";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -1088,7 +1088,9 @@ function PostCardInner(props: PostProps) {
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
-  const subscribedCommunities = useSubscribedCommunities();
+  const isSubscribedToCommunity = useIsSubscribedToCommunity(
+    post?.communityHandle,
+  );
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
@@ -1112,11 +1114,7 @@ function PostCardInner(props: PostProps) {
     ) : null;
   }
 
-  if (
-    props.hideIfSubscribed &&
-    post?.communityHandle &&
-    subscribedCommunities.includes(post.communityHandle)
-  ) {
+  if (props.hideIfSubscribed && isSubscribedToCommunity) {
     return props.detailView ? (
       <Notice>Hidden subscribed community post</Notice>
     ) : null;

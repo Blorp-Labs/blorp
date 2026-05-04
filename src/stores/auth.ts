@@ -10,7 +10,7 @@ import { v4 as uuid } from "uuid";
 import { isTest } from "../lib/device";
 import { normalizeInstance } from "../normalize-instance";
 import { DistributedOmit } from "type-fest";
-import { handleSchema } from "../lib/handle";
+import { Handle, handleSchema } from "../lib/handle";
 
 export type CacheKey = `cache_${string}`;
 export type CachePrefixer = (cacheKey: string | number) => CacheKey;
@@ -498,5 +498,19 @@ export function useLoginSuggestions(instance: string) {
           !loggedInHandles.has(ka.username),
       );
     }),
+  );
+}
+
+export function useIsSubscribedToCommunity(
+  communityHandle: Handle | undefined,
+): boolean {
+  return (
+    useAuth(
+      (s) =>
+        communityHandle &&
+        getAccountSite(s.getSelectedAccount())?.follows?.includes(
+          communityHandle,
+        ),
+    ) ?? false
   );
 }
