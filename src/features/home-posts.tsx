@@ -184,6 +184,12 @@ export default function HomePosts() {
   const setPostSort = useFiltersStore((s) => s.setPostSort);
 
   const paginationMode = useSettingsStore((s) => s.paginationMode);
+  const hideSubscribedFromLocalAll = useSettingsStore(
+    (s) => s.hideSubscribedFromLocalAll,
+  );
+  const hideIfSubscribed =
+    hideSubscribedFromLocalAll &&
+    (listingType === "Local" || listingType === "All");
 
   const posts = usePostsQuery({
     sort: postSort,
@@ -319,7 +325,13 @@ export default function HomePosts() {
               />
             }
             paginationControls={paginationControls}
-            renderItem={({ item }) => <Post key={item} apId={item} />}
+            renderItem={({ item }) => (
+              <Post
+                key={item}
+                apId={item}
+                hideIfSubscribed={hideIfSubscribed}
+              />
+            )}
             scrollHost
             fullscreen
             onEndReached={onEndReached}

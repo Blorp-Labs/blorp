@@ -30,6 +30,7 @@ import {
   useAmIAdmin,
   useAuth,
   useIsInstanceBlocked,
+  useIsSubscribedToCommunity,
 } from "@/src/stores/auth";
 import { useShouldShowNsfw, useMedia } from "@/src/hooks";
 import { LuRepeat2 } from "react-icons/lu";
@@ -70,6 +71,7 @@ export interface PostProps {
   featuredContext?: "community" | "home" | "user" | "search" | "feed";
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
+  hideIfSubscribed?: boolean;
 }
 
 export function PostCardSkeleton(props: {
@@ -1086,6 +1088,9 @@ function PostCardInner(props: PostProps) {
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const isInstanceBlocked = useIsInstanceBlocked(post?.communityInstanceId);
+  const isSubscribedToCommunity = useIsSubscribedToCommunity(
+    post?.communityHandle,
+  );
 
   for (const keyword of filterKeywords) {
     if (post?.title.toLowerCase().includes(keyword.toLowerCase())) {
@@ -1106,6 +1111,12 @@ function PostCardInner(props: PostProps) {
   if (isInstanceBlocked) {
     return props.detailView ? (
       <Notice>Hidden due to blocked instance</Notice>
+    ) : null;
+  }
+
+  if (props.hideIfSubscribed && isSubscribedToCommunity) {
+    return props.detailView ? (
+      <Notice>Hidden subscribed community post</Notice>
     ) : null;
   }
 

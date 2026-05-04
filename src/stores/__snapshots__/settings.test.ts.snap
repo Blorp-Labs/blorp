@@ -11,6 +11,7 @@ exports[`persisted state snapshot > settings store initial shape 1`] = `
   "filterKeywords": [],
   "hideBotPosts": false,
   "hideRead": false,
+  "hideSubscribedFromLocalAll": false,
   "hideThresholdSetting": "account",
   "leftHandedMode": false,
   "lightTheme": "default-light",
