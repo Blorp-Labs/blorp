@@ -260,10 +260,10 @@ html:root[data-dark-mode="dark"] {
   --color-sidebar-border: var(--shad-sidebar-border);
   --color-sidebar-ring: var(--shad-sidebar-ring);
 
-  --height-safe-area-bottom: var(--ion-safe-area-bottom);
-  --height-safe-area-top: var(--ion-safe-area-top);
-  --height-safe-area-right: var(--ion-safe-area-right);
-  --height-safe-area-left: var(--ion-safe-area-left);
+  --spacing-safe-area-bottom: var(--ion-safe-area-bottom);
+  --spacing-safe-area-top: var(--ion-safe-area-top);
+  --spacing-safe-area-right: var(--ion-safe-area-right);
+  --spacing-safe-area-left: var(--ion-safe-area-left);
 }
 
 button,

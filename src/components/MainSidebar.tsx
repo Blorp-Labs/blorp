@@ -452,7 +452,7 @@ export function MainSidebar() {
         )}
       </div>
 
-      <div className="h-[var(--ion-safe-area-bottom)]" />
+      <div className="h-safe-area-bottom" />
     </div>
   );
 }

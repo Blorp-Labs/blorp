@@ -505,12 +505,12 @@ function Tabs() {
           "--side-max-width": sidebarWidth,
         }}
       >
-        <div className="h-[var(--ion-safe-area-top)]" />
+        <div className="h-safe-area-top" />
 
         <IonContent scrollY={false}>
           <div className="h-full overflow-y-auto p-4">
             <UserSidebar />
-            <div className="h-[var(--ion-safe-area-buttom)]" />
+            <div className="h-safe-area-bottom" />
           </div>
         </IonContent>
       </IonMenu>
@@ -526,7 +526,7 @@ function Tabs() {
             "--side-max-width": sidebarWidth,
           }}
         >
-          <div className="h-[var(--ion-safe-area-top)]" />
+          <div className="h-safe-area-top" />
 
           <IonContent scrollY={false}>
             <MainSidebar />
