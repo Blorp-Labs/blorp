@@ -72,6 +72,7 @@
 ```bash
 corepack enable
 pnpm install
+git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
 **iOS (macOS only)** — CocoaPods is managed via Bundler so the version is pinned:
