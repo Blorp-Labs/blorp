@@ -158,13 +158,11 @@ export function UserDropdown() {
               </DropdownMenuItem>
             </Link>
           )}
-          {person && (
-            <Link to="/home/recent">
-              <DropdownMenuItem>
-                <TimeOutline /> Recent
-              </DropdownMenuItem>
-            </Link>
-          )}
+          <Link to="/home/recent">
+            <DropdownMenuItem>
+              <TimeOutline /> Recent
+            </DropdownMenuItem>
+          </Link>
           {person && (
             <Link
               to={`${linkCtx.root}u/:userId`}
@@ -306,17 +304,15 @@ export function UserSidebar() {
             </Link>
           </IonMenuToggle>
         )}
-        {person && (
-          <IonMenuToggle menu={RIGHT_SIDEBAR_MENU_ID} autoHide={false}>
-            <Link
-              to="/home/recent"
-              className="flex flex-row items-center gap-2 text-lg"
-            >
-              <TimeOutline className="text-muted-foreground" />
-              Recent
-            </Link>
-          </IonMenuToggle>
-        )}
+        <IonMenuToggle menu={RIGHT_SIDEBAR_MENU_ID} autoHide={false}>
+          <Link
+            to="/home/recent"
+            className="flex flex-row items-center gap-2 text-lg"
+          >
+            <TimeOutline className="text-muted-foreground" />
+            Recent
+          </Link>
+        </IonMenuToggle>
         {person && (
           <IonMenuToggle menu={RIGHT_SIDEBAR_MENU_ID} autoHide={false}>
             <Link
