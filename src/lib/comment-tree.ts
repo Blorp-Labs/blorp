@@ -1,6 +1,8 @@
 import _ from "lodash";
 import { isNotNil } from "./utils";
 
+const HIGHLIGHTED_COMMENT_SORT = -1;
+
 export type CommentKey = number;
 
 type CommentTreeMeta = {
@@ -184,14 +186,17 @@ export function buildCommentTree(
       comment: view,
       meta: {
         ...loc.children[front]?.meta,
-        sort: view.id === Number(options.selectedCommentId) ? -1 : i,
+        sort:
+          view.id === Number(options.selectedCommentId)
+            ? HIGHLIGHTED_COMMENT_SORT
+            : i,
         immediateChildren: 0,
         pruned: false,
         colorIndex: 0,
         // Use the placeholder's cursor if it was created by an earlier fetch —
         // cursor tracks when the branch first became visible, not when this
         // specific comment arrived.
-        pageCursor: loc.children[front]?.meta?.pageCursor ?? viewCursor,
+        pageCursor: loc.children[front]?.meta.pageCursor ?? viewCursor,
         path: view.path,
       },
     };
@@ -326,8 +331,8 @@ export function debugCommentTree(
   for (const key of Object.keys(tree.children)) {
     const child = tree.children[Number(key)]!;
     const path = `${pathPrefix}.${key}`;
-    const cursor = child.meta?.pageCursor;
-    const sort = child.meta?.sort;
+    const cursor = child.meta.pageCursor;
+    const sort = child.meta.sort;
     const cursorPart = isNotNil(cursor) ? `c${cursor}` : "c?";
     const sortPart = isNotNil(sort) ? `s${sort}` : "s?";
     const label = `${cursorPart}_${sortPart}_${path}`;
