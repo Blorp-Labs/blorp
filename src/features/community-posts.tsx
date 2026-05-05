@@ -106,7 +106,8 @@ export default function CommunityPosts() {
   const { hasNextPage, fetchNextPage, isFetchingNextPage, isRefetching } =
     posts;
 
-  const refetchAll = () => Promise.all([posts.refetch, mostRecentPost.refetch]);
+  const refetchAll = () =>
+    Promise.all([posts.refetch(), mostRecentPost.refetch()]);
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
