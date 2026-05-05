@@ -186,6 +186,7 @@ export function PostEmojiReactions({
           key={emoji.token}
           size="sm"
           variant="outline"
+          disabled={disabled}
           className="px-2 bg-transparent"
           onClick={
             disabled
