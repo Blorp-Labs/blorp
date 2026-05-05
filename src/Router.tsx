@@ -84,6 +84,7 @@ const ExploreExpandedSectionScreen = lazy(
 );
 const User = lazy(() => import("@/src/features/user"));
 const SavedFeed = lazy(() => import("@/src/features/saved-content"));
+const RecentlyViewed = lazy(() => import("@/src/features/recently-viewed"));
 const Search = lazy(() => import("@/src/features/search/search-screen"));
 const LightBoxPostFeed = lazy(
   () => import("@/src/features/light-box/light-box-posts"),
@@ -232,6 +233,9 @@ const HOME_STACK = [
   </Route>,
   <Route key="/home/saved" exact path="/home/saved">
     <SavedFeed />
+  </Route>,
+  <Route key="/home/recent" exact path="/home/recent">
+    <RecentlyViewed />
   </Route>,
   <Route key="/home/lightbox" exact path="/home/lightbox">
     <LightBoxPostFeed />

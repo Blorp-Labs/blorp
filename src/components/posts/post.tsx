@@ -78,6 +78,12 @@ export interface PostProps {
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
   hideIfSubscribed?: boolean;
+  /**
+   * When set, lookups for the post / community / creator use this account's
+   * cache slot instead of the currently selected account. Used by the
+   * "Recently viewed" page so entries render correctly across accounts.
+   */
+  accountUuid?: string;
 }
 
 export function PostCardSkeleton(props: {
@@ -1136,9 +1142,15 @@ export function PostCardView({
 function PostCardInner(props: PostProps) {
   const showNsfw = useShouldShowNsfw();
 
-  const post = usePostFromStore(props.apId);
-  const creator = useProfileFromStore(post?.creatorApId);
-  const communityData = useCommunityFromStore(post?.communityHandle);
+  const account = useAuth((s) =>
+    props.accountUuid
+      ? s.accounts.find((a) => a.uuid === props.accountUuid)
+      : undefined,
+  );
+
+  const post = usePostFromStore(props.apId, account);
+  const creator = useProfileFromStore(post?.creatorApId, account);
+  const communityData = useCommunityFromStore(post?.communityHandle, account);
   const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);

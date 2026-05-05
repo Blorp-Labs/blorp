@@ -3,6 +3,7 @@
 exports[`persisted state snapshot > recent communities store shape 1`] = `
 [
   {
+    "accountUuid": undefined,
     "apId": "https://blorpblorp.xyz/c/1",
     "banner": "https://picsum.photos/id/11/800/200",
     "commentCount": 1324,
@@ -32,6 +33,7 @@ exports[`persisted state snapshot > recent communities store shape 2`] = `
 {
   "recentlyVisited": [
     {
+      "accountUuid": undefined,
       "apId": "https://blorpblorp.xyz/c/1",
       "banner": "https://picsum.photos/id/11/800/200",
       "commentCount": 1324,

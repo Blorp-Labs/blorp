@@ -33,7 +33,7 @@ import {
 import { LuMenu } from "react-icons/lu";
 import { useConfirmationAlert, useMedia, useRequireAuth } from "../hooks";
 import { LEFT_SIDEBAR_MENU_ID, RIGHT_SIDEBAR_MENU_ID } from "../routing/config";
-import { LogOut } from "./icons";
+import { LogOut, TimeOutline } from "./icons";
 import { BadgeCount } from "./badge-count";
 import _ from "lodash";
 import { Separator } from "./ui/separator";
@@ -155,6 +155,13 @@ export function UserDropdown() {
             <Link to="/home/saved">
               <DropdownMenuItem>
                 <IoBookmarksOutline /> Saved
+              </DropdownMenuItem>
+            </Link>
+          )}
+          {person && (
+            <Link to="/home/recent">
+              <DropdownMenuItem>
+                <TimeOutline /> Recent
               </DropdownMenuItem>
             </Link>
           )}
@@ -296,6 +303,17 @@ export function UserSidebar() {
             >
               <IoBookmarksOutline className="text-muted-foreground" />
               Saved
+            </Link>
+          </IonMenuToggle>
+        )}
+        {person && (
+          <IonMenuToggle menu={RIGHT_SIDEBAR_MENU_ID} autoHide={false}>
+            <Link
+              to="/home/recent"
+              className="flex flex-row items-center gap-2 text-lg"
+            >
+              <TimeOutline className="text-muted-foreground" />
+              Recent
             </Link>
           </IonMenuToggle>
         )}
