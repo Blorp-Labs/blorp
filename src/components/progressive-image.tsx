@@ -61,7 +61,9 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     : { loading: "lazy", fetchPriority: "low", decoding: "async" };
 
   const handleAspectRatio = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    if (!onAspectRatio) return;
+    if (!onAspectRatio) {
+      return;
+    }
     const img = e.currentTarget;
     if (img.naturalWidth && img.naturalHeight) {
       const ratio = img.naturalWidth / img.naturalHeight;

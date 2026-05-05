@@ -22,7 +22,9 @@ export function removeMd(markdown: string) {
 
   // Helper to extract only text from inline tokens (ignoring strong/em/code, etc.)
   function extractInlineText(inlineToken: Token) {
-    if (!inlineToken.children) return "";
+    if (!inlineToken.children) {
+      return "";
+    }
     return inlineToken.children
       .filter((t) => t.type === "text")
       .map((t) => t.content)

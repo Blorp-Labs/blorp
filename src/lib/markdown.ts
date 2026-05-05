@@ -1,6 +1,8 @@
 export function getSelectedHtml(): string | undefined {
   const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return undefined;
+  if (!selection || selection.rangeCount === 0) {
+    return undefined;
+  }
 
   const container = document.createElement("div");
 

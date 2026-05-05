@@ -1,4 +1,3 @@
-import _ from "lodash";
 import imageCompression from "browser-image-compression";
 import isAnimated from "@frsource/is-animated";
 

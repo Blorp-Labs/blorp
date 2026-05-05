@@ -435,8 +435,8 @@ function LoginForm({
   const mutateLogin = (newMfaToken = mfaToken) => {
     login
       .mutateAsync({
-        username: username,
-        password: password,
+        username,
+        password,
         mfaCode: newMfaToken,
       })
       .then(() => {
@@ -607,10 +607,10 @@ function SignupForm({
       .mutateAsync({
         email: email || undefined,
         username: userName,
-        password: password,
+        password,
         repeatPassword: verifyPassword,
         captchaUuid: captcha.data?.uuid,
-        captchaAnswer: captchaAnswer,
+        captchaAnswer,
         answer,
       })
       .then(() => {

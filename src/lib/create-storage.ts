@@ -4,9 +4,9 @@ import { isTauri } from "./device";
 import _ from "lodash";
 import pRetry from "p-retry";
 import { AsyncThrottler } from "@tanstack/pacer";
+import { DB_VERSION, DB_NAME, TABLE_NAME } from "./db-constants";
 
 export { DB_VERSION, DB_NAME, TABLE_NAME } from "./db-constants";
-import { DB_VERSION, DB_NAME, TABLE_NAME } from "./db-constants";
 
 export const runTauriSecurityFix = () => {
   if (isTauri()) {

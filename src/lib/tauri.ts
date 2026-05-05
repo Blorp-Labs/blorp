@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { check } from "@tauri-apps/plugin-updater";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { relaunch } from "@tauri-apps/plugin-process";

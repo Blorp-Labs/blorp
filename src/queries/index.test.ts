@@ -21,7 +21,7 @@ function mockNodeInfo() {
 }
 
 function mockGetComments(length: number, parentId?: number) {
-  const comments = Array.from({ length: length })
+  const comments = Array.from({ length })
     .fill(0)
     .map((_i, i) =>
       lemmy.getComment({

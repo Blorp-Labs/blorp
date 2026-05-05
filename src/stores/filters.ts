@@ -11,7 +11,7 @@ const persistedSchema = z.object({
   communitySort: z.string(),
   commentSort: z.string(),
   postSort: z.string(),
-  listingType: listingType,
+  listingType,
   communitiesListingType: listingType,
 });
 

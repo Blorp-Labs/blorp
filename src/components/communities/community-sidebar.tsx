@@ -226,7 +226,7 @@ export function useCommunityActions({
 }): SubAction[] {
   const getConfirmation = useConfirmationAlert();
   const blockCommunity = useBlockCommunityMutation({
-    communityHandle: communityHandle,
+    communityHandle,
   });
   const blockInstance = useBlockInstanceMutation();
   const isBlocked = useIsCommunityBlocked(communityHandle);

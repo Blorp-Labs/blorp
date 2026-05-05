@@ -25,8 +25,11 @@ const MentionMenu = React.forwardRef<any, Props>(
 
     // Keep active index in range
     useEffect(() => {
-      if (items.length === 0) setActive(0);
-      else if (active > items.length - 1) setActive(items.length - 1);
+      if (items.length === 0) {
+        setActive(0);
+      } else if (active > items.length - 1) {
+        setActive(items.length - 1);
+      }
     }, [items, active]);
 
     // Expose keyboard handling to Suggestion.onKeyDown
@@ -47,7 +50,9 @@ const MentionMenu = React.forwardRef<any, Props>(
         }
         if (event.key === "Enter") {
           event.preventDefault();
-          if (items[active]) command(items[active]);
+          if (items[active]) {
+            command(items[active]);
+          }
           return true;
         }
         return false;
@@ -58,7 +63,9 @@ const MentionMenu = React.forwardRef<any, Props>(
     useLayoutEffect(() => {
       const r = clientRect?.();
       const el = rootRef.current;
-      if (!r || !el) return;
+      if (!r || !el) {
+        return;
+      }
       el.style.position = "absolute";
       el.style.left = `${r.left + window.scrollX}px`;
       el.style.top = `${r.bottom + window.scrollY + 4}px`;

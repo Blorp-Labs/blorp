@@ -1876,7 +1876,7 @@ export class PieFedApi
       console.log(e);
     }
     await this.client.putApiAlphaUserSaveUserSettings({
-      avatar: avatar,
+      avatar,
       // banner: form.banner,
       bio: form.bio,
       nsfw_visibility: form.showNsfw

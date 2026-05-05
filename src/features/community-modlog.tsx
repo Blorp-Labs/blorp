@@ -27,7 +27,7 @@ export default function CommunityModlog() {
 
   const communityQuery = useCommunityQuery({ name: communityHandle });
 
-  const modlogQuery = useModlogQuery({ communityHandle: communityHandle });
+  const modlogQuery = useModlogQuery({ communityHandle });
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: modlogQuery.data?.pages,
