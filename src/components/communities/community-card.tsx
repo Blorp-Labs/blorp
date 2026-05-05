@@ -18,6 +18,7 @@ import { useCommunityFromStore } from "@/src/stores/communities";
 import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { Handle, parseHandle } from "@/src/lib/handle";
+import { Schemas } from "@/src/apis/api-blueprint";
 
 type CommunityCardProps = {
   communityHandle: Handle;
@@ -28,20 +29,21 @@ type CommunityCardProps = {
   account?: Account;
 };
 
-function CommunityCardInner({
-  communityHandle,
+interface CommunityCardViewProps {
+  community: Schemas.Community | undefined;
+  disableLink?: boolean;
+  className?: string;
+  hideText?: boolean;
+  size?: "sm" | "md";
+}
+
+export function CommunityCardView({
+  community: communityView,
   disableLink,
   className,
   hideText,
   size = "md",
-  account,
-}: CommunityCardProps) {
-  const fromRecent = useRecentCommunitiesStore((s) => {
-    return s.recentlyVisited.find((r) => r.handle === communityHandle);
-  });
-  const fromCommunityCache = useCommunityFromStore(communityHandle, account);
-  const communityView = fromCommunityCache?.communityView ?? fromRecent;
-
+}: CommunityCardViewProps) {
   const blurNsfw = useShouldBlurNsfw();
 
   // TODO: FIX THIS
@@ -120,6 +122,31 @@ function CommunityCardInner({
     >
       {content}
     </Link>
+  );
+}
+
+function CommunityCardInner({
+  communityHandle,
+  disableLink,
+  className,
+  hideText,
+  size = "md",
+  account,
+}: CommunityCardProps) {
+  const fromRecent = useRecentCommunitiesStore((s) => {
+    return s.recentlyVisited.find((r) => r.handle === communityHandle);
+  });
+  const fromCommunityCache = useCommunityFromStore(communityHandle, account);
+  const communityView = fromCommunityCache?.communityView ?? fromRecent;
+
+  return (
+    <CommunityCardView
+      community={communityView}
+      disableLink={disableLink}
+      className={className}
+      hideText={hideText}
+      size={size}
+    />
   );
 }
 
