@@ -347,6 +347,7 @@ function LargePostCard({
   featuredContext,
   pinned,
   modApIds,
+  readOnly,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -356,6 +357,7 @@ function LargePostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  readOnly?: boolean;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -375,7 +377,7 @@ function LargePostCard({
 
   const patchPost = usePostsStore((s) => s.patchPost);
 
-  const doubeTapLike = useDoubleTapPostLike(post);
+  const doubeTapLike = useDoubleTapPostLike(readOnly ? undefined : post);
 
   const id = useId();
 
@@ -441,6 +443,7 @@ function LargePostCard({
         canMod={(myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin}
         isMod={modApIds?.includes(post.creatorApId)}
         detailView={detailView}
+        readOnly={readOnly}
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
@@ -652,9 +655,17 @@ function LargePostCard({
       >
         <PostShareButton post={post} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostEmojiReactions
+          post={post}
+          className={ABOVE_LINK_OVERLAY}
+          disabled={readOnly}
+        />
         <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
-        <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting
+          post={post}
+          className={ABOVE_LINK_OVERLAY}
+          disabled={readOnly}
+        />
       </div>
     </article>
   );
@@ -670,6 +681,7 @@ export function SmallPostCard({
   pinned,
   modApIds,
   className,
+  readOnly,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -680,6 +692,7 @@ export function SmallPostCard({
   pinned?: boolean;
   modApIds?: string[];
   className?: string;
+  readOnly?: boolean;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -815,6 +828,7 @@ export function SmallPostCard({
           isMod={modApIds?.includes(post.creatorApId)}
           showActions={media.md}
           detailView={detailView}
+          readOnly={readOnly}
         />
 
         {flairs && flairs.length > 0 && (
@@ -860,7 +874,7 @@ export function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          {media.maxMd && (
+          {media.maxMd && !readOnly && (
             <PostActionButtion
               post={post}
               canMod={canMod}
@@ -869,8 +883,16 @@ export function SmallPostCard({
             />
           )}
           <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
-          <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
-          <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions
+            post={post}
+            className={ABOVE_LINK_OVERLAY}
+            disabled={readOnly}
+          />
+          <PostVoting
+            post={post}
+            className={ABOVE_LINK_OVERLAY}
+            disabled={readOnly}
+          />
         </div>
       </div>
     </article>
@@ -886,6 +908,7 @@ function ExtraSmallPostCard({
   featuredContext,
   pinned,
   modApIds,
+  readOnly,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -895,6 +918,7 @@ function ExtraSmallPostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  readOnly?: boolean;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -997,6 +1021,7 @@ function ExtraSmallPostCard({
             canMod={canMod}
             isMod={modApIds?.includes(post.creatorApId)}
             showActions={false}
+            readOnly={readOnly}
           />
 
           <PostCommentsButton
@@ -1008,6 +1033,7 @@ function ExtraSmallPostCard({
             post={post}
             variant="ghost"
             className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
+            disabled={readOnly}
           />
         </div>
       </div>
@@ -1068,6 +1094,7 @@ interface PostCardViewProps {
   featuredContext?: PostProps["featuredContext"];
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
+  readOnly?: boolean;
 }
 
 export function PostCardView({
@@ -1079,6 +1106,7 @@ export function PostCardView({
   featuredContext,
   modApIds,
   postCardStyle: postCardStyleProp,
+  readOnly,
 }: PostCardViewProps): React.ReactNode {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
   const postCardStyle = postCardStyleProp ?? globalPostCardStyle;
@@ -1105,6 +1133,7 @@ export function PostCardView({
         featuredContext={featuredContext}
         pinned={pinned}
         modApIds={modApIds}
+        readOnly={readOnly}
       />
     );
   }
@@ -1121,6 +1150,7 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          readOnly={readOnly}
         />
       );
     case "extra-small":
@@ -1134,6 +1164,7 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          readOnly={readOnly}
         />
       );
   }
@@ -1198,6 +1229,7 @@ function PostCardInner(props: PostProps) {
       featuredContext={props.featuredContext}
       modApIds={props.modApIds}
       postCardStyle={props.postCardStyle}
+      readOnly={!!props.accountUuid}
     />
   );
 }

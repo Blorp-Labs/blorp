@@ -108,9 +108,11 @@ export function useDoubleTapPostLike(post: Schemas.Post | undefined) {
 export function PostEmojiReactions({
   post,
   className,
+  disabled,
 }: {
   post: Schemas.Post;
   className?: string;
+  disabled?: boolean;
 }) {
   const addReactionEmoji = useAddPostReactionEmojiMutation();
   const requireAuth = useRequireAuth();
@@ -185,16 +187,20 @@ export function PostEmojiReactions({
           size="sm"
           variant="outline"
           className="px-2 bg-transparent"
-          onClick={() => {
-            requireAuth().then(() =>
-              addReactionEmoji.mutate({
-                postApId: post.apId,
-                postId: post.id,
-                emoji: emoji.token,
-                score: getPostMyVote(post) || undefined,
-              }),
-            );
-          }}
+          onClick={
+            disabled
+              ? undefined
+              : () => {
+                  requireAuth().then(() =>
+                    addReactionEmoji.mutate({
+                      postApId: post.apId,
+                      postId: post.id,
+                      emoji: emoji.token,
+                      score: getPostMyVote(post) || undefined,
+                    }),
+                  );
+                }
+          }
         >
           {emoji.url ? (
             <img
@@ -216,10 +222,12 @@ export function PostVoting({
   post,
   className,
   variant = "outline",
+  disabled,
 }: {
   post: Schemas.Post;
   className?: string;
   variant?: "outline" | "ghost";
+  disabled?: boolean;
 }) {
   const id = useId();
   const apId = post.apId;
@@ -258,6 +266,7 @@ export function PostVoting({
       <Button
         size={prefersScore || prefersUpvotes ? "sm" : "icon"}
         variant={variant}
+        disabled={disabled}
         onClick={() =>
           vote({
             score: isUpvoted ? 0 : 1,
@@ -324,6 +333,7 @@ export function PostVoting({
         id={id}
         size="icon"
         variant="ghost"
+        disabled={disabled}
         onClick={() =>
           vote({
             score: isUpvoted ? 0 : 1,
@@ -360,6 +370,7 @@ export function PostVoting({
         id={downvoteId}
         size="icon"
         variant="ghost"
+        disabled={disabled}
         onClick={() =>
           vote({
             score: isDownvoted ? 0 : -1,
