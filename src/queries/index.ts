@@ -453,7 +453,7 @@ export function useMostRecentPostQuery(
         { signal },
       );
       return (
-        posts?.find(({ post }) => {
+        posts.find(({ post }) => {
           switch (featuredContext) {
             case "local":
               return !post.featuredLocal;
