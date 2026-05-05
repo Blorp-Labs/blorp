@@ -421,6 +421,7 @@ export function useMostRecentPostQuery(
 ) {
   const { api, queryKeyPrefix } = useApiClients();
 
+  const listingType = useFiltersStore((s) => s.listingType);
   const postsIsStale = useIsStale(postsQuery, NEW_POSTS_CHECK_INTERVAL_MS);
 
   const { postSort } = useAvailableSortsQuery();
@@ -433,6 +434,7 @@ export function useMostRecentPostQuery(
     showRead: !hideRead,
     sort,
     showNsfw,
+    type: listingType,
     ...form,
   } satisfies Forms.GetPosts;
 
@@ -453,7 +455,7 @@ export function useMostRecentPostQuery(
         { signal },
       );
       return (
-        posts?.find(({ post }) => {
+        posts.find(({ post }) => {
           switch (featuredContext) {
             case "local":
               return !post.featuredLocal;

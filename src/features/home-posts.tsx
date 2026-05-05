@@ -202,19 +202,16 @@ export default function HomePosts() {
     posts,
   );
 
-  const {
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch,
-    isRefetching,
-  } = posts;
+  const { hasNextPage, fetchNextPage, isFetchingNextPage, isRefetching } =
+    posts;
+
+  const refetchAll = () => Promise.all([posts.refetch, mostRecentPost.refetch]);
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
     getItems: (p) => p.posts,
     fetchNextPage,
-    hasNextPage: hasNextPage ?? false,
+    hasNextPage,
     isFetchingNextPage,
     mode: paginationMode,
     listKey: postSort + listingType,
@@ -222,7 +219,7 @@ export default function HomePosts() {
 
   const data = useMemo(() => _.uniq(flatData), [flatData]);
 
-  const mostRecentPostApId = mostRecentPost?.data;
+  const mostRecentPostApId = mostRecentPost.data;
   const getCachePrefixer = useAuth((s) => s.getCachePrefixer);
   const siteHasPosts = useAuth(
     (s) => (getAccountSite(s.getSelectedAccount())?.postCount ?? 0) > 0,
@@ -283,7 +280,7 @@ export default function HomePosts() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refetch();
+                  refetchAll();
                   // This is a hack to send you to the top of the feed
                   dispatchScrollEvent("/home/");
                 }}
@@ -336,7 +333,7 @@ export default function HomePosts() {
             fullscreen
             onEndReached={onEndReached}
             onScroll={scrollAnimation.scrollHandler}
-            refresh={refetch}
+            refresh={refetchAll}
           />
         </PostReportProvider>
         <ContentGutters className="max-md:hidden absolute top-0 right-0 left-0">

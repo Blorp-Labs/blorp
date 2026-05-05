@@ -88,19 +88,16 @@ export default function MultiCommunityFeedPosts() {
 
   const isBlocked = useIsCommunityBlocked(apId);
 
-  const {
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch,
-    isRefetching,
-  } = posts;
+  const { hasNextPage, fetchNextPage, isFetchingNextPage, isRefetching } =
+    posts;
+
+  const refetchAll = () => Promise.all([posts.refetch, mostRecentPost.refetch]);
 
   const { flatData, onEndReached, paginationControls } = usePagination({
     pages: posts.data?.pages,
     getItems: (p) => p.posts,
     fetchNextPage,
-    hasNextPage: hasNextPage ?? false,
+    hasNextPage,
     isFetchingNextPage,
     mode: paginationMode,
     listKey: postSort,
@@ -120,7 +117,7 @@ export default function MultiCommunityFeedPosts() {
 
   const refresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await refetchAll();
     setRefreshing(false);
   };
 
@@ -166,7 +163,7 @@ export default function MultiCommunityFeedPosts() {
                 size="sm"
                 className="absolute"
                 onClick={() => {
-                  refetch();
+                  refetchAll();
                   // This is a hack to send you to the top of the feed
                   dispatchScrollEvent(router.routeInfo.pathname);
                 }}
