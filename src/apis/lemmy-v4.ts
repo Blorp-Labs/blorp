@@ -1483,6 +1483,33 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
     return { url: res.image_url };
   }
 
+  async listMedia(form: Forms.ListMedia, options?: RequestOptions) {
+    const { items, next_page } = await this.client.listMedia(
+      {
+        page_cursor:
+          form.pageCursor && form.pageCursor !== INIT_PAGE_TOKEN
+            ? form.pageCursor
+            : undefined,
+        limit: this.limit,
+      },
+      options,
+    );
+    return {
+      media: items.map(({ local_image }) => ({
+        filename: local_image.pictrs_alias,
+        url: `${this.instance}/pictrs/image/${local_image.pictrs_alias}`,
+        deleteToken: null,
+        publishedAt: local_image.published_at,
+        thumbnailForPostId: local_image.thumbnail_for_post_id ?? null,
+      })),
+      nextCursor: next_page ?? null,
+    };
+  }
+
+  async deleteMedia(form: Forms.DeleteMedia) {
+    await this.client.deleteMedia({ filename: form.filename });
+  }
+
   async getCaptcha(options: RequestOptions) {
     const { ok } = await this.client.getCaptcha(options);
     if (!ok) {

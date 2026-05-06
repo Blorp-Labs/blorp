@@ -1851,6 +1851,31 @@ export class PieFedApi
     }
   }
 
+  async listMedia(form: Forms.ListMedia, options?: RequestOptions) {
+    const page =
+      form.pageCursor && form.pageCursor !== INIT_PAGE_TOKEN
+        ? _.parseInt(form.pageCursor)
+        : 1;
+    const { media, next_page } = await this.client.getApiAlphaUserMedia(
+      { page, limit: this.limit },
+      options,
+    );
+    return {
+      media: media.map((m) => ({
+        filename: m.name ?? "",
+        url: m.url ?? "",
+        deleteToken: null,
+        publishedAt: null,
+        thumbnailForPostId: null,
+      })),
+      nextCursor: next_page ?? null,
+    };
+  }
+
+  async deleteMedia(form: Forms.DeleteMedia) {
+    await this.client.postApiAlphaImageDelete({ file: form.filename });
+  }
+
   async saveUserSettings(form: Forms.SaveUserSettings) {
     let avatar: undefined | string;
     try {

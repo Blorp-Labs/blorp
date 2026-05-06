@@ -303,6 +303,13 @@ export const mentionSchema = z.object({
 export const uploadImageResponseSchema = z.object({
   url: z.string().optional(),
 });
+export const mediaSchema = z.object({
+  filename: z.string(),
+  url: z.string(),
+  deleteToken: z.string().nullable(),
+  publishedAt: z.string().nullable(),
+  thumbnailForPostId: z.number().nullable(),
+});
 export const captchaSchema = z.object({
   uuid: z.string(),
   audioUrl: z.string(),
@@ -429,6 +436,7 @@ export namespace Schemas {
   export type Mention = z.infer<typeof mentionSchema>;
 
   export type UploadImageResponse = z.infer<typeof uploadImageResponseSchema>;
+  export type Media = z.infer<typeof mediaSchema>;
   export type Captcha = z.infer<typeof captchaSchema>;
   export type Registration = z.infer<typeof registrationResponseSchema>;
 
@@ -778,6 +786,15 @@ export namespace Forms {
     image: File;
   };
 
+  export type ListMedia = {
+    pageCursor?: string;
+  };
+
+  export type DeleteMedia = {
+    filename: string;
+    deleteToken?: string;
+  };
+
   export type Register = {
     username: string;
     password: string;
@@ -1046,6 +1063,13 @@ export abstract class ApiBlueprint<C> {
   abstract uploadImage(
     form: Forms.UploadImage,
   ): Promise<Schemas.UploadImageResponse>;
+
+  abstract listMedia(
+    form: Forms.ListMedia,
+    options?: RequestOptions,
+  ): Promise<Paginated & { media: Schemas.Media[] }>;
+
+  abstract deleteMedia(form: Forms.DeleteMedia): Promise<void>;
 
   abstract getCaptcha(options: RequestOptions): Promise<Schemas.Captcha>;
 
