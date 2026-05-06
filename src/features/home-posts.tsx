@@ -17,7 +17,7 @@ import { IonContent, IonHeader, IonToolbar, useIonRouter } from "@ionic/react";
 import { VirtualList } from "../components/virtual-list";
 import { MenuButton, UserDropdown } from "../components/nav";
 import { HomeFilter, PostSortButton } from "../components/lemmy-sort";
-import { useIsActiveRoute, useMedia } from "../hooks";
+import { useIsActiveRoute, useMedia, useSafeAreaInsets } from "../hooks";
 import { Link, resolveRoute } from "@/src/routing/index";
 import { Button } from "../components/ui/button";
 import { FaArrowUp } from "react-icons/fa6";
@@ -49,6 +49,8 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
   const headerAnimateRef = useRef(0);
   const tabBarAnimateRef = useRef(0);
 
+  const safeAreaTop = useSafeAreaInsets().top;
+
   const { tabBar, header, toolbar, newPostButton } = useMemo(() => {
     const tabBar = document.querySelector("ion-tab-bar");
 
@@ -75,13 +77,6 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
       if (prevOffsetRef.current === null || !active) {
         return;
       }
-
-      const safeAreaTop = parseInt(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--ion-safe-area-top")
-          .trim(),
-        10,
-      );
 
       if (header && toolbar && tabBar && newPostButton) {
         const headerHeight = _.isNumber(safeAreaTop)
@@ -114,7 +109,7 @@ function useHideHeaderTabBar(div: HTMLDivElement | null, active: boolean) {
         newPostButton.style.opacity = String(1 - headerAnimateRef.current);
       }
     },
-    [active, header, toolbar, tabBar, newPostButton],
+    [active, header, toolbar, tabBar, newPostButton, safeAreaTop],
   );
 
   const scrollTop = useRef(div?.scrollTop ?? 0);
