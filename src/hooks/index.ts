@@ -93,6 +93,30 @@ export function useIonPageElement() {
   };
 }
 
+export function useKeyboardHeight() {
+  const compute = () => {
+    const raw = getComputedStyle(document.body)
+      .getPropertyValue("--keyboard-height")
+      .trim();
+    const px = parseInt(raw, 10);
+    return Number.isFinite(px) ? px : 0;
+  };
+
+  const [height, setHeight] = useState(() => compute());
+
+  useEffect(() => {
+    const update = () => setHeight(compute());
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, []);
+
+  return height;
+}
+
 export function useSafeAreaInsets() {
   const computeInsets = () => {
     const style = getComputedStyle(document.documentElement);
