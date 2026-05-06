@@ -134,6 +134,20 @@ describe("article", () => {
 // urlContentType (covered in the urlContentType section above).
 
 describe("image", () => {
+  test("defaults to thumbnail if poast has thumbnail and no other embed", () => {
+    const thumbnailUrl = "https://example.com/photo.jpeg";
+    const { post } = api.getPost({
+      post: {
+        url: null,
+        embedVideoUrl: null,
+        thumbnailUrl,
+      },
+    });
+    const embed = getPostEmbed(post);
+    expect(embed.type).toBe("image");
+    expect(embed.thumbnail).toBe(thumbnailUrl);
+  });
+
   describe("via url", () => {
     test.each([
       "https://example.com/photo.jpeg",

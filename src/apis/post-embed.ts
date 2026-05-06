@@ -126,7 +126,7 @@ function normalizeVideoUrl<T>(url: string | T) {
 export function getPostEmbed(post: Schemas.Post) {
   const urlContentType = post.urlContentType;
   let embedUrl = post.url;
-  let embedType: EmbedType = "text";
+  let embedType: EmbedType = post.thumbnailUrl ? "image" : "text";
 
   const fromEmbedVideo = post.embedVideoUrl
     ? getEmbedFromUrl(post.embedVideoUrl)
