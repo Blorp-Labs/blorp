@@ -2,13 +2,8 @@ import { Keyboard } from "@capacitor/keyboard";
 import { StatusBar } from "@capacitor/status-bar";
 import { Capacitor } from "@capacitor/core";
 import _ from "lodash";
-import { isAndroid } from "../device";
-import {
-  createNativeSource,
-  createWebEnvSource,
-  InsetSource,
-  ZERO_INSETS,
-} from "./sources";
+import { isAndroid, isIos } from "../device";
+import { createNativeSource, createWebEnvSource, InsetSource } from "./sources";
 import { createCoordinator } from "./coordinator";
 import { applyInsets, applyKeyboardHeight } from "./dom-writer";
 
@@ -36,16 +31,30 @@ export function registerSafeArea() {
     pull();
   };
 
-  if (!isNative) {
-    applyInsets(ZERO_INSETS);
-    return () => ac.abort();
-  }
-
   pull();
   source.subscribe((insets) => {
     coord.setRawInsets(insets);
     applyInsets(coord.getEffectiveInsets());
   });
+
+  if (!isNative) {
+    // iOS Safari/PWA: visualViewport shrinks when the on-screen keyboard
+    // opens. The diff against innerHeight is the keyboard height — there's
+    // no Capacitor Keyboard plugin on web.
+    const vv = window.visualViewport;
+    if (isIos() && vv) {
+      const updateKeyboard = () => {
+        const kb = Math.max(0, window.innerHeight - vv.height);
+        coord.setKeyboardShowing(kb > 0);
+        applyKeyboardHeight(kb);
+        applyInsets(coord.getEffectiveInsets());
+      };
+      vv.addEventListener("resize", updateKeyboard, { signal: ac.signal });
+      vv.addEventListener("scroll", updateKeyboard, { signal: ac.signal });
+    }
+    return () => ac.abort();
+  }
+
   StatusBar.setOverlaysWebView({ overlay: true });
 
   const debouncedPull = _.debounce(pull, 50);

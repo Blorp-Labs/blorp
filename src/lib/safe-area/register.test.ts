@@ -37,8 +37,10 @@ vi.mock("@capacitor/core", () => ({
 }));
 
 const isAndroidMock = vi.fn(() => false);
+const isIosMock = vi.fn(() => false);
 vi.mock("../device", () => ({
   isAndroid: () => isAndroidMock(),
+  isIos: () => isIosMock(),
 }));
 
 import { registerSafeArea, refreshSafeArea } from "./register";
@@ -64,12 +66,14 @@ describe("registerSafeArea", () => {
     vi.useRealTimers();
   });
 
-  test("web path zeros insets and registers no listeners", async () => {
+  test("web path reads env() probe and registers no Capacitor listeners", async () => {
     isNativeMock.mockReturnValue(false);
     cleanup = registerSafeArea();
-    expect(
-      document.documentElement.style.getPropertyValue("--ion-safe-area-top"),
-    ).toBe("0px");
+    await vi.waitFor(() =>
+      expect(
+        document.documentElement.style.getPropertyValue("--ion-safe-area-top"),
+      ).toBe("0px"),
+    );
     expect(keyboardListeners.size).toBe(0);
     expect(safeAreaListeners.size).toBe(0);
   });

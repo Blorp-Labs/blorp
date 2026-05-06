@@ -1,4 +1,5 @@
 import { SafeArea, SafeAreaInsets } from "capacitor-plugin-safe-area";
+import { isIos } from "../device";
 
 export type Insets = {
   top: number;
@@ -36,10 +37,67 @@ export function createNativeSource(): InsetSource {
 }
 
 export function createWebEnvSource(): InsetSource {
-  // PR1 will replace this with a hidden-div + getComputedStyle reader.
+  let probe: HTMLDivElement | null = null;
+
+  const ensureProbe = () => {
+    if (probe && probe.isConnected) {
+      return probe;
+    }
+    probe = document.createElement("div");
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText = [
+      "position: fixed",
+      "top: 0",
+      "left: 0",
+      "width: 0",
+      "height: 0",
+      "visibility: hidden",
+      "pointer-events: none",
+      "padding-top: env(safe-area-inset-top)",
+      "padding-right: env(safe-area-inset-right)",
+      "padding-bottom: env(safe-area-inset-bottom)",
+      "padding-left: env(safe-area-inset-left)",
+    ].join(";");
+    document.body.appendChild(probe);
+    return probe;
+  };
+
+  const toPx = (raw: string) => {
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const read = (): Insets => {
+    const el = ensureProbe();
+    const cs = getComputedStyle(el);
+    return {
+      top: toPx(cs.paddingTop),
+      right: toPx(cs.paddingRight),
+      bottom: toPx(cs.paddingBottom),
+      left: toPx(cs.paddingLeft),
+    };
+  };
+
   return {
-    get: () => Promise.resolve(ZERO_INSETS),
-    subscribe: () => () => {},
+    get: () => Promise.resolve(read()),
+    subscribe: (cb) => {
+      const fire = () => cb(read());
+      window.addEventListener("resize", fire);
+      let vvCleanup: (() => void) | undefined;
+      const vv = window.visualViewport;
+      if (isIos() && vv) {
+        vv.addEventListener("resize", fire);
+        vv.addEventListener("scroll", fire);
+        vvCleanup = () => {
+          vv.removeEventListener("resize", fire);
+          vv.removeEventListener("scroll", fire);
+        };
+      }
+      return () => {
+        window.removeEventListener("resize", fire);
+        vvCleanup?.();
+      };
+    },
   };
 }
 
