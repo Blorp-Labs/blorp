@@ -47,7 +47,7 @@ import { ToolbarTitle } from "../../components/toolbar/toolbar-title";
 import { CommentSortSelect } from "../../components/lemmy-sort";
 import { ToolbarBackButton } from "../../components/toolbar/toolbar-back-button";
 import { ToolbarButtons } from "../../components/toolbar/toolbar-buttons";
-import { cn } from "../../lib/utils";
+import { cn, isNotNil } from "../../lib/utils";
 import { SearchBar } from "../search/search-bar";
 import { useCommentsByPaths } from "../../stores/comments";
 import { useCommunityFromStore } from "../../stores/communities";
@@ -202,7 +202,7 @@ function useResolveComment(pathOrApId: string | undefined): {
     const comment = object.data?.comment;
     const highlightCommentId = comment ? comment.id : null;
     const commentId = comment?.path.split(".").at(-2);
-    if (highlightCommentId) {
+    if (isNotNil(highlightCommentId)) {
       return {
         highlightCommentId,
         commentId:

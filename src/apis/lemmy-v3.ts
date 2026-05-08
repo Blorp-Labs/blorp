@@ -1165,13 +1165,14 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
       const comments: lemmyV3.CommentView[] = [];
 
-      const breath = this.client.getComments(
+      const breadthCommentsLimit = 50;
+      const breadth = this.client.getComments(
         {
           sort,
           post_id,
           type_: "All",
           // 50 is the max we are allowed to do
-          limit: 50,
+          limit: breadthCommentsLimit,
           page:
             _.isUndefined(form.pageCursor) ||
             form.pageCursor === INIT_PAGE_TOKEN
@@ -1203,8 +1204,8 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
         comments.push(...depth.comments);
       }
 
-      const breathComments = (await breath).comments;
-      comments.push(...breathComments);
+      const breadthComments = (await breadth).comments;
+      comments.push(...breadthComments);
 
       const nextCursor =
         _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
@@ -1212,7 +1213,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
           : _.parseInt(form.pageCursor) + 1;
       // Lemmy next cursor is broken when maxDepth is present.
       // It will page out to infinity until we get rate limited
-      const hasNextCursor = breathComments.length >= this.limit;
+      const hasNextCursor = breadthComments.length >= breadthCommentsLimit;
 
       return {
         comments: _.uniqBy(comments, (c) => c.comment.id).map(convertComment),
