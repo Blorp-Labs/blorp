@@ -1,26 +1,24 @@
-The comment tree should optimize for preserving the reader's continuity through
-a partially loaded thread, not for eagerly rendering every newly fetched
-comment as soon as it becomes available. The real UX risk is not incomplete
-data by itself, but visible branch reshaping after the user has already begun
-reading. Because of that, later fetches should be judged by whether they
-clarify structure the user has already seen or expand the visible branch in a
-new direction.
+The comment tree should preserve the reader's continuity through a partially
+loaded thread, not eagerly render every newly fetched comment as soon as it
+becomes available. The real UX risk is not incomplete data by itself, but
+visible branch reshaping after the user has already begun reading.
 
 Missing ancestors are therefore treated as placeholders. If the user has
 already seen a branch like `A => (missing) B => C`, and a later fetch provides
-the real `B`, the tree should prefer hydrating that placeholder in place rather
-than clipping away `C`. Inserting the real ancestor may shift content somewhat,
-but removing already-visible descendants is a worse disruption because it
-invalidates what the user was just reading. That led to the main invariant for
-this work: do not remove already-visible descendants just because a missing
-ancestor later became available.
+the real `B`, the tree should prefer hydrating that placeholder in place
+rather than clipping away `C`. Inserting the real ancestor may cause layout
+shift, but removing already-visible descendants is a worse disruption because
+it invalidates what the user was just reading. That led to the main invariant:
+do not remove already-visible descendants just because a missing ancestor
+later became available.
 
-Pruning still has a role, but only for a narrower case. It should hide newly
-available branches that were not previously part of the visible structure,
-rather than undoing structure the user already saw through placeholders. This
-is also why pagination metadata is only used to decide whether neighboring
-nodes belong to the same visible batch, not to infer any broader ordering
-between pages. The same reasoning also drove the decision to expose "show more"
-and child-order semantics from the tree layer itself: those rules are part of
-the thread model, and scattering them across UI call sites would make the
-behavior drift away from the continuity guarantees above.
+Pruning has a role, but only for branches the user has not yet seen. A node
+whose pageCursor diverges from the branch it sits on is dropped unless it
+hydrates a placeholder already on screen. Placeholders inherit the cursor of
+whichever descendant first created them, so when a real ancestor arrives
+later it adopts the existing cursor rather than its own and survives pruning
+— the branch keeps its place through hydration. For example, if the user has
+already loaded `A` and its reply `B` from one page, and a later page returns
+a new reply `D` under `B`, `D` is dropped because, and we render a "show more"
+in it's place. Pagination metadata is therefore treated only as a same-batch
+signal.
