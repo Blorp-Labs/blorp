@@ -90,6 +90,7 @@ export function getEmbedFromUrl(
     stripped.endsWith(".jpg") ||
     stripped.endsWith(".png") ||
     stripped.endsWith(".webp") ||
+    stripped.endsWith(".avif") ||
     stripped.endsWith(".gif")
   ) {
     return match("image");

@@ -59,15 +59,18 @@ describe("url normalization", () => {
 // declared content type wins even if it misclassifies the content.
 
 describe("urlContentType", () => {
-  test.each([["image/jpeg"], ["image/png"], ["image/gif"], ["image/webp"]])(
-    "%s → image",
-    (urlContentType) => {
-      const { post } = api.getPost({
-        post: { url: "https://example.com/photo", urlContentType },
-      });
-      expect(getPostEmbed(post).type).toBe("image");
-    },
-  );
+  test.each([
+    ["image/jpeg"],
+    ["image/png"],
+    ["image/gif"],
+    ["image/webp"],
+    ["image/avif"],
+  ])("%s → image", (urlContentType) => {
+    const { post } = api.getPost({
+      post: { url: "https://example.com/photo", urlContentType },
+    });
+    expect(getPostEmbed(post).type).toBe("image");
+  });
 
   test.each([["video/mp4"], ["video/webm"]])("%s → video", (urlContentType) => {
     const { post } = api.getPost({
@@ -154,6 +157,7 @@ describe("image", () => {
       "https://example.com/photo.jpg",
       "https://example.com/photo.png",
       "https://example.com/photo.webp",
+      "https://example.com/photo.avif",
       "https://example.com/photo.gif",
       "https://example.com/photo.jpg?size=large",
     ])("%s → image", (url) => {
