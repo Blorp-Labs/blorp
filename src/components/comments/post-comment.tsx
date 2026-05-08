@@ -21,7 +21,12 @@ import {
   useSaveCommentMutation,
   useSoftware,
 } from "@/src/queries/index";
-import { CommentTree } from "@/src/lib/comment-tree";
+import {
+  COMMENT_COLOR_PALETTE,
+  CommentTree,
+  getCommentChildren,
+  shouldShowMore,
+} from "@/src/lib/comment-tree";
 import { useShowCommentReportModal } from "../posts/post-report";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import {
@@ -38,7 +43,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { cn } from "@/src/lib/utils";
+import { cn, isNotNil } from "@/src/lib/utils";
 import { ActionMenuProps, EllipsisActionMenu } from "../adaptable/action-menu";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { getAccountSite, useAuth, useIsAdmin } from "@/src/stores/auth";
@@ -393,9 +398,8 @@ function PostCommentErrorFallback({
   commentTree: CommentTree;
   error: unknown;
 }) {
-  const [commentView] = useCommentsByPaths(
-    commentTree.comment ? [commentTree.comment.path] : [],
-  );
+  const commentPath = commentTree.comment?.path ?? commentTree.meta.path;
+  const [commentView] = useCommentsByPaths(commentPath ? [commentPath] : []);
   const apId = commentView?.apId;
 
   const { isLoggedIn, issueUrl, reportViaCommunity } = useReportError({
@@ -449,6 +453,7 @@ function PostCommentInner({
   highlightCommentId,
   canMod,
   standalone,
+  renderMissingComment,
 }: {
   postApId: string;
   postLocked: boolean;
@@ -458,18 +463,20 @@ function PostCommentInner({
   postCreatorId?: number;
   modApIds?: string[];
   singleCommentThread?: boolean;
-  highlightCommentId?: string;
+  highlightCommentId?: number;
   canMod?: boolean;
   standalone?: boolean;
+  renderMissingComment?: (path: string | undefined) => React.ReactNode;
 }) {
   const media = useMedia();
   const loadCommentIntoEditor = useLoadCommentIntoEditor();
 
   const linkCtx = useLinkContext();
 
-  const { comment, ...rest } = commentTree;
+  const { comment } = commentTree;
 
-  const [commentView] = useCommentsByPaths(comment ? [comment.path] : []);
+  const commentPath = commentTree.comment?.path ?? commentTree.meta.path;
+  const [commentView] = useCommentsByPaths(commentPath ? [commentPath] : []);
   const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(
@@ -483,33 +490,12 @@ function PostCommentInner({
       : undefined,
   );
 
-  const sorted = _.entries(_.omit(rest, ["sort", "imediateChildren"])).sort(
-    ([_id1, a], [_id2, b]) => a.sort - b.sort,
-  );
+  const sorted = getCommentChildren(commentTree);
 
-  let color = "red";
-  if (_.isNumber(level)) {
-    switch (level % 6) {
-      case 0:
-        color = "#FF2A33";
-        break;
-      case 1:
-        color = "#F98C1D";
-        break;
-      case 2:
-        color = "#DAB84D";
-        break;
-      case 3:
-        color = "#459E6F";
-        break;
-      case 4:
-        color = "#3088C1";
-        break;
-      case 5:
-        color = "purple";
-        break;
-    }
-  }
+  const color =
+    COMMENT_COLOR_PALETTE[
+      commentTree.meta.colorIndex % COMMENT_COLOR_PALETTE.length
+    ]!;
 
   const collapseThreshold = useCommentCollapseThreshold();
   const hideThreshold = useCommentHideThreshold();
@@ -562,9 +548,9 @@ function PostCommentInner({
   const hideContent = commentView?.removed || commentView?.deleted || false;
 
   const highlightComment =
-    _.isString(highlightCommentId) &&
+    isNotNil(highlightCommentId) &&
     commentView &&
-    highlightCommentId === String(commentView.id);
+    highlightCommentId === commentView.id;
 
   const saved = commentView ? getCommentSaved(commentView) : undefined;
 
@@ -590,7 +576,6 @@ function PostCommentInner({
     <>
       {commentView?.deleted && <span className="italic text-sm">deleted</span>}
       {commentView?.removed && <span className="italic text-sm">removed</span>}
-      {!commentView && <span className="italic text-sm">missing comment</span>}
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
@@ -702,12 +687,11 @@ function PostCommentInner({
             ) : (
               <div {...doubleTapLike}>{bodyRenderer}</div>
             ))}
-
+          {!commentView && renderMissingComment?.(commentTree.meta.path)}
           {/* Editing */}
           {editingState && (
             <InlineCommentReply state={editingState} autoFocus />
           )}
-
           {commentView && (
             <div
               className={cn(
@@ -769,8 +753,8 @@ function PostCommentInner({
             </div>
           )}
 
-          {(sorted.length > 0 ||
-            rest.imediateChildren > 0 ||
+          {(shouldShowMore(commentTree) ||
+            sorted.length > 0 ||
             (replyState && media.md)) && (
             <div
               className="border-l-[2px] border-b-[2px] pl-3 md:pl-3.5 rounded-bl-lg mb-2"
@@ -779,7 +763,6 @@ function PostCommentInner({
               {replyState && (
                 <InlineCommentReply state={replyState} autoFocus />
               )}
-
               {sorted.map(([id, map]) => (
                 <PostComment
                   postApId={postApId}
@@ -792,10 +775,13 @@ function PostCommentInner({
                   highlightCommentId={highlightCommentId}
                   modApIds={modApIds}
                   canMod={canMod}
+                  renderMissingComment={renderMissingComment}
                 />
               ))}
 
-              {commentView && sorted.length < rest.imediateChildren ? (
+              {commentView &&
+              !(singleCommentThread && level === 0) &&
+              shouldShowMore(commentTree) ? (
                 <Link
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{
