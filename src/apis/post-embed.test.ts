@@ -162,8 +162,11 @@ describe("image", () => {
       "https://example.com/photo.jpg?size=large",
     ])("%s → image", (url) => {
       const { post } = api.getPost({ post: { url } });
-      expect(getPostEmbed(post).type).toBe("image");
-      expect(getPostEmbed(post).fullResThumbnail).toBe(url);
+      const embed = getPostEmbed(post);
+      expect(embed.type).toBe("image");
+      // No server-generated thumbnail, so the url itself stands in.
+      expect(embed.thumbnail).toBe(url);
+      expect(embed.fullResThumbnail).toBeNull();
     });
   });
 
