@@ -90,6 +90,7 @@ export function getEmbedFromUrl(
     stripped.endsWith(".jpg") ||
     stripped.endsWith(".png") ||
     stripped.endsWith(".webp") ||
+    stripped.endsWith(".avif") ||
     stripped.endsWith(".gif")
   ) {
     return match("image");
@@ -158,7 +159,8 @@ export function getPostEmbed(post: Schemas.Post) {
     embedType = "article";
   }
 
-  const thumbnail = post.thumbnailUrl;
+  const thumbnail =
+    post.thumbnailUrl ?? (embedType === "image" ? post.url : null);
   let fullResThumbnail: string | null = null;
 
   if (post.url && embedType === "image" && post.url !== thumbnail) {
