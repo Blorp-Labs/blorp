@@ -77,7 +77,7 @@
 }
 
 .markdown-content ol {
-  @apply list-decimal list-outside ps-10 md:ps-12 space-y-1;
+  @apply list-decimal list-outside ps-8 space-y-1;
 }
 
 .markdown-content a {
