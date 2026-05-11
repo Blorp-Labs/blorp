@@ -42,7 +42,7 @@ DEPENDENCIES:
   - "CapacitorFilesystem (from `../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.5.0/node_modules/@capacitor/filesystem`)"
   - "CapacitorHaptics (from `../../node_modules/.pnpm/@capacitor+haptics@7.0.3_@capacitor+core@7.5.0/node_modules/@capacitor/haptics`)"
   - "CapacitorInappbrowser (from `../../node_modules/.pnpm/@capacitor+inappbrowser@2.1.0_@capacitor+core@7.5.0/node_modules/@capacitor/inappbrowser`)"
-  - "CapacitorKeyboard (from `../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/keyboard`)"
+  - "CapacitorKeyboard (from `../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_patch_hash=4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c_80b0f4ae90345c51a2ac83747005b642/node_modules/@capacitor/keyboard`)"
   - "CapacitorPluginSafeArea (from `../../node_modules/.pnpm/capacitor-plugin-safe-area@4.0.3_@capacitor+core@7.5.0/node_modules/capacitor-plugin-safe-area`)"
   - "CapacitorShare (from `../../node_modules/.pnpm/@capacitor+share@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/share`)"
   - "CapacitorStatusBar (from `../../node_modules/.pnpm/@capacitor+status-bar@7.0.5_@capacitor+core@7.5.0/node_modules/@capacitor/status-bar`)"
@@ -72,7 +72,7 @@ EXTERNAL SOURCES:
   CapacitorInappbrowser:
     :path: "../../node_modules/.pnpm/@capacitor+inappbrowser@2.1.0_@capacitor+core@7.5.0/node_modules/@capacitor/inappbrowser"
   CapacitorKeyboard:
-    :path: "../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/keyboard"
+    :path: "../../node_modules/.pnpm/@capacitor+keyboard@7.0.4_patch_hash=4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c_80b0f4ae90345c51a2ac83747005b642/node_modules/@capacitor/keyboard"
   CapacitorPluginSafeArea:
     :path: "../../node_modules/.pnpm/capacitor-plugin-safe-area@4.0.3_@capacitor+core@7.5.0/node_modules/capacitor-plugin-safe-area"
   CapacitorShare:
@@ -100,6 +100,6 @@ SPEC CHECKSUMS:
   OSInAppBrowserLib: 232c74691cffb9959aa07b1d5ff57d96fca2af7f
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: 81130343edd19ef9b8d1823d878d84acbdbf3ca0
+PODFILE CHECKSUM: 0117844e127aa47c80ff943fc1bfbc4413421f85
 
 COCOAPODS: 1.16.2

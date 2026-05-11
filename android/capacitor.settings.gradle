@@ -21,7 +21,7 @@ include ':capacitor-inappbrowser'
 project(':capacitor-inappbrowser').projectDir = new File('../node_modules/@capacitor/inappbrowser/android')
 
 include ':capacitor-keyboard'
-project(':capacitor-keyboard').projectDir = new File('../node_modules/.pnpm/@capacitor+keyboard@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/keyboard/android')
+project(':capacitor-keyboard').projectDir = new File('../node_modules/.pnpm/@capacitor+keyboard@7.0.4_patch_hash=4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c_80b0f4ae90345c51a2ac83747005b642/node_modules/@capacitor/keyboard/android')
 
 include ':capacitor-share'
 project(':capacitor-share').projectDir = new File('../node_modules/.pnpm/@capacitor+share@7.0.4_@capacitor+core@7.5.0/node_modules/@capacitor/share/android')
