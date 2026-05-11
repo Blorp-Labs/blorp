@@ -49,7 +49,10 @@ import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 import { downloadImage, shareImage } from "@/src/hooks/share";
 
-export function usePostVoting(post: Schemas.Post | undefined) {
+export function usePostVoting(
+  post: Schemas.Post | undefined,
+  { hideMyVote }: { hideMyVote?: boolean } = {},
+) {
   const serverEnablesDownvotes = useServerEnablesDownvotes(
     "enablePostDownvotes",
   );
@@ -80,7 +83,9 @@ export function usePostVoting(post: Schemas.Post | undefined) {
     displayScore,
     isUpvoted,
     isDownvoted,
-  } = resolveVoteCounts(post);
+  } = resolveVoteCounts(
+    hideMyVote ? { upvotes: post.upvotes, downvotes: post.downvotes } : post,
+  );
 
   return {
     displayScore,
@@ -224,16 +229,18 @@ export function PostVoting({
   className,
   variant = "outline",
   disabled,
+  hideMyVote,
 }: {
   post: Schemas.Post;
   className?: string;
   variant?: "outline" | "ghost";
   disabled?: boolean;
+  hideMyVote?: boolean;
 }) {
   const id = useId();
   const apId = post.apId;
 
-  const voting = usePostVoting(post);
+  const voting = usePostVoting(post, { hideMyVote });
 
   if (!voting) {
     return null;
