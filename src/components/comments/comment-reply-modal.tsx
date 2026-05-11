@@ -157,9 +157,11 @@ export function useLoadCommentIntoEditor() {
 
 export function CommentReplyProvider({
   children,
+  presentingElement,
   onStateChange,
 }: {
   children: React.ReactNode;
+  presentingElement?: HTMLElement;
   onStateChange: (state: State | null) => void;
 }) {
   const [signal, setSignal] = useState(0);
@@ -243,6 +245,7 @@ export function CommentReplyProvider({
         isOpen={state !== null}
         onWillDismiss={() => onCancel()}
         onDidPresent={() => setSignal((s) => s + 1)}
+        presentingElement={presentingElement}
         className="md:hidden"
       >
         <IonHeader>
