@@ -244,9 +244,6 @@ export function CommentReplyProvider({
         onWillDismiss={() => onCancel()}
         onDidPresent={() => setSignal((s) => s + 1)}
         className="md:hidden"
-        initialBreakpoint={0.8}
-        breakpoints={[0, 0.8, 1]}
-        expandToScroll={true}
       >
         <IonHeader>
           <IonToolbar>
