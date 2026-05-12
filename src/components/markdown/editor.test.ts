@@ -352,10 +352,7 @@ describe("editor commands", () => {
     const linkInfo = getActiveLinkInfo(editor);
     expect(linkInfo).not.toBeNull();
     updateLink(editor, "bold link", "https://new.com", linkInfo!);
-    // Tiptap serializes coincident marks (bold + link on the same span) with
-    // bold as the outer wrapper, producing **[text](url)** rather than
-    // [**text**](url). The bold is preserved — just wrapped differently.
-    expect(getMarkdown(editor)).toBe("**[bold link](https://new.com)**");
+    expect(getMarkdown(editor)).toBe("[**bold link**](https://new.com)");
   });
 
   it("setHorizontalRule inserts --- into the document", () => {
@@ -686,20 +683,6 @@ describe("known upstream bugs", () => {
     editor.destroy();
   });
 
-  // https://github.com/ueberdosis/tiptap/issues/7553
-  // Italic (and other marks) on partial link text serializes the mark
-  // delimiters *outside* the square brackets, producing invalid markdown.
-  // e.g. `*[hello* world](url)` instead of `[*hello* world](url)`
-  it.fails(
-    "#7553: italic on partial link text keeps markers inside brackets",
-    () => {
-      setMarkdown(editor, "[hello world](https://google.com)");
-      editor.commands.setTextSelection({ from: 1, to: 6 });
-      editor.commands.toggleItalic();
-      expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
-    },
-  );
-
   // https://github.com/ueberdosis/tiptap/issues/7258
   // Escaped markdown characters (\*) are silently dropped instead of
   // rendering as the literal character. Per the markdown spec, \* should
@@ -732,4 +715,15 @@ describe("known upstream bugs", () => {
       expect(output).toContain("----:");
     },
   );
+
+  // https://github.com/ueberdosis/tiptap/issues/7553
+  // Italic (and other marks) on partial link text serializes the mark
+  // delimiters *outside* the square brackets, producing invalid markdown.
+  // e.g. `*[hello* world](url)` instead of `[*hello* world](url)`
+  it("#7553: italic on partial link text keeps markers inside brackets", () => {
+    setMarkdown(editor, "[hello world](https://google.com)");
+    editor.commands.setTextSelection({ from: 1, to: 6 });
+    editor.commands.toggleItalic();
+    expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
+  });
 });
