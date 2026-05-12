@@ -157,12 +157,13 @@ export function useLoadCommentIntoEditor() {
 
 export function CommentReplyProvider({
   children,
+  presentingElement,
   onStateChange,
 }: {
   children: React.ReactNode;
+  presentingElement?: HTMLElement;
   onStateChange: (state: State | null) => void;
 }) {
-  const [signal, setSignal] = useState(0);
   const [state, _setState] = useState<State | null>(null);
   const setState = (state: State | null) => {
     _setState(state);
@@ -191,7 +192,6 @@ export function CommentReplyProvider({
     const clearEditor = () => {
       setContent(commentKey, null);
       setState(null);
-      setSignal((s) => s + 1);
     };
     const undoClearEditor = () => {
       setContent(commentKey, body);
@@ -242,7 +242,7 @@ export function CommentReplyProvider({
       <IonModal
         isOpen={state !== null}
         onWillDismiss={() => onCancel()}
-        onDidPresent={() => setSignal((s) => s + 1)}
+        presentingElement={presentingElement}
         className="md:hidden"
       >
         <IonHeader>
@@ -262,11 +262,10 @@ export function CommentReplyProvider({
           {parent && <RepyingToComment path={parent.path} />}
           {media.maxMd && (
             <MarkdownEditor
-              key={signal}
               content={body}
               onChange={(val) => setContent(commentKey, val)}
               className="min-h-full"
-              autoFocus
+              autoFocus="delay"
               placeholder={parent ? "Add reply..." : "Add a comment..."}
             />
           )}

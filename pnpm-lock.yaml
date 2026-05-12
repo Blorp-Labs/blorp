@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  "@capacitor/keyboard@*":
+    hash: 4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c4201723c6406a3
+    path: patches/@capacitor__keyboard.patch
   "@panzoom/panzoom@4.6.1":
     hash: 96b4230947b8a40ee7ba4e029afbcf473c2f9d30601cba1821d5752a43c737e4
     path: patches/@panzoom__panzoom@4.6.1.patch
@@ -47,7 +50,7 @@ importers:
         version: 7.5.0(@capacitor/core@7.5.0)
       "@capacitor/keyboard":
         specifier: 7.0.4
-        version: 7.0.4(@capacitor/core@7.5.0)
+        version: 7.0.4(patch_hash=4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c4201723c6406a3)(@capacitor/core@7.5.0)
       "@capacitor/share":
         specifier: 7.0.4
         version: 7.0.4(@capacitor/core@7.5.0)
@@ -14823,7 +14826,7 @@ snapshots:
     dependencies:
       "@capacitor/core": 7.5.0
 
-  "@capacitor/keyboard@7.0.4(@capacitor/core@7.5.0)":
+  "@capacitor/keyboard@7.0.4(patch_hash=4668f0c9ffd6f4db234f7372ce7623e4426b9d8427dd11439c4201723c6406a3)(@capacitor/core@7.5.0)":
     dependencies:
       "@capacitor/core": 7.5.0
 

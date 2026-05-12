@@ -44,6 +44,8 @@ import { MdOutlineFormatClear } from "react-icons/md";
 import Mention from "@tiptap/extension-mention";
 import { useMentionSuggestions } from "./editor-extensions/mention";
 
+const FOCUS_DELAY = 100;
+
 /** Strip trailing &nbsp; markers that @tiptap/extension-paragraph emits for empty paragraphs */
 function stripTrailingNbsp(md: string): string {
   let result = md.replace(/(\n\n&nbsp;)+$/, "");
@@ -488,7 +490,7 @@ function TipTapEditor({
   id,
   hideMenu,
 }: {
-  autoFocus?: boolean;
+  autoFocus?: boolean | "delay";
   content: string;
   onChange: (content: string) => void;
   onChangeEditorType: () => void;
@@ -524,7 +526,7 @@ function TipTapEditor({
     // shouldRerenderOnTransaction: true,
     autofocus: false,
     onCreate({ editor }) {
-      if (autoFocus) {
+      if (autoFocus === true) {
         editor.commands.focus("end");
       }
     },
@@ -629,6 +631,19 @@ function TipTapEditor({
       setMarkdown(editor, content);
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    if (autoFocus !== "delay") {
+      return;
+    }
+    const t = setTimeout(() => {
+      if (editor.isFocused) {
+        return;
+      }
+      editor.commands.focus("end");
+    }, FOCUS_DELAY);
+    return () => clearTimeout(t);
+  }, [autoFocus, editor]);
 
   return (
     <>
@@ -755,7 +770,7 @@ function TextAreaEditor({
   content: string;
   onChange: (content: string) => void;
   onChangeEditorType: () => void;
-  autoFocus?: boolean;
+  autoFocus?: boolean | "delay";
   placeholder?: string;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -763,6 +778,24 @@ function TextAreaEditor({
   id?: string;
   hideMenu?: boolean;
 }) {
+  const testAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus !== "delay") {
+      return;
+    }
+    const t = setTimeout(() => {
+      const el = testAreaRef.current;
+      if (!el || document.activeElement === el) {
+        return;
+      }
+      el.focus({ preventScroll: true });
+      const len = el.value.length;
+      el.setSelectionRange(len, len);
+    }, FOCUS_DELAY);
+    return () => clearTimeout(t);
+  }, [autoFocus]);
+
   return (
     <>
       <div
@@ -793,8 +826,9 @@ function TextAreaEditor({
         </Button>
       </div>
       <TextareaAutosize
+        ref={testAreaRef}
         id={id}
-        autoFocus={autoFocus}
+        autoFocus={autoFocus === true}
         defaultValue={content}
         onChange={(e) => onChange(e.target.value)}
         className="markdown-content resize-none w-full max-w-full font-mono outline-none py-2 px-3 md:px-3.5 grow shrink-0 basis-auto"
@@ -856,7 +890,7 @@ export function MarkdownEditor({
   content: string;
   onChange: (content: string) => void;
   className?: string;
-  autoFocus?: boolean;
+  autoFocus?: boolean | "delay";
   placeholder?: string;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -866,7 +900,8 @@ export function MarkdownEditor({
   id?: string;
   hideMenu?: boolean;
 }) {
-  const [autoFocus, setAutoFocus] = useState(autoFocusDefault ?? false);
+  const [_autoFocus, setAutoFocus] = useState<boolean | "delay" | undefined>();
+  const autoFocus = _autoFocus ?? autoFocusDefault ?? false;
   const showMarkdown = useSettingsStore((s) => s.showMarkdown);
   const setShowMarkdown = useSettingsStore((s) => s.setShowMarkdown);
 

@@ -39,6 +39,7 @@ import {
   useMedia,
   useTheme,
   useRequireAuth,
+  useIonPageElement,
 } from "../../hooks";
 import { Page } from "../../components/page";
 import { CommentSkeleton } from "../../components/comments/comment-skeleton";
@@ -355,6 +356,8 @@ export default function Post() {
     [structured],
   );
 
+  const pageElement = useIonPageElement();
+
   const router = useIonRouter();
 
   const [commentReplyParent, setCommentReplyParent] = useState<string | null>();
@@ -368,6 +371,7 @@ export default function Post() {
 
   return (
     <Page
+      ref={pageElement.ref}
       notFound={!decodedApId || (postQuery.isError && !post)}
       notFoundApId={decodedApId}
     >
@@ -428,6 +432,7 @@ export default function Post() {
       </IonHeader>
       <IonContent scrollY={false} fullscreen={media.maxMd}>
         <CommentReplyProvider
+          presentingElement={pageElement.element}
           onStateChange={(state) => setCommentReplyParent(state?.parent?.path)}
         >
           <PostReportProvider>
