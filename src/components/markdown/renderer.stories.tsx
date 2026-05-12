@@ -88,6 +88,36 @@ Ordered list:
   },
 };
 
+export const OrderedListDoubleDigits: Story = {
+  args: {
+    markdown: `
+1. Item one
+2. Item two
+3. Item three
+4. Item four
+5. Item five
+6. Item six
+7. Item seven
+8. Item eight
+9. Item nine
+10. Item ten
+`,
+  },
+};
+
+export const OrderedListWideNumbers: Story = {
+  args: {
+    markdown: `
+98. Item ninety-eight
+99. Item ninety-nine
+100. Item one hundred
+
+999. Item nine hundred ninety-nine
+1000. Item one thousand
+`,
+  },
+};
+
 export const BlockquoteAndHr: Story = {
   args: {
     markdown: `
