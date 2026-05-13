@@ -11,7 +11,6 @@ import fuzzysort from "fuzzysort";
 import emojilib from "emojilib";
 import emojiData from "unicode-emoji-json/data-by-group.json";
 import { Deferred } from "@/src/lib/deferred";
-import { useEmojiReactionStore } from "@/src/stores/emoji-reactions";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { cn } from "@/src/lib/utils";
@@ -40,8 +39,6 @@ export function EmojiPickerSheetProvider({
   const deferredRef = useRef<Deferred<string> | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const recentlyUsed = useEmojiReactionStore((s) => s.recentlyUsed);
-  const addRecentEmoji = useEmojiReactionStore((s) => s.addRecentEmoji);
 
   const open = useCallback((deferred: Deferred<string>) => {
     deferredRef.current = deferred;
@@ -51,7 +48,6 @@ export function EmojiPickerSheetProvider({
   }, []);
 
   const handleEmojiSelect = (emoji: string) => {
-    addRecentEmoji(emoji);
     deferredRef.current?.resolve(emoji);
     deferredRef.current = null;
     setIsOpen(false);
@@ -175,10 +171,7 @@ export function EmojiPickerSheetProvider({
               className="flex-1 flex flex-row overflow-x-auto ion-content-scroll-host min-h-0"
             >
               {emojiData.map((cat, i) => {
-                const emojis =
-                  cat.slug === "frequent"
-                    ? ([...recentlyUsed] satisfies string[])
-                    : cat.emojis;
+                const emojis = cat.emojis;
                 const cols = Math.max(4, Math.ceil(emojis.length / MAX_ROWS));
                 return (
                   <div
