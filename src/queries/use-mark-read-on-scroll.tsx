@@ -109,7 +109,7 @@ export function useMarkReadOnView(apId: string, options: { enabled: boolean }) {
     enabled && isNotNil(batcher) && isLoggedIn && isUnread && isNotNil(postId);
 
   const { ref, inView } = useInView({
-    rootMargin: "-20px 0px",
+    rootMargin: "-200px 0px",
     triggerOnce: true,
     skip: !observerEnabled,
   });
