@@ -18,7 +18,10 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia, useRequireAuth } from "@/src/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
-import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
+import {
+  useServerEnablesDownvotes,
+  useScoreDisplayPreference,
+} from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "../posts/config";
@@ -153,8 +156,8 @@ export function CommentVoting({
   className?: string;
   fixRightAlignment?: boolean;
 }) {
-  const enableDownvotes = useShouldShowDownvotes("enableCommentDownvotes");
-  const scoreDisplay = useScoreDisplay();
+  const enableDownvotes = useServerEnablesDownvotes("enableCommentDownvotes");
+  const scoreDisplay = useScoreDisplayPreference();
 
   const upvoteId = useId();
   const downvoteId = useId();

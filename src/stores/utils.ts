@@ -75,12 +75,17 @@ export function mergeCacheArray<TSchema extends z.ZodType>(
   return [...aItems, ...bItems];
 }
 
-export function scoreDisplayFromSite(
-  voteDisplaySetting: VoteDisplaySetting,
+/**
+ * Resolve user score preference with what the server allows
+ *
+ * Exported for testing
+ */
+export function scoreDisplayPreference(
+  voteDisplayAppSetting: VoteDisplaySetting,
   site: Schemas.Site | undefined,
 ): ScoreDisplay {
-  if (voteDisplaySetting !== "account") {
-    return voteDisplaySetting;
+  if (voteDisplayAppSetting !== "account") {
+    return voteDisplayAppSetting;
   }
 
   // "account" mode — derive from account/server settings.
@@ -108,22 +113,22 @@ export function scoreDisplayFromSite(
   return "none";
 }
 
-export function shouldShowDownvotes(
-  voteDisplaySetting: VoteDisplaySetting,
-  serverCapability: boolean,
+export function canShowDownvotes(
+  voteDisplayAppSetting: VoteDisplaySetting,
+  serverAllowsDownvotes: boolean,
   scoreDisplay: ScoreDisplay,
 ): boolean {
-  if (voteDisplaySetting === "none") {
+  if (voteDisplayAppSetting === "none") {
     return false;
   }
-  if (voteDisplaySetting === "account") {
+  if (voteDisplayAppSetting === "account") {
     // Use the resolved display mode rather than site.showDownvotes directly.
     // e.g. "score" mode has showDownvotes=false on the account but the
     // downvote button should still appear when the server supports it.
-    return scoreDisplay !== "none" && serverCapability;
+    return scoreDisplay !== "none" && serverAllowsDownvotes;
   }
   // Any explicit display mode still shows the downvote button if the server allows it.
-  return serverCapability;
+  return serverAllowsDownvotes;
 }
 
 export function resolveThreshold(
@@ -138,26 +143,20 @@ export function resolveThreshold(
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-export function useScoreDisplay(): ScoreDisplay {
+export function useScoreDisplayPreference(): ScoreDisplay {
   const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
-  return scoreDisplayFromSite(voteDisplaySetting, site);
+  return scoreDisplayPreference(voteDisplaySetting, site);
 }
 
-export function useShouldShowDownvotes(
+export function useServerEnablesDownvotes(
   serverCapabilityKey: "enablePostDownvotes" | "enableCommentDownvotes",
 ): boolean {
-  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
-  const serverCapability =
+  const serverAllowsDownvotes =
     useAuth(
       (s) => getAccountSite(s.getSelectedAccount())?.[serverCapabilityKey],
     ) ?? true;
-  const scoreDisplay = useScoreDisplay();
-  return shouldShowDownvotes(
-    voteDisplaySetting,
-    serverCapability,
-    scoreDisplay,
-  );
+  return serverAllowsDownvotes;
 }
 
 export function useCommentCollapseThreshold(): number | null {

@@ -18,7 +18,10 @@ import {
 } from "./post-buttons";
 import { resolveVoteCounts } from "@/src/lib/voting";
 import { abbriviateNumber } from "@/src/lib/format";
-import { useScoreDisplay, useShouldShowDownvotes } from "@/src/stores/utils";
+import {
+  useScoreDisplayPreference,
+  useServerEnablesDownvotes,
+} from "@/src/stores/utils";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
 import { PostLoopsEmbed } from "./embeds/post-loops-embed";
@@ -207,35 +210,38 @@ function ExtraSmallPostCardSkeleton() {
 }
 
 function StickyPostScore({ post }: { post: Schemas.Post }) {
-  const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
-  const scoreDisplay = useScoreDisplay();
+  const serverEnablesDownvotes = useServerEnablesDownvotes(
+    "enablePostDownvotes",
+  );
+  const scoreDisplayPreference = useScoreDisplayPreference();
   const { displayUpvotes, displayDownvotes, displayScore } =
     resolveVoteCounts(post);
 
-  if (scoreDisplay === "none") {
+  if (scoreDisplayPreference === "none") {
     return null;
   }
 
   // Heart mode — server has disabled downvotes. Mirror PostVoting:
   // show a count for "score"/"upvotes" modes; "downvotes" mode has nothing
   // meaningful to show since the server has no downvotes.
-  if (!enableDownvotes) {
-    if (scoreDisplay === "downvotes") {
+  if (!serverEnablesDownvotes) {
+    if (scoreDisplayPreference === "downvotes") {
       return null;
     }
-    const n = scoreDisplay === "upvotes" ? displayUpvotes : displayScore;
-    const label = scoreDisplay === "upvotes" ? "upvotes" : "likes";
+    const votes =
+      scoreDisplayPreference === "upvotes" ? displayUpvotes : displayScore;
+    const label = scoreDisplayPreference === "upvotes" ? "upvotes" : "likes";
     return (
       <span>
-        {abbriviateNumber(n)} {label}
+        {abbriviateNumber(votes)} {label}
       </span>
     );
   }
 
-  if (scoreDisplay === "upvotes") {
+  if (scoreDisplayPreference === "upvotes") {
     return <span>{abbriviateNumber(displayUpvotes)} upvotes</span>;
   }
-  if (scoreDisplay === "downvotes") {
+  if (scoreDisplayPreference === "downvotes") {
     return <span>{abbriviateNumber(displayDownvotes)} downvotes</span>;
   }
   return (
