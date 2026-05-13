@@ -13,6 +13,7 @@ import { usePostsStore, usePostFromStore } from "@/src/stores/posts";
 import { useSettingsStore } from "@/src/stores/settings";
 import { apiClient } from "@/src/apis/client";
 import { isNotNil } from "../lib/utils";
+import { getPostRead } from "../apis/utils";
 
 type Item = {
   accountUuid: string;
@@ -100,7 +101,7 @@ export function useMarkReadOnView(apId: string, options: { enabled: boolean }) {
   const isLoggedIn = useAuth((s) => !!s.getSelectedAccount().jwt);
 
   const postId = post?.id;
-  const isUnread = !!post && !post.read;
+  const isUnread = !!post && !getPostRead(post);
   const patchPost = usePostsStore((s) => s.patchPost);
   const getPrefixer = useAuth((s) => s.getCachePrefixer);
 
