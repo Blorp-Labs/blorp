@@ -21,7 +21,7 @@ import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 import { useSettingsStore } from "../stores/settings";
 import { useInView } from "react-intersection-observer";
-import { composeRefs } from "@radix-ui/react-compose-refs";
+import { useComposedRefs } from "@radix-ui/react-compose-refs";
 
 export function useScrollToTopEvents({
   scrollToTop,
@@ -389,7 +389,8 @@ export function VirtualList<T>({
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
 
-  const { ref: inViewRef, inView } = useInView();
+  const { ref: inViewRef, inView } = useInView({ initialInView: true });
+  const composedScrollRef = useComposedRefs(scrollRef, inViewRef);
   useEffect(() => {
     focused.current = inView;
     onFocusChange?.(inView);
@@ -417,7 +418,7 @@ export function VirtualList<T>({
       )}
 
       <div
-        ref={composeRefs(scrollRef, inViewRef)}
+        ref={composedScrollRef}
         className={cn(
           "flex-1 overflow-y-scroll overscroll-auto",
           scrollHost && "ion-content-scroll-host h-full",
