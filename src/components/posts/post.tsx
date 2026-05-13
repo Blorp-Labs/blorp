@@ -221,16 +221,18 @@ function StickyPostScore({ post }: { post: Schemas.Post }) {
     return null;
   }
 
+  const prefersDownvotes = scoreDisplayPreference === "downvotes";
+  const prefersUpvotes = scoreDisplayPreference === "upvotes";
+
   // Heart mode — server has disabled downvotes. Mirror PostVoting:
   // show a count for "score"/"upvotes" modes; "downvotes" mode has nothing
   // meaningful to show since the server has no downvotes.
   if (!serverEnablesDownvotes) {
-    if (scoreDisplayPreference === "downvotes") {
+    if (prefersDownvotes) {
       return null;
     }
-    const votes =
-      scoreDisplayPreference === "upvotes" ? displayUpvotes : displayScore;
-    const label = scoreDisplayPreference === "upvotes" ? "upvotes" : "likes";
+    const votes = prefersUpvotes ? displayUpvotes : displayScore;
+    const label = prefersUpvotes ? "upvotes" : "likes";
     return (
       <span>
         {abbriviateNumber(votes)} {label}
@@ -238,10 +240,10 @@ function StickyPostScore({ post }: { post: Schemas.Post }) {
     );
   }
 
-  if (scoreDisplayPreference === "upvotes") {
+  if (prefersUpvotes) {
     return <span>{abbriviateNumber(displayUpvotes)} upvotes</span>;
   }
-  if (scoreDisplayPreference === "downvotes") {
+  if (prefersDownvotes) {
     return <span>{abbriviateNumber(displayDownvotes)} downvotes</span>;
   }
   return (

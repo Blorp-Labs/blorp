@@ -248,15 +248,15 @@ export function PostVoting({
 
   const prefersDownvotes = scoreDisplayPreference === "downvotes";
   const prefersUpvotes = scoreDisplayPreference === "upvotes";
+  const prefersScore = scoreDisplayPreference === "score";
 
   // Heart mode — server has disabled downvotes.
   // Show count for score/upvotes modes; downvotes-only mode shows nothing
   // since the server doesn't support them.
-  if (!serverEnablesDownvotes) {
-    const showCount = scoreDisplayPreference === "score" || prefersUpvotes;
+  if (!serverEnablesDownvotes || scoreDisplayPreference === "none") {
     return (
       <Button
-        size={!showCount ? "icon" : "sm"}
+        size={prefersScore || prefersUpvotes ? "icon" : "sm"}
         variant={variant}
         onClick={() =>
           vote({
@@ -272,8 +272,8 @@ export function PostVoting({
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {showCount &&
-          abbriviateNumber(prefersUpvotes ? displayUpvotes : displayScore)}
+        {prefersScore && abbriviateNumber(displayScore)}
+        {prefersUpvotes && abbriviateNumber(displayUpvotes)}
       </Button>
     );
   }
@@ -291,19 +291,15 @@ export function PostVoting({
       ? `${displayUpvotes} upvotes`
       : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
 
-  const scoreNode = scoreDisplayPreference !== "none" && (
+  const scoreNode = (
     <Tooltip>
       <TooltipTrigger aria-label={tooltipText}>
         <label htmlFor={prefersDownvotes ? downvoteId : id}>
           <NumberFlow
             className={cn(
               "-mx-px cursor-pointer text-md",
-              prefersDownvotes
-                ? isDownvoted && "text-brand-secondary"
-                : cn(
-                    isUpvoted && "text-brand",
-                    isDownvoted && "text-brand-secondary",
-                  ),
+              isUpvoted && !prefersDownvotes && "text-brand",
+              isDownvoted && !prefersUpvotes && "text-brand-secondary",
             )}
             suffix={abbrv.suffix}
             value={abbrv.number}
@@ -349,7 +345,9 @@ export function PostVoting({
       </Button>
 
       {/* Separator left of score — only in downvotes mode */}
-      {prefersDownvotes && <Separator orientation="vertical" className="h-4" />}
+      {prefersDownvotes && (
+        <Separator orientation="vertical" className="min-h-4 mr-2.5" />
+      )}
 
       {scoreNode}
 
