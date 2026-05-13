@@ -60,7 +60,8 @@ import {
 } from "../ui/collapsible";
 import { create } from "zustand";
 import { COMMENT_COLLAPSE_EVENT } from "../posts/config";
-import { useMedia, useInputAlert, useRequireAuth } from "@/src/hooks";
+import { useMedia, useRequireAuth } from "@/src/hooks";
+import { usePickEmoji } from "@/src/components/emoji-picker/emoji-picker-sheet";
 import { CakeDay } from "../cake-day";
 import { useTagUserStore } from "@/src/stores/user-tags";
 import { useSettingsStore } from "@/src/stores/settings";
@@ -94,8 +95,6 @@ const useDetailsStore = create<StoreState>((set) => ({
   },
 }));
 
-export const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
-
 export function useCommentActions({
   commentView,
   canMod,
@@ -114,7 +113,7 @@ export function useCommentActions({
   const saveComment = useSaveCommentMutation(commentView?.path);
   const markCommentAsAnswer = useMarkCommentAsAnswerMutation();
   const addReactionEmoji = useAddCommentReactionEmojiMutation();
-  const inputAlert = useInputAlert();
+  const pickEmoji = usePickEmoji();
   const answer = commentIsAnswer(commentView);
   const isPostAuthor = myUserId !== undefined && myUserId === postCreatorId;
 
@@ -203,41 +202,22 @@ export function useCommentActions({
           } as const,
         ]
       : []),
-    ...(software === "piefed" && commentView
+    ...(software === "piefed"
       ? [
           {
             text: "React",
-            actions: [
-              ...QUICK_REACTION_EMOJIS.map((emoji) => ({
-                text: emoji,
-                onClick: () =>
-                  requireAuth().then(() =>
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                      score: getCommentMyVote(commentView) ?? undefined,
-                    }),
-                  ),
-              })),
-              {
-                text: "Other...",
-                onClick: async () => {
-                  try {
-                    await requireAuth();
-                    const emoji = await inputAlert({
-                      header: "React with emoji",
-                      placeholder: "Enter an emoji",
-                    });
-                    addReactionEmoji.mutate({
-                      path: commentView.path,
-                      commentId: commentView.id,
-                      emoji,
-                    });
-                  } catch {}
-                },
-              },
-            ],
+            onClick: async () => {
+              try {
+                await requireAuth();
+                const emoji = await pickEmoji();
+                addReactionEmoji.mutate({
+                  path: commentView.path,
+                  commentId: commentView.id,
+                  emoji,
+                  score: getCommentMyVote(commentView) ?? undefined,
+                });
+              } catch {}
+            },
           },
         ]
       : []),
@@ -252,7 +232,7 @@ export function useCommentActions({
         }),
     },
     ...(route ? shareActions : []),
-    ...((isPostAuthor || canMod) && commentView && software === "piefed"
+    ...((isPostAuthor || canMod) && software === "piefed"
       ? [
           {
             text: answer ? "Unmark as answer" : "Mark as answer",
@@ -345,7 +325,7 @@ function Byline({
         <Avatar className="w-6 h-6">
           <AvatarImage src={profileView?.avatar ?? undefined} />
           <AvatarFallback className="text-xs">
-            {profileView?.handle?.substring(0, 1).toUpperCase()}{" "}
+            {profileView?.handle.substring(0, 1).toUpperCase()}{" "}
           </AvatarFallback>
         </Avatar>
       )}
@@ -477,7 +457,7 @@ function PostCommentInner({
 
   const commentPath = commentTree.comment?.path ?? commentTree.meta.path;
   const [commentView] = useCommentsByPaths(commentPath ? [commentPath] : []);
-  const isMod = commentView && modApIds?.includes(commentView?.creatorApId);
+  const isMod = commentView && modApIds?.includes(commentView.creatorApId);
 
   const doubleTapLike = useDoubleTapLike(
     commentView
@@ -519,7 +499,7 @@ function PostCommentInner({
       return false;
     }
     const parent = comment.path.split(".").slice(-2);
-    if (parent.length < 1 || parent?.includes("0")) {
+    if (parent.length < 1 || parent.includes("0")) {
       return false;
     }
     return true;
@@ -574,8 +554,8 @@ function PostCommentInner({
 
   const bodyRenderer = commentView && (
     <>
-      {commentView?.deleted && <span className="italic text-sm">deleted</span>}
-      {commentView?.removed && <span className="italic text-sm">removed</span>}
+      {commentView.deleted && <span className="italic text-sm">deleted</span>}
+      {commentView.removed && <span className="italic text-sm">removed</span>}
       {!hideContent && (
         <MarkdownRenderer
           markdown={commentView.body}
@@ -729,18 +709,14 @@ function PostCommentInner({
               )}
 
               <CommentEmojiReactions
-                reactions={
-                  commentView
-                    ? getCommentEmojiReactions(commentView)
-                    : undefined
-                }
+                reactions={getCommentEmojiReactions(commentView)}
                 onReact={(emoji) =>
                   requireAuth().then(() =>
                     addReactionEmoji.mutate({
                       commentId: commentView!.id,
                       path: commentView!.path,
                       emoji,
-                      score: getCommentMyVote(commentView!) || undefined,
+                      score: getCommentMyVote(commentView) || undefined,
                     }),
                   )
                 }
@@ -786,7 +762,7 @@ function PostCommentInner({
                   to={`${linkCtx.root}posts/:post/comments/:comment`}
                   params={{
                     post: encodeApId(commentView.postApId),
-                    comment: encodeApId(commentView?.apId),
+                    comment: encodeApId(commentView.apId),
                   }}
                   className="translate-y-1/2 pl-2 bg-background block text-muted-foreground"
                 >
