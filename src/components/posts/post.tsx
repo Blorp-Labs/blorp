@@ -2,7 +2,7 @@ import { usePostFromStore, usePostsStore } from "@/src/stores/posts";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { PostCardStyle, useSettingsStore } from "@/src/stores/settings";
 import { getPostEmbed } from "@/src/apis/post-embed";
-import { encodeApId } from "@/src/apis/utils";
+import { encodeApId, getPostRead } from "@/src/apis/utils";
 import { Link } from "@/src/routing/index";
 import {
   PostArticleEmbed,
@@ -62,6 +62,7 @@ import { Button } from "../ui/button";
 import { useReportError } from "@/src/components/use-report-error";
 import { ShowNsfwButton, useBlurNsfwState } from "./nsfw-blur-toggle";
 import { useNsfwRevealedPostsStore } from "@/src/stores/nsfw-revealed-posts";
+import { useMarkReadOnView } from "@/src/queries/use-mark-read-on-scroll";
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
@@ -466,7 +467,7 @@ function LargePostCard({
           className={twMerge(
             "relative text-xl font-medium select-text break-words",
             ABOVE_LINK_OVERLAY,
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && getPostRead(post) && "text-muted-foreground",
           )}
           id={titleId}
         >
@@ -481,7 +482,7 @@ function LargePostCard({
               className={cn(
                 "text-sm line-clamp-3 leading-relaxed",
                 ABOVE_LINK_OVERLAY,
-                post.read && "text-muted-foreground",
+                getPostRead(post) && "text-muted-foreground",
               )}
               id={bodyId}
             >
@@ -833,7 +834,7 @@ export function SmallPostCard({
           }}
           className={cn(
             "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && getPostRead(post) && "text-muted-foreground",
           )}
           onClick={() => post.nsfw && revealPost(apId)}
         >
@@ -946,7 +947,7 @@ function ExtraSmallPostCard({
           }}
           className={cn(
             "gap-2 flex flex-col flex-1 font-medium max-md:text-sm after:absolute after:inset-0 after:content-[''] after:z-[1]",
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && getPostRead(post) && "text-muted-foreground",
           )}
           onClick={() => post.nsfw && revealPost(apId)}
         >
@@ -1135,6 +1136,8 @@ export function PostCardView({
 
 function PostCardInner(props: PostProps) {
   const showNsfw = useShouldShowNsfw();
+
+  useMarkReadOnView(props.detailView ? undefined : props.apId);
 
   const post = usePostFromStore(props.apId);
   const creator = useProfileFromStore(post?.creatorApId);

@@ -140,3 +140,7 @@ export function getFlairLookup(flairs?: Schemas.Flair[] | null) {
     }
   };
 }
+
+export function getPostRead(post: Schemas.Post) {
+  return post.optimisticRead ?? post.read;
+}

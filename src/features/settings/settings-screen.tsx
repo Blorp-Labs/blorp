@@ -307,6 +307,9 @@ export default function SettingsPage() {
   const hideBotPosts = useSettingsStore((s) => s.hideBotPosts);
   const setHideBotPosts = useSettingsStore((s) => s.setHideBotPosts);
 
+  const markReadOnScroll = useSettingsStore((s) => s.markReadOnScroll);
+  const setMarkReadOnScroll = useSettingsStore((s) => s.setMarkReadOnScroll);
+
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
   const setFilterKeywords = useSettingsStore((s) => s.setFilterKeywords);
   const pruneFiltersKeywords = useSettingsStore((s) => s.pruneFiltersKeywords);
@@ -582,6 +585,15 @@ export default function SettingsPage() {
                   onIonChange={(e) => setHideRead(e.detail.checked)}
                 >
                   Hide read posts from feeds
+                </IonToggle>
+              </SectionItem>
+              <SectionItem>
+                <IonToggle
+                  className="flex-1 font-light"
+                  checked={markReadOnScroll}
+                  onIonChange={(e) => setMarkReadOnScroll(e.detail.checked)}
+                >
+                  Mark read on scroll
                 </IonToggle>
               </SectionItem>
               <SectionItem>
