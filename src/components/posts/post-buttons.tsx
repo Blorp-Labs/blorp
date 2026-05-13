@@ -256,7 +256,7 @@ export function PostVoting({
   if (!serverEnablesDownvotes || scoreDisplayPreference === "none") {
     return (
       <Button
-        size={prefersScore || prefersUpvotes ? "icon" : "sm"}
+        size={prefersScore || prefersUpvotes ? "sm" : "icon"}
         variant={variant}
         onClick={() =>
           vote({
