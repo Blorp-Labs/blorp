@@ -16,6 +16,9 @@ import {
   PostVoting,
   useDoubleTapPostLike,
 } from "./post-buttons";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { abbriviateNumber } from "@/src/lib/format";
+import { useScoreDisplay, useShouldShowDownvotes } from "@/src/stores/utils";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
 import { PostLoopsEmbed } from "./embeds/post-loops-embed";
@@ -203,6 +206,46 @@ function ExtraSmallPostCardSkeleton() {
   );
 }
 
+function StickyPostScore({ post }: { post: Schemas.Post }) {
+  const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
+  const scoreDisplay = useScoreDisplay();
+  const { displayUpvotes, displayDownvotes, displayScore } =
+    resolveVoteCounts(post);
+
+  if (scoreDisplay === "none") {
+    return null;
+  }
+
+  // Heart mode — server has disabled downvotes. Mirror PostVoting:
+  // show a count for "score"/"upvotes" modes; "downvotes" mode has nothing
+  // meaningful to show since the server has no downvotes.
+  if (!enableDownvotes) {
+    if (scoreDisplay === "downvotes") {
+      return null;
+    }
+    const n = scoreDisplay === "upvotes" ? displayUpvotes : displayScore;
+    const label = scoreDisplay === "upvotes" ? "upvotes" : "likes";
+    return (
+      <span>
+        {abbriviateNumber(n)} {label}
+      </span>
+    );
+  }
+
+  if (scoreDisplay === "upvotes") {
+    return <span>{abbriviateNumber(displayUpvotes)} upvotes</span>;
+  }
+  if (scoreDisplay === "downvotes") {
+    return <span>{abbriviateNumber(displayDownvotes)} downvotes</span>;
+  }
+  return (
+    <span>
+      {abbriviateNumber(displayUpvotes)} upvotes &middot;{" "}
+      {abbriviateNumber(displayDownvotes)} downvotes
+    </span>
+  );
+}
+
 export function StickyPostHeader({
   apId,
 }: {
@@ -227,12 +270,17 @@ export function StickyPostHeader({
         showThumbnail && "max-md:pr-0",
       )}
     >
-      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden select-text">
-        {postView.deleted
-          ? "deleted"
-          : postView.removed
-            ? "removed"
-            : postView.title}
+      <div className="flex-1 my-2 flex flex-col justify-center overflow-hidden select-text min-w-0">
+        <div className="font-semibold truncate text-sm">
+          {postView.deleted
+            ? "deleted"
+            : postView.removed
+              ? "removed"
+              : postView.title}
+        </div>
+        <div className="text-xs text-muted-foreground truncate">
+          <StickyPostScore post={postView} />
+        </div>
       </div>
       {showThumbnail && (
         <Link
