@@ -1,11 +1,4 @@
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   useVirtualizer,
   VirtualItem,
@@ -21,12 +14,14 @@ import {
 } from "@ionic/react";
 import { subscribeToScrollEvent } from "../lib/scroll-events";
 import _ from "lodash";
-import { useElementHasFocus, useIsInAppBrowserOpen, useMedia } from "../hooks";
+import { useIsInAppBrowserOpen, useMedia } from "../hooks";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { useAuth } from "../stores/auth";
 import { cn, isNotNil } from "../lib/utils";
 import { COMMENT_COLLAPSE_EVENT } from "./posts/config";
 import { useSettingsStore } from "../stores/settings";
+import { useInView } from "react-intersection-observer";
+import { composeRefs } from "@radix-ui/react-compose-refs";
 
 export function useScrollToTopEvents({
   scrollToTop,
@@ -123,7 +118,7 @@ function VirtualListInternal<T>({
   ref,
   drawDistance,
   numColumns,
-  onFocusChange,
+  focused,
   placeholder,
   numPlaceholders = 25,
   header,
@@ -141,7 +136,7 @@ function VirtualListInternal<T>({
   ref: React.RefObject<HTMLDivElement | null>;
   drawDistance?: number;
   numColumns?: number;
-  onFocusChange?: (focused: boolean) => any;
+  focused: boolean;
   placeholder?: ReactNode;
   numPlaceholders?: number;
   header?: ReactNode[];
@@ -169,11 +164,6 @@ function VirtualListInternal<T>({
     drawDistance && estimatedItemSize
       ? Math.round(drawDistance / estimatedItemSize)
       : undefined;
-
-  const focused = useElementHasFocus(scrollRef);
-
-  const onFocusChangeEffectEvent = useEffectEvent(onFocusChange ?? _.noop);
-  useEffect(() => onFocusChangeEffectEvent?.(focused), [focused]);
 
   const showPaginationControls = paginationControls && !noItems;
   const headerLen = header?.length ?? 0;
@@ -399,6 +389,12 @@ export function VirtualList<T>({
   const internalRef = useRef<HTMLDivElement>(null);
   const scrollRef = ref ?? internalRef;
 
+  const { ref: inViewRef, inView } = useInView();
+  useEffect(() => {
+    focused.current = inView;
+    onFocusChange?.(inView);
+  }, [inView, onFocusChange]);
+
   const disableHaptics = useSettingsStore((s) => s.disableHaptics);
 
   function handleRefresh(event: CustomEvent<RefresherEventDetail>) {
@@ -421,7 +417,7 @@ export function VirtualList<T>({
       )}
 
       <div
-        ref={scrollRef}
+        ref={composeRefs(scrollRef, inViewRef)}
         className={cn(
           "flex-1 overflow-y-scroll overscroll-auto",
           scrollHost && "ion-content-scroll-host h-full",
@@ -442,10 +438,7 @@ export function VirtualList<T>({
           listKey={`${key}-${props.numColumns}`}
           {...props}
           ref={scrollRef}
-          onFocusChange={(newFocused) => {
-            focused.current = newFocused;
-            onFocusChange?.(newFocused);
-          }}
+          focused={inView}
         />
       </div>
     </>

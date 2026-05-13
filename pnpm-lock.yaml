@@ -81,6 +81,9 @@ importers:
       "@radix-ui/react-collapsible":
         specifier: 1.1.12
         version: 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      "@radix-ui/react-compose-refs":
+        specifier: 1.1.2
+        version: 1.1.2(@types/react@19.2.7)(react@19.2.0)
       "@radix-ui/react-hover-card":
         specifier: 1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
