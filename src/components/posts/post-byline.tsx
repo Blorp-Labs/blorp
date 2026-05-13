@@ -14,7 +14,12 @@ import {
 } from "@/src/components/ui/avatar";
 import { BsFillPinAngleFill } from "react-icons/bs";
 import { useIonRouter } from "@ionic/react";
-import { encodeApId, getPostSaved, parseHandle } from "@/src/apis/utils";
+import {
+  encodeApId,
+  getPostMyVote,
+  getPostSaved,
+  parseHandle,
+} from "@/src/apis/utils";
 import { CommunityHoverCard } from "../communities/community-hover-card";
 import { PersonHoverCard } from "../person/person-hover-card";
 import { postToDraft, useCreatePostStore } from "@/src/stores/create-post";
@@ -156,6 +161,7 @@ export function usePostActions({
                   postApId: post.apId,
                   postId: post.id,
                   emoji,
+                  score: getPostMyVote(post) || undefined,
                 });
               } catch {}
             },
@@ -167,10 +173,8 @@ export function usePostActions({
           {
             text: "Edit post",
             onClick: () => {
-              if (post) {
-                updateDraft(post.apId, postToDraft(post, flairs));
-                router.push(resolveRoute("/create_post", `?id=${encodedApId}`));
-              }
+              updateDraft(post.apId, postToDraft(post, flairs));
+              router.push(resolveRoute("/create_post", `?id=${encodedApId}`));
             },
           },
           {
@@ -327,7 +331,7 @@ export function PostByline({
             )}
           />
           <AvatarFallback>
-            {communityName?.substring(0, 1).toUpperCase()}
+            {communityName.substring(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
