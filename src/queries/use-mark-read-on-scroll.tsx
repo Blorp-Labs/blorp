@@ -7,10 +7,12 @@ import {
 } from "react";
 import { AsyncBatcher } from "@tanstack/pacer";
 import _ from "lodash";
+import { useInView } from "react-intersection-observer";
 import { useAuth } from "@/src/stores/auth";
 import { usePostsStore, usePostFromStore } from "@/src/stores/posts";
 import { useSettingsStore } from "@/src/stores/settings";
 import { apiClient } from "@/src/apis/client";
+import { isNotNil } from "../lib/utils";
 
 type Item = {
   accountUuid: string;
@@ -26,7 +28,10 @@ type Ctx = AsyncBatcher<Item>;
 const MarkReadOnScrollContext = createContext<Ctx | null>(null);
 
 async function flushBatch(items: Item[]) {
-  const groups = _.groupBy(items, (i) => i.accountUuid);
+  const groups = _.groupBy(
+    _.unionBy(items, (item) => `${item.apId}_${item.accountUuid}`),
+    (i) => i.accountUuid,
+  );
   const auth = useAuth.getState();
   const { patchPost } = usePostsStore.getState();
 
@@ -86,40 +91,43 @@ export function MarkReadOnScrollProvider({
   );
 }
 
-export function useMarkReadOnView(apId: string | undefined) {
+export function useMarkReadOnView(apId: string, options: { enabled: boolean }) {
   const batcher = useContext(MarkReadOnScrollContext);
-  const enabled = useSettingsStore((s) => s.markReadOnScroll);
+  const markReadOnScroll = useSettingsStore((s) => s.markReadOnScroll);
+  const enabled = markReadOnScroll && options.enabled;
   const post = usePostFromStore(apId);
   const accountUuid = useAuth((s) => s.getSelectedAccount().uuid);
   const isLoggedIn = useAuth((s) => !!s.getSelectedAccount().jwt);
 
   const postId = post?.id;
-  const isUnread = !!post && !post.read && !post.optimisticRead;
+  const isUnread = !!post && !post.read;
   const patchPost = usePostsStore((s) => s.patchPost);
   const getPrefixer = useAuth((s) => s.getCachePrefixer);
 
+  const observerEnabled =
+    enabled && isNotNil(batcher) && isLoggedIn && isUnread && isNotNil(postId);
+
+  const { ref, inView } = useInView({
+    rootMargin: "-20px 0px",
+    triggerOnce: true,
+    skip: !observerEnabled,
+  });
+
   useEffect(() => {
-    if (
-      !apId ||
-      !enabled ||
-      !batcher ||
-      !isLoggedIn ||
-      !isUnread ||
-      postId === undefined
-    ) {
-      return;
+    if (observerEnabled && inView) {
+      patchPost(apId, getPrefixer(), { optimisticRead: true });
+      batcher.addItem({ accountUuid, postId, apId });
     }
-    patchPost(apId, getPrefixer(), { optimisticRead: true });
-    batcher.addItem({ accountUuid, postId, apId });
   }, [
-    enabled,
-    batcher,
-    isLoggedIn,
-    isUnread,
-    postId,
-    apId,
+    observerEnabled,
+    inView,
     accountUuid,
+    apId,
+    postId,
+    batcher,
     patchPost,
     getPrefixer,
   ]);
+
+  return ref;
 }

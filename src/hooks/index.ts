@@ -31,27 +31,45 @@ export * from "./navigation-hooks";
 
 export function useElementHasFocus<T extends HTMLElement | null>(
   ref: RefObject<T>,
+  options?: {
+    enabled?: boolean;
+    threshold?: number;
+    thresholdPx?: number;
+  },
 ): boolean {
+  const enabled = options?.enabled ?? true;
+  const threshold = options?.threshold;
+  const thresholdPx = options?.thresholdPx;
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const element = ref.current;
     if (!element) {
       return;
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry) {
-        setIsVisible(entry.isIntersecting);
-      }
-    });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) {
+          setIsVisible(entry.isIntersecting);
+        }
+      },
+      {
+        threshold,
+        rootMargin:
+          thresholdPx !== undefined ? `-${thresholdPx}px 0px` : undefined,
+      },
+    );
 
     observer.observe(element);
 
     return () => {
       observer.disconnect();
     };
-  }, [ref]);
+  }, [ref, enabled, threshold, thresholdPx]);
 
   return isVisible;
 }

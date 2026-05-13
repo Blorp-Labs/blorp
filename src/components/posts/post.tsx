@@ -342,6 +342,7 @@ function LargePostCard({
   featuredContext,
   pinned,
   modApIds,
+  ref,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -351,6 +352,7 @@ function LargePostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  ref?: React.Ref<HTMLElement | null>;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -403,6 +405,7 @@ function LargePostCard({
 
   return (
     <article
+      ref={ref}
       data-testid="post-card"
       className={cn(
         "flex-1 py-4 gap-2 flex flex-col max-md:px-3.5 group relative",
@@ -665,6 +668,7 @@ export function SmallPostCard({
   pinned,
   modApIds,
   className,
+  ref,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -675,6 +679,7 @@ export function SmallPostCard({
   pinned?: boolean;
   modApIds?: string[];
   className?: string;
+  ref?: React.Ref<HTMLElement | null>;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -725,6 +730,7 @@ export function SmallPostCard({
 
   return (
     <article
+      ref={ref}
       data-testid="post-card"
       className={cn(
         "flex-1 gap-2.5 flex group relative md:py-2",
@@ -881,6 +887,7 @@ function ExtraSmallPostCard({
   featuredContext,
   pinned,
   modApIds,
+  ref,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -890,6 +897,7 @@ function ExtraSmallPostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  ref?: React.Ref<HTMLElement | null>;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -922,6 +930,7 @@ function ExtraSmallPostCard({
 
   return (
     <article
+      ref={ref}
       data-testid="post-card"
       className={cn(
         "flex-1 gap-2.5 flex group relative md:py-2",
@@ -1063,6 +1072,7 @@ interface PostCardViewProps {
   featuredContext?: PostProps["featuredContext"];
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
+  ref?: React.Ref<HTMLElement | null>;
 }
 
 export function PostCardView({
@@ -1074,6 +1084,7 @@ export function PostCardView({
   featuredContext,
   modApIds,
   postCardStyle: postCardStyleProp,
+  ref,
 }: PostCardViewProps): React.ReactNode {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
   const postCardStyle = postCardStyleProp ?? globalPostCardStyle;
@@ -1100,6 +1111,7 @@ export function PostCardView({
         featuredContext={featuredContext}
         pinned={pinned}
         modApIds={modApIds}
+        ref={ref}
       />
     );
   }
@@ -1116,6 +1128,7 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          ref={ref}
         />
       );
     case "extra-small":
@@ -1129,6 +1142,7 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          ref={ref}
         />
       );
   }
@@ -1137,7 +1151,9 @@ export function PostCardView({
 function PostCardInner(props: PostProps) {
   const showNsfw = useShouldShowNsfw();
 
-  useMarkReadOnView(props.detailView ? undefined : props.apId);
+  const markReadRef = useMarkReadOnView(props.apId, {
+    enabled: !props.detailView,
+  });
 
   const post = usePostFromStore(props.apId);
   const creator = useProfileFromStore(post?.creatorApId);
@@ -1189,6 +1205,7 @@ function PostCardInner(props: PostProps) {
       featuredContext={props.featuredContext}
       modApIds={props.modApIds}
       postCardStyle={props.postCardStyle}
+      ref={markReadRef}
     />
   );
 }
