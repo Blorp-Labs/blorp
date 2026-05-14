@@ -40,15 +40,20 @@ import {
   useAddPostReactionEmojiMutation,
   useLikePostMutation,
 } from "@/src/queries/post-mutations";
-import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
+import {
+  useServerEnablesDownvotes,
+  useScoreDisplayPreference,
+} from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "./config";
 import { downloadImage, shareImage } from "@/src/hooks/share";
 
 export function usePostVoting(post: Schemas.Post | undefined) {
-  const enableDownvotes = useShouldShowDownvotes("enablePostDownvotes");
-  const scoreDisplay = useScoreDisplay();
+  const serverEnablesDownvotes = useServerEnablesDownvotes(
+    "enablePostDownvotes",
+  );
+  const scoreDisplayPreference = useScoreDisplayPreference();
 
   const { mutate: mutateVote } = useLikePostMutation();
 
@@ -84,8 +89,8 @@ export function usePostVoting(post: Schemas.Post | undefined) {
     isUpvoted,
     isDownvoted,
     vote,
-    enableDownvotes,
-    scoreDisplay,
+    serverEnablesDownvotes,
+    scoreDisplayPreference,
     postId: post.id,
   };
 }
@@ -231,8 +236,8 @@ export function PostVoting({
     displayDownvotes,
     isUpvoted,
     isDownvoted,
-    enableDownvotes,
-    scoreDisplay,
+    serverEnablesDownvotes,
+    scoreDisplayPreference,
     vote,
     postId,
   } = voting;
@@ -241,14 +246,17 @@ export function PostVoting({
   const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);
   const abbrvDownvotes = abbriviateNumberParts(-displayDownvotes);
 
+  const prefersDownvotes = scoreDisplayPreference === "downvotes";
+  const prefersUpvotes = scoreDisplayPreference === "upvotes";
+  const prefersScore = scoreDisplayPreference === "score";
+
   // Heart mode — server has disabled downvotes.
   // Show count for score/upvotes modes; downvotes-only mode shows nothing
   // since the server doesn't support them.
-  if (!enableDownvotes) {
-    const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
+  if (!serverEnablesDownvotes || scoreDisplayPreference === "none") {
     return (
       <Button
-        size={!showCount ? "icon" : "sm"}
+        size={prefersScore || prefersUpvotes ? "sm" : "icon"}
         variant={variant}
         onClick={() =>
           vote({
@@ -264,41 +272,34 @@ export function PostVoting({
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {showCount &&
-          abbriviateNumber(
-            scoreDisplay === "upvotes" ? displayUpvotes : displayScore,
-          )}
+        {prefersScore && abbriviateNumber(displayScore)}
+        {prefersUpvotes && abbriviateNumber(displayUpvotes)}
       </Button>
     );
   }
 
-  const isDownvoteSide = scoreDisplay === "downvotes";
   const downvoteId = `${id}-down`;
 
-  const abbrv = isDownvoteSide
+  const abbrv = prefersDownvotes
     ? abbrvDownvotes
-    : scoreDisplay === "upvotes"
+    : prefersUpvotes
       ? abbrvUpvotes
       : abbrvScore;
-  const tooltipText = isDownvoteSide
+  const tooltipText = prefersDownvotes
     ? `${displayDownvotes} downvotes`
-    : scoreDisplay === "upvotes"
+    : prefersUpvotes
       ? `${displayUpvotes} upvotes`
       : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
 
-  const scoreNode = scoreDisplay !== "none" && (
+  const scoreNode = (
     <Tooltip>
       <TooltipTrigger aria-label={tooltipText}>
-        <label htmlFor={isDownvoteSide ? downvoteId : id}>
+        <label htmlFor={prefersDownvotes ? downvoteId : id}>
           <NumberFlow
             className={cn(
               "-mx-px cursor-pointer text-md",
-              isDownvoteSide
-                ? isDownvoted && "text-brand-secondary"
-                : cn(
-                    isUpvoted && "text-brand",
-                    isDownvoted && "text-brand-secondary",
-                  ),
+              isUpvoted && !prefersDownvotes && "text-brand",
+              isDownvoted && !prefersUpvotes && "text-brand-secondary",
             )}
             suffix={abbrv.suffix}
             value={abbrv.number}
@@ -344,13 +345,15 @@ export function PostVoting({
       </Button>
 
       {/* Separator left of score — only in downvotes mode */}
-      {isDownvoteSide && <Separator orientation="vertical" className="h-4" />}
+      {prefersDownvotes && (
+        <Separator orientation="vertical" className="min-h-4 mr-2.5" />
+      )}
 
       {scoreNode}
 
       {/* Separator right of score — only in upvotes mode */}
-      {scoreDisplay === "upvotes" && (
-        <Separator orientation="vertical" className="h-4" />
+      {prefersUpvotes && (
+        <Separator orientation="vertical" className="min-h-4 ml-2.5" />
       )}
 
       <Button

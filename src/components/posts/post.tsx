@@ -16,6 +16,12 @@ import {
   PostVoting,
   useDoubleTapPostLike,
 } from "./post-buttons";
+import { resolveVoteCounts } from "@/src/lib/voting";
+import { abbriviateNumber } from "@/src/lib/format";
+import {
+  useScoreDisplayPreference,
+  useServerEnablesDownvotes,
+} from "@/src/stores/utils";
 import { MarkdownRenderer } from "../markdown/renderer";
 import { twMerge } from "tailwind-merge";
 import { PostLoopsEmbed } from "./embeds/post-loops-embed";
@@ -203,6 +209,51 @@ function ExtraSmallPostCardSkeleton() {
   );
 }
 
+function StickyPostScore({ post }: { post: Schemas.Post }) {
+  const serverEnablesDownvotes = useServerEnablesDownvotes(
+    "enablePostDownvotes",
+  );
+  const scoreDisplayPreference = useScoreDisplayPreference();
+  const { displayUpvotes, displayDownvotes, displayScore } =
+    resolveVoteCounts(post);
+
+  if (scoreDisplayPreference === "none") {
+    return null;
+  }
+
+  const prefersDownvotes = scoreDisplayPreference === "downvotes";
+  const prefersUpvotes = scoreDisplayPreference === "upvotes";
+
+  // Heart mode — server has disabled downvotes. Mirror PostVoting:
+  // show a count for "score"/"upvotes" modes; "downvotes" mode has nothing
+  // meaningful to show since the server has no downvotes.
+  if (!serverEnablesDownvotes) {
+    if (prefersDownvotes) {
+      return null;
+    }
+    const votes = prefersUpvotes ? displayUpvotes : displayScore;
+    const label = prefersUpvotes ? "upvotes" : "likes";
+    return (
+      <span>
+        {abbriviateNumber(votes)} {label}
+      </span>
+    );
+  }
+
+  if (prefersUpvotes) {
+    return <span>{abbriviateNumber(displayUpvotes)} upvotes</span>;
+  }
+  if (prefersDownvotes) {
+    return <span>{abbriviateNumber(displayDownvotes)} downvotes</span>;
+  }
+  return (
+    <span>
+      {abbriviateNumber(displayUpvotes)} upvotes &middot;{" "}
+      {abbriviateNumber(displayDownvotes)} downvotes
+    </span>
+  );
+}
+
 export function StickyPostHeader({
   apId,
 }: {
@@ -223,16 +274,21 @@ export function StickyPostHeader({
   return (
     <div
       className={cn(
-        "md:hidden flex flex-row gap-3 bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
+        "md:hidden flex flex-row gap-3 h-[58px] bg-background border-b dark:border-t-[.5px] max-md:border-b-[.5px] opacity-0 [[data-is-sticky-header=true]_&]:opacity-100 max-md: max-md:px-3.5 absolute top-0 inset-x-0 transition-opacity",
         showThumbnail && "max-md:pr-0",
       )}
     >
-      <div className="flex-1 my-2 font-semibold line-clamp-2 text-sm overflow-hidden select-text">
-        {postView.deleted
-          ? "deleted"
-          : postView.removed
-            ? "removed"
-            : postView.title}
+      <div className="flex-1 my-2 flex flex-col justify-center gap-0.5 overflow-hidden select-text min-w-0">
+        <div className="font-semibold truncate text-sm">
+          {postView.deleted
+            ? "deleted"
+            : postView.removed
+              ? "removed"
+              : postView.title}
+        </div>
+        <div className="text-xs text-muted-foreground truncate">
+          <StickyPostScore post={postView} />
+        </div>
       </div>
       {showThumbnail && (
         <Link

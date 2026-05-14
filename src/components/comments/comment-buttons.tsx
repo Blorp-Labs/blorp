@@ -18,7 +18,10 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { useDoubleTap } from "use-double-tap";
 import { useMedia, useRequireAuth } from "@/src/hooks";
 import { useSettingsStore } from "@/src/stores/settings";
-import { useShouldShowDownvotes, useScoreDisplay } from "@/src/stores/utils";
+import {
+  useServerEnablesDownvotes,
+  useScoreDisplayPreference,
+} from "@/src/stores/utils";
 import { Separator } from "../ui/separator";
 import { NumberFlow } from "../number-flow";
 import { MAX_REACTIONS } from "../posts/config";
@@ -153,8 +156,10 @@ export function CommentVoting({
   className?: string;
   fixRightAlignment?: boolean;
 }) {
-  const enableDownvotes = useShouldShowDownvotes("enableCommentDownvotes");
-  const scoreDisplay = useScoreDisplay();
+  const serverEnablesDownvotes = useServerEnablesDownvotes(
+    "enableCommentDownvotes",
+  );
+  const scoreDisplayPreference = useScoreDisplayPreference();
 
   const upvoteId = useId();
   const downvoteId = useId();
@@ -173,11 +178,14 @@ export function CommentVoting({
   const abbrvUpvotes = abbriviateNumberParts(displayUpvotes);
   const abbrvDownvotes = abbriviateNumberParts(-displayDownvotes);
 
+  const prefersDownvotes = scoreDisplayPreference === "downvotes";
+  const prefersUpvotes = scoreDisplayPreference === "upvotes";
+  const prefersScore = scoreDisplayPreference === "score";
+
   // Heart mode — server has disabled downvotes.
   // Only show a count for score/upvotes display modes; downvotes-only makes no
   // sense when the server doesn't support them.
-  if (!enableDownvotes) {
-    const showCount = scoreDisplay === "score" || scoreDisplay === "upvotes";
+  if (!serverEnablesDownvotes || scoreDisplayPreference === "none") {
     return (
       <Button
         size="sm"
@@ -197,39 +205,32 @@ export function CommentVoting({
         )}
       >
         {isUpvoted ? <FaHeart /> : <FaRegHeart />}
-        {showCount &&
-          abbriviateNumber(
-            scoreDisplay === "upvotes" ? displayUpvotes : displayScore,
-          )}
+        {prefersScore && abbriviateNumber(displayScore)}
+        {prefersUpvotes && abbriviateNumber(displayUpvotes)}
       </Button>
     );
   }
 
-  const isDownvoteSide = scoreDisplay === "downvotes";
-  const countAbbrv = isDownvoteSide
+  const countAbbrv = prefersDownvotes
     ? abbrvDownvotes
-    : scoreDisplay === "upvotes"
+    : prefersUpvotes
       ? abbrvUpvotes
       : abbrvScore;
-  const tooltipText = isDownvoteSide
+  const tooltipText = prefersDownvotes
     ? `${displayDownvotes} downvotes`
-    : scoreDisplay === "upvotes"
+    : prefersUpvotes
       ? `${displayUpvotes} upvotes`
       : `${displayUpvotes} upvotes, ${displayDownvotes} downvotes`;
 
-  const countNode = scoreDisplay !== "none" && (
+  const countNode = (
     <Tooltip>
       <TooltipTrigger aria-label={tooltipText}>
-        <label htmlFor={isDownvoteSide ? downvoteId : upvoteId}>
+        <label htmlFor={prefersDownvotes ? downvoteId : upvoteId}>
           <NumberFlow
             className={cn(
               "-mx-0.5 cursor-pointer",
-              isDownvoteSide
-                ? isDownvoted && "text-brand-secondary"
-                : cn(
-                    isUpvoted && "text-brand",
-                    isDownvoted && "text-brand-secondary",
-                  ),
+              isUpvoted && !prefersDownvotes && "text-brand",
+              isDownvoted && !prefersUpvotes && "text-brand-secondary",
             )}
             suffix={countAbbrv.suffix}
             value={countAbbrv.number}
@@ -274,13 +275,15 @@ export function CommentVoting({
       </Button>
 
       {/* Separator left of count — only in downvotes mode */}
-      {isDownvoteSide && <Separator orientation="vertical" className="h-4" />}
+      {prefersDownvotes && (
+        <Separator orientation="vertical" className="min-h-4 mr-2.5" />
+      )}
 
       {countNode}
 
       {/* Separator right of count — only in upvotes mode */}
-      {scoreDisplay === "upvotes" && (
-        <Separator orientation="vertical" className="h-4" />
+      {prefersUpvotes && (
+        <Separator orientation="vertical" className="min-h-4 ml-2.5" />
       )}
 
       <Button

@@ -75,22 +75,25 @@ export function mergeCacheArray<TSchema extends z.ZodType>(
   return [...aItems, ...bItems];
 }
 
-export function scoreDisplayFromSite(
-  voteDisplaySetting: VoteDisplaySetting,
+/**
+ * Resolve user score preference with what the server allows
+ *
+ * Exported for testing
+ */
+export function scoreDisplayPreference(
+  voteDisplayAppSetting: VoteDisplaySetting,
   site: Schemas.Site | undefined,
 ): ScoreDisplay {
-  if (voteDisplaySetting !== "account") {
-    return voteDisplaySetting;
+  if (voteDisplayAppSetting !== "account") {
+    return voteDisplayAppSetting;
   }
 
   // "account" mode — derive from account/server settings.
   // When both showUpvotes and showDownvotes are enabled Lemmy ignores
   // showScores and shows separate counts; we treat that as combined score
   // since the visual result is equivalent.
-  const serverEnablesDownvotes = site?.enableCommentDownvotes ?? true;
   const showUpvotes = site?.showUpvotes ?? true;
-  // Treat showDownvotes as false when the server has disabled downvotes entirely.
-  const showDownvotes = (site?.showDownvotes ?? true) && serverEnablesDownvotes;
+  const showDownvotes = site?.showDownvotes ?? true;
   const showScores = site?.showScores ?? true;
 
   if (showUpvotes && showDownvotes) {
@@ -108,24 +111,6 @@ export function scoreDisplayFromSite(
   return "none";
 }
 
-export function shouldShowDownvotes(
-  voteDisplaySetting: VoteDisplaySetting,
-  serverCapability: boolean,
-  scoreDisplay: ScoreDisplay,
-): boolean {
-  if (voteDisplaySetting === "none") {
-    return false;
-  }
-  if (voteDisplaySetting === "account") {
-    // Use the resolved display mode rather than site.showDownvotes directly.
-    // e.g. "score" mode has showDownvotes=false on the account but the
-    // downvote button should still appear when the server supports it.
-    return scoreDisplay !== "none" && serverCapability;
-  }
-  // Any explicit display mode still shows the downvote button if the server allows it.
-  return serverCapability;
-}
-
 export function resolveThreshold(
   setting: ThresholdSetting,
   accountThreshold: number | undefined,
@@ -138,26 +123,20 @@ export function resolveThreshold(
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-export function useScoreDisplay(): ScoreDisplay {
+export function useScoreDisplayPreference(): ScoreDisplay {
   const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
   const site = useAuth((s) => getAccountSite(s.getSelectedAccount()));
-  return scoreDisplayFromSite(voteDisplaySetting, site);
+  return scoreDisplayPreference(voteDisplaySetting, site);
 }
 
-export function useShouldShowDownvotes(
+export function useServerEnablesDownvotes(
   serverCapabilityKey: "enablePostDownvotes" | "enableCommentDownvotes",
 ): boolean {
-  const voteDisplaySetting = useSettingsStore((s) => s.voteDisplaySetting);
-  const serverCapability =
+  const serverAllowsDownvotes =
     useAuth(
       (s) => getAccountSite(s.getSelectedAccount())?.[serverCapabilityKey],
     ) ?? true;
-  const scoreDisplay = useScoreDisplay();
-  return shouldShowDownvotes(
-    voteDisplaySetting,
-    serverCapability,
-    scoreDisplay,
-  );
+  return serverAllowsDownvotes;
 }
 
 export function useCommentCollapseThreshold(): number | null {
