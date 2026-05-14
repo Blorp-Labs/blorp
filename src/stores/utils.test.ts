@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import {
   scoreDisplayPreference,
-  canShowDownvotes,
   resolveThreshold,
   mergeCacheObject,
   mergeCacheArray,
@@ -97,60 +96,6 @@ describe("scoreDisplayPreference — 'account' mode derives from site flags", ()
   // No site (logged-out guest) — all flags default to true → 'score'.
   test("no site (logged out) defaults to 'score'", () => {
     expect(scoreDisplayPreference("account", undefined)).toBe("score");
-  });
-});
-
-// ─── canShowDownvotes ─────────────────────────────────────────────────────
-
-describe("canShowDownvotes — explicit 'none' always hides button", () => {
-  test("voteDisplaySetting='none' hides downvote button even when server enables them", () => {
-    expect(canShowDownvotes("none", true, "score")).toBe(false);
-  });
-});
-
-describe("canShowDownvotes — explicit app-level modes respect server capability", () => {
-  test("'score' + server enables downvotes → show button", () => {
-    expect(canShowDownvotes("score", true, "score")).toBe(true);
-  });
-
-  test("'score' + server disables downvotes → hide button", () => {
-    expect(canShowDownvotes("score", false, "score")).toBe(false);
-  });
-
-  test("'upvotes' + server enables downvotes → show button", () => {
-    expect(canShowDownvotes("upvotes", true, "upvotes")).toBe(true);
-  });
-
-  test("'downvotes' + server enables downvotes → show button", () => {
-    expect(canShowDownvotes("downvotes", true, "downvotes")).toBe(true);
-  });
-
-  test("'downvotes' + server disables downvotes → hide button", () => {
-    expect(canShowDownvotes("downvotes", false, "downvotes")).toBe(false);
-  });
-});
-
-describe("canShowDownvotes — 'account' mode", () => {
-  // Key regression: score mode has showDownvotes=false on the account object
-  // but the downvote button should still appear when the server supports it.
-  test("account scoreDisplay='score', server enables downvotes → show button", () => {
-    expect(canShowDownvotes("account", true, "score")).toBe(true);
-  });
-
-  test("account scoreDisplay='score', server disables downvotes → hide button", () => {
-    expect(canShowDownvotes("account", false, "score")).toBe(false);
-  });
-
-  test("account scoreDisplay='upvotes', server enables downvotes → show button", () => {
-    expect(canShowDownvotes("account", true, "upvotes")).toBe(true);
-  });
-
-  test("account scoreDisplay='downvotes', server enables downvotes → show button", () => {
-    expect(canShowDownvotes("account", true, "downvotes")).toBe(true);
-  });
-
-  test("account scoreDisplay='none' → hide button even when server enables them", () => {
-    expect(canShowDownvotes("account", true, "none")).toBe(false);
   });
 });
 

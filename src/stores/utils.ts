@@ -111,24 +111,6 @@ export function scoreDisplayPreference(
   return "none";
 }
 
-export function canShowDownvotes(
-  voteDisplayAppSetting: VoteDisplaySetting,
-  serverAllowsDownvotes: boolean,
-  scoreDisplay: ScoreDisplay,
-): boolean {
-  if (voteDisplayAppSetting === "none") {
-    return false;
-  }
-  if (voteDisplayAppSetting === "account") {
-    // Use the resolved display mode rather than site.showDownvotes directly.
-    // e.g. "score" mode has showDownvotes=false on the account but the
-    // downvote button should still appear when the server supports it.
-    return scoreDisplay !== "none" && serverAllowsDownvotes;
-  }
-  // Any explicit display mode still shows the downvote button if the server allows it.
-  return serverAllowsDownvotes;
-}
-
 export function resolveThreshold(
   setting: ThresholdSetting,
   accountThreshold: number | undefined,
