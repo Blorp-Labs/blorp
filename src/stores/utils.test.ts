@@ -50,7 +50,7 @@ describe("scoreDisplayPreference — explicit app-level override", () => {
 
 describe("scoreDisplayPreference — 'account' mode derives from site flags", () => {
   // showUpvotes=true + showDownvotes=true → treated as combined score.
-  test("showUpvotes=true, showDownvotes=true, enableCommentDownvotes=true → 'score'", () => {
+  test("showUpvotes=true, showDownvotes=true → 'score'", () => {
     const site = api.getSite({
       showUpvotes: true,
       showDownvotes: true,
@@ -66,7 +66,7 @@ describe("scoreDisplayPreference — 'account' mode derives from site flags", ()
     expect(scoreDisplayPreference("account", site)).toBe("upvotes");
   });
 
-  test("showUpvotes=false, showDownvotes=true, enableCommentDownvotes=true → 'downvotes'", () => {
+  test("showUpvotes=false, showDownvotes=true → 'downvotes'", () => {
     const site = api.getSite({
       showUpvotes: false,
       showDownvotes: true,
