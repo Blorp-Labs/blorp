@@ -55,26 +55,14 @@ describe("scoreDisplayPreference — 'account' mode derives from site flags", ()
     const site = api.getSite({
       showUpvotes: true,
       showDownvotes: true,
-      enableCommentDownvotes: true,
     });
     expect(scoreDisplayPreference("account", site)).toBe("score");
-  });
-
-  // showDownvotes=true is ignored when the server has disabled downvotes.
-  test("showUpvotes=true, showDownvotes=true, enableCommentDownvotes=false → 'upvotes'", () => {
-    const site = api.getSite({
-      showUpvotes: true,
-      showDownvotes: true,
-      enableCommentDownvotes: false,
-    });
-    expect(scoreDisplayPreference("account", site)).toBe("upvotes");
   });
 
   test("showUpvotes=true, showDownvotes=false → 'upvotes'", () => {
     const site = api.getSite({
       showUpvotes: true,
       showDownvotes: false,
-      enableCommentDownvotes: true,
     });
     expect(scoreDisplayPreference("account", site)).toBe("upvotes");
   });
@@ -83,7 +71,6 @@ describe("scoreDisplayPreference — 'account' mode derives from site flags", ()
     const site = api.getSite({
       showUpvotes: false,
       showDownvotes: true,
-      enableCommentDownvotes: true,
     });
     expect(scoreDisplayPreference("account", site)).toBe("downvotes");
   });

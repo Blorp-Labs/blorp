@@ -92,10 +92,8 @@ export function scoreDisplayPreference(
   // When both showUpvotes and showDownvotes are enabled Lemmy ignores
   // showScores and shows separate counts; we treat that as combined score
   // since the visual result is equivalent.
-  const serverEnablesDownvotes = site?.enableCommentDownvotes ?? true;
   const showUpvotes = site?.showUpvotes ?? true;
-  // Treat showDownvotes as false when the server has disabled downvotes entirely.
-  const showDownvotes = (site?.showDownvotes ?? true) && serverEnablesDownvotes;
+  const showDownvotes = site?.showDownvotes ?? true;
   const showScores = site?.showScores ?? true;
 
   if (showUpvotes && showDownvotes) {
