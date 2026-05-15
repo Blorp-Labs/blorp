@@ -209,10 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    if (refresh.isSuccess && !isLoggedIn && site?.privateInstance) {
+    if (refresh?.isSuccess && !isLoggedIn && site?.privateInstance) {
       authenticate();
     }
-  }, [refresh.isSuccess, isLoggedIn, site, authenticate]);
+  }, [refresh?.isSuccess, isLoggedIn, site, authenticate]);
 
   return (
     <AuthContext.Provider

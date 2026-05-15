@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
+  useQueries,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -43,7 +44,6 @@ import {
   Schemas,
 } from "../apis/api-blueprint";
 import { apiClient } from "../apis/client";
-import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
 import { ensureValue, isErrorLike, isNotNil } from "../lib/utils";
@@ -862,14 +862,14 @@ export function useLoginMutation(config: {
 }
 
 function useRefreshAuthKey() {
-  const { apis } = useApiClients();
-  return ["refreshAuth", ...apis.map((api) => api.queryKeyPrefix.join("_"))];
+  return ["refreshAuth"];
 }
 
 export function useRefreshAuthQuery() {
   const { apis } = useApiClients();
 
   const updateAccountSite = useAuth((s) => s.updateAccountSite);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
@@ -880,49 +880,43 @@ export function useRefreshAuthQuery() {
 
   const queryKey = useRefreshAuthKey();
 
-  return useQuery({
-    queryKey,
-    queryFn: async ({ signal }) => {
-      const promises: Promise<any>[] = [];
+  const queries = useQueries({
+    queries: apis.map(({ api, account, queryKeyPrefix }) => ({
+      queryKey: [...queryKey, ...queryKeyPrefix],
+      queryFn: async ({ signal }) => {
+        const { profiles, communities, site } = await (
+          await api
+        ).getSite({ signal });
 
-      for (const { api, account } of apis) {
-        const getSitePromise = pTimeout((await api).getSite({ signal }), {
-          milliseconds: 10 * 1000,
-        });
+        if (profiles) {
+          cacheProfiles(getCachePrefixer(account), profiles);
+        }
 
-        getSitePromise.then(({ site, communities, profiles }) => {
-          if (profiles) {
-            cacheProfiles(getCachePrefixer(account), profiles);
-          }
+        if (communities) {
+          cacheCommunities(
+            getCachePrefixer(account),
+            communities.map((community) => ({
+              communityView: community,
+            })),
+          );
+        }
 
-          if (communities) {
-            cacheCommunities(
-              getCachePrefixer(account),
-              communities.map((community) => ({
-                communityView: community,
-              })),
-            );
-          }
+        updateAccountSite(account.uuid, site);
+        if (site.showNsfw) {
+          setNsfwPreviouslyEnabled(true);
+        }
 
-          updateAccountSite(account.uuid, site);
-          if (site.showNsfw) {
-            setNsfwPreviouslyEnabled(true);
-          }
-        });
-
-        promises.push(getSitePromise);
-      }
-
-      await Promise.allSettled(promises);
-
-      return {};
-    },
-    //onError: (err: any) => {
-    //  console.log("Err", err);
-    //},
-    refetchOnWindowFocus: "always",
-    refetchOnMount: "always",
+        return {};
+      },
+      refetchOnWindowFocus: "always",
+      refetchOnMount: "always",
+    })),
   });
+
+  const selectedAccountIndex = apis.findIndex(
+    ({ account }) => account.uuid === selectedAccountUuid,
+  );
+  return queries[selectedAccountIndex];
 }
 
 export function useLogoutMutation() {
