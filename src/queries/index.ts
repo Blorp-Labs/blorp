@@ -870,7 +870,6 @@ export function useRefreshAuthQuery() {
   const { apis } = useApiClients();
 
   const updateAccountSite = useAuth((s) => s.updateAccountSite);
-  const logoutMultiple = useAuth((s) => s.logoutMultiple);
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
@@ -884,31 +883,14 @@ export function useRefreshAuthQuery() {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const logoutUuids: string[] = [];
+      const promises: Promise<any>[] = [];
 
-      const sites = await Promise.allSettled(
-        apis
-          .map(async ({ api }) => (await api).getSite({ signal }))
-          .map((p) => pTimeout(p, { milliseconds: 10 * 1000 })),
-      );
+      for (const { api, account } of apis) {
+        const getSitePromise = pTimeout((await api).getSite({ signal }), {
+          milliseconds: 10 * 1000,
+        });
 
-      for (let i = 0; i < sites.length; i++) {
-        const api = apis[i];
-        if (!api) {
-          continue;
-        }
-
-        const account = api.account;
-        const p = sites[i];
-
-        if (p?.status === "fulfilled") {
-          const { site, communities, profiles } = p.value;
-
-          if (api?.isLoggedIn && api.account.uuid && site && !site.me) {
-            logoutUuids.push(api.account.uuid);
-            continue;
-          }
-
+        getSitePromise.then(({ site, communities, profiles }) => {
           if (profiles) {
             cacheProfiles(getCachePrefixer(account), profiles);
           }
@@ -922,24 +904,16 @@ export function useRefreshAuthQuery() {
             );
           }
 
-          if (site) {
-            updateAccountSite(api.account.uuid, site);
-            if (site.showNsfw) {
-              setNsfwPreviouslyEnabled(true);
-            }
+          updateAccountSite(account.uuid, site);
+          if (site.showNsfw) {
+            setNsfwPreviouslyEnabled(true);
           }
-        } else if (
-          _.isString(p?.reason) &&
-          p.reason.toLowerCase().indexOf("aborterror") === -1 &&
-          api?.account.uuid
-        ) {
-          logoutUuids.push(api.account.uuid);
-        }
+        });
+
+        promises.push(getSitePromise);
       }
 
-      if (logoutUuids.length > 0) {
-        logoutMultiple(logoutUuids);
-      }
+      await Promise.allSettled(promises);
 
       return {};
     },
