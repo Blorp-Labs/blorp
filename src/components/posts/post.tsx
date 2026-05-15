@@ -209,7 +209,7 @@ function ExtraSmallPostCardSkeleton() {
   );
 }
 
-function StickyPostScore({ post }: { post: Schemas.Post }) {
+function StickyPostCounts({ post }: { post: Schemas.Post }) {
   const serverEnablesDownvotes = useServerEnablesDownvotes(
     "enablePostDownvotes",
   );
@@ -217,8 +217,10 @@ function StickyPostScore({ post }: { post: Schemas.Post }) {
   const { displayUpvotes, displayDownvotes, displayScore } =
     resolveVoteCounts(post);
 
+  const commentCount = <>{abbriviateNumber(post.commentsCount)} comments</>;
+
   if (scoreDisplayPreference === "none") {
-    return null;
+    return commentCount;
   }
 
   const prefersDownvotes = scoreDisplayPreference === "downvotes";
@@ -229,39 +231,45 @@ function StickyPostScore({ post }: { post: Schemas.Post }) {
   // meaningful to show since the server has no downvotes.
   if (!serverEnablesDownvotes) {
     if (prefersDownvotes) {
-      return null;
+      return commentCount;
     }
-    const votes = prefersUpvotes ? displayUpvotes : displayScore;
-    const label = prefersUpvotes ? "upvotes" : "likes";
+    if (prefersUpvotes) {
+      return (
+        <span>
+          {abbriviateNumber(displayUpvotes)} upvotes &middot; {commentCount}
+        </span>
+      );
+    }
     return (
       <span>
-        {abbriviateNumber(votes)} {label}
+        {abbriviateNumber(displayScore)} likes &middot; {commentCount}
       </span>
     );
   }
 
   if (prefersUpvotes) {
-    return <span>{abbriviateNumber(displayUpvotes)} upvotes</span>;
+    return (
+      <span>
+        {abbriviateNumber(displayUpvotes)} upvotes &middot; {commentCount}
+      </span>
+    );
   }
   if (prefersDownvotes) {
-    return <span>{abbriviateNumber(displayDownvotes)} downvotes</span>;
+    return (
+      <span>
+        {abbriviateNumber(displayDownvotes)} downvotes &middot; {commentCount}
+      </span>
+    );
   }
   return (
     <span>
-      {abbriviateNumber(displayUpvotes)} upvotes &middot;{" "}
-      {abbriviateNumber(displayDownvotes)} downvotes
+      {abbriviateNumber(displayScore)} score &middot; {commentCount}
     </span>
   );
 }
 
-export function StickyPostHeader({
-  apId,
-}: {
-  apId: string;
-  commentsCount: number;
-  onReply: () => void;
-}) {
-  const postView = usePostFromStore(apId);
+export function StickyPostHeader({ postApId }: { postApId: string }) {
+  const postView = usePostFromStore(postApId);
   const linkCtx = useLinkContext();
 
   if (!postView) {
@@ -287,14 +295,14 @@ export function StickyPostHeader({
               : postView.title}
         </div>
         <div className="text-xs text-muted-foreground truncate">
-          <StickyPostScore post={postView} />
+          <StickyPostCounts post={postView} />
         </div>
       </div>
       {showThumbnail && (
         <Link
           to={`${linkCtx.root}c/:communityHandle/lightbox`}
           params={{ communityHandle: postView.communityHandle }}
-          searchParams={`?apId=${encodeApId(apId)}`}
+          searchParams={`?apId=${encodeApId(postApId)}`}
           className="cursor-zoom-in"
         >
           <img
