@@ -55,6 +55,7 @@ import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../apis/post-embed";
 import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 import { useShouldShowNsfw } from "../hooks/nsfw";
+import pTimeout from "p-timeout";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -884,9 +885,11 @@ export function useRefreshAuthQuery() {
     queries: apis.map(({ api, account, queryKeyPrefix }) => ({
       queryKey: [...queryKey, ...queryKeyPrefix],
       queryFn: async ({ signal }) => {
-        const { profiles, communities, site } = await (
-          await api
-        ).getSite({ signal });
+        const sitePromise = (await api).getSite({ signal });
+
+        const { profiles, communities, site } = await pTimeout(sitePromise, {
+          milliseconds: 15 * 1000,
+        });
 
         if (profiles) {
           cacheProfiles(getCachePrefixer(account), profiles);
