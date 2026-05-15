@@ -70,26 +70,11 @@ const MemoedPostCard = memo((props: PostProps) => (
   </ContentGutters>
 ));
 
-function PostBottomBarWithCtx({
-  postApId,
-  commentCount,
-}: {
-  postApId: string;
-  commentCount: number;
-}) {
-  const loadCommentIntoEditor = useLoadCommentIntoEditor();
+function PostBottomBarWithCtx({ postApId }: { postApId: string }) {
   return (
     <>
       <ContentGutters className="px-0">
-        <StickyPostHeader
-          apId={postApId}
-          commentsCount={commentCount}
-          onReply={() =>
-            loadCommentIntoEditor({
-              postApId,
-            })
-          }
-        />
+        <StickyPostHeader postApId={postApId} />
         <></>
       </ContentGutters>
     </>
@@ -464,7 +449,6 @@ export default function Post() {
                   <PostBottomBarWithCtx
                     key="post-bottom-bar"
                     postApId={post.apId}
-                    commentCount={post.commentsCount}
                   />
                 ),
                 post && !locked && !commentPath && media.md && (

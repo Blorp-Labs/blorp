@@ -234,9 +234,11 @@ function StickyPostCounts({ post }: { post: Schemas.Post }) {
       return commentCount;
     }
     if (prefersUpvotes) {
-      <span>
-        {abbriviateNumber(displayUpvotes)} upvotes &middot; {commentCount}
-      </span>;
+      return (
+        <span>
+          {abbriviateNumber(displayUpvotes)} upvotes &middot; {commentCount}
+        </span>
+      );
     }
     return (
       <span>
@@ -266,14 +268,8 @@ function StickyPostCounts({ post }: { post: Schemas.Post }) {
   );
 }
 
-export function StickyPostHeader({
-  apId,
-}: {
-  apId: string;
-  commentsCount: number;
-  onReply: () => void;
-}) {
-  const postView = usePostFromStore(apId);
+export function StickyPostHeader({ postApId }: { postApId: string }) {
+  const postView = usePostFromStore(postApId);
   const linkCtx = useLinkContext();
 
   if (!postView) {
@@ -306,7 +302,7 @@ export function StickyPostHeader({
         <Link
           to={`${linkCtx.root}c/:communityHandle/lightbox`}
           params={{ communityHandle: postView.communityHandle }}
-          searchParams={`?apId=${encodeApId(apId)}`}
+          searchParams={`?apId=${encodeApId(postApId)}`}
           className="cursor-zoom-in"
         >
           <img
