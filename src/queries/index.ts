@@ -4,6 +4,7 @@ import {
   useQueryClient,
   useMutation,
   UseQueryOptions,
+  useQueries,
 } from "@tanstack/react-query";
 import { useFiltersStore } from "@/src/stores/filters";
 import {
@@ -43,7 +44,6 @@ import {
   Schemas,
 } from "../apis/api-blueprint";
 import { apiClient } from "../apis/client";
-import pTimeout from "p-timeout";
 import { SetOptional } from "type-fest";
 import { env } from "@/src/env";
 import { ensureValue, isErrorLike, isNotNil } from "../lib/utils";
@@ -55,6 +55,7 @@ import { useHistory } from "@/src/routing";
 import { getPostEmbed } from "../apis/post-embed";
 import { useMultiCommunityFeedStore } from "@/src/stores/multi-community-feeds";
 import { useShouldShowNsfw } from "../hooks/nsfw";
+import pTimeout from "p-timeout";
 
 type QueryOverwriteOptions = Pick<UseQueryOptions<any>, "retry" | "enabled">;
 
@@ -862,15 +863,14 @@ export function useLoginMutation(config: {
 }
 
 function useRefreshAuthKey() {
-  const { apis } = useApiClients();
-  return ["refreshAuth", ...apis.map((api) => api.queryKeyPrefix.join("_"))];
+  return ["refreshAuth"];
 }
 
 export function useRefreshAuthQuery() {
   const { apis } = useApiClients();
 
   const updateAccountSite = useAuth((s) => s.updateAccountSite);
-  const logoutMultiple = useAuth((s) => s.logoutMultiple);
+  const selectedAccountUuid = useAuth((s) => s.getSelectedAccount().uuid);
 
   const cacheCommunities = useCommunitiesStore((s) => s.cacheCommunities);
   const cacheProfiles = useProfilesStore((s) => s.cacheProfiles);
@@ -881,74 +881,45 @@ export function useRefreshAuthQuery() {
 
   const queryKey = useRefreshAuthKey();
 
-  return useQuery({
-    queryKey,
-    queryFn: async ({ signal }) => {
-      const logoutUuids: string[] = [];
+  const queries = useQueries({
+    queries: apis.map(({ api, account, queryKeyPrefix }) => ({
+      queryKey: [...queryKey, ...queryKeyPrefix],
+      queryFn: async ({ signal }) => {
+        const sitePromise = (await api).getSite({ signal });
 
-      const sites = await Promise.allSettled(
-        apis
-          .map(async ({ api }) => (await api).getSite({ signal }))
-          .map((p) => pTimeout(p, { milliseconds: 10 * 1000 })),
-      );
+        const { profiles, communities, site } = await pTimeout(sitePromise, {
+          milliseconds: 15 * 1000,
+        });
 
-      for (let i = 0; i < sites.length; i++) {
-        const api = apis[i];
-        if (!api) {
-          continue;
+        if (profiles) {
+          cacheProfiles(getCachePrefixer(account), profiles);
         }
 
-        const account = api.account;
-        const p = sites[i];
-
-        if (p?.status === "fulfilled") {
-          const { site, communities, profiles } = p.value;
-
-          if (api?.isLoggedIn && api.account.uuid && site && !site.me) {
-            logoutUuids.push(api.account.uuid);
-            continue;
-          }
-
-          if (profiles) {
-            cacheProfiles(getCachePrefixer(account), profiles);
-          }
-
-          if (communities) {
-            cacheCommunities(
-              getCachePrefixer(account),
-              communities.map((community) => ({
-                communityView: community,
-              })),
-            );
-          }
-
-          if (site) {
-            updateAccountSite(api.account.uuid, site);
-            if (site.showNsfw) {
-              setNsfwPreviouslyEnabled(true);
-            }
-          }
-        } else if (
-          _.isString(p?.reason) &&
-          p.reason.toLowerCase().indexOf("aborterror") === -1 &&
-          api?.account.uuid
-        ) {
-          logoutUuids.push(api.account.uuid);
+        if (communities) {
+          cacheCommunities(
+            getCachePrefixer(account),
+            communities.map((community) => ({
+              communityView: community,
+            })),
+          );
         }
-      }
 
-      if (logoutUuids.length > 0) {
-        logoutMultiple(logoutUuids);
-      }
+        updateAccountSite(account.uuid, site);
+        if (site.showNsfw) {
+          setNsfwPreviouslyEnabled(true);
+        }
 
-      return {};
-    },
-    //onError: (err: any) => {
-    //  console.log("Err", err);
-    //},
-    refetchOnWindowFocus: "always",
-    refetchOnMount: "always",
+        return {};
+      },
+      refetchOnWindowFocus: "always",
+      refetchOnMount: "always",
+    })),
   });
+
+  const selectedAccountIndex = apis.findIndex(
+    ({ account }) => account.uuid === selectedAccountUuid,
+  );
+  return queries[selectedAccountIndex];
 }
 
 export function useLogoutMutation() {
