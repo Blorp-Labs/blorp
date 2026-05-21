@@ -806,13 +806,14 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getPerson(form: Forms.GetPerson, options: RequestOptions) {
-    // @ts-expect-error beta library types broken
-    const { person } = await this.client.resolveObject(
+    const resolveObjectResponse = await this.client.resolveObject(
       {
         q: form.apIdOrUsername,
       },
       options,
     );
+    const object = unwrapResponsData(resolveObjectResponse);
+    const person = object.type_ === "person" ? object : null;
     if (!person) {
       throw new Error("person not found");
     }
