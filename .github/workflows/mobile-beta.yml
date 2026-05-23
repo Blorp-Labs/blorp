@@ -36,7 +36,7 @@ jobs:
       # - name: Install iOS platform SDK
       #   run: sudo xcodebuild -runFirstLaunch
 
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -56,7 +56,7 @@ jobs:
           REACT_APP_NAME: ${{ vars.REACT_APP_NAME }}
         run: pnpm build
 
-      - uses: ruby/setup-ruby@e5517072e87f198d9533967ae13d97c11b604005 # v1.99.0
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           # Bundler cache disabled — see cache note above.
@@ -106,7 +106,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -135,7 +135,7 @@ jobs:
           # Gradle cache disabled — see cache note above.
           cache: ""
 
-      - uses: ruby/setup-ruby@e5517072e87f198d9533967ae13d97c11b604005 # v1.99.0
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           # Bundler cache disabled — see cache note above.
