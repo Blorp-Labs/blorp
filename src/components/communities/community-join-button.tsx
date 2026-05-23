@@ -45,7 +45,8 @@ export function CommunityJoinButton({ communityHandle, ...props }: Props) {
       {...props}
       onClick={async () => {
         if (communityView) {
-          const shouldFollow = subscribed === "NotSubscribed";
+          const shouldFollow =
+            subscribed !== "Subscribed" && subscribed !== "Pending";
 
           if (!shouldFollow) {
             const deferred = new Deferred();

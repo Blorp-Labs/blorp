@@ -714,7 +714,6 @@ export function useCommunityQuery({
       return {};
     },
     enabled: !!form.name && enabled,
-    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -2111,13 +2110,11 @@ export function useFollowCommunityMutation() {
     },
     onMutate: (form) => {
       const handle = form.community.handle;
-      if (handle) {
-        patchCommunity(handle, getCachePrefixer(), {
-          communityView: {
-            optimisticSubscribed: "Pending",
-          },
-        });
-      }
+      patchCommunity(handle, getCachePrefixer(), {
+        communityView: {
+          optimisticSubscribed: "Pending",
+        },
+      });
     },
     onSuccess: (data) => {
       cacheCommunity(getCachePrefixer(), {
@@ -2129,13 +2126,11 @@ export function useFollowCommunityMutation() {
     },
     onError: (err, form) => {
       const handle = form.community.handle;
-      if (handle) {
-        patchCommunity(handle, getCachePrefixer(), {
-          communityView: {
-            optimisticSubscribed: undefined,
-          },
-        });
-      }
+      patchCommunity(handle, getCachePrefixer(), {
+        communityView: {
+          optimisticSubscribed: undefined,
+        },
+      });
       if (isErrorLike(err)) {
         toast.error(extractErrorContent(err));
       } else {

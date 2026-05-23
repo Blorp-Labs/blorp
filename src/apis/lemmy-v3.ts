@@ -809,7 +809,7 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
 
       return {
         site,
-        profiles: [...admins, ...(personBlocks ?? []), ...(me ? [me] : [])],
+        profiles: _.compact([...admins, ...(personBlocks ?? []), me]),
         communities: [
           ...(moderates ?? []),
           ...(follows ?? []),

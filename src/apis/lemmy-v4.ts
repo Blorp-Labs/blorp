@@ -11,7 +11,11 @@ import {
   Schemas,
   Software,
 } from "./api-blueprint";
-import { createHandle } from "./utils";
+import {
+  createHandle,
+  shrinkBlockedCommunity,
+  shrinkBlockedPerson,
+} from "./utils";
 import _ from "lodash";
 import { exhaustiveList, isErrorLike, ErrorLike } from "../lib/utils";
 import { getIdFromLocalApId } from "./lemmy-common";
@@ -56,13 +60,36 @@ function remapEnum<Value extends PropertyKey, Output>(
   return newEnum[value as never] as Output;
 }
 
-function unwrapResponsData<T>(request: lemmyV4.RequestState<T>): T {
+function unwrapResponsData<T>(request: lemmyV4.RequestState<T>): T;
+function unwrapResponsData<T>(
+  request: lemmyV4.RequestState<T> | null,
+): T | null;
+function unwrapResponsData<T>(
+  request: lemmyV4.RequestState<T> | null,
+): T | null {
+  if (request === null) {
+    return null;
+  }
   if (request.state === "empty") {
     throw Errors.OBJECT_NOT_FOUND;
   } else if (request.state !== "success") {
     throw new Error("an unexpected error occured");
   }
   return request.data;
+}
+
+type UnwrapRequestState<T> = T extends null
+  ? null
+  : T extends { state: "success"; data: infer U }
+    ? U
+    : never;
+
+function unwrapResponseDataTuple<T extends readonly unknown[]>(
+  requests: readonly [...T],
+): { [K in keyof T]: UnwrapRequestState<T[K]> } {
+  return (requests as readonly (lemmyV4.RequestState<unknown> | null)[]).map(
+    unwrapResponsData,
+  ) as never;
 }
 
 const POST_SORTS = exhaustiveList<lemmyV3.SortType>()([
@@ -309,6 +336,20 @@ function convertCommunity(
   communityView: Pick<lemmyV4.CommunityView, "community" | "community_actions">,
 ): Schemas.Community {
   const { community } = communityView;
+  const subscribed = (() => {
+    if (communityView.community_actions) {
+      switch (communityView.community_actions.follow_state) {
+        case "pending":
+        case "approval_required":
+          return "Pending";
+        case "accepted":
+          return "Subscribed";
+        default:
+          return "NotSubscribed";
+      }
+    }
+  })();
+
   return {
     createdAt: community.published_at,
     id: community.id,
@@ -327,16 +368,11 @@ function convertCommunity(
     commentCount: community.comments,
     subscriberCount: community.subscribers,
     subscribersLocalCount: community.subscribers_local,
-    subscribed: (() => {
-      switch (communityView.community_actions?.follow_state) {
-        case "pending":
-        case "approval_required":
-          return "Pending";
-        case "accepted":
-          return "Subscribed";
-      }
-      return "NotSubscribed";
-    })(),
+    ...(subscribed
+      ? {
+          subscribed,
+        }
+      : {}),
   };
 }
 
@@ -354,8 +390,8 @@ function convertPerson({
     createdAt: person.published_at,
     isBot: person.bot_account,
     isBanned: false,
-    postCount: person.post_count ?? null,
-    commentCount: person?.comment_count ?? null,
+    postCount: person.post_count,
+    commentCount: person.comment_count,
   };
 }
 
@@ -449,7 +485,7 @@ function convertComment(
     postTitle: post.name,
     myVote,
     childCount: comment.child_count,
-    saved: false,
+    saved: comment_actions?.saved_at ? true : false,
     answer: false,
     emojiReactions: [],
   };
@@ -570,7 +606,7 @@ function convertFeed(
   communities?: lemmyV4.CommunityView[],
 ): { feed: Schemas.MultiCommunityFeed; owner: Schemas.Person | null } {
   const { multi, owner } = multiCommunity;
-  const ownerPerson = owner ? convertPerson({ person: owner }) : null;
+  const ownerPerson = convertPerson({ person: owner });
   return {
     feed: {
       id: multi.id,
@@ -591,9 +627,9 @@ function convertFeed(
         communities?.map((c) =>
           createHandle({ apId: c.community.ap_id, name: c.community.name }),
         ) ?? [],
-      ownerId: ownerPerson?.id ?? null,
-      ownerApId: ownerPerson?.apId ?? null,
-      ownerHandle: ownerPerson?.handle ?? null,
+      ownerId: ownerPerson.id,
+      ownerApId: ownerPerson.apId,
+      ownerHandle: ownerPerson.handle,
     },
     owner: ownerPerson,
   };
@@ -667,12 +703,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async getSite(options: RequestOptions) {
-    const [lemmySiteResponse, myUserResponse] = await Promise.all([
+    const responses = await Promise.all([
       this.client.getSite(options),
       this.isLoggedIn ? this.client.getMyUser(options) : null,
     ]);
-    const lemmySite = unwrapResponsData(lemmySiteResponse);
-    const myUser = myUserResponse ? unwrapResponsData(myUserResponse) : null;
+    const [lemmySite, myUser] = unwrapResponseDataTuple(responses);
     const enableDownvotes =
       "enable_downvotes" in lemmySite.site_view.local_site &&
       lemmySite.site_view.local_site.enable_downvotes === true;
@@ -689,6 +724,22 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         ).map((i) => ({ id: i.id, domain: i.domain }))
       : null;
 
+    const moderates = myUser?.moderates.map(({ community }) =>
+      convertCommunity({ community }),
+    );
+
+    const follows = myUser?.follows.map(({ community }) =>
+      convertCommunity({ community }),
+    );
+
+    const personBlocks = myUser?.person_blocks.map((p) =>
+      shrinkBlockedPerson(convertPerson({ person: p })),
+    );
+
+    const communityBlocks = myUser?.community_blocks.map((community) =>
+      shrinkBlockedCommunity(convertCommunity({ community })),
+    );
+
     const admins = lemmySite.admins.map((p) => convertPerson(p));
     const site = {
       privateInstance: lemmySite.site_view.local_site.private_instance,
@@ -698,10 +749,10 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       myEmail: null,
       version: lemmySite.version,
       me,
-      moderates: [],
-      follows: [],
-      communityBlocks: [],
-      personBlocks: [],
+      moderates: moderates?.map((c) => c.handle) ?? null,
+      follows: follows?.map((c) => c.handle) ?? null,
+      personBlocks: personBlocks?.map((p) => p.apId) ?? null,
+      communityBlocks: communityBlocks?.map((c) => c.handle) ?? null,
       instanceBlocks: instanceBlocks ?? null,
       usersActiveDayCount: lemmySite.site_view.local_site.users_active_day,
       usersActiveWeekCount: lemmySite.site_view.local_site.users_active_week,
@@ -733,7 +784,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     return {
       site,
-      profiles: _.compact([...admins, me]),
+      profiles: _.compact([...admins, ...(personBlocks ?? []), me]),
+      communities: [
+        ...(moderates ?? []),
+        ...(follows ?? []),
+        ...(communityBlocks ?? []),
+      ],
     };
   }
 
@@ -874,39 +930,60 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       }
     }
 
-    const postsResponse = await this.client.getPosts(
-      {
-        show_read: form.showRead,
-        sort: sort?.sort,
-        time_range_seconds: sort?.timeRangeSeconds,
-        type_: _.isNil(form.type)
-          ? form.type
-          : remapEnum(form.type, {
-              All: "all",
-              Local: "local",
-              Subscribed: "subscribed",
-              ModeratorView: "moderator_view",
-            }),
-        page_cursor:
-          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-        limit: form.limit ?? this.limit,
-        community_name: form.communityHandle,
-        multi_community_id,
-        show_nsfw: form.showNsfw,
-      },
-      options,
-    );
+    const postsResponse = !form.savedOnly
+      ? await this.client.getPosts(
+          {
+            show_read: form.showRead,
+            sort: sort.sort,
+            time_range_seconds: sort.timeRangeSeconds,
+            type_: _.isNil(form.type)
+              ? form.type
+              : remapEnum(form.type, {
+                  All: "all",
+                  Local: "local",
+                  Subscribed: "subscribed",
+                  ModeratorView: "moderator_view",
+                }),
+            page_cursor:
+              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+            limit: form.limit ?? this.limit,
+            community_name: form.communityHandle,
+            multi_community_id,
+            show_nsfw: form.showNsfw,
+          },
+          options,
+        )
+      : null;
+
+    const savedPostResponse = form.savedOnly
+      ? await this.client.listPersonSaved(
+          {
+            type_: "posts",
+            page_cursor:
+              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+            limit: form.limit ?? this.limit,
+          },
+          options,
+        )
+      : null;
+
     const posts = unwrapResponsData(postsResponse);
+    const savedPosts = unwrapResponsData(savedPostResponse);
+
+    const items =
+      posts?.items ?? savedPosts?.items.filter((item) => item.type_ === "post");
+
     return {
-      nextCursor: posts.next_page ?? null,
-      posts: posts.items.map((p) => ({
-        post: convertPost(p),
-        creator: convertPerson({ person: p.creator }),
-        community: convertCommunity({
-          community: p.community,
-          community_actions: p.community_actions,
-        }),
-      })),
+      nextCursor: posts?.next_page ?? savedPosts?.next_page ?? null,
+      posts:
+        items?.map((p) => ({
+          post: convertPost(p),
+          creator: convertPerson({ person: p.creator }),
+          community: convertCommunity({
+            community: p.community,
+            community_actions: p.community_actions,
+          }),
+        })) ?? [],
     };
   }
 
@@ -1128,7 +1205,10 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       follow: form.follow,
     });
     const { community_view } = unwrapResponsData(followCommunityResponse);
-    return convertCommunity(community_view);
+    return {
+      ...(!form.follow ? { subscribed: "NotSubscribed" } : null),
+      ...convertCommunity(community_view),
+    } satisfies Schemas.Community;
   }
 
   async editPost(form: Forms.EditPost) {
@@ -1172,26 +1252,49 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
 
     const sort = mapCommentSort(form.sort);
 
-    const getCommentsResponse = await this.client.getComments(
-      {
-        post_id,
-        type_: "all",
-        sort,
-        limit: this.limit,
-        max_depth: form.maxDepth,
-        page_cursor:
-          form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
-      },
-      options,
-    );
-    const { items, next_page } = unwrapResponsData(getCommentsResponse);
+    const commentsResponse = !form.savedOnly
+      ? await this.client.getComments(
+          {
+            post_id,
+            type_: "all",
+            sort,
+            limit: this.limit,
+            max_depth: form.maxDepth,
+            page_cursor:
+              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+          },
+          options,
+        )
+      : null;
+
+    const savedCommentsResponse = form.savedOnly
+      ? await this.client.listPersonSaved(
+          {
+            type_: "comments",
+            page_cursor:
+              form.pageCursor === INIT_PAGE_TOKEN ? undefined : form.pageCursor,
+            limit: this.limit,
+          },
+          options,
+        )
+      : null;
+
+    const comments = unwrapResponsData(commentsResponse);
+    const savedComments = unwrapResponsData(savedCommentsResponse);
+
+    const items =
+      comments?.items ??
+      savedComments?.items.filter((item) => item.type_ === "comment");
+
+    const nextPage = comments?.next_page ?? savedComments?.next_page ?? null;
 
     return {
-      comments: items.map(convertComment),
-      creators: items.map(({ creator }) => convertPerson({ person: creator })),
+      comments: items?.map(convertComment) ?? [],
+      creators:
+        items?.map(({ creator }) => convertPerson({ person: creator })) ?? [],
       // Lemmy next cursor is broken when maxDepth is present.
       // It will page out to infinity until we get rate limited
-      nextCursor: _.isNil(form.maxDepth) ? (next_page ?? null) : null,
+      nextCursor: _.isNil(form.maxDepth) ? nextPage : null,
     };
   }
 
@@ -1251,18 +1354,20 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   async markPostRead(form: Forms.MarkPostRead) {
     const [firstPost] = form.postIds;
     if (form.postIds.length === 1 && firstPost) {
-      await this.client.markPostAsRead({
+      const response = await this.client.markPostAsRead({
         post_id: firstPost,
         read: form.read,
       });
+      unwrapResponsData(response);
     } else {
       if (form.read === false) {
         throw new Error("cant bulk mark multiple posts as unread");
       }
-      await this.client.markManyPostAsRead({
+      const response = await this.client.markManyPostAsRead({
         post_ids: form.postIds,
         read: true,
       });
+      unwrapResponsData(response);
     }
   }
 
@@ -1339,10 +1444,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async markPrivateMessageRead(form: Forms.MarkPrivateMessageRead) {
-    await this.client.markNotificationAsRead({
+    const response = await this.client.markNotificationAsRead({
       notification_id: form.id,
       read: form.read,
     });
+    unwrapResponsData(response);
   }
 
   async getReplies(form: Forms.GetReplies, options: RequestOptions) {
@@ -1416,21 +1522,24 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async markAllRead() {
-    await this.client.markAllNotificationsAsRead();
+    const response = await this.client.markAllNotificationsAsRead();
+    unwrapResponsData(response);
   }
 
   async markReplyRead(form: Forms.MarkReplyRead) {
-    await this.client.markNotificationAsRead({
+    const response = await this.client.markNotificationAsRead({
       notification_id: form.id,
       read: form.read,
     });
+    unwrapResponsData(response);
   }
 
   async markMentionRead(form: Forms.MarkMentionRead) {
-    await this.client.markNotificationAsRead({
+    const response = await this.client.markNotificationAsRead({
       notification_id: form.id,
       read: form.read,
     });
+    unwrapResponsData(response);
   }
 
   async createPost(form: Forms.CreatePost) {
@@ -1453,10 +1562,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async createPostReport(form: Forms.CreatePostReport) {
-    await this.client.createPostReport({
+    const response = await this.client.createPostReport({
       post_id: form.postId,
       reason: form.reason,
     });
+    unwrapResponsData(response);
   }
 
   async removePost(form: Forms.RemovePost) {
@@ -1481,10 +1591,11 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async createCommentReport(form: Forms.CreateCommentReport) {
-    await this.client.createCommentReport({
+    const response = await this.client.createCommentReport({
       comment_id: form.commentId,
       reason: form.reason,
     });
+    unwrapResponsData(response);
   }
 
   async removeComment(form: Forms.RemoveComment) {
@@ -1524,21 +1635,23 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async blockPerson(form: Forms.BlockPerson): Promise<void> {
-    await this.client.blockPerson({
+    const response = await this.client.blockPerson({
       person_id: form.personId,
       block: form.block,
     });
+    unwrapResponsData(response);
   }
 
   async blockCommunity(form: Forms.BlockCommunity): Promise<void> {
-    await this.client.blockCommunity({
+    const response = await this.client.blockCommunity({
       community_id: form.communityId,
       block: form.block,
     });
+    unwrapResponsData(response);
   }
 
   async blockInstance(form: Forms.BlockInstance): Promise<void> {
-    await Promise.all([
+    const responses = await Promise.all([
       this.client.userBlockInstancePersons({
         instance_id: form.instanceId,
         block: form.block,
@@ -1548,6 +1661,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
         block: form.block,
       }),
     ]);
+    unwrapResponseDataTuple(responses);
   }
 
   async uploadImage(form: Forms.UploadImage) {
@@ -1597,7 +1711,7 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
   }
 
   async saveUserSettings(form: Forms.SaveUserSettings) {
-    await this.client.saveUserSettings({
+    const response = await this.client.saveUserSettings({
       //avatar: form.avatar,
       //banner: form.banner,
       bio: form.bio,
@@ -1605,10 +1719,12 @@ export class LemmyV4Api implements ApiBlueprint<lemmyV4.LemmyHttp> {
       show_nsfw: form.showNsfw,
       blur_nsfw: form.blurNsfw,
     });
+    unwrapResponsData(response);
   }
 
   async removeUserAvatar() {
-    await this.client.deleteUserAvatar();
+    const response = await this.client.deleteUserAvatar();
+    unwrapResponsData(response);
   }
 
   async getPostReports(form: Forms.GetPostReports, options: RequestOptions) {
