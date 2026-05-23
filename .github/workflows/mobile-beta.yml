@@ -19,6 +19,7 @@ jobs:
     if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
     runs-on: macos-26
     timeout-minutes: 60
+    environment: beta
     permissions:
       contents: read
     steps:
@@ -35,12 +36,15 @@ jobs:
       # - name: Install iOS platform SDK
       #   run: sudo xcodebuild -runFirstLaunch
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "pnpm"
+          # Cache intentionally disabled — this workflow handles release
+          # secrets and must not restore from the GHA cache (cache-poisoning
+          # hardening). Do NOT add `cache: pnpm`.
+          cache: ""
 
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
@@ -52,10 +56,14 @@ jobs:
           REACT_APP_NAME: ${{ vars.REACT_APP_NAME }}
         run: pnpm build
 
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@e5517072e87f198d9533967ae13d97c11b604005 # v1.99.0
         with:
           ruby-version: "3.3"
-          bundler-cache: true
+          # Bundler cache disabled — see cache note above.
+          bundler-cache: false
+
+      - name: Install gems (no cache)
+        run: bundle install --jobs 4 --retry 3
 
       - name: Install CocoaPods
         run: pod install
@@ -90,6 +98,7 @@ jobs:
     if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    environment: beta
     permissions:
       contents: read
     steps:
@@ -97,12 +106,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          cache: "pnpm"
+          # Cache intentionally disabled — release secrets are present, do
+          # not restore from the GHA cache.
+          cache: ""
 
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
@@ -121,12 +132,17 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
+          # Gradle cache disabled — see cache note above.
+          cache: ""
 
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@e5517072e87f198d9533967ae13d97c11b604005 # v1.99.0
         with:
           ruby-version: "3.3"
-          bundler-cache: true
+          # Bundler cache disabled — see cache note above.
+          bundler-cache: false
+
+      - name: Install gems (no cache)
+        run: bundle install --jobs 4 --retry 3
 
       - name: Decode Android keystore
         env:

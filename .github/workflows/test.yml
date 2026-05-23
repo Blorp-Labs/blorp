@@ -145,17 +145,13 @@ jobs:
       - name: Build Blorp React app
         run: VITE_FAST=1 pnpm vite build
 
-      - name: Hash the output of pnpm why playwright
-        id: playwright_hash
-        run: |
-          PLAYWRIGHT_HASH=$(pnpm why playwright --json | jq -S . | sha256sum | cut -d ' ' -f 1)
-          echo "PLAYWRIGHT_HASH=$PLAYWRIGHT_HASH" >> $GITHUB_ENV
-
       - name: Cache Playwright browsers
+        # Key derived from the committed lockfile only — do not compute the
+        # cache key from PR-controlled output (cache-key-injection hardening).
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_HASH }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
 

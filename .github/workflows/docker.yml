@@ -5,11 +5,11 @@ on:
   push:
     # Trigger only on tags like "v1.2.3"
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: read
-  packages: write   # needed to push to ghcr.io
+  packages: write # needed to push to ghcr.io
 
 jobs:
   build-and-push:
@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Normalize lowercase vars
         id: vars
@@ -26,30 +26,36 @@ jobs:
           echo "ref_name=${GITHUB_REF_NAME}" >> $GITHUB_ENV
 
       - name: Set up QEMU (optional, for multi-arch)
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push (GHCR + Docker Hub)
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           push: true
+          # Cache intentionally disabled — this workflow holds registry
+          # push credentials. We do not want buildx to restore a poisoned
+          # layer from the GHA cache during a tagged release.
+          no-cache: true
+          cache-from: ""
+          cache-to: ""
           platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/${{ env.owner_lc }}/blorp:${{ env.ref_name }}
