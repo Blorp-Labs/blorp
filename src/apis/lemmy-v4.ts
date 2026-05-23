@@ -72,6 +72,8 @@ function unwrapResponsData<T>(
   }
   if (request.state === "empty") {
     throw Errors.OBJECT_NOT_FOUND;
+  } else if (request.state === "failed") {
+    throw request.err;
   } else if (request.state !== "success") {
     throw new Error("an unexpected error occured");
   }
