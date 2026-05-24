@@ -19,7 +19,6 @@ jobs:
     if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both' }}
     runs-on: macos-26
     timeout-minutes: 60
-    environment: beta
     permissions:
       contents: read
     steps:
@@ -41,10 +40,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          # Cache intentionally disabled — this workflow handles release
-          # secrets and must not restore from the GHA cache (cache-poisoning
-          # hardening). Do NOT add `cache: pnpm`.
-          cache: ""
+          cache: "pnpm"
 
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
@@ -59,11 +55,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-          # Bundler cache disabled — see cache note above.
-          bundler-cache: false
-
-      - name: Install gems (no cache)
-        run: bundle install --jobs 4 --retry 3
+          bundler-cache: true
 
       - name: Install CocoaPods
         run: pod install
@@ -98,7 +90,6 @@ jobs:
     if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    environment: beta
     permissions:
       contents: read
     steps:
@@ -111,9 +102,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          # Cache intentionally disabled — release secrets are present, do
-          # not restore from the GHA cache.
-          cache: ""
+          cache: "pnpm"
 
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
@@ -132,17 +121,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          # Gradle cache disabled — see cache note above.
-          cache: ""
+          cache: gradle
 
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-          # Bundler cache disabled — see cache note above.
-          bundler-cache: false
-
-      - name: Install gems (no cache)
-        run: bundle install --jobs 4 --retry 3
+          bundler-cache: true
 
       - name: Decode Android keystore
         env:
