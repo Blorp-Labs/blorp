@@ -1,6 +1,6 @@
 import { IonApp, setupIonicReact } from "@ionic/react";
 import _ from "lodash";
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import Router from "./Router";
 import { useTheme } from "./hooks/use-theme";
 import { useSettingsStore } from "./stores/settings";
@@ -18,6 +18,7 @@ import { TanstackQueryProvider } from "./tanstack-query/index";
 import { AuthProvider } from "./features/auth";
 import { PostRemoveProvider } from "./components/posts/post-remove";
 import { EmojiPickerSheetProvider } from "./components/emoji-picker/emoji-picker-sheet";
+import { MarkReadOnScrollProvider } from "./queries/use-mark-read-on-scroll";
 import { Toaster } from "./components/ui/sonner";
 
 updateTauri();
@@ -63,32 +64,40 @@ function ThemeEffect() {
   return null;
 }
 
+function AppProviders({ children }: { children: ReactNode }) {
+  return (
+    <TanstackQueryProvider>
+      <AuthProvider>
+        <PostRemoveProvider>
+          <EmojiPickerSheetProvider>
+            <MarkReadOnScrollProvider>{children}</MarkReadOnScrollProvider>
+          </EmojiPickerSheetProvider>
+        </PostRemoveProvider>
+      </AuthProvider>
+      <Toaster />
+    </TanstackQueryProvider>
+  );
+}
+
 export default function App() {
   return (
     <IonApp>
       <ThemeEffect />
-      <TanstackQueryProvider>
-        <AuthProvider>
-          <PostRemoveProvider>
-            <EmojiPickerSheetProvider>
-              <RefreshNotificationCount />
-              <InstanceFavicon />
-              <Router />
-              {isDev() && (
-                <TanstackDevtools
-                  plugins={[
-                    {
-                      name: "Tanstack Query",
-                      render: <ReactQueryDevtoolsPanel />,
-                    },
-                  ]}
-                />
-              )}
-            </EmojiPickerSheetProvider>
-          </PostRemoveProvider>
-        </AuthProvider>
-        <Toaster />
-      </TanstackQueryProvider>
+      <AppProviders>
+        <RefreshNotificationCount />
+        <InstanceFavicon />
+        <Router />
+        {isDev() && (
+          <TanstackDevtools
+            plugins={[
+              {
+                name: "Tanstack Query",
+                render: <ReactQueryDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
+      </AppProviders>
     </IonApp>
   );
 }

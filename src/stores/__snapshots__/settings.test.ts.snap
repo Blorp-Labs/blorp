@@ -15,6 +15,7 @@ exports[`persisted state snapshot > settings store initial shape 1`] = `
   "hideThresholdSetting": "account",
   "leftHandedMode": false,
   "lightTheme": "default-light",
+  "markReadOnScroll": false,
   "nsfwPreviouslyEnabled": false,
   "paginationMode": "infinite",
   "postCardStyle": "large",

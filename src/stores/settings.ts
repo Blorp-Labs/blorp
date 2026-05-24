@@ -93,6 +93,7 @@ const persistedSchema = z.object({
   hideRead: z.boolean(),
   hideSubscribedFromLocalAll: z.boolean(),
   hideBotPosts: z.boolean(),
+  markReadOnScroll: z.boolean().default(false),
   shareLinkType: z
     .enum(["blorp", "instance", "content-instance", "threadiverse.link"])
     .nullable(),
@@ -124,6 +125,7 @@ type SettingsStore = {
   setHideRead: (newVal: boolean) => any;
   setHideSubscribedFromLocalAll: (newVal: boolean) => any;
   setHideBotPosts: (newVal: boolean) => any;
+  setMarkReadOnScroll: (newVal: boolean) => any;
   setShareLinkType: (newVal: ShareLinkType) => any;
   setFilterKeywords: (update: { index: number; keyword: string }) => any;
   pruneFiltersKeywords: () => any;
@@ -154,6 +156,7 @@ const INIT_STATE: z.infer<typeof persistedSchema> = {
   hideRead: false,
   hideSubscribedFromLocalAll: false,
   hideBotPosts: false,
+  markReadOnScroll: false,
   shareLinkType: null,
   filterKeywords: [],
   paginationMode: "infinite",
@@ -185,6 +188,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setHideSubscribedFromLocalAll: (hideSubscribedFromLocalAll) =>
         set({ hideSubscribedFromLocalAll }),
       setHideBotPosts: (hideBotPosts) => set({ hideBotPosts }),
+      setMarkReadOnScroll: (markReadOnScroll) => set({ markReadOnScroll }),
       setShareLinkType: (shareLinkType) => set({ shareLinkType }),
       setFilterKeywords: (update) => {
         const filterKeywords = [...get().filterKeywords];

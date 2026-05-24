@@ -1,5 +1,4 @@
 import {
-  RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -28,33 +27,6 @@ export type {
 } from "./use-url-search-state";
 
 export * from "./navigation-hooks";
-
-export function useElementHasFocus<T extends HTMLElement | null>(
-  ref: RefObject<T>,
-): boolean {
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry) {
-        setIsVisible(entry.isIntersecting);
-      }
-    });
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [ref]);
-
-  return isVisible;
-}
 
 export function useIsInAppBrowserOpen() {
   const [isOpen, setIsOpen] = useState(false);
