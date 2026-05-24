@@ -226,10 +226,10 @@ jobs:
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
 
-      # NOTE: Swatinem/rust-cache intentionally removed. This workflow signs
-      # and ships macOS binaries; restoring a Rust target/ cache from the
-      # GHA cache would create a supply-chain poisoning path. Tauri compiles
-      # Rust from scratch on every release.
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
 
       - name: Import Developer ID certificates
         env:
