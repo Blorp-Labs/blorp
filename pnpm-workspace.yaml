@@ -3,6 +3,7 @@ minimumReleaseAge: 10080 # 7 Days (in minues)
 minimumReleaseAgeExclude:
   - "@blorp-labs/*"
   - "@tiptap/*"
+  - "lemmy-js-client"
 
 savePrefix: ""
 

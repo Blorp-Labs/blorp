@@ -115,7 +115,7 @@
     "input-otp": "1.4.2",
     "ionicons": "7.4.0",
     "lemmy-v3": "npm:lemmy-js-client@0.19.13-beta.1",
-    "lemmy-v4": "npm:lemmy-js-client@1.0.0-search-optimizations-1.0",
+    "lemmy-v4": "npm:lemmy-js-client@1.0.0-image-uploads-request.0",
     "lite-youtube-embed": "0.3.4",
     "lodash": "4.17.23",
     "lots-o-nekos": "3.0.0",

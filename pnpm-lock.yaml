@@ -271,8 +271,8 @@ importers:
         specifier: npm:lemmy-js-client@0.19.13-beta.1
         version: lemmy-js-client@0.19.13-beta.1
       lemmy-v4:
-        specifier: npm:lemmy-js-client@1.0.0-search-optimizations-1.0
-        version: lemmy-js-client@1.0.0-search-optimizations-1.0
+        specifier: npm:lemmy-js-client@1.0.0-image-uploads-request.0
+        version: lemmy-js-client@1.0.0-image-uploads-request.0
       lite-youtube-embed:
         specifier: 0.3.4
         version: 0.3.4
@@ -9802,10 +9802,10 @@ packages:
         integrity: sha512-GHlo17shJWl4OqA5m+7JdDbu/5jC7c7AAepFZNIPIDoVfc+dibaXFOH5ctHQh9p6n2jbVyGj23Di4P8L15Cwmw==,
       }
 
-  lemmy-js-client@1.0.0-search-optimizations-1.0:
+  lemmy-js-client@1.0.0-image-uploads-request.0:
     resolution:
       {
-        integrity: sha512-xgAu4qQOntuMckr3HNh9DQcuAKomvC1U+uztIr2qVIxkXTtDpXW91u2OJbTaKIqv4KVyhD6zt+jDRlwfBZZxtg==,
+        integrity: sha512-SLngw08pE84vRB2xoY2Gjm0zyY8OPhK9n1RaZFqPuGGgp9EsO44Av5n/PUSzH2o1hkpFETi9EkGp0FQmC4Ibaw==,
       }
 
   levn@0.4.1:
@@ -20041,7 +20041,7 @@ snapshots:
 
   lemmy-js-client@0.19.13-beta.1: {}
 
-  lemmy-js-client@1.0.0-search-optimizations-1.0:
+  lemmy-js-client@1.0.0-image-uploads-request.0:
     dependencies:
       "@tsoa/runtime": 6.6.0
     transitivePeerDependencies:
