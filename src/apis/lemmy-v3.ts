@@ -1586,6 +1586,42 @@ export class LemmyV3Api implements ApiBlueprint<lemmyV3.LemmyHttp> {
     });
   }
 
+  async listMedia(form: Forms.ListMedia, options?: RequestOptions) {
+    return translateErrors(async () => {
+      const page =
+        _.isUndefined(form.pageCursor) || form.pageCursor === INIT_PAGE_TOKEN
+          ? 1
+          : _.parseInt(form.pageCursor) + 1;
+      const { images } = await this.client.listMedia(
+        { page, limit: this.limit },
+        options,
+      );
+      const hasNext = images.length >= this.limit;
+      return {
+        media: images.map(({ local_image }) => ({
+          filename: local_image.pictrs_alias,
+          url: `${this.instance}/pictrs/image/${local_image.pictrs_alias}`,
+          deleteToken: local_image.pictrs_delete_token,
+          publishedAt: local_image.published,
+          thumbnailForPostId: null,
+        })),
+        nextCursor: hasNext ? String(page) : null,
+      };
+    });
+  }
+
+  async deleteMedia(form: Forms.DeleteMedia) {
+    return translateErrors(async () => {
+      if (!form.deleteToken) {
+        throw new Error("deleteToken is required for Lemmy v3 deleteMedia");
+      }
+      await this.client.deleteImage({
+        token: form.deleteToken,
+        filename: form.filename,
+      });
+    });
+  }
+
   async getCaptcha(options: RequestOptions) {
     return translateErrors(async () => {
       const { ok } = await this.client.getCaptcha(options);
