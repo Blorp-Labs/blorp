@@ -267,7 +267,7 @@ export function UserSidebar() {
 
   return (
     <div
-      className="flex min-h-full flex-col gap-4 pb-[var(--ion-safe-area-bottom)]"
+      className="flex min-h-full flex-col gap-4 pb-safe-area-bottom"
       data-testid="user-sidebar-content"
     >
       <div className="my-1 flex items-center gap-3">
