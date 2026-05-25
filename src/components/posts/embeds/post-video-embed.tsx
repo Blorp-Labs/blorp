@@ -1,4 +1,4 @@
-import { useMedia } from "@/src/hooks";
+import { useMedia, useFullscreenFix } from "@/src/hooks";
 import ReactPlayer from "react-player";
 import { cn } from "@/src/lib/utils";
 import { ABOVE_LINK_OVERLAY } from "../config";
@@ -34,8 +34,11 @@ export function PostVideoEmbed({
     nsfw ?? false,
     { apId, detailView },
   );
+  const containerRef = useFullscreenFix<HTMLDivElement>();
+
   return (
     <div
+      ref={containerRef}
       className={cn(
         "max-md:-mx-3.5 relative overflow-hidden md:rounded-md",
         ABOVE_LINK_OVERLAY,
