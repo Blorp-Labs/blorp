@@ -24,7 +24,7 @@ describe("useRecentCommunitiesStore", () => {
     expect(result.current.recentlyVisited).toHaveLength(0);
 
     act(() => {
-      result.current.update(community);
+      result.current.update(community, undefined);
     });
 
     expect(result.current.recentlyVisited).toHaveLength(1);
@@ -39,7 +39,7 @@ describe("useRecentCommunitiesStore", () => {
 
     act(() => {
       for (const community of communities) {
-        result.current.update(community);
+        result.current.update(community, undefined);
       }
     });
 
@@ -55,7 +55,7 @@ describe("useRecentCommunitiesStore", () => {
 
     act(() => {
       for (const community of communities) {
-        result.current.update(community);
+        result.current.update(community, undefined);
       }
     });
 
@@ -71,7 +71,7 @@ describe("persisted state snapshot", () => {
     const { result } = renderHook(() => useRecentCommunitiesStore());
 
     act(() => {
-      result.current.update(community);
+      result.current.update(community, undefined);
     });
 
     expect(result.current.recentlyVisited).toMatchSnapshot();

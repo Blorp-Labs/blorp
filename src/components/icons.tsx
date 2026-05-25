@@ -9,6 +9,7 @@ export {
   IoSend as Send,
   IoCheckmarkDoneSharp as DoubleCheck,
   IoWarning as Warning,
+  IoTimeOutline as TimeOutline,
 } from "react-icons/io5";
 export {
   LuScrollText as ScrollTextOutline,

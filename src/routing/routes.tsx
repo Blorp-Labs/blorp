@@ -71,6 +71,7 @@ export const routeDefs = {
   ...buildRoute("/home/posts/:post/comments/:comment", postSchema),
   ...buildRoute("/home/u/:userId", userSchema),
   ...buildRoute("/home/saved"),
+  ...buildRoute("/home/recent"),
   // Communities
   ...buildRoute("/communities"),
   ...buildRoute("/communities/sort/:sort", z.object({ sort: z.string() })),

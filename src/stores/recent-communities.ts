@@ -7,12 +7,18 @@ import { communitySchema, Schemas } from "../apis/api-blueprint";
 import { isTest } from "../lib/device";
 import { mergeCacheArray } from "./utils";
 
+const recentCommunitySchema = communitySchema.extend({
+  accountUuid: z.string().optional(),
+});
+
+export type RecentCommunity = z.infer<typeof recentCommunitySchema>;
+
 const persistedSchema = z.object({
-  recentlyVisited: z.array(communitySchema),
+  recentlyVisited: z.array(recentCommunitySchema),
 });
 
 type RecentCommunityStore = z.infer<typeof persistedSchema> & {
-  update: (c: Schemas.Community) => void;
+  update: (c: Schemas.Community, accountUuid: string | undefined) => void;
   reset: () => void;
 };
 
@@ -22,7 +28,7 @@ const INIT_STATE = {
   recentlyVisited: [],
 };
 
-function pruneCommunitites(communities: Schemas.Community[]) {
+function pruneCommunitites(communities: RecentCommunity[]) {
   return _.slice(
     _.uniqBy(communities, (c) => c.apId),
     0,
@@ -49,7 +55,7 @@ export function migrateRecentCommunities(
   });
   // Use passthrough so deprecated fields (e.g. slug) survive validation
   const lenientSchema = z.object({
-    recentlyVisited: z.array(communitySchema.passthrough()),
+    recentlyVisited: z.array(recentCommunitySchema.passthrough()),
   });
   return lenientSchema.parse({ ...state, recentlyVisited });
 }
@@ -58,10 +64,13 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
   persist(
     (set, get) => ({
       ...INIT_STATE,
-      update: (community) => {
+      update: (community, accountUuid) => {
         const prev = get().recentlyVisited;
         set({
-          recentlyVisited: pruneCommunitites([community, ...prev]),
+          recentlyVisited: pruneCommunitites([
+            { ...community, accountUuid },
+            ...prev,
+          ]),
         });
       },
       reset: () => {
@@ -85,7 +94,7 @@ export const useRecentCommunitiesStore = create<RecentCommunityStore>()(
             mergeCacheArray(
               current.recentlyVisited,
               migrated.recentlyVisited as unknown[] | undefined,
-              communitySchema,
+              recentCommunitySchema,
             ),
           ),
         } satisfies RecentCommunityStore;

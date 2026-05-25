@@ -78,6 +78,12 @@ export interface PostProps {
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
   hideIfSubscribed?: boolean;
+  /**
+   * When set, lookups for the post / community / creator use this account's
+   * cache slot instead of the currently selected account. Used by the
+   * "Recently viewed" page so entries render correctly across accounts.
+   */
+  accountUuid?: string;
 }
 
 export function PostCardSkeleton(props: {
@@ -349,6 +355,8 @@ function LargePostCard({
   featuredContext,
   pinned,
   modApIds,
+  disabled,
+  hideMyVote,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -358,6 +366,8 @@ function LargePostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  disabled?: boolean;
+  hideMyVote?: boolean;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -377,7 +387,7 @@ function LargePostCard({
 
   const patchPost = usePostsStore((s) => s.patchPost);
 
-  const doubeTapLike = useDoubleTapPostLike(post);
+  const doubeTapLike = useDoubleTapPostLike(disabled ? undefined : post);
 
   const id = useId();
 
@@ -443,6 +453,8 @@ function LargePostCard({
         canMod={(myApId ? modApIds?.includes(myApId) : false) || !!amIAdmin}
         isMod={modApIds?.includes(post.creatorApId)}
         detailView={detailView}
+        disabled={disabled}
+        hideMyVote={hideMyVote}
       />
 
       {detailView && post.crossPosts && post.crossPosts.length > 0 && (
@@ -474,7 +486,7 @@ function LargePostCard({
           className={twMerge(
             "relative text-xl font-medium select-text break-words",
             ABOVE_LINK_OVERLAY,
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && !hideMyVote && post.read && "text-muted-foreground",
           )}
           id={titleId}
         >
@@ -489,7 +501,7 @@ function LargePostCard({
               className={cn(
                 "text-sm line-clamp-3 leading-relaxed",
                 ABOVE_LINK_OVERLAY,
-                post.read && "text-muted-foreground",
+                !hideMyVote && post.read && "text-muted-foreground",
               )}
               id={bodyId}
             >
@@ -654,9 +666,18 @@ function LargePostCard({
       >
         <PostShareButton post={post} className={ABOVE_LINK_OVERLAY} />
         <div className="flex-1" />
-        <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostEmojiReactions
+          post={post}
+          className={ABOVE_LINK_OVERLAY}
+          disabled={disabled}
+        />
         <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
-        <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
+        <PostVoting
+          post={post}
+          className={ABOVE_LINK_OVERLAY}
+          disabled={disabled}
+          hideMyVote={hideMyVote}
+        />
       </div>
     </article>
   );
@@ -672,6 +693,8 @@ export function SmallPostCard({
   pinned,
   modApIds,
   className,
+  disabled,
+  hideMyVote,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -682,6 +705,8 @@ export function SmallPostCard({
   pinned?: boolean;
   modApIds?: string[];
   className?: string;
+  disabled?: boolean;
+  hideMyVote?: boolean;
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -817,6 +842,8 @@ export function SmallPostCard({
           isMod={modApIds?.includes(post.creatorApId)}
           showActions={media.md}
           detailView={detailView}
+          disabled={disabled}
+          hideMyVote={hideMyVote}
         />
 
         {flairs && flairs.length > 0 && (
@@ -841,7 +868,7 @@ export function SmallPostCard({
           }}
           className={cn(
             "gap-2 flex flex-col flex-1 font-medium text-lg max-md:text-md leading-tight after:absolute after:inset-0 md:after:-inset-x-2 after:content-[''] after:z-[1]",
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && !hideMyVote && post.read && "text-muted-foreground",
           )}
           onClick={() => post.nsfw && revealPost(apId)}
         >
@@ -862,7 +889,7 @@ export function SmallPostCard({
             leftHandedMode && "flex-row-reverse",
           )}
         >
-          {media.maxMd && (
+          {media.maxMd && !disabled && (
             <PostActionButtion
               post={post}
               canMod={canMod}
@@ -871,8 +898,17 @@ export function SmallPostCard({
             />
           )}
           <PostCommentsButton post={post} className={ABOVE_LINK_OVERLAY} />
-          <PostEmojiReactions post={post} className={ABOVE_LINK_OVERLAY} />
-          <PostVoting post={post} className={ABOVE_LINK_OVERLAY} />
+          <PostEmojiReactions
+            post={post}
+            className={ABOVE_LINK_OVERLAY}
+            disabled={disabled}
+          />
+          <PostVoting
+            post={post}
+            className={ABOVE_LINK_OVERLAY}
+            disabled={disabled}
+            hideMyVote={hideMyVote}
+          />
         </div>
       </div>
     </article>
@@ -888,6 +924,8 @@ function ExtraSmallPostCard({
   featuredContext,
   pinned,
   modApIds,
+  disabled,
+  hideMyVote,
 }: {
   post: Schemas.Post | undefined;
   creator: Schemas.Person | undefined;
@@ -897,6 +935,8 @@ function ExtraSmallPostCard({
   featuredContext: PostProps["featuredContext"];
   pinned: boolean;
   modApIds?: string[];
+  disabled?: boolean;
+  hideMyVote?: boolean;
 }) {
   const myApId = useAuth(
     (s) => getAccountSite(s.getSelectedAccount())?.me?.apId,
@@ -954,7 +994,7 @@ function ExtraSmallPostCard({
           }}
           className={cn(
             "gap-2 flex flex-col flex-1 font-medium max-md:text-sm after:absolute after:inset-0 after:content-[''] after:z-[1]",
-            !detailView && post.read && "text-muted-foreground",
+            !detailView && !hideMyVote && post.read && "text-muted-foreground",
           )}
           onClick={() => post.nsfw && revealPost(apId)}
         >
@@ -999,6 +1039,8 @@ function ExtraSmallPostCard({
             canMod={canMod}
             isMod={modApIds?.includes(post.creatorApId)}
             showActions={false}
+            disabled={disabled}
+            hideMyVote={hideMyVote}
           />
 
           <PostCommentsButton
@@ -1010,6 +1052,8 @@ function ExtraSmallPostCard({
             post={post}
             variant="ghost"
             className={cn(ABOVE_LINK_OVERLAY, "-mr-2")}
+            disabled={disabled}
+            hideMyVote={hideMyVote}
           />
         </div>
       </div>
@@ -1070,6 +1114,8 @@ interface PostCardViewProps {
   featuredContext?: PostProps["featuredContext"];
   modApIds?: string[];
   postCardStyle?: PostCardStyle;
+  disabled?: boolean;
+  hideMyVote?: boolean;
 }
 
 export function PostCardView({
@@ -1081,6 +1127,8 @@ export function PostCardView({
   featuredContext,
   modApIds,
   postCardStyle: postCardStyleProp,
+  disabled,
+  hideMyVote,
 }: PostCardViewProps): React.ReactNode {
   const globalPostCardStyle = useSettingsStore((s) => s.postCardStyle);
   const postCardStyle = postCardStyleProp ?? globalPostCardStyle;
@@ -1107,6 +1155,8 @@ export function PostCardView({
         featuredContext={featuredContext}
         pinned={pinned}
         modApIds={modApIds}
+        disabled={disabled}
+        hideMyVote={hideMyVote}
       />
     );
   }
@@ -1123,6 +1173,8 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          disabled={disabled}
+          hideMyVote={hideMyVote}
         />
       );
     case "extra-small":
@@ -1136,6 +1188,8 @@ export function PostCardView({
           featuredContext={featuredContext}
           pinned={pinned}
           modApIds={modApIds}
+          disabled={disabled}
+          hideMyVote={hideMyVote}
         />
       );
   }
@@ -1144,9 +1198,15 @@ export function PostCardView({
 function PostCardInner(props: PostProps) {
   const showNsfw = useShouldShowNsfw();
 
-  const post = usePostFromStore(props.apId);
-  const creator = useProfileFromStore(post?.creatorApId);
-  const communityData = useCommunityFromStore(post?.communityHandle);
+  const account = useAuth((s) =>
+    props.accountUuid
+      ? s.accounts.find((a) => a.uuid === props.accountUuid)
+      : undefined,
+  );
+
+  const post = usePostFromStore(props.apId, account);
+  const creator = useProfileFromStore(post?.creatorApId, account);
+  const communityData = useCommunityFromStore(post?.communityHandle, account);
   const flairs = useFlairs(post?.flairs?.map((f) => f.id));
 
   const filterKeywords = useSettingsStore((s) => s.filterKeywords);
@@ -1194,6 +1254,8 @@ function PostCardInner(props: PostProps) {
       featuredContext={props.featuredContext}
       modApIds={props.modApIds}
       postCardStyle={props.postCardStyle}
+      disabled={!!props.accountUuid}
+      hideMyVote={!!props.accountUuid}
     />
   );
 }

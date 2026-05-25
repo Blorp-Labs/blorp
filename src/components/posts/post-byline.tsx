@@ -259,6 +259,8 @@ export function PostByline({
   hideImage,
   className,
   detailView,
+  disabled,
+  hideMyVote,
 }: {
   post: Schemas.Post;
   creator: Schemas.Person | undefined;
@@ -273,6 +275,8 @@ export function PostByline({
   hideImage?: boolean;
   className?: string;
   detailView?: boolean;
+  disabled?: boolean;
+  hideMyVote?: boolean;
 }) {
   const linkCtx = useLinkContext();
 
@@ -424,7 +428,7 @@ export function PostByline({
           NSFW
         </Badge>
       )}
-      {saved && (
+      {saved && !hideMyVote && (
         <Bookmark className={cn("text-lg text-brand", ABOVE_LINK_OVERLAY)} />
       )}
       {pinned && (
@@ -436,7 +440,7 @@ export function PostByline({
         <Lock className={cn("text-xl text-yellow-500", ABOVE_LINK_OVERLAY)} />
       )}
 
-      {showActions && (
+      {showActions && !disabled && (
         <PostActionButtion
           post={post}
           canMod={canMod}

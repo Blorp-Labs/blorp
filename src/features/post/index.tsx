@@ -52,6 +52,8 @@ import { cn, isNotNil } from "../../lib/utils";
 import { SearchBar } from "../search/search-bar";
 import { useCommentsByPaths } from "../../stores/comments";
 import { useCommunityFromStore } from "../../stores/communities";
+import { useProfileFromStore } from "../../stores/profiles";
+import { useUpdateRecentPost } from "../../hooks/use-update-recent-post";
 import { useQueryToast } from "../../hooks/use-query-toast";
 import { MissingComment } from "./missing-comment";
 
@@ -244,6 +246,8 @@ export default function Post() {
     name: communityHandle,
   });
   const community = useCommunityFromStore(communityHandle);
+  const creator = useProfileFromStore(post?.creatorApId);
+  useUpdateRecentPost(post, community?.communityView, creator);
   const modApIds = community?.mods?.map((m) => m.apId);
   const canMod =
     (myUserApId ? modApIds?.includes(myUserApId) : false) || !!amIAdmin;
