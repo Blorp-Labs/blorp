@@ -71,6 +71,7 @@ import { Context, useDraftEditorState } from "./use-draft-editor-state";
 import { useShallow } from "zustand/shallow";
 import { useContextSelector } from "use-context-selector";
 import { parseHandle } from "../../apis/utils";
+import { Textarea } from "@/src/components/ui/textarea";
 
 dayjs.extend(localizedFormat);
 
@@ -276,6 +277,13 @@ function CreatePostInner() {
   const reset = useContextSelector(Context, (s) => s.reset);
 
   const id = useId();
+  const [title, setTitle] = useState(draft.title ?? "");
+
+  // Local input already matches draft updates, making this a no-op; this also
+  // syncs title changes from switching drafts or link metadata.
+  useEffect(() => {
+    setTitle(draft.title ?? "");
+  }, [draft.title]);
 
   useEffect(() => {
     if (media.md) {
@@ -507,7 +515,7 @@ function CreatePostInner() {
                     };
                     if (
                       val === "poll" &&
-                      (!draft.poll || !draft.poll?.choices.length)
+                      (!draft.poll || !draft.poll.choices.length)
                     ) {
                       patch.poll = DEFAULT_POLL;
                     }
@@ -585,12 +593,10 @@ function CreatePostInner() {
                     value={
                       draft.flairs?.map(flairLookup).filter(isNotNil) ?? []
                     }
-                    options={
-                      flairs.map((flair) => ({
-                        label: flair.title,
-                        value: flair,
-                      })) ?? []
-                    }
+                    options={flairs.map((flair) => ({
+                      label: flair.title,
+                      value: flair,
+                    }))}
                     keyExtractor={(val) => val.apId ?? val.title}
                     placeholder="Add Post Flair"
                     renderOption={(opt) => <Flair flair={opt.value} />}
@@ -614,20 +620,21 @@ function CreatePostInner() {
                 </div>
               )}
 
-              <div className="flex flex-col">
+              <div className="flex flex-col gap-1">
                 <Label htmlFor={`${id}-title`}>Title</Label>
-                <Input
+                <Textarea
                   id={`${id}-title`}
                   data-testid="create-post-title"
                   placeholder="Title"
-                  value={draft.title ?? ""}
-                  className="md:text-2xl! font-bold"
-                  wrapperClassName="border-0 -mx-3 w-auto shadow-none"
-                  onInput={(e) =>
+                  value={title}
+                  className="md:text-2xl! font-bold resize-none"
+                  variant="ghost"
+                  onInput={(e) => {
+                    setTitle(e.currentTarget.value);
                     patchDraft({
-                      title: e.currentTarget.value ?? "",
-                    })
-                  }
+                      title: e.currentTarget.value,
+                    });
+                  }}
                 />
               </div>
 
@@ -942,10 +949,10 @@ const ChooseCommunityMemoed = memo(function ChooseCommunity({
                     closeModal();
                   }}
                   className="flex flex-row items-center gap-2"
-                  disabled={!!draft?.apId}
+                  disabled={!!draft.apId}
                 >
                   <CommunityCard communityHandle={item.handle} disableLink />
-                  {draft?.communityHandle &&
+                  {draft.communityHandle &&
                     item.handle === draft.communityHandle && (
                       <FaCheck className="text-brand" />
                     )}
