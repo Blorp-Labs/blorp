@@ -90,7 +90,7 @@ const POLL_UNIT_OPTIONS: {
 const EMPTY_ARR: never[] = [];
 
 function stripNewlines(value: string) {
-  return value.replace(/\r?\n/g, " ");
+  return value.replace(/[\r\n]+/g, " ");
 }
 
 const DraftCardMemoed = memo(function DraftCard({
