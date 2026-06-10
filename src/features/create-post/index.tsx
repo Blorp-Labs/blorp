@@ -89,6 +89,10 @@ const POLL_UNIT_OPTIONS: {
 
 const EMPTY_ARR: never[] = [];
 
+function stripNewlines(value: string) {
+  return value.replace(/\r?\n/g, " ");
+}
+
 const DraftCardMemoed = memo(function DraftCard({
   title,
   communityHandle: handle,
@@ -627,12 +631,19 @@ function CreatePostInner() {
                   data-testid="create-post-title"
                   placeholder="Title"
                   value={title}
+                  aria-multiline="false"
                   className="md:text-2xl! font-bold resize-none"
                   variant="ghost"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                    }
+                  }}
                   onInput={(e) => {
-                    setTitle(e.currentTarget.value);
+                    const title = stripNewlines(e.currentTarget.value);
+                    setTitle(title);
                     patchDraft({
-                      title: e.currentTarget.value,
+                      title,
                     });
                   }}
                 />
