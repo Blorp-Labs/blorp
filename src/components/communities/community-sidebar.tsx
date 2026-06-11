@@ -2,6 +2,7 @@ import _ from "lodash";
 import {
   useBlockCommunityMutation,
   useBlockInstanceMutation,
+  useFollowCommunityMutation,
 } from "@/src/queries/index";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
@@ -229,10 +230,14 @@ export function useCommunityActions({
     communityHandle,
   });
   const blockInstance = useBlockInstanceMutation();
+  const followCommunity = useFollowCommunityMutation();
   const isBlocked = useIsCommunityBlocked(communityHandle);
   const communityInstanceId = communityView?.instanceId;
   const communityApId = communityView?.apId;
   const isInstanceBlocked = useIsInstanceBlocked(communityInstanceId);
+  const subscribed =
+    communityView?.optimisticSubscribed ?? communityView?.subscribed;
+  const isSubscribed = subscribed === "Subscribed" || subscribed === "Pending";
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
   const linkCtx = useLinkContext();
@@ -258,6 +263,26 @@ export function useCommunityActions({
   );
 
   return [
+    ...(isLoggedIn && communityView && !isBlocked
+      ? [
+          {
+            text: isSubscribed ? "Leave community" : "Join community",
+            onClick: async () => {
+              if (isSubscribed) {
+                await getConfirmation({
+                  message: `Are you sure you want to leave ${communityHandle}?`,
+                  confirmText: "Leave",
+                  danger: true,
+                });
+              }
+              followCommunity.mutate({
+                community: communityView,
+                follow: !isSubscribed,
+              });
+            },
+          },
+        ]
+      : []),
     ...(isLoggedIn && !isBlocked
       ? [
           {
