@@ -159,18 +159,18 @@ function CommunityItem({ communityHandle }: { communityHandle: Handle }) {
   const community = useCommunityFromStore(communityHandle);
   const description = community?.communityView.description;
   return (
-    <Link
-      className="border py-1 px-2 rounded-lg h-24 hover:bg-accent/75"
-      to="/communities/c/:communityHandle"
-      params={{ communityHandle }}
-    >
-      <CommunityCard communityHandle={communityHandle} disableLink />
+    <div className="border py-1 px-2 rounded-lg h-24 hover:bg-accent/75 relative">
+      <CommunityCard
+        communityHandle={communityHandle}
+        showJoin
+        className="static"
+      />
       {description && (
         <p className="text-xs line-clamp-2 text-muted-foreground">
           {removeMd(description)}
         </p>
       )}
-    </Link>
+    </div>
   );
 }
 
