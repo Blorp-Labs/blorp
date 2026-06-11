@@ -7,7 +7,6 @@ import {
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { MarkdownRenderer } from "../markdown/renderer";
-import { CommunityJoinButton } from "./community-join-button";
 import { useLinkContext } from "@/src/hooks/navigation-hooks";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { LuCakeSlice } from "react-icons/lu";
@@ -158,8 +157,6 @@ export function SmallScreenSidebar({
             actions={actions}
             aria-label="Community actions"
           />
-
-          <CommunityJoinButton communityHandle={communityHandle} />
         </div>
       </div>
 
