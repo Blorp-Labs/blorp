@@ -19,6 +19,8 @@ import _ from "lodash";
 import { useRecentCommunitiesStore } from "@/src/stores/recent-communities";
 import { Handle, parseHandle } from "@/src/lib/handle";
 import { Schemas } from "@/src/apis/api-blueprint";
+import { CommunityJoinButton } from "./community-join-button";
+import { ABOVE_LINK_OVERLAY } from "@/src/components/posts/config";
 
 type CommunityCardProps = {
   communityHandle: Handle;
@@ -27,6 +29,7 @@ type CommunityCardProps = {
   hideText?: boolean;
   size?: "sm" | "md";
   account?: Account;
+  showJoin?: boolean;
 };
 
 interface CommunityCardViewProps {
@@ -35,6 +38,7 @@ interface CommunityCardViewProps {
   className?: string;
   hideText?: boolean;
   size?: "sm" | "md";
+  showJoin?: boolean;
 }
 
 export function CommunityCardView({
@@ -43,6 +47,7 @@ export function CommunityCardView({
   className,
   hideText,
   size = "md",
+  showJoin,
 }: CommunityCardViewProps) {
   const blurNsfw = useShouldBlurNsfw();
 
@@ -55,41 +60,40 @@ export function CommunityCardView({
 
   const { name, host } = parseHandle(communityView.handle);
 
-  const content = (
-    <>
-      <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
-        <AvatarImage
-          src={communityView.icon ?? undefined}
-          className={cn(
-            "object-cover absolute inset-0",
-            communityView.nsfw && blurNsfw && COMMUNITY_NSFW_ICON_BLUR_CLASS,
-          )}
-        />
-        <AvatarFallback>{communityView.handle.substring(0, 1)}</AvatarFallback>
-      </Avatar>
-
-      <div
+  const avatar = (
+    <Avatar className={cn("h-9 w-9", size === "sm" && "h-8 w-8")}>
+      <AvatarImage
+        src={communityView.icon ?? undefined}
         className={cn(
-          "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
-          hideText && "sr-only",
+          "object-cover absolute inset-0",
+          communityView.nsfw && blurNsfw && COMMUNITY_NSFW_ICON_BLUR_CLASS,
         )}
-      >
-        <span
-          className={cn(
-            "text-sm overflow-hidden overflow-ellipsis",
-            size === "sm" && "text-xs",
-          )}
-        >
-          {name}
-          <span className="text-muted-foreground italic">@{host}</span>
-        </span>
-        {_.isNumber(communityView.subscriberCount) && size === "md" && (
-          <span className="text-xs text-muted-foreground">
-            {abbriviateNumber(communityView.subscriberCount)} members
-          </span>
-        )}
-      </div>
+      />
+      <AvatarFallback>{communityView.handle.substring(0, 1)}</AvatarFallback>
+    </Avatar>
+  );
+
+  const titleNode = (
+    <>
+      {name}
+      <span className="text-muted-foreground italic">@{host}</span>
     </>
+  );
+
+  const subscriberCount = _.isNumber(communityView.subscriberCount) &&
+    size === "md" && (
+      <span className="text-xs text-muted-foreground">
+        {abbriviateNumber(communityView.subscriberCount)} members
+      </span>
+    );
+
+  const joinButton = showJoin && (
+    <CommunityJoinButton
+      communityHandle={communityView.handle}
+      size="xs"
+      variant="outline"
+      className={ABOVE_LINK_OVERLAY}
+    />
   );
 
   if (disableLink) {
@@ -102,26 +106,65 @@ export function CommunityCardView({
           className,
         )}
       >
-        {content}
+        {avatar}
+        <div
+          className={cn(
+            "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
+            hideText && "sr-only",
+          )}
+        >
+          <span
+            className={cn(
+              "text-sm overflow-hidden overflow-ellipsis",
+              size === "sm" && "text-xs",
+            )}
+          >
+            {titleNode}
+          </span>
+          {subscriberCount}
+        </div>
+        {joinButton}
       </div>
     );
   }
 
   return (
-    <Link
+    <div
       data-testid="community-card"
-      to={`${linkCtx.root}c/:communityHandle`}
-      params={{
-        communityHandle: communityView.handle,
-      }}
       className={cn(
-        "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground",
+        "flex flex-row gap-2 items-center flex-shrink-0 h-12 max-w-full text-foreground relative",
         size === "sm" && "h-9",
         className,
       )}
     >
-      {content}
-    </Link>
+      {avatar}
+      <div
+        className={cn(
+          "flex flex-col gap-0.5 flex-1 overflow-hidden text-left",
+          hideText && "sr-only",
+        )}
+      >
+        <Link
+          to={`${linkCtx.root}c/:communityHandle`}
+          params={{
+            communityHandle: communityView.handle,
+          }}
+          className="after:absolute after:inset-0 after:content-[''] after:z-[1]"
+        >
+          <span
+            className={cn(
+              "text-sm overflow-hidden overflow-ellipsis hover:underline block",
+              size === "sm" && "text-xs",
+              ABOVE_LINK_OVERLAY,
+            )}
+          >
+            {titleNode}
+          </span>
+        </Link>
+        {subscriberCount}
+      </div>
+      {joinButton}
+    </div>
   );
 }
 
@@ -132,6 +175,7 @@ function CommunityCardInner({
   hideText,
   size = "md",
   account,
+  showJoin,
 }: CommunityCardProps) {
   const fromRecent = useRecentCommunitiesStore((s) => {
     return s.recentlyVisited.find((r) => r.handle === communityHandle);
@@ -146,6 +190,7 @@ function CommunityCardInner({
       className={className}
       hideText={hideText}
       size={size}
+      showJoin={showJoin}
     />
   );
 }

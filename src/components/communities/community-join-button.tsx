@@ -1,14 +1,13 @@
 import { Deferred } from "@/src/lib/deferred";
-import { LoadingButton } from "../ui/button";
+import { ButtonProps, LoadingButton } from "../ui/button";
 import { useFollowCommunityMutation } from "@/src/queries/index";
 import { useCommunityFromStore } from "@/src/stores/communities";
 import { useIonAlert } from "@ionic/react";
 import { useAuth } from "@/src/stores/auth";
 import { Handle } from "@/src/lib/handle";
 
-interface Props {
+interface Props extends Partial<ButtonProps> {
   communityHandle: Handle | undefined;
-  className?: string;
 }
 
 export function CommunityJoinButton({ communityHandle, ...props }: Props) {
