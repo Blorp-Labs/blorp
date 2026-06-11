@@ -683,18 +683,6 @@ describe("known upstream bugs", () => {
     editor.destroy();
   });
 
-  // https://github.com/ueberdosis/tiptap/issues/7258
-  // Escaped markdown characters (\*) are silently dropped instead of
-  // rendering as the literal character. Per the markdown spec, \* should
-  // produce a literal asterisk, not start italic formatting.
-  it.fails(
-    "#7258: escaped markdown characters render as literal characters",
-    () => {
-      setMarkdown(editor, "\\*not italic\\*");
-      expect(editor.state.doc.textContent).toBe("*not italic*");
-    },
-  );
-
   // https://github.com/ueberdosis/tiptap/issues/7502
   // When parsing a markdown table with column alignment markers (:--- / :---: / ---:),
   // tiptap v3 discards the alignment info. The markers are not preserved on
@@ -725,5 +713,14 @@ describe("known upstream bugs", () => {
     editor.commands.setTextSelection({ from: 1, to: 6 });
     editor.commands.toggleItalic();
     expect(getMarkdown(editor)).toBe("[*hello* world](https://google.com)");
+  });
+
+  // https://github.com/ueberdosis/tiptap/issues/7258
+  // Escaped markdown characters (\*) are silently dropped instead of
+  // rendering as the literal character. Per the markdown spec, \* should
+  // produce a literal asterisk, not start italic formatting.
+  it("#7258: escaped markdown characters render as literal characters", () => {
+    setMarkdown(editor, "\\*not italic\\*");
+    expect(editor.state.doc.textContent).toBe("*not italic*");
   });
 });
